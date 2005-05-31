@@ -18,7 +18,6 @@ def strike_col( A , j ):
     m,n = A.shape
     return Numeric.take( A , [ k for k in range(0,n) if k != j ] , 1 )
 
-
 def cross( vecs ):
     """Multidimensional cross product of d+1 vecs in R^{d}."""
     n,d = len(vecs),len(vecs[0]) 
@@ -157,4 +156,88 @@ for shp in ( TRIANGLE , TETRAHEDRON ):
         crss = cross( vecs )
         normals[ shp ][ i ] = crss / sqrt( Numeric.dot( crss , crss ) )
 
+tangents = {}
+for shp in ( TRIANGLE , TETRAHEDRON ):
+    tangents[ shp ] = {}
+    vert_dict = vertex_relation[ shp ][ 1 ]
+    for i in vert_dict.keys():
+        vert_ids = vert_dict[ i ]
+        vert_vecs = [ Numeric.array( vertices[ shp ][ j ] ) \
+                      for j in vert_ids ]
+        diff = vert_vecs[ 1 ] - vert_vecs[ 0 ]
+        tangents[ shp ][ i ] = diff / sqrt( Numeric.dot( diff , diff ) )
+    
+def scale_factor( shape , d , ent_id ):
+    global jac_factors
+    return jac_factors[ shape ][ d ][ ent_id ]
+
+def dimension( shape ):
+    """returns the topological dimension associated with shape."""
+    global dims
+    try:
+        return dims[ shape ]
+    except:
+        raise ShapeError, "Illegal shape: shapes.dimension"
+
+def dimension_range( shape ):
+    """returns the list starting at zero and ending with
+    the topological dimension of shape (inclusive).
+    Hence, dimension_range( s ) is syntactic sugar for
+    range(0,dimension(shape)+1)."""
+    return range(0,dimension(shape)+1);
+
+def entity_range( shape , dim ):
+    """Returns the range of topological entities of dimension dim
+    associated with shape.
+    For example, entity_range( LINE , 0 ) returns the list [0,1]
+    because there are two points associated with the line."""
+    global num_entities
+    try:
+        return range(0,num_entities[ shape ][ dim ])
+    except:
+        raise ShapeError, "Illegal shape or dimension"
+
+def polynomial_dimension( shape , n ):
+    """Returns the number of polynomials of total degree n on the
+    shape n.  This (n+1) over the line, (n+1)(n+2)/2 over the
+    triangle, and (n+1)(n+2)(n+3)/6 in three dimensions."""
+    d = dimension( shape )
+    td = 1
+    for i in xrange(0,d):
+        td = td * ( n + i + 1 )
+    return td / factorial( d )
+
+def make_lattice_line( n ):
+    v0 = vertices[ LINE ][0][0]
+    v1 = vertices[ LINE ][1][0]
+    h = abs( v1 - v0 )
+    return tuple( [ ( v0 + ( h * jj ) / n , ) \
+                    for jj in xrange( 0 , n + 1 ) ] )
+
+def make_lattice_triangle( n ):
+    vs = [ Numeric.array( vertices[ TRIANGLE ][ i ] ) \
+             for i in vertices[ TRIANGLE ].iterkeys() ]
+    hs = [ vs[ i ] - vs[ 0 ] for i in (1,2) ]
+    return tuple( [ tuple( vs[ 0 ] + ii * hs[ 1 ] / n + jj * hs[ 0 ] / n ) \
+                    for ii in xrange( 0 , n + 1 ) \
+                        for jj in xrange( 0 , n - ii + 1 ) ] )
+
+def make_lattice_tetrahedron( n ):
+    vs = [ Numeric.array( vertices[ TETRAHEDRON ][ i ] ) \
+             for i in vertices[ TETRAHEDRON ].iterkeys() ]
+    hs = [ vs[ i ] - vs[ 0 ] for i in (1,2,3) ]
+    return tuple( [ tuple( vs[ 0 ] \
+                           + ii * hs[ 2 ] / n \
+                           + jj * hs[ 1 ] / n \
+                           + kk * hs[ 0 ] / n ) \
+                    for ii in xrange( 0 , n + 1 ) \
+                        for jj in xrange( 0 , n - ii + 1 ) \
+                            for kk in xrange( 0 , n - ii - jj + 1 ) ] )
+
+lattice_funcs = { LINE : make_lattice_line , \
+                  TRIANGLE : make_lattice_triangle , \
+                  TETRAHEDRON : make_lattice_tetrahedron }
+
+def make_lattice( shape , n ):
+    return lattice_funcs[ shape ]( n )    
 
