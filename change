@@ -1,0 +1,9 @@
+What's new in:
+0.2.2:
+  Added Raviart-Thomas element, verified RT0 against old version of code
+  Started work on BDFM, Nedelec (not working)
+  fixed projection, union of sets (error in SVD usage)
+  vector-valued spaces have general number of components
+
+
+
