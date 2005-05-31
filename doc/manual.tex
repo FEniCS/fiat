@@ -1,0 +1,116 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{url}
+
+\textwidth = 6.5in
+\textheight = 9in
+\oddsidemargin = 0in
+\evensidemargin = 0in
+\topmargin = 0.0 in
+\headheight = 0.0 in
+\headsep = 0.0 in
+\parskip = 0.2in
+\parindent = 0.0in
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+\newcommand{\tuple}[2]{<\!#1,#2\!>}
+\newcommand{\meet}{\wedge}
+\newcommand{\bigmeet}{\bigwedge}
+\def\proof{\par{\it Proof}. \ignorespaces}
+
+\def\endproof{\vbox{\hrule height0.6pt\hbox{%
+   \vrule height1.3ex width0.6pt\hskip0.8ex
+   \vrule width0.6pt}\hrule height0.6pt
+  }}
+
+\newcommand{\R}{{\sf R\hspace*{-0.9ex}\rule{0.15ex}{1.5ex}\hspace*{0.9ex}}}
+\newcommand{\N}{{\sf
+    N\hspace*{-1.0ex}\rule{0.15ex}{1.3ex}\hspace*{1.0ex}}}
+
+\title{FIAT 0.1.0 Users' Manual}
+\author{Robert C. Kirby}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+FIAT (FInite element Automatic Tabulator) is a Python package for
+defining and evaluating a wide range of different finite element basis
+functions for numerical partial differential equations.  It is
+intended to make ``difficult'' elements such as high-order
+Brezzi-Douglas-Marini~\cite{} elements usable by providing
+abstractions so that they may be implemented succinctly and hence
+treated as a black box.  FIAT is intended for use at two different
+levels.  For one, it is designed to provide a standard API for finite
+element bases so that programmers may use whatever elements they need
+in their code.  At a lower level, it provides necessary infrastructure to
+rapidly deploy new kinds of finite elements without expensive symbolic
+computation or tedious algebraic manipulation.
+It is my goal that a large number of people use FIAT without ever
+knowing it.  Thanks to several ongoing projects such as
+Sundance~\cite{}, FFC~\cite{}, and PETSc~\cite{}, it is becoming
+possible to to define finite element methods using mathematical
+notation in some high-level or domain-specific language.  The primary
+shortcoming of these projects is their lack of support for general
+elements.  It is one thing to ``provide hooks'' for general elements,
+but absent a tool such as FIAT, these hooks remain mainly empty.  As
+these projects mature, I hope to expose users of the finite element
+method to the exotic world of potentially high-degree finite element
+on unstructured grids using the best elements in $H^1$,
+$H(\mathrm{div})$, and $H(\mathrm{curl})$.
+
+In this brief (and still developing) guide, I will first
+present the high-level API for users who wish to instantiate a finite
+element on a reference domain and evaluate its basis functions and
+derivatives at some quadrature points.  Then, I will explain some of
+the underlying infrastructure so as to demonstrate how to add new
+elements.
+
+\section{Using FIAT: A tutorial with Lagrange elements}
+\subsection{Importing FIAT}
+FIAT is organized as a package in Python, consisting of several
+modules.  In order to get some of the packages, we use the line
+\begin{verbatim}
+from FIAT import Lagrange, quadrature, shapes
+\end{verbatim}
+This loads several modules for the Lagrange elements, quadrature
+rules, and the simplicial element shapes which FIAT implements.  The
+roles each of these plays will become clear shortly.
+\subsection{Instantiating elements}
+FIAT uses a lightweight object-oriented infrastructure to define
+finite elements.  The \verb.Lagrange. module contains a class
+\verb.Lagrange. modeling the Lagrange finite element family.  This
+class is a subclass of some \verb.FiniteElement. class contained in
+another module (\verb.polynomial. to be precise).  So, having imported
+the \verb.Lagrange. module, we can create the Lagrange element of
+degree \verb.2. on triangles by
+\begin{verbatim}
+shape = shapes.TRIANGLE
+degree = 2
+U = Lagrange.Lagrange( shape , degree )
+\end{verbatim}
+Here, \verb*shapes.TRIANGLE* is an integer code indicating the two
+dimensional simplex.  \verb.shapes. also defines
+\verb.LINE. and \verb.TETRAHEDRON..  Most of the
+upper-level interface to FIAT is dimensionally abstracted over element
+shape.
+
+The class \verb.FiniteElement. supports three methods, modeled on the
+abstract definition of Ciarlet.  These methods are
+\verb.domain_shape()., \verb.function_space()., and \verb.dual_basis()..
+The first of these returns the code for the shape and the second
+returns the nodes of the finite element (including information related
+to topological association of nodes with mesh entities, needed for
+creating degree of freedom orderings).  
+
+\subsection{Quadrature rules}
+\subsection{Tabulation}
+Tabulation of function values; Tabulation of derivatives, jets.
+
+\end{document}
