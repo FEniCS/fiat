@@ -1,4 +1,6 @@
 - Rework entity orderings for reference shapes
+- Propogate change in reference coordinate locations
+  to expansion bases
 - Track down bug in DiscontinuousLagrange jet tabulation
 - Fix Nedelec
 - Fix BDFM
