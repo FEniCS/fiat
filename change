@@ -1,6 +1,6 @@
 What's new in:
 0.2.3:
-  updated topology/ geometry so to allow different orderings of entities and migrated to (0,1) reference element from (-1,1)
+  updated topology/ geometry so to allow different orderings of entities
 0.2.2:
   Added Raviart-Thomas element, verified RT0 against old version of code
   Started work on BDFM, Nedelec (not working)
