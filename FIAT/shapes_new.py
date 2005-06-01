@@ -4,7 +4,7 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-# Last modified 7 Feb 2005 by RCK
+# Last modified 1 Jun 2005 by RCK
 
 """shapes.py
 Module defining topological and geometric information for simplices in one, two, and
@@ -27,8 +27,6 @@ def cross( vecs ):
     return Numeric.array( \
         [ (-1)**i * LinearAlgebra.determinant(strike_col(mat,i)) \
           for i in range(0,d) ] )
-
-
 
 class ShapeError( exceptions.Exception ):
     """FIAT defined exception type indicating an improper use of a shape."""
@@ -238,6 +236,27 @@ lattice_funcs = { LINE : make_lattice_line , \
                   TRIANGLE : make_lattice_triangle , \
                   TETRAHEDRON : make_lattice_tetrahedron }
 
-def make_lattice( shape , n ):
-    return lattice_funcs[ shape ]( n )    
+def make_lattice( shp , n ):
+    return lattice_funcs[ shp ]( n )    
 
+def make_pt_to_edge( shp , verts ):
+    """verts is the tuple of vertex ids on the reference shape.
+    Returns the function mapping points (1-tuples) in [0,1] to points in
+    d-d (2- or 3- tuples) that are on that edge of the reference shape."""
+    v0 = Numeric.array( vertices[ shp ][ verts[ 0 ] ] )
+    v1 = Numeric.array( vertices[ shp ][ verts[ 1 ] ] )
+    diff = v1 - v0
+    return lambda x: tuple( v0 + x[ 0 ] * diff )
+
+def make_pt_to_face_tetrahedron( verts ):
+    """verts is a triple of vertex ids on the reference tetrahedron.
+    Returns a function mapping points (2-tuples) on the reference triangle
+    to points on that face of the reference tetrahedron."""
+    v0 = Numeric.array( vertices[ TETRAHEDRON ][ verts[ 0 ] ] )
+    v1 = Numeric.array( vertices[ TETRAHEDRON ][ verts[ 1 ] ] )
+    v2 = Numeric.array( vertices[ TETRAHEDRON ][ verts[ 2 ] ] )
+    d = [ v1 - v0 , v2 - v0 ]
+    return lambda x: tuple( v0 + x[ 0 ] * d[ 0 ] + x[ 1 ] * d[ 1 ] )
+
+
+                            
