@@ -1,11 +1,11 @@
-import Nedelec, points, functional, Numeric, polynomial, quadrature,shapes
+import Nedelec, functional, Numeric, polynomial, quadrature, shapes_new
 
 # returns ned, portion onto Pkm1 and portion onto PkH
 #
 def foo( k ):
     vec_Pkp1 = polynomial.OrthogonalPolynomialArraySet( 3 , k+1 )
-    dimPkp1 = shapes.polynomial_dimension( 3 , k+1 )
-    dimPk = shapes.polynomial_dimension( 3 , k )
+    dimPkp1 = shapes_new.polynomial_dimension( 3 , k+1 )
+    dimPk = shapes_new.polynomial_dimension( 3 , k )
     U = Nedelec.NedelecSpace( k )
     vec_Pk = vec_Pkp1.take( reduce( lambda a,b:a+b , \
                                   [ range(i*dimPkp1,i*dimPkp1+dimPk) \
@@ -21,7 +21,7 @@ def foo( k ):
                                         
 for k in range(1):
     U = foo( k )
-    pts = points.make_points( 3 , 1 , 5 , 3 )
+    pts = shapes_new.make_points( 3 , 1 , 5 , 3 )
     for u in U:
         for pt in pts:
             print Numeric.dot( pt , u( pt ) )

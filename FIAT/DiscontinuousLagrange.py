@@ -12,13 +12,13 @@ module simply provides the class Lagrange, which takes a shape and a
 degree >= 1.
 """
 
-import dualbasis, functional, points, shapes, polynomial, functionalset, P0
+import dualbasis, functional, shapes_new, polynomial, functionalset, P0
 
 class DiscLagrangeDual( dualbasis.DualBasis ):
     """Dual basis for the discontiuous Lagrange finite element."""
     def __init__( self , shape , n , U ):
         # Associate everything with the interior.
-        self.pts = points.make_lattice( shape , n )
+        self.pts = shapes_new.make_lattice( shape , n )
 
 	ls = functional.make_point_evaluations( U , self.pts )
 
@@ -28,10 +28,10 @@ class DiscLagrangeDual( dualbasis.DualBasis ):
         # ids of nodes associated with that entity.
         # see FIAT.base.dualbasis for description of entity_ids
         entity_ids = {}
-        for d in range( shapes.dimension( shape ) ):
+        for d in range( shapes_new.dimension( shape ) ):
             entity_ids[d] = {}
-        entity_ids[ shapes.dimension( shape ) ] = {}
-        entity_ids[ shapes.dimension( shape ) ][ 0 ] = range( len( self.pts ) )
+        entity_ids[ shapes_new.dimension( shape ) ] = {}
+        entity_ids[ shapes_new.dimension( shape ) ][ 0 ] = range( len( self.pts ) )
             
         dualbasis.DualBasis.__init__( self , \
                                       functionalset.FunctionalSet( U , ls ) , \
@@ -43,8 +43,8 @@ class DiscVecLagrangeDual( dualbasis.DualBasis ):
     """Dual basis for the discontiuous Lagrange finite element."""
     def __init__( self , shape , n , U ):
         # Associate everything with the interior.
-        d = shapes.dimension( shape )
-        self.pts = points.make_lattice( shape , n )
+        d = shapes_new.dimension( shape )
+        self.pts = shapes_new.make_lattice( shape , n )
         nc = U.tensor_shape()[0]
 
         ls = [ functional.ComponentPointEvaluation( U,c,pt ) \
@@ -56,12 +56,12 @@ class DiscVecLagrangeDual( dualbasis.DualBasis ):
         # ids of nodes associated with that entity.
         # see FIAT.base.dualbasis for description of entity_ids
         entity_ids = {}
-        for dim in range( shapes.dimension( shape ) ):
+        for dim in range( shapes_new.dimension( shape ) ):
             entity_ids[dim] = {}
-            for e in shapes.entity_range( shape , dim ):
+            for e in shapes_new.entity_range( shape , dim ):
                 entity_ids[dim][e] = {}
-        entity_ids[ shapes.dimension( shape ) ] = {}
-        entity_ids[ shapes.dimension( shape ) ][ 0 ] = range( len( self.pts ) )
+        entity_ids[ shapes_new.dimension( shape ) ] = {}
+        entity_ids[ shapes_new.dimension( shape ) ][ 0 ] = range( len( self.pts ) )
             
         dualbasis.DualBasis.__init__( self , \
                                       functionalset.FunctionalSet( U , ls ) , \

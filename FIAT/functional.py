@@ -6,7 +6,7 @@
 
 # Last modified 21 April 2005
 
-import Numeric, quadrature, polynomial, shapes, points
+import Numeric, quadrature, polynomial, shapes_new
 
 def frob(a,b):
     alen = reduce( lambda a,b:a*b , a.shape )
@@ -140,12 +140,12 @@ def FacetMoment( U , shape , d , e , p ):
     #over facet e of dimension d
     # U is a scalar-valued space
     Qref = quadrature.make_quadrature( d , 3 * U.degree() )
-    alpha = shapes.scale_factor( shape , d , e )
-    if shape == shapes.TRIANGLE:
+    alpha = shapes_new.scale_factor( shape , d , e )
+    if shape == shapes_new.TRIANGLE:
         ref_pts = [ x[0] for x in Qref.get_points() ]
     else:
         ref_pts = Qref.get_points()
-    pts = map( points.pt_maps[ shape ][ d ][ e ] , \
+    pts = map( shapes_new.pt_maps[ shape ][ d ][ e ] , \
                ref_pts )
     wts = alpha * Qref.get_weights()
     us = U.base.tabulate( pts )
@@ -160,15 +160,15 @@ def FacetMoment( U , shape , d , e , p ):
 
 def FacetNormalMoment( U , shape , d , e , p ):
     Qref = quadrature.make_quadrature( d , 3 * U.degree() )
-    alpha = shapes.scale_factor( shape , d , e )
-    if shape == shapes.TRIANGLE:
+    alpha = shapes_new.scale_factor( shape , d , e )
+    if shape == shapes_new.TRIANGLE:
         ref_pts = [ x[0] for x in Qref.get_points() ]
     else:
         ref_pts = Qref.get_points()
-    pts = map( points.pt_maps[ shape ][ d ][ e ] , \
+    pts = map( shapes_new.pt_maps[ shape ][ d ][ e ] , \
                ref_pts )
     wts = alpha * Qref.get_weights()
-    normal = Numeric.array( shapes.normals[shape][e] )
+    normal = Numeric.array( shapes_new.normals[shape][e] )
     us = U.base.tabulate( pts )
     ps = Numeric.array( [ p(x) for x in Qref.get_points() ] )
     mat = Numeric.zeros( (len(U.base),U.tensor_shape()[0]) , "d" )

@@ -14,7 +14,7 @@ make_quadrature, which takes a shape and the number of points
 rule object."""
 
 
-import shapes, expansions, jacobi, gamma, points, factorial
+import shapes_new, expansions, jacobi, gamma, factorial
 import Numeric, math
 
 fact = factorial.factorial

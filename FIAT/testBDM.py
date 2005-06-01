@@ -1,7 +1,7 @@
-import BDM, points, shapes, Numeric,time
+import BDM, shapes_new, Numeric, time
 shape = 2
 kmax = 2
-d = shapes.dimension(shape)
+d = shapes_new.dimension(shape)
 
 for k in range(1,kmax+1):
     t1 = time.time()
@@ -11,7 +11,7 @@ for k in range(1,kmax+1):
 # test: compute normal on edge/face 0 at control points.
 # everything should be either zero or one.
 ##U = bdm.function_space()
-##pts = points.make_points(shape,d-1,0,d+k)
+##pts = shapes_new.make_points(shape,d-1,0,d+k)
 ##Utab = U.tabulate(pts)
 ##A = Numeric.zeros(Utab.shape[:2],"d")
 ##for i in range(Utab.shape[0]):

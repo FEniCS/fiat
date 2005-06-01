@@ -6,15 +6,15 @@
 
 # last modified 2 May 2005
 
-import dualbasis, polynomial, functionalset, functional, shapes, points, \
+import dualbasis, polynomial, functionalset, functional, shapes_new, \
        quadrature, Numeric
 
 
 def RT0Space( shape ):
-    d = shapes.dimension( shape )
+    d = shapes_new.dimension( shape )
     vec_P1 = polynomial.OrthogonalPolynomialArraySet( shape , 1 )
-    dimP1 = shapes.polynomial_dimension( shape , 1 )
-    dimP0 = shapes.polynomial_dimension( shape , 0 )
+    dimP1 = shapes_new.polynomial_dimension( shape , 1 )
+    dimP0 = shapes_new.polynomial_dimension( shape , 0 )
 
     vec_P0 = vec_P1.take( reduce( lambda a,b:a+b , \
                                   [ range(i*dimP1,i*dimP1+dimP0) \
@@ -39,11 +39,11 @@ def RT0Space( shape ):
 def RTSpace( shape , k ):
     if k == 0:
         return RT0Space( shape )
-    d = shapes.dimension( shape )
+    d = shapes_new.dimension( shape )
     vec_Pkp1 = polynomial.OrthogonalPolynomialArraySet( shape , k+1 )
-    dimPkp1  = shapes.polynomial_dimension( shape , k+1 )
-    dimPk    = shapes.polynomial_dimension( shape , k )
-    dimPkm1  = shapes.polynomial_dimension( shape , k-1 )
+    dimPkp1  = shapes_new.polynomial_dimension( shape , k+1 )
+    dimPk    = shapes_new.polynomial_dimension( shape , k )
+    dimPkm1  = shapes_new.polynomial_dimension( shape , k-1 )
     vec_Pk   = vec_Pkp1.take( reduce( lambda a,b:a+b , \
                                       [ range(i*dimPkp1,i*dimPkp1+dimPk) \
                                         for i in range(d) ] ) )
@@ -66,22 +66,22 @@ def RTSpace( shape , k ):
 class RTDual( dualbasis.DualBasis ):
     def __init__( self , shape , k , U ):
         mdcb = functional.make_directional_component_batch
-        d = shapes.dimension( shape )
+        d = shapes_new.dimension( shape )
         pts_per_edge = [ [ x \
-                           for x in points.make_points( shape , \
+                           for x in shapes_new.make_points( shape , \
                                                         d-1 , \
                                                         i , \
                                                         d+k ) ] \
-                        for i in shapes.entity_range( shape , d-1 ) ]
-        nrmls = shapes.normals[shape]
+                        for i in shapes_new.entity_range( shape , d-1 ) ]
+        nrmls = shapes_new.normals[shape]
         ls = reduce( lambda a,b:a+b , \
                      [ mdcb(U,nrmls[i],pts_per_edge[i]) \
-                       for i in shapes.entity_range(shape,d-1) ] )
+                       for i in shapes_new.entity_range(shape,d-1) ] )
 
         if k > 0:
             Pkp1 = polynomial.OrthogonalPolynomialArraySet( shape , k+1 )
-            dim_Pkp1 = shapes.polynomial_dimension( shape , k+1 )
-            dim_Pkm1 = shapes.polynomial_dimension( shape , k-1 )
+            dim_Pkp1 = shapes_new.polynomial_dimension( shape , k+1 )
+            dim_Pkm1 = shapes_new.polynomial_dimension( shape , k-1 )
 
             Pkm1 = Pkp1.take( reduce( lambda a,b:a+b , \
                                       [ range(i*dim_Pkp1,i*dim_Pkp1+dim_Pkm1) \
@@ -99,12 +99,12 @@ class RTDual( dualbasis.DualBasis ):
         entity_ids = {}
         for i in range(d-1):
             entity_ids[i] = {}
-            for j in shapes.entity_range(shape,i):
+            for j in shapes_new.entity_range(shape,i):
                 entity_ids[i][j] = []
         pts_per_bdry = len(pts_per_edge[0])
         entity_ids[d-1] = {}
         node_cur = 0
-        for j in shapes.entity_range(shape,d-1):
+        for j in shapes_new.entity_range(shape,d-1):
             for k in range(pts_per_bdry):
                 entity_ids[d-1][j] = node_cur
                 node_cur += 1
