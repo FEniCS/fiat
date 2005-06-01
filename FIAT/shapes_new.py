@@ -170,9 +170,9 @@ def scale_factor( shape , d , ent_id ):
 
 def dimension( shape ):
     """returns the topological dimension associated with shape."""
-    global dims
+    global dim
     try:
-        return dims[ shape ]
+        return dim[ shape ]
     except:
         raise ShapeError, "Illegal shape: shapes.dimension"
 
@@ -299,7 +299,7 @@ pt_maps = { LINE : { } , \
                             
 def make_points( shp , dim , entity_id , order ):
     if dim == 0:
-        return vertices[ shp ][ entity_id ]
+        return ( vertices[ shp ][ entity_id ] , )
     if dim == shp:
         if entity_id == 0:
             return make_lattice( shp , order , 1 )

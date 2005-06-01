@@ -4,7 +4,7 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-# Last modified 16 May 2005
+# Last modified 1 June 2005
 
 
 """This module defines the standard Lagrange finite element over
@@ -13,7 +13,7 @@ module simply provides the class Lagrange, which takes a shape and a
 degree >= 1.
 """
 
-import dualbasis, functional, points, shapes, polynomial, functionalset
+import dualbasis, functional, polynomial, functionalset , shapes_new
 
 class LagrangeDual( dualbasis.DualBasis ):
     """Dual basis for the plain vanilla Lagrange finite element."""
@@ -25,12 +25,16 @@ class LagrangeDual( dualbasis.DualBasis ):
         # points on the interior of the triangle, or that many points
         # per face of tetrahedra plus max(0,(n-2)(n-1)n/6 points
         # in the interior
-        pts = [ [ points.make_points(shape,d,e,n) \
-                      for e in shapes.entity_range(shape,d) ] \
-                    for d in shapes.dimension_range(shape) ]
+        pts = [ [ shapes_new.make_points(shape,d,e,n) \
+                      for e in shapes_new.entity_range(shape,d) ] \
+                    for d in shapes_new.dimension_range(shape) ]
+
+        print pts
 
         pts_flat = reduce( lambda a,b:a+b , \
                            reduce( lambda a,b:a+b , pts ) )
+
+        print pts_flat
 
         # get node location for each node i by self.pts[i]
         self.pts = pts_flat
@@ -44,9 +48,9 @@ class LagrangeDual( dualbasis.DualBasis ):
         # see FIAT.base.dualbasis for description of entity_ids
         entity_ids = {}
         id_cur = 0
-        for d in shapes.dimension_range( shape ):
+        for d in shapes_new.dimension_range( shape ):
             entity_ids[d] = {}
-            for v in shapes.entity_range( shape, d ):
+            for v in shapes_new.entity_range( shape, d ):
                 num_nods = len( pts[d][v] )
                 entity_ids[d][v] = range(id_cur,id_cur + num_nods)
                 id_cur += num_nods
@@ -61,7 +65,7 @@ class Lagrange( polynomial.FiniteElement ):
     def __init__( self , shape , n ):
         if n < 1:
             raise RuntimeError, \
-                  "Lagrange elements are only defined for n >= 1"
+                  "Lagrange elements are only defind for n >= 1"
         U = polynomial.OrthogonalPolynomialSet( shape , n )
         Udual = LagrangeDual( shape , n , U )
         polynomial.FiniteElement.__init__( self , \
@@ -69,11 +73,11 @@ class Lagrange( polynomial.FiniteElement ):
 
 class VectorLagrangeDual( dualbasis.DualBasis ):
     def __init__( self , shape , n , U ):
-	space_dim = shapes.dimension( shape )
+	space_dim = shapes_new.dimension( shape )
         nc = U.tensor_shape()[0]
-        pts = [ [ points.make_points(shape,d,e,n) \
-                  for e in shapes.entity_range(shape,d) ] \
-                for d in shapes.dimension_range(shape) ]
+        pts = [ [ shapes_new.make_points(shape,d,e,n) \
+                  for e in shapes_new.entity_range(shape,d) ] \
+                for d in shapes_new.dimension_range(shape) ]
 
         pts_flat = reduce( lambda a,b:a+b , \
                            reduce( lambda a,b:a+b , pts ) )
@@ -88,9 +92,9 @@ class VectorLagrangeDual( dualbasis.DualBasis ):
         # see FIAT.base.dualbasis for description of entity_ids
         entity_ids = {}
         id_cur = 0
-        for d in shapes.dimension_range( shape ):
+        for d in shapes_new.dimension_range( shape ):
             entity_ids[d] = {}
-            for v in shapes.entity_range( shape, d ):
+            for v in shapes_new.entity_range( shape, d ):
                 num_nods = len( pts[d][v] )
                 entity_ids[d][v] = range(id_cur,id_cur + num_nods)
                 id_cur += num_nods
