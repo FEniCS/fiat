@@ -60,16 +60,15 @@ poly_dims = { LINE: lambda n: max(0,n + 1), \
               TRIANGLE: lambda n: max(0,(n+1)*(n+2)/2) ,\
               TETRAHEDRON: lambda n: max(0,(n+1)*(n+2)*(n+3)/6) }
 
-# dictionaries of vertices.  I'm switching to (0,1) rather than (-1,1)
-# This means I need a wrapper around the expansion functions
-vertices = { LINE : { 0 : ( 0.0 , ) , 1 : ( 1.0 , ) } , \
-             TRIANGLE : { 0 : ( 0.0 , 0.0 ) , \
-                          1 : ( 1.0 , 0.0 ) , \
-                          2 : ( 0.0 , 1.0 ) } , \
-             TETRAHEDRON : { 0 : ( 0.0 , 0.0 , 0.0 ) , \
-                             1 : ( 1.0 , 0.0 , 0.0 ) , \
-                             2 : ( 0.0 , 1.0 , 0.0 ) , \
-                             3 : ( 0.0 , 0.0 , 1.0 ) } }
+# dictionaries of vertices. 
+vertices = { LINE : { 0 : ( -1.0 , ) , 1 : ( 1.0 , ) } , \
+             TRIANGLE : { 0 : ( -1.0 , -1.0 ) , \
+                          1 : ( 1.0 , -1.0 ) , \
+                          2 : ( -1.0 , 1.0 ) } , \
+             TETRAHEDRON : { 0 : ( -1.0 , -1.0 , -1.0 ) , \
+                             1 : ( 1.0 , -1.0 , -1.0 ) , \
+                             2 : ( -1.0 , 1.0 , -1.0 ) , \
+                             3 : ( -1.0 , -1.0 , 1.0 ) } }
 
 def distance( a , b ):
     if len( a ) != len( b ):
@@ -100,11 +99,10 @@ tetrahedron_edges = { 0 : ( 1 , 2 ) , \
                      4 : ( 1 , 3 ) , \
                      5 : ( 2 , 3 ) }
 
-
-tetrahedron_faces = { 0 : ( 1 , 2 , 3 ) , \
+tetrahedron_faces = { 0 : ( 1 , 3 , 2 ) , \
                       1 : ( 2 , 3 , 0 ) , \
-                      2 : ( 3 , 0 , 1 ) , \
-                      3 : ( 0 , 1 , 2) }
+                      2 : ( 3 , 1 , 0 ) , \
+                      3 : ( 0 , 1 , 2 ) }
 
 edges = { TRIANGLE : triangle_edges , \
           TETRAHEDRON : tetrahedron_edges }
@@ -153,7 +151,7 @@ for shp in ( TRIANGLE , TETRAHEDRON ):
                       for j in vert_ids ]
         vecs = [ v - vert_vecs[ 0 ] for v in vert_vecs[ 1: ] ]
         crss = cross( vecs )
-        normals[ shp ][ i ] = crss / sqrt( Numeric.dot( crss , crss ) )
+        normals[ shp ][ i ] = -crss / sqrt( Numeric.dot( crss , crss ) )
 
 tangents = {}
 for shp in ( TRIANGLE , TETRAHEDRON ):
@@ -250,24 +248,31 @@ def make_pt_to_edge( shp , verts ):
     """verts is the tuple of vertex ids on the reference shape.
     Returns the function mapping points (1-tuples) in [0,1] to points in
     d-d (2- or 3- tuples) that are on that edge of the reference shape."""
+    a0 = vertices[ 1 ][ 0 ][ 0 ]
+    b0 = vertices[ 1 ][ 1 ][ 0 ]
+    h = 1./(b0 - a0)
     v0 = Numeric.array( vertices[ shp ][ verts[ 0 ] ] )
     v1 = Numeric.array( vertices[ shp ][ verts[ 1 ] ] )
     diff = v1 - v0
-    return lambda x: tuple( v0 + x[ 0 ] * diff )
+    return lambda x: tuple( v0 + h * ( x[ 0 ] - a0 ) * diff )
 
 def make_pt_to_face( shp , verts ):
     if shp == TRIANGLE: return lambda x: x
     else: return make_pt_to_face_tetrahedron( verts )
 
+# hard-wired for (-1,1)
 def make_pt_to_face_tetrahedron( verts ):
     """verts is a triple of vertex ids on the reference tetrahedron.
     Returns a function mapping points (2-tuples) on the reference triangle
     to points on that face of the reference tetrahedron."""
+    # get reference triangle vertices
     v0 = Numeric.array( vertices[ TETRAHEDRON ][ verts[ 0 ] ] )
     v1 = Numeric.array( vertices[ TETRAHEDRON ][ verts[ 1 ] ] )
     v2 = Numeric.array( vertices[ TETRAHEDRON ][ verts[ 2 ] ] )
     d = [ v1 - v0 , v2 - v0 ]
-    return lambda x: tuple( v0 + x[ 0 ] * d[ 0 ] + x[ 1 ] * d[ 1 ] )
+    return lambda x: tuple( v0 \
+                            + 0.5*(x[ 0 ]+1.0) * d[ 0 ] \
+                            + 0.5*(x[ 1 ]+1.0) * d[ 1 ] )
 
 pt_to_edge = { TRIANGLE : \
                lambda i: \
