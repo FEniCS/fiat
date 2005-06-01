@@ -4,25 +4,25 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-# last edited 9 May 2005
+# last edited 1 June 2005
 
-import dualbasis, polynomial, functionalset, functional, shapes, points, PhiK
+import dualbasis, polynomial, functionalset, functional, shapes_new, PhiK
 
 # do bulk ON eval on edges
 class BDMDualBulk1( dualbasis.DualBasis ):
     def __init__( self , shape , k , U ):
         mdcb = functional.make_directional_component_batch
-        d = shapes.dimension( shape )
+        d = shapes_new.dimension( shape )
         pts_per_edge = [ [ x \
-                           for x in points.make_points( shape , \
+                           for x in shapes_new.make_points( shape , \
                                                         d-1 , \
                                                         i , \
                                                         d+k ) ] \
-                        for i in shapes.entity_range( shape , d-1 ) ]
-        nrmls = shapes.normals[shape]
+                        for i in shapes_new.entity_range( shape , d-1 ) ]
+        nrmls = shapes_new.normals[shape]
         ls = reduce( lambda a,b:a+b , \
                      [ mdcb(U,nrmls[i],pts_per_edge[i]) \
-                       for i in shapes.entity_range(shape,d-1) ] )
+                       for i in shapes_new.entity_range(shape,d-1) ] )
 
         interior_moments = []
         
@@ -31,7 +31,7 @@ class BDMDualBulk1( dualbasis.DualBasis ):
 
         if k > 1:
             pk = polynomial.OrthogonalPolynomialSet(shape,k)
-            pkm1 = pk[1:shapes.polynomial_dimension(shape,k-1)]
+            pkm1 = pk[1:shapes_new.polynomial_dimension(shape,k-1)]
     
             pkm1grads = [ polynomial.gradient( p ) for p in pkm1 ]
 
@@ -51,12 +51,12 @@ class BDMDualBulk1( dualbasis.DualBasis ):
         entity_ids = {}
         for i in range(d-1):
             entity_ids[i] = {}
-            for j in shapes.entity_range(shape,i):
+            for j in shapes_new.entity_range(shape,i):
                 entity_ids[i][j] = []
         pts_per_bdry = len(pts_per_edge[0])
         entity_ids[d-1] = {}
         node_cur = 0
-        for j in shapes.entity_range(shape,d-1):
+        for j in shapes_new.entity_range(shape,d-1):
             for k in range(pts_per_bdry):
                 entity_ids[d-1][j] = node_cur
                 node_cur += 1
@@ -71,17 +71,17 @@ class BDMDualBulk1( dualbasis.DualBasis ):
 class BDMDualBulk2( dualbasis.DualBasis ):
     def __init__( self , shape , k , U ):
         mdcb = functional.make_directional_component_batch
-        d = shapes.dimension( shape )
+        d = shapes_new.dimension( shape )
         pts_per_edge = [ [ x \
-                           for x in points.make_points( shape , \
+                           for x in make_points( shape , \
                                                         d-1 , \
                                                         i , \
                                                         d+k ) ] \
-                        for i in shapes.entity_range( shape , d-1 ) ]
-        nrmls = shapes.normals[shape]
+                        for i in shapes_new.entity_range( shape , d-1 ) ]
+        nrmls = shapes_new.normals[shape]
         ls = reduce( lambda a,b:a+b , \
                      [ mdcb(U,nrmls[i],pts_per_edge[i]) \
-                       for i in shapes.entity_range(shape,d-1) ] )
+                       for i in shapes_new.entity_range(shape,d-1) ] )
 
         interior_moments = []
         
@@ -91,7 +91,7 @@ class BDMDualBulk2( dualbasis.DualBasis ):
         if k > 1:
             pk = polynomial.OrthogonalPolynomialSet(shape,k)
             pkm1grads = polynomial.gradients( \
-                pk[1:shapes.polynomial_dimension(shape,k-1)] )
+                pk[1:shapes_new.polynomial_dimension(shape,k-1)] )
 
             interior_moments.extend( [ functional.Functional(U,dofs) \
                                        for dofs in pkm1grads.coeffs ] )
@@ -109,12 +109,12 @@ class BDMDualBulk2( dualbasis.DualBasis ):
         entity_ids = {}
         for i in range(d-1):
             entity_ids[i] = {}
-            for j in shapes.entity_range(shape,i):
+            for j in shapes_new.entity_range(shape,i):
                 entity_ids[i][j] = []
         pts_per_bdry = len(pts_per_edge[0])
         entity_ids[d-1] = {}
         node_cur = 0
-        for j in shapes.entity_range(shape,d-1):
+        for j in shapes_new.entity_range(shape,d-1):
             for k in range(pts_per_bdry):
                 entity_ids[d-1][j] = node_cur
                 node_cur += 1
@@ -131,17 +131,17 @@ class BDMDual( dualbasis.DualBasis ):
     def __init__( self , shape , k , U ):
         # normal components on the edges/faces
         DCPE = functional.DirectionalComponentPointEvaluation
-        d = shapes.dimension( shape )
+        d = shapes_new.dimension( shape )
         pts_per_edge = [ [ x \
-                           for x in points.make_points( shape , \
+                           for x in shapes_new.make_points( shape , \
                                                         d-1 , \
                                                         i , \
                                                         d+k ) ] \
-                        for i in shapes.entity_range( shape , d-1 ) ]
+                        for i in shapes_new.entity_range( shape , d-1 ) ]
         pts_flat = reduce( lambda a,b:a+b , pts_per_edge )
         ls = [ ]
         for i in range(d+1):
-            nrml = shapes.normals[ shape ][ i ]
+            nrml = shapes_new.normals[ shape ][ i ]
             ls_cur = [ DCPE(U,nrml,pt) for pt in pts_per_edge[i] ]
             ls.extend(ls_cur)
 
@@ -152,7 +152,7 @@ class BDMDual( dualbasis.DualBasis ):
 
         if k > 1:
             pk = polynomial.OrthogonalPolynomialSet(shape,k)
-            pkm1 = pk[1:shapes.polynomial_dimension(shape,k-1)]
+            pkm1 = pk[1:shapes_new.polynomial_dimension(shape,k-1)]
     
             pkm1grads = [ polynomial.gradient( p ) for p in pkm1 ]
 
@@ -172,12 +172,12 @@ class BDMDual( dualbasis.DualBasis ):
         entity_ids = {}
         for i in range(d-1):
             entity_ids[i] = {}
-            for j in shapes.entity_range(shape,i):
+            for j in shapes_new.entity_range(shape,i):
                 entity_ids[i][j] = []
         pts_per_bdry = len(pts_per_edge[0])
         entity_ids[d-1] = {}
         node_cur = 0
-        for j in shapes.entity_range(shape,d-1):
+        for j in shapes_new.entity_range(shape,d-1):
             for k in range(pts_per_bdry):
                 entity_ids[d-1][j] = node_cur
                 node_cur += 1

@@ -383,10 +383,10 @@ def OrthogonalPolynomialArraySet( element_shape , degree , nc = None ):
     for vector-valued functions with d components, where d is the spatial
     dimension of element_shape"""
     b = PolynomialBase( element_shape , degree )
-    space_dim = shapes_new.dims[ element_shape ]
+    space_dim = shapes_new.dimension( element_shape )
     if nc == None:
         nc = space_dim
-    M = shapes_new.poly_dims[ element_shape ]( degree )
+    M = shapes_new.polynomial_dimension( element_shape , degree )
     coeffs = Numeric.zeros( (nc * M , nc , M ) , "d" )
     ident = Numeric.identity( M , "d" )
     for i in range(nc):
