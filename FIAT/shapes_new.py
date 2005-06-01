@@ -9,10 +9,11 @@
 """shapes.py
 Module defining topological and geometric information for simplices in one, two, and
 three dimensions."""
-from math import sqrt
-import Numeric, LinearAlgebra
-import exceptions
+import Numeric, LinearAlgebra, exceptions
+from curry import curry
 from factorial import factorial
+from math import sqrt
+
 
 def strike_col( A , j ):
     m,n = A.shape
@@ -205,22 +206,26 @@ def polynomial_dimension( shape , n ):
         td = td * ( n + i + 1 )
     return td / factorial( d )
 
-def make_lattice_line( n ):
+def make_lattice_line( n , interior = 0 ):
+    if n == 0:
+        return tuple( )
     v0 = vertices[ LINE ][0][0]
     v1 = vertices[ LINE ][1][0]
     h = abs( v1 - v0 )
     return tuple( [ ( v0 + ( h * jj ) / n , ) \
-                    for jj in xrange( 0 , n + 1 ) ] )
+                    for jj in xrange( interior , n + 1 - interior ) ] )
 
-def make_lattice_triangle( n ):
+def make_lattice_triangle( n , interior = 0 ):
+    if n == 0: return tuple( )
     vs = [ Numeric.array( vertices[ TRIANGLE ][ i ] ) \
              for i in vertices[ TRIANGLE ].iterkeys() ]
     hs = [ vs[ i ] - vs[ 0 ] for i in (1,2) ]
     return tuple( [ tuple( vs[ 0 ] + ii * hs[ 1 ] / n + jj * hs[ 0 ] / n ) \
-                    for ii in xrange( 0 , n + 1 ) \
-                        for jj in xrange( 0 , n - ii + 1 ) ] )
+                    for ii in xrange( interior , n + 1 - interior ) \
+                        for jj in xrange( interior , n - ii + 1 - interior ) ] )
 
-def make_lattice_tetrahedron( n ):
+def make_lattice_tetrahedron( n , interior = 0 ):
+    if n == 0: return tuple( )
     vs = [ Numeric.array( vertices[ TETRAHEDRON ][ i ] ) \
              for i in vertices[ TETRAHEDRON ].iterkeys() ]
     hs = [ vs[ i ] - vs[ 0 ] for i in (1,2,3) ]
@@ -228,16 +233,18 @@ def make_lattice_tetrahedron( n ):
                            + ii * hs[ 2 ] / n \
                            + jj * hs[ 1 ] / n \
                            + kk * hs[ 0 ] / n ) \
-                    for ii in xrange( 0 , n + 1 ) \
-                        for jj in xrange( 0 , n - ii + 1 ) \
-                            for kk in xrange( 0 , n - ii - jj + 1 ) ] )
+                    for ii in xrange( interior , n + 1 - interior ) \
+                        for jj in xrange( interior , \
+                                          n - ii + 1 - interior ) \
+                            for kk in xrange( interior , \
+                                              n - ii - jj + 1 - interior ) ] )
 
 lattice_funcs = { LINE : make_lattice_line , \
                   TRIANGLE : make_lattice_triangle , \
                   TETRAHEDRON : make_lattice_tetrahedron }
 
-def make_lattice( shp , n ):
-    return lattice_funcs[ shp ]( n )    
+def make_lattice( shp , n , interior = 0 ):
+    return lattice_funcs[ shp ]( n , interior )    
 
 def make_pt_to_edge( shp , verts ):
     """verts is the tuple of vertex ids on the reference shape.
@@ -258,5 +265,29 @@ def make_pt_to_face_tetrahedron( verts ):
     d = [ v1 - v0 , v2 - v0 ]
     return lambda x: tuple( v0 + x[ 0 ] * d[ 0 ] + x[ 1 ] * d[ 1 ] )
 
+pt_to_edge = { TRIANGLE : \
+               lambda i: \
+                   make_pt_to_edge( TRIANGLE , \
+                                    edges[ TRIANGLE ][ i ] ) , \
+               TETRAHEDRON : \
+               lambda i: \
+                   make_pt_to_edge( TETRAHEDRON , \
+                                    edges[ TETRAHEDRON ][ i ] ) }
 
+pt_to_face = { TETRAHEDRON : \
+               lambda i: \
+                   make_pt_to_face_tetrahedron( faces[ TETRAHEDRON ][ i ] ) }
+
+pt_maps = { LINE : {} , \
+            TRIANGLE : { 1 : pt_to_edge[ TRIANGLE ] } , \
+            TETRAHEDRON : { 1 : pt_to_edge[ TETRAHEDRON ] ,
+                            2 : pt_to_face[ TETRAHEDRON ] } }
                             
+def make_vertex_points( shp , vid , order ):
+    return vertices[ shp ][ vid ]
+
+def make_edge_points( shp , eid , order ):
+    f = pt_maps[ shp ][ 1 ]( eid )
+    xs = make_lattice( LINE , order )[1:-1]
+    return tuple( map( f , xs ) )
+
