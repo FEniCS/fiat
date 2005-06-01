@@ -10,7 +10,6 @@
 Module defining topological and geometric information for simplices in one, two, and
 three dimensions."""
 import Numeric, LinearAlgebra, exceptions
-from curry import curry
 from factorial import factorial
 from math import sqrt
 
@@ -110,7 +109,8 @@ tetrahedron_faces = { 0 : ( 1 , 2 , 3 ) , \
 edges = { TRIANGLE : triangle_edges , \
           TETRAHEDRON : tetrahedron_edges }
 
-faces = { TETRAHEDRON : tetrahedron_faces }
+faces = { TRIANGLE : { 0 : ( 0 , 1 , 2 ) } , \
+          TETRAHEDRON : tetrahedron_faces }
 
 
 vertex_relation = { LINE : { 1 : { 0 : tuple( range( 2 ) ) } } , \
@@ -255,6 +255,10 @@ def make_pt_to_edge( shp , verts ):
     diff = v1 - v0
     return lambda x: tuple( v0 + x[ 0 ] * diff )
 
+def make_pt_to_face( shp , verts ):
+    if shp == TRIANGLE: return lambda x: x
+    else: return make_pt_to_face_tetrahedron( verts )
+
 def make_pt_to_face_tetrahedron( verts ):
     """verts is a triple of vertex ids on the reference tetrahedron.
     Returns a function mapping points (2-tuples) on the reference triangle
@@ -274,20 +278,30 @@ pt_to_edge = { TRIANGLE : \
                    make_pt_to_edge( TETRAHEDRON , \
                                     edges[ TETRAHEDRON ][ i ] ) }
 
-pt_to_face = { TETRAHEDRON : \
+pt_to_face = { TRIANGLE : \
                lambda i: \
-                   make_pt_to_face_tetrahedron( faces[ TETRAHEDRON ][ i ] ) }
+                   make_pt_to_face( TRIANGLE , faces[ TRIANGLE ][ i ] ) ,
+               TETRAHEDRON : \
+               lambda i: \
+                   make_pt_to_face( TETRAHEDRON , faces[ TETRAHEDRON ][ i ] ) }
 
-pt_maps = { LINE : {} , \
-            TRIANGLE : { 1 : pt_to_edge[ TRIANGLE ] } , \
+pt_maps = { LINE : { } , \
+            TRIANGLE : { 1 : pt_to_edge[ TRIANGLE ] , \
+                         2 : pt_to_face[ TRIANGLE ] } , \
             TETRAHEDRON : { 1 : pt_to_edge[ TETRAHEDRON ] ,
-                            2 : pt_to_face[ TETRAHEDRON ] } }
+                            2 : pt_to_face[ TETRAHEDRON ] , \
+                            3 : lambda y: lambda x: x } }
                             
-def make_vertex_points( shp , vid , order ):
-    return vertices[ shp ][ vid ]
-
-def make_edge_points( shp , eid , order ):
-    f = pt_maps[ shp ][ 1 ]( eid )
-    xs = make_lattice( LINE , order )[1:-1]
-    return tuple( map( f , xs ) )
-
+def make_points( shp , dim , entity_id , order ):
+    if dim == 0:
+        return vertices[ shp ][ entity_id ]
+    if dim == shp:
+        if entity_id == 0:
+            return make_lattice( shp , order , 1 )
+        else:
+            raise ShapeError, "Can't make those points"
+    else:
+        f = pt_maps[ shp ][ dim ]( entity_id )
+        xs = make_lattice( dim , order , 1 )
+        return tuple( map( f , xs ) )
+    
