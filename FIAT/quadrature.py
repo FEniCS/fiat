@@ -106,9 +106,9 @@ def make_quadrature_triangle( m ):
 def make_quadrature_tetrahedron( m ):
     return CollapsedQuadratureTetrahedron( m )
 
-rules = { shapes.LINE: GaussQuadrature , \
-          shapes.TRIANGLE: make_quadrature_triangle, \
-          shapes.TETRAHEDRON: make_quadrature_tetrahedron }
+rules = { shapes_new.LINE: GaussQuadrature , \
+          shapes_new.TRIANGLE: make_quadrature_triangle, \
+          shapes_new.TETRAHEDRON: make_quadrature_tetrahedron }
     
 
 # best_rules dictionaries map the degree to the best rule I
@@ -143,7 +143,7 @@ rules = { shapes.LINE: GaussQuadrature , \
 best_rules = {}
                              
 def make_quadrature( shape , m ):
-    """Takes a shape code (see shapes.py) and the number of points
+    """Takes a shape code (see shapes_new.py) and the number of points
     per direction, and returns the appropriate quadrature rule."""
     if rules.has_key( shape ):
         return rules[shape](m)
