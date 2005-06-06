@@ -51,7 +51,7 @@ class VecP0Dual( dualbasis.DualBasis ):
             entity_ids[i] = {}
             for j in shapes_new.entity_range( shape , i ):
                 entity_ids[i][j] = {}
-        entity_ids[d] = { 0 : range( len(ls) ) }
+        entity_ids[d] = { 0 : 0 }
 
         fset = functionalset.FunctionalSet( U , ls )
 
