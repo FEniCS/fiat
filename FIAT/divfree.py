@@ -1,4 +1,4 @@
-import polynomial, shapes_mew , functionalset, functional
+import polynomial, shapes , functionalset, functional
 
 def div_free( shape , n ):
     U = polynomial.OrthogonalPolynomialArraySet( shape , n )

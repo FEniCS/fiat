@@ -1,14 +1,14 @@
-import polynomial, Numeric, shapes_new, BDFM, functional, quadrature
+import polynomial, Numeric, shapes, BDFM, functional, quadrature
 
-shape = shapes_new.TRIANGLE
+shape = shapes.TRIANGLE
 n = 1
 facet = 2
 
 U = BDFM.BDFMSpace( shape , 1 )
 
-pts = shapes_new.make_points( shape , 1 , facet , 3 )
+pts = shapes.make_points( shape , 1 , facet , 3 )
 
-normal = Numeric.array( shapes_new.normals[shape][facet] )
+normal = Numeric.array( shapes.normals[shape][facet] )
 
 u = U[0]
 

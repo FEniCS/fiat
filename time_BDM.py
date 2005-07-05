@@ -1,4 +1,4 @@
-import FIAT, FIAT.shapes, FIAT.points, FIAT.BDM
+import FIAT, FIAT.shapes, FIAT.BDM
 import time,csv
 
 instantiate_time = {}
@@ -22,7 +22,7 @@ for shape in shapes:
             time_cur += (time.time() - t)
         instantiate_time[shape][d] = time_cur / reps
 
-        pts = FIAT.points.make_lattice( shape , d )
+        pts = FIAT.shapes.make_lattice( shape , d )
 
         time_cur = 0.0
         for rep in range(reps):

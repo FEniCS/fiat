@@ -1,17 +1,18 @@
-import FIAT, FIAT.shapes, FIAT.points, FIAT.Lagrange
+import FIAT, FIAT.shapes, FIAT.Lagrange
 import time,csv
 
 instantiate_time = {}
 tabulate_time = {}
 
 reps = 10
-deg_max = 8
+deg_max = 3
 
 shapes = (FIAT.shapes.TRIANGLE,FIAT.shapes.TETRAHEDRON)
 shape_names = { FIAT.shapes.TRIANGLE:"Tri" , \
                 FIAT.shapes.TETRAHEDRON:"Tet" }
 
 for shape in shapes:
+    print shape
     instantiate_time[shape] = {}
     tabulate_time[shape] = {}
     for d in range(1,deg_max+1):
@@ -22,7 +23,7 @@ for shape in shapes:
             time_cur += (time.time() - t)
         instantiate_time[shape][d] = time_cur / reps
 
-        pts = FIAT.points.make_lattice( shape , d )
+        pts = FIAT.shapes.make_lattice( shape , d )
 
         time_cur = 0.0
         for rep in range(reps):

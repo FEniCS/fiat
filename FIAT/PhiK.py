@@ -6,7 +6,7 @@
 
 # last edited 9 May 2005
 
-import shapes_new, functional, polynomial, functionalset
+import shapes, functional, polynomial, functionalset
 
 def PhiK( shape , n , U ):
     """The set PhiK defined by Brezzi & Fortin of vector-valued
@@ -16,22 +16,22 @@ def PhiK( shape , n , U ):
     # need Phi and U to share a common base, so I have to
     # take degree n and then throw away some to get degree n-1
     Phi = polynomial.OrthogonalPolynomialSet( shape , n )
-    Phi_lower = Phi[:shapes_new.polynomial_dimension( shape , n-1 )]    
+    Phi_lower = Phi[:shapes.polynomial_dimension( shape , n-1 )]    
     DCPE = functional.DirectionalComponentPointEvaluation
-    d = shapes_new.dimension( shape )
+    d = shapes.dimension( shape )
     pts_per_edge = [ [ x \
-                       for x in shapes_new.make_points( shape , \
+                       for x in shapes.make_points( shape , \
                                                     d-1 , \
                                                     i , \
                                                     n+d ) ] \
-                    for i in shapes_new.entity_range( shape , d-1 ) ]
+                    for i in shapes.entity_range( shape , d-1 ) ]
     pts_flat = reduce( lambda a,b:a+b , pts_per_edge )
 
     ls = [ functional.IntegralMomentOfDivergence( U , phi ) \
            for phi in Phi_lower ]
 
     for i in range(d+1):
-        nrml = shapes_new.normals[ shape ][ i ]
+        nrml = shapes.normals[ shape ][ i ]
         ls_cur = [ DCPE(U,nrml,pt) for pt in pts_per_edge[i] ]
         ls.extend(ls_cur)
     fset = functionalset.FunctionalSet(U,ls)

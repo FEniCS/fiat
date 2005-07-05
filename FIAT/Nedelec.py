@@ -6,7 +6,7 @@
 
 # last modified 2 May 2005
 
-import dualbasis, polynomial, functionalset, functional, shapes_new, \
+import dualbasis, polynomial, functionalset, functional, shapes, \
        quadrature, Numeric, RaviartThomas
 
 # (P_k)^d \circplus { p \in (P_k^H)^d : p(x)\cdot x = 0 }
@@ -15,8 +15,8 @@ import dualbasis, polynomial, functionalset, functional, shapes_new, \
 # indexint starts at zero
 
 def NedelecSpace( k ):
-    shape = shapes_new.TETRAHEDRON
-    d = shapes_new.dimension( shape )
+    shape = shapes.TETRAHEDRON
+    d = shapes.dimension( shape )
     Vh = RaviartThomas.RTSpace( shape , k )
 
     Wh = polynomial.OrthogonalPolynomialSet( shape , k + 1 )
@@ -36,42 +36,42 @@ def NedelecSpace( k ):
 
 class NedelecDual( dualbasis.DualBasis ):
     def __init__( self , U , k ):
-        shape = shapes_new.TETRAHEDRON
+        shape = shapes.TETRAHEDRON
         # tangent at k+1 points on each edge
         
-        edge_pts = [ shapes_new.make_points( shape , \
+        edge_pts = [ shapes.make_points( shape , \
                                          1 , i , k+2 ) \
-                     for i in shapes_new.entity_range( shape , \
+                     for i in shapes.entity_range( shape , \
                                                    1 ) ]
 
         mdcb = functional.MakeDirectionalComponentBatch
         ls_per_edge = [ mdcb( edge_pts[i] , \
-                              shapes_new.tangents[shape][i] ) \
+                              shapes.tangents[shape][i] ) \
                         for i in shape.entity_range( shape , 1 ) ]
 
         edge_ls = reduce( lambda a,b:a+b , ls_per_edge )
 
         # cross with normal at dim(P_{k-1}) points per face
-        face_pts = [ shapes_new.make_points( shape , \
+        face_pts = [ shapes.make_points( shape , \
                                          2 , i , k+1 ) \
-                     for i in shapes_new.entity_range( shape , \
+                     for i in shapes.entity_range( shape , \
                                                    2 ) ]
 
         # internal moments of dim( P_{k-2}) points
-        internal_pts = shapes_new.make_points( shape , \
+        internal_pts = shapes.make_points( shape , \
                                            3 , i , k+2 ) 
 
         entity_ids = {}
         entity_ids[0] = {}
         entity_ids[1] = {}
         cur = 0
-        for i in shapes_new.entity_range(shape,1):
+        for i in shapes.entity_range(shape,1):
             entity_ids[1][i] = []
             for j in range(k+1):
                 entity_ids[1][i].append(cur)
                 cur += 1
         entity_ids[2] = {}
-        for i in shapes_new.entity_range(shape,2):
+        for i in shapes.entity_range(shape,2):
             entity_ids[2][i] = []
             for j in range(len(face_pts[0])):
                 entity_ids[2][i].append[cur]

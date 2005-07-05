@@ -6,23 +6,23 @@
 
 # last modified 1 June 2005 by RCK
 
-import expansions, shapes_new, Numeric, curry, LinearAlgebra
+import expansions, shapes, Numeric, curry, LinearAlgebra
 from LinearAlgebra import singular_value_decomposition as svd
 class PolynomialBase( object ):
     """Defines an object that can tabulate the orthonormal polynomials
     of a particular degree on a particular shape """
     def __init__( self , shape , n ):
-        """shape is a shape code defined in shapes_new.py
+        """shape is a shape code defined in shapes.py
         n is the polynomial degree"""
         self.bs = expansions.make_expansion( shape , n )
 	self.shape,self.n = shape,n
-        d = shapes_new.dimension( shape )
+        d = shapes.dimension( shape )
         if n == 0:
             self.dmats = [ Numeric.array( [ [ 0.0 ] ] , "d" ) ] * d
         else:
             dtildes = [ Numeric.zeros( (len(self.bs),len(self.bs)) , "d" ) \
                       for i in range(0,d) ]
-            pts = shapes_new.make_points( shape , d , 0 , n + d + 1 )
+            pts = shapes.make_points( shape , d , 0 , n + d + 1 )
 	    v = Numeric.transpose( expansions.tabulators[shape](n,pts) )
             vinv = LinearAlgebra.inverse( v )
 	    dtildes = [Numeric.transpose(a) \
@@ -44,7 +44,7 @@ class PolynomialBase( object ):
         return self.n
 
     def spatial_dimension( self ):
-        return shapes_new.dimension( self.shape )
+        return shapes.dimension( self.shape )
 
     def domain_shape( self ):
         return self.shape 
@@ -106,10 +106,10 @@ class AbstractPolynomialSet( object ):
     def tensor_shape( self ):
         pass
     def spatial_dimension( self ):
-        return shapes_new.dimension( self.base.shape )
+        return shapes.dimension( self.base.shape )
     def domain_shape( self ):
         """Returns the code for the element shape of the domain.  This
-        is the code given in module shapes_new.py"""
+        is the code given in module shapes.py"""
         return self.base.shape
     def __len__( self ):
         """Returns the number of items in the set."""
@@ -172,7 +172,7 @@ class ScalarPolynomialSet( AbstractPolynomialSet ):
         and mi is a multiindex with |mi| = i.  The value of
         a[i][mi] is an array A[i][j] containing the appropriate derivative
         of the i:th member of the set at the j:th member of xs."""
-        alphas = [ mis( shapes_new.dimension( self.base.shape ) , i ) \
+        alphas = [ mis( shapes.dimension( self.base.shape ) , i ) \
                    for i in range(order+1) ]
         a = [ None ] * len(alphas)
         for i in range(len(alphas)):
@@ -374,7 +374,7 @@ def OrthogonalPolynomialSet( element_shape , degree ):
     us to arbitrarily differentiate the orthogonal polynomials
     if we need to."""
     b = PolynomialBase( element_shape , degree )
-    coeffs = Numeric.identity( shapes_new.poly_dims[element_shape](degree) , \
+    coeffs = Numeric.identity( shapes.poly_dims[element_shape](degree) , \
                                "d" )
     return ScalarPolynomialSet( b , coeffs )
 
@@ -383,10 +383,10 @@ def OrthogonalPolynomialArraySet( element_shape , degree , nc = None ):
     for vector-valued functions with d components, where d is the spatial
     dimension of element_shape"""
     b = PolynomialBase( element_shape , degree )
-    space_dim = shapes_new.dimension( element_shape )
+    space_dim = shapes.dimension( element_shape )
     if nc == None:
         nc = space_dim
-    M = shapes_new.polynomial_dimension( element_shape , degree )
+    M = shapes.polynomial_dimension( element_shape , degree )
     coeffs = Numeric.zeros( (nc * M , nc , M ) , "d" )
     ident = Numeric.identity( M , "d" )
     for i in range(nc):
@@ -469,7 +469,7 @@ def divergence( u ):
 def curl( u ):
     if not isinstance( u , VectorPolynomial ):
         raise RuntimeError, "Illegal input to curl"
-    if u.base.domain_shape() != shapes_new.TETRAHEDRON:
+    if u.base.domain_shape() != shapes.TETRAHEDRON:
         raise RuntimeError, "Illegal shape to curl"
     new_dof = Numeric.zeros( (3,len(u.base)) , "d" )
     new_dof[0] = u[2].deriv(1).dof - u[1].deriv(2).dof
@@ -495,7 +495,7 @@ def curl( u ):
 def curl_transpose( u ):
     if not isinstance( u , VectorPolynomial ):
         raise RuntimeError, "Illegal input to curl"
-    if u.base.domain_shape() != shapes_new.TETRAHEDRON:
+    if u.base.domain_shape() != shapes.TETRAHEDRON:
         raise RuntimeError, "Illegal shape to curl"
     new_dof = Numeric.zeros( (3,len(u.base)) , "d" )
     new_dof[0] = Numeric.dot( Numeric.transpose( u.base.dmats[2] ) , \

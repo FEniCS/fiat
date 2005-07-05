@@ -1,11 +1,11 @@
-from FIAT import points, Lagrange
+from FIAT import shapes, Lagrange
 
 shape = 3
 degree = 3
 lattice_size = 10 * degree
 
 U = Lagrange.Lagrange(shape,degree)
-pts = points.make_lattice(shape,lattice_size)
+pts = shapes.make_lattice(shape,lattice_size)
 
 us = U.function_space().tabulate(pts)
 

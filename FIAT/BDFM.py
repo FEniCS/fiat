@@ -7,7 +7,7 @@
 # last edited 9 May 2005
 
 
-import dualbasis, polynomial, functionalset, functional, shapes, points, \
+import dualbasis, polynomial, functionalset, functional, shapes, \
        quadrature, Numeric
 
 def BDFMSpace( shape , k ):
@@ -37,7 +37,7 @@ class BDFMDual( dualbasis.DualBasis ):
         mdcb = functional.make_directional_component_batch
         d = shapes.dimension( shape )
         pts_per_edge = [ [ x \
-                           for x in points.make_points( shape , \
+                           for x in shapes.make_points( shape , \
                                                         d-1 , \
                                                         i , \
                                                         d+k-1 ) ] \
