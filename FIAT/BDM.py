@@ -6,7 +6,7 @@
 
 # last edited 1 June 2005
 
-import dualbasis, polynomial, functionalset, functional, shapespoints, PhiK
+import dualbasis, polynomial, functionalset, functional, PhiK
 
 # do bulk ON eval on edges
 class BDMDualBulk1( dualbasis.DualBasis ):
