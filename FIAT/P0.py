@@ -18,7 +18,7 @@ class P0Dual( dualbasis.DualBasis ):
         self.pts = ( tuple(bary) , )
         ls = [ functional.PointEvaluation( U , bary ) ]
         entity_ids = { }
-        d = shapes.dims[ shape ]
+        d = shapes.dimension( shape )
         for i in range(d):
             entity_ids[i] = {}
             for j in shapes.entity_range(shape,i):
