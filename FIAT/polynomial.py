@@ -4,7 +4,9 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-# last modified 1 June 2005 by RCK
+# modified 2 Aug 2005 by RCK to add "trace_tabulate" method
+# modified 1 June 2005 by RCK
+
 
 import expansions, shapes, Numeric, curry, LinearAlgebra
 from LinearAlgebra import singular_value_decomposition as svd
@@ -87,6 +89,13 @@ class AbstractPolynomialSet( object ):
         """Returns the array A[i][j] with the i:th member of the
         set evaluated at the j:th member of xs."""
         pass
+    def trace_tabulate( self , d , e , xs ):
+        """Tabulates the basis on entity e of topological dimension
+        d at points xs, which are specified on the reference element
+        of dimension d."""
+        myshape = self.domain_shape()
+        xs_dim = map( shapes.pt_maps[ myshape ][ d ][ e ] , xs )
+        return self.tabulate( xs_dim )
     def degree( self ):
         """Returns the polynomial degree of the space.  If the polynomial
         set lies between two degrees, such as the Raviart-Thomas space, then
