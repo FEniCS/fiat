@@ -144,6 +144,7 @@ jac_factors = { TRIANGLE : { 1 : edge_jac_factors[ TRIANGLE ] } , \
 normals = {}
 for shp in ( TRIANGLE , TETRAHEDRON ):
     normals[ shp ] = {}
+    normals[ shp ] = {}
     vert_dict = vertex_relation[ shp ][ dim[ shp ] - 1 ]
     for i in vert_dict.keys():
         vert_ids = vert_dict[ i ]
@@ -156,13 +157,22 @@ for shp in ( TRIANGLE , TETRAHEDRON ):
 tangents = {}
 for shp in ( TRIANGLE , TETRAHEDRON ):
     tangents[ shp ] = {}
+    tangents[shp][1] = {}
     vert_dict = vertex_relation[ shp ][ 1 ]
     for i in vert_dict.keys():
         vert_ids = vert_dict[ i ]
         vert_vecs = [ Numeric.array( vertices[ shp ][ j ] ) \
                       for j in vert_ids ]
         diff = vert_vecs[ 1 ] - vert_vecs[ 0 ]
-        tangents[ shp ][ i ] = diff / sqrt( Numeric.dot( diff , diff ) )
+        tangents[ shp ][1][ i ] = diff / sqrt( Numeric.dot( diff , diff ) )
+
+tangents[TETRAHEDRON][2] = { 0: ( Numeric.array( [ 1. , 0. , 0. ] ) , \
+                                 Numeric.array( [ 0. , 1. , 0. ] ) ) , \
+                            1: ( Numeric.array( [ 0. , 1. , 0. ] ) , \
+                                 Numeric.array( [ 0. , 0. , 1. ] ) ) , \
+                            2: ( Numeric.array( [ 1. , 0. , 0. ] ) , \
+                                 Numeric.array( [ 0. , 0. , 1. ] ) ) }
+
     
 def scale_factor( shape , d , ent_id ):
     global jac_factors

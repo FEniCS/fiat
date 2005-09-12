@@ -9,12 +9,38 @@
 import dualbasis, polynomial, functionalset, functional, shapes, \
        quadrature, Numeric, RaviartThomas
 
+def NedelecSpace( k ):
+    shape = shapes.TETRAHEDRON
+    d = shapes.dimension( shape )
+    vec_Pkp1 = polynomial.OrthogonalPolynomialArraySet( shape , k+1 )
+    dimPkp1 = shapes.polynomial_dimension( shape , k+1 )
+    dimPk = shapes.polynomial_dimension( shape , k )
+    dimPkm1 = shapes.polynomial_dimension( shape , k-1 )
+    vec_Pk = vec_Pkp1.take( reduce( lambda a,b:a+b , \
+                                    [ range(i*dimPkp1,i*dimPkp1+dimPk) \
+                                      for i in range(d) ] ) )
+    vec_Pke = vec_Pkp1.take( reduce( lambda a,b:a+b , \
+                                    [ range(i*dimPkp1+dimPkm1,i*dimPkp1+dimPk) \
+                                      for i in range(d) ] ) )
+
+    Pkp1 = polynomial.OrthogonalPolynomialSet( shape , k+1 )
+    Q = quadrature.make_quadrature( shape , 2 * (k+1) )
+    Pi = lambda f: polynomial.projection( Pkp1 , f , Q )
+    PkCrossXcoeffs = Numeric.array( \
+        [ [ Pi( lambda x: ( x[(i+2)%3] * p[(i+1)%3]( x ) \
+                            - x[(i+1)%3] * p[(i+2)%3]( x ) ) ).dof \
+            for i in range( d ) ] for p in vec_Pke ] )
+
+    PkCrossX = polynomial.VectorPolynomialSet( Pkp1.base , PkCrossXcoeffs )
+    return polynomial.poly_set_union( vec_Pk , PkCrossX )
+    
+
 # (P_k)^d \circplus { p \in (P_k^H)^d : p(x)\cdot x = 0 }
 # Only defined on tetrahedra
-# Arnold decomposes as curl^t of RT plus grad P_k
+# Arnold decomposes into curl^t of RT plus grad P_k
 # indexint starts at zero
 
-def NedelecSpace( k ):
+def NedelecSpaceRT( k ):
     shape = shapes.TETRAHEDRON
     d = shapes.dimension( shape )
     Vh = RaviartThomas.RTSpace( shape , k )
