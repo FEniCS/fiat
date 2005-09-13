@@ -6,6 +6,8 @@
 
 # last modified 2 May 2005
 
+# Nedelec indexing from 0
+
 import dualbasis, polynomial, functionalset, functional, shapes, \
        quadrature, Numeric, RaviartThomas
 
@@ -99,16 +101,16 @@ class NedelecDual( dualbasis.DualBasis ):
         face_ls = reduce( lambda a,b:a+b , ls_per_face )
 
 
-        if k > 2:
-            dim_Pk = shapes.polynomial_dimension( shape , k )
-            vec_Pk = polynomial.OrthogonalPolynomialArraySet( shape , k )
-            dim_Pkm3 = shapes.polynomial_dimension( shape , k-3 )
-            vec_Pkm3 = vecPk.take( reduce( lambda a,b:a+b , \
-                                           [ range( i*dim_Pk , \
-                                                    i*dim_Pk+dim_Pkm3 ) \
+        if k > 1:
+            dim_Pkp1 = shapes.polynomial_dimension( shape , k+1 )
+            vec_Pkp1 = polynomial.OrthogonalPolynomialArraySet( shape , k+1 )
+            dim_Pkm2 = shapes.polynomial_dimension( shape , k-2 )
+            vec_Pkm2 = vec_Pkp1.take( reduce( lambda a,b:a+b , \
+                                           [ range( i*dim_Pkp1 , \
+                                                    i*dim_Pkp1+dim_Pkm2 ) \
                                              for i in range( d ) ] ) )
             interior_ls = [ functional.IntegralMoment( U , p ) \
-                            for p in vec_Pkm3 ]
+                            for p in vec_Pkm2 ]
         else:
             interior_ls = []
 
@@ -116,7 +118,7 @@ class NedelecDual( dualbasis.DualBasis ):
 
         cur = 0
         entity_ids = {}
-        for i in range(d):
+        for i in range(d+1):
             entity_ids[i] = {}
             for j in shapes.entity_range(shape,i):
                 entity_ids[i][j] = []
@@ -140,17 +142,16 @@ class NedelecDual( dualbasis.DualBasis ):
             entity_ids[3][0].append( cur )
             cur += 1
 
-#        for e in entity_ids: print entity_ids[e]
-
-        
         dualbasis.DualBasis.__init__( self ,
-                                      functionalset.FunctionalSet( U , ls ) , \
+                                      lset , \
                                       entity_ids )
 
  
 class Nedelec( polynomial.FiniteElement ):
     def __init__( self , k ):
+        print "Building Nedelec space"
         U = NedelecSpace( k )
-        Udual = NedelecDual( k , U )
+        print "Building dual space"
+        Udual = NedelecDual( U , k )
         polynomial.FiniteElement.__init__( self , Udual , U )
 
