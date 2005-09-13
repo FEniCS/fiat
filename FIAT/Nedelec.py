@@ -63,6 +63,8 @@ def NedelecSpaceRT( k ):
 class NedelecDual( dualbasis.DualBasis ):
     def __init__( self , U , k ):
         shape = shapes.TETRAHEDRON
+        d = shapes.dimension( shape )
+        ls = []
         # tangent at k+1 points on each edge
         
         edge_pts = [ shapes.make_points( shape , \
@@ -70,44 +72,80 @@ class NedelecDual( dualbasis.DualBasis ):
                      for i in shapes.entity_range( shape , \
                                                    1 ) ]
 
-        mdcb = functional.MakeDirectionalComponentBatch
-        ls_per_edge = [ mdcb( edge_pts[i] , \
-                              shapes.tangents[shape][i] ) \
-                        for i in shape.entity_range( shape , 1 ) ]
+        mdcb = functional.make_directional_component_batch
+        ls_per_edge = [ mdcb( U , \
+                              shapes.tangents[shape][1][i] , \
+                              edge_pts[i] ) \
+                        for i in shapes.entity_range( shape , 1 ) ]
 
         edge_ls = reduce( lambda a,b:a+b , ls_per_edge )
 
-        # cross with normal at dim(P_{k-1}) points per face
+        # tangential at dim(P_{k-1}) points per face
         face_pts = [ shapes.make_points( shape , \
-                                         2 , i , k+1 ) \
+                                         2 , i , k+2 ) \
                      for i in shapes.entity_range( shape , \
                                                    2 ) ]
 
-        # internal moments of dim( P_{k-2}) points
-        internal_pts = shapes.make_points( shape , \
-                                           3 , i , k+2 ) 
+        ls_per_face = []
+        for i in shapes.entity_range( shape , 2 ):
+            ls_cur = []
+            t0s = mdcb( U , shapes.tangents[shape][2][i][0] , face_pts[i] )
+            t1s = mdcb( U , shapes.tangents[shape][2][i][1] , face_pts[i] )
+            for i in range(len(t0s)):
+                ls_cur.append( t0s[i] )
+                ls_cur.append( t1s[i] )
+            ls_per_face.append( ls_cur )
+                        
+        face_ls = reduce( lambda a,b:a+b , ls_per_face )
 
-        entity_ids = {}
-        entity_ids[0] = {}
-        entity_ids[1] = {}
+
+        if k > 2:
+            dim_Pk = shapes.polynomial_dimension( shape , k )
+            vec_Pk = polynomial.OrthogonalPolynomialArraySet( shape , k )
+            dim_Pkm3 = shapes.polynomial_dimension( shape , k-3 )
+            vec_Pkm3 = vecPk.take( reduce( lambda a,b:a+b , \
+                                           [ range( i*dim_Pk , \
+                                                    i*dim_Pk+dim_Pkm3 ) \
+                                             for i in range( d ) ] ) )
+            interior_ls = [ functional.IntegralMoment( U , p ) \
+                            for p in vec_Pkm3 ]
+        else:
+            interior_ls = []
+
+        ls = edge_ls + face_ls + interior_ls
+
         cur = 0
+        entity_ids = {}
+        for i in range(d):
+            entity_ids[i] = {}
+            for j in shapes.entity_range(shape,i):
+                entity_ids[i][j] = []
+
+        nodes_per_edge = len( ls_per_edge[0] )
+        nodes_per_face = len( ls_per_face[0] )
+        internal_nodes = len( interior_ls )
+
+        # loop over edges
         for i in shapes.entity_range(shape,1):
-            entity_ids[1][i] = []
-            for j in range(k+1):
-                entity_ids[1][i].append(cur)
-                cur += 1
-        entity_ids[2] = {}
-        for i in shapes.entity_range(shape,2):
-            entity_ids[2][i] = []
-            for j in range(len(face_pts[0])):
-                entity_ids[2][i].append[cur]
+            for j in range( nodes_per_edge ):
+                entity_ids[1][i].append( cur )
                 cur += 1
 
-        entity_ids[3] = {}
-        entity_ids[3][0] = []
-        for i in len( face_pts ):
+        for i in shapes.entity_range(shape,2):
+            for j in range(nodes_per_face):
+                entity_ids[2][i].append( cur )
+                cur += 1
+
+        for j in range(len(interior_ls)):
             entity_ids[3][0].append( cur )
             cur += 1
+
+#        for e in entity_ids: print entity_ids[e]
+
+        
+        dualbasis.DualBasis.__init__( self ,
+                                      functionalset.FunctionalSet( U , ls ) , \
+                                      entity_ids )
 
  
 class Nedelec( polynomial.FiniteElement ):

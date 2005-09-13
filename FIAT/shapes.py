@@ -167,11 +167,13 @@ for shp in ( TRIANGLE , TETRAHEDRON ):
         tangents[ shp ][1][ i ] = diff / sqrt( Numeric.dot( diff , diff ) )
 
 tangents[TETRAHEDRON][2] = { 0: ( Numeric.array( [ 1. , 0. , 0. ] ) , \
-                                 Numeric.array( [ 0. , 1. , 0. ] ) ) , \
-                            1: ( Numeric.array( [ 0. , 1. , 0. ] ) , \
-                                 Numeric.array( [ 0. , 0. , 1. ] ) ) , \
-                            2: ( Numeric.array( [ 1. , 0. , 0. ] ) , \
-                                 Numeric.array( [ 0. , 0. , 1. ] ) ) }
+                                  Numeric.array( [ 0. , 1. , 0. ] ) ) , \
+                             1: ( Numeric.array( [ 0. , 1. , 0. ] ) , \
+                                  Numeric.array( [ 0. , 0. , 1. ] ) ) , \
+                             2: ( Numeric.array( [ 1. , 0. , 0. ] ) , \
+                                  Numeric.array( [ 0. , 0. , 1. ] ) ) , \
+                             3: ( Numeric.array( [ -1./sqrt(2.) , 1./sqrt(2.) , 0. ] ) , \
+                                  Numeric.array( [ 0. , 0. , 1. ] ) ) }
 
     
 def scale_factor( shape , d , ent_id ):

@@ -1,9 +1,9 @@
 import Nedelec, functional, Numeric, polynomial, quadrature, shapes
+import RaviartThomas
 
-# returns ned, portion onto Pkm1 and portion onto PkH
-#
-for k in range(3):
+for k in range(1):
+#    U = RaviartThomas.RaviartThomas( 3 , k )
     U = Nedelec.NedelecSpace( k )
-    print len( U )
-
-    
+    Ud = Nedelec.NedelecDual( U , k )
+    V = polynomial.FiniteElement( Ud , U )
+    print V
