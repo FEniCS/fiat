@@ -4,7 +4,8 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-# Last modified 1 Jun 2005 by RCK
+# Modified 15 Sept 2005 by RCK
+# Modified 1 Jun 2005 by RCK
 
 """shapes.py
 Module defining topological and geometric information for simplices in one, two, and
@@ -166,14 +167,19 @@ for shp in ( TRIANGLE , TETRAHEDRON ):
         diff = vert_vecs[ 1 ] - vert_vecs[ 0 ]
         tangents[ shp ][1][ i ] = diff / sqrt( Numeric.dot( diff , diff ) )
 
-tangents[TETRAHEDRON][2] = { 0: ( Numeric.array( [ 1. , 0. , 0. ] ) , \
-                                  Numeric.array( [ 0. , 1. , 0. ] ) ) , \
-                             1: ( Numeric.array( [ 0. , 1. , 0. ] ) , \
-                                  Numeric.array( [ 0. , 0. , 1. ] ) ) , \
-                             2: ( Numeric.array( [ 1. , 0. , 0. ] ) , \
-                                  Numeric.array( [ 0. , 0. , 1. ] ) ) , \
-                             3: ( Numeric.array( [ -1./sqrt(2.) , 1./sqrt(2.) , 0. ] ) , \
-                                  Numeric.array( [ 0. , 0. , 1. ] ) ) }
+tangents[TETRAHEDRON][2] = {}
+for f in range(4):
+    vert_ids = vertex_relation[ TETRAHEDRON ][ 2 ][ f ]
+    v = Numeric.array( [ vertices[ TETRAHEDRON ][ vert_ids[i ] ] for i in range(3) ] )
+    print v
+    v10 = v[1]-v[0]
+    v20 = v[2]-v[0]
+    t0 = v10 / Numeric.sqrt( Numeric.dot( v10 , v10 ) )
+    alpha = sum( v20 * v10 ) / sum( v10 * v10 )
+    t1nonunit = v[2] - v[0] - alpha * v[1]
+    t1 = t1nonunit / Numeric.sqrt( Numeric.dot( t1nonunit , t1nonunit ) )
+    tangents[TETRAHEDRON][2][ f ] = (t0,t1)
+
 
     
 def scale_factor( shape , d , ent_id ):
