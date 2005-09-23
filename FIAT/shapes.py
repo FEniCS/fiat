@@ -4,6 +4,8 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
+# Modified 23 Sept 2005 by RCK
+# -- was off by some constant factors in scale_factors
 # Modified 15 Sept 2005 by RCK
 # Modified 1 Jun 2005 by RCK
 
@@ -119,6 +121,7 @@ vertex_relation = { LINE : { 1 : { 0 : tuple( range( 2 ) ) } } , \
                                     2 : tetrahedron_faces , \
                                     3 : { 0 : tuple( range( 4 ) ) } } }
 
+# hard-wired for reference element [-1,1]
 edge_jac_factors = {}
 for shp in ( TRIANGLE , TETRAHEDRON ):
     edge_jac_factors[ shp ] = {}
@@ -126,8 +129,9 @@ for shp in ( TRIANGLE , TETRAHEDRON ):
         verts = edges[ shp ][ i ]
         a = vertices[ shp ][ verts[ 0 ] ]
         b = vertices[ shp ][ verts[ 1 ] ]
-        edge_jac_factors[ shp ][ i ] = distance( a , b )
+        edge_jac_factors[ shp ][ i ] = distance( a , b ) / 2.0
 
+# hard-wired for reference element on [-1,1]
 face_jac_factors = {}
 for shp in ( TETRAHEDRON , ):
     face_jac_factors[ shp ] = {}
@@ -171,7 +175,6 @@ tangents[TETRAHEDRON][2] = {}
 for f in range(4):
     vert_ids = vertex_relation[ TETRAHEDRON ][ 2 ][ f ]
     v = Numeric.array( [ vertices[ TETRAHEDRON ][ vert_ids[i ] ] for i in range(3) ] )
-    print v
     v10 = v[1]-v[0]
     v20 = v[2]-v[0]
     t0 = v10 / Numeric.sqrt( Numeric.dot( v10 , v10 ) )
