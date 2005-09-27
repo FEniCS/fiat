@@ -4,30 +4,32 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-# last edited 9 May 2005
-
+# Edited 27 Sept 2005 by RCK, 
+# Edited 26 Sept 2005 by RCK
 
 import dualbasis, polynomial, functionalset, functional, shapes, \
-       quadrature, Numeric
+       quadrature, Numeric, PhiK
 
 def BDFMSpace( shape , k ):
     U = polynomial.OrthogonalPolynomialArraySet( shape , k )
-    
-    fnm = functional.FacetNormalMoment
-
+    fnm = functional.FacetDirectionalMoment
     d = shapes.dimension( shape )
 
-    # need to build constrained space by taking the null space of
-    ref_polys = polynomial.OrthogonalPolynomialSet( shape-1 , k )
-    start = shapes.polynomial_dimension( shape-1 , k - 1 )
-    constraint_polys = ref_polys[ start: ]
-
-    constraints_per_bdry = [ [ fnm( U , shape , d-1 , e , phi ) \
-                               for phi in constraint_polys ] \
-                            for e in shapes.entity_range( shape , d-1 ) ]
-    constraints = reduce( lambda a,b:a+b , constraints_per_bdry )
+    phis = polynomial.OrthogonalPolynomialSet( shape - 1 , k )
+    dimPkm1 = shapes.polynomial_dimension( shape -1 , k-1 )
+    dimPk = shapes.polynomial_dimension( shape-1,k )
+    
+    # one set of constraint for each face
+    constraints = []
+    for e in shapes.entity_range( shape , d - 1 ):
+        n = shapes.normals[ shape ][ e ]
+        constraints.extend( [ fnm( U , shape , n , d-1 , e , phis[j] ) \
+                              for j in range(dimPkm1,dimPk) ] )
 
     fset = functionalset.FunctionalSet( U , constraints )
+
+    return polynomial.ConstrainedPolynomialSet( fset )
+      
 
     return polynomial.ConstrainedPolynomialSet( fset )
 

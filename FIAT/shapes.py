@@ -4,6 +4,7 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
+# Modified 27 Sept 2005 by RCK to fix normal directions on triangles
 # Modified 23 Sept 2005 by RCK
 # -- was off by some constant factors in scale_factors
 # Modified 15 Sept 2005 by RCK
@@ -147,17 +148,27 @@ jac_factors = { TRIANGLE : { 1 : edge_jac_factors[ TRIANGLE ] } , \
                                 2 : face_jac_factors[ TETRAHEDRON ] } }
 
 normals = {}
-for shp in ( TRIANGLE , TETRAHEDRON ):
-    normals[ shp ] = {}
-    normals[ shp ] = {}
-    vert_dict = vertex_relation[ shp ][ dim[ shp ] - 1 ]
-    for i in vert_dict.keys():
-        vert_ids = vert_dict[ i ]
-        vert_vecs = [ Numeric.array( vertices[ shp ][ j ] ) \
-                      for j in vert_ids ]
-        vecs = [ v - vert_vecs[ 0 ] for v in vert_vecs[ 1: ] ]
-        crss = cross( vecs )
-        normals[ shp ][ i ] = -crss / sqrt( Numeric.dot( crss , crss ) )
+shp=TRIANGLE
+normals[shp]={}
+vert_dict = vertex_relation[ shp ][ dim[ shp ] - 1 ]
+for i in vert_dict.keys():
+    vert_ids = vert_dict[ i ]
+    vert_vecs = [ Numeric.array( vertices[ shp ][ j ] ) \
+                  for j in vert_ids ]
+    vecs = [ v - vert_vecs[ 0 ] for v in vert_vecs[ 1: ] ]
+    crss = cross( vecs )
+    normals[ shp ][ i ] = crss / sqrt( Numeric.dot( crss , crss ) )
+
+shp=TETRAHEDRON
+normals[ shp ] = {}
+vert_dict = vertex_relation[ shp ][ dim[ shp ] - 1 ]
+for i in vert_dict.keys():
+    vert_ids = vert_dict[ i ]
+    vert_vecs = [ Numeric.array( vertices[ shp ][ j ] ) \
+                  for j in vert_ids ]
+    vecs = [ v - vert_vecs[ 0 ] for v in vert_vecs[ 1: ] ]
+    crss = cross( vecs )
+    normals[ shp ][ i ] = -crss / sqrt( Numeric.dot( crss , crss ) )
 
 tangents = {}
 for shp in ( TRIANGLE , TETRAHEDRON ):

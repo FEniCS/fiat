@@ -4,6 +4,7 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
+# Modified 26 Sept 2005
 # Written 23 Sept 2005
 
 import shapes, polynomial, functional, functionalset
@@ -38,9 +39,5 @@ def constrained_scalar_space( shape , max_order , orders ):
 
     return polynomial.ConstrainedPolynomialSet( fset )
 
-# returns space of vector-valued functions of degree order
-# whose normals on d-1 dimensional facets are degree order-1
-# useful for BDFM elements
-def constrained_normal_vector_space( shape , order ):
-    pass
+
 

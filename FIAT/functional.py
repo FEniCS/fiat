@@ -4,6 +4,7 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
+# Modified 26 Sept 2005 by RCK to fix FacetDirectionMoment
 # Modified 23 Sept 2005
 # Last modified 21 April 2005
 
@@ -175,8 +176,8 @@ def FacetMoment( U , shape , d , e , p ):
 
     return Functional( U , vec )
 
-# doesn't work yet
-def FacetDirectionMoment( U , shape , v , d , e , p ):
+def FacetDirectionalMoment( U , shape , dir , d , e , p ):
+    mat = Numeric.zeros( U.coeffs.shape[1:] , "d" )
     Qref = quadrature.make_quadrature( d , 2 * U.degree() )
     alpha = shapes.scale_factor( shape , d , e )
     pts = Qref.get_points()
@@ -185,27 +186,9 @@ def FacetDirectionMoment( U , shape , v , d , e , p ):
     mapped_pts = Numeric.array( [ pt_map( x ) for x in pts ] )
     ps = Numeric.array( [ p( x ) for x in Qref.get_points() ] )
     phis = U.base.tabulate( mapped_pts )
-    vec = Numeric.dot( phis , wts * ps )
 
+    for i in range(len(dir)):
+        mat[i,:] = Numeric.dot( phis , dir[i] * wts * ps )
 
+    return Functional( U , mat )
 
-##def FacetNormalMoment( U , shape , d , e , p ):
-##    Qref = quadrature.make_quadrature( d , 3 * U.degree() )
-##    alpha = shapes.scale_factor( shape , d , e )
-##    if shape == shapes.TRIANGLE:
-##        ref_pts = [ x[0] for x in Qref.get_points() ]
-##    else:
-##        ref_pts = Qref.get_points()
-##    pts = map( shapes.pt_maps[ shape ][ d ][ e ] , \
-##               ref_pts )
-##    wts = alpha * Qref.get_weights()
-##    normal = Numeric.array( shapes.normals[shape][e] )
-##    us = U.base.tabulate( pts )
-##    ps = Numeric.array( [ p(x) for x in Qref.get_points() ] )
-##    mat = Numeric.zeros( (len(U.base),U.tensor_shape()[0]) , "d" )
-##    for i in range( len( us ) ):
-##        for j in range( U.tensor_shape()[0] ):
-##            mat[i,j] = sum( wts * us[i] * normal[j] * ps )
-##
-##    return Functional( U , mat )
-##    
