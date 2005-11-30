@@ -4,7 +4,8 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-# Last modified 16 May 2005
+# Last modified 30 Nov 2005 (fix bug in P0 case for vectors)
+
 
 """This module defines the discontinuous Lagrange finite element over
 any shape for which an appropriate expansion basis is defined.  The
@@ -88,5 +89,5 @@ def DiscontinuousLagrange( shape , n ):
     else:      return DiscLagrange( shape , n )
 
 def DiscontinuousVectorLagrange( shape , n , nc ):
-    if n == 0: return P0.VecP0( shape )
+    if n == 0: return P0.VecP0( shape , nc )
     else:      return DiscVecLagrange( shape , n ,nc )
