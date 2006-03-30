@@ -1,4 +1,6 @@
 What's new in:
+0.2.4:
+  fixed but in P0.py
 0.2.3:
   updated topology/ geometry so to allow different orderings of entities
 0.2.2:

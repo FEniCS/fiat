@@ -1,3 +1,3 @@
-- Track down bug in DiscontinuousLagrange jet tabulation
-- Fix Nedelec
-- Fix BDFM
+- consider "type system" for mapping
+- Verify Nedelec & BDFM elements
+
