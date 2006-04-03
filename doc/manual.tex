@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass{fenicsmanual}
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{amsmath}
@@ -30,16 +30,15 @@
    \vrule width0.6pt}\hrule height0.6pt
   }}
 
-\newcommand{\R}{{\sf R\hspace*{-0.9ex}\rule{0.15ex}{1.5ex}\hspace*{0.9ex}}}
 \newcommand{\N}{{\sf
     N\hspace*{-1.0ex}\rule{0.15ex}{1.3ex}\hspace*{1.0ex}}}
 
-\title{FIAT 0.1.0 Users' Manual}
+\title{FIAT 0.2.4 Users' Manual}
 \author{Robert C. Kirby}
 \begin{document}
 \maketitle
 
-\section{Introduction}
+\chapter{Introduction}
 FIAT (FInite element Automatic Tabulator) is a Python package for
 defining and evaluating a wide range of different finite element basis
 functions for numerical partial differential equations.  It is
@@ -72,8 +71,20 @@ derivatives at some quadrature points.  Then, I will explain some of
 the underlying infrastructure so as to demonstrate how to add new
 elements.
 
-\section{Using FIAT: A tutorial with Lagrange elements}
-\subsection{Importing FIAT}
+\chapter{Installation}
+FIAT uses the standard Python \texttt{distutils} tools.  From the top
+directory, one executes \texttt{python setup.py install}.  This will
+put FIAT into the \texttt{site-packages} directory.  Super-user
+permission (such as \texttt{su} or \texttt{sudo}) may be required to
+write to this directory.  For more configuration options, one may type
+\texttt{python setup.py --help} or consult the online Python
+documentation at \texttt{http://docs.python.org/inst/inst.html}
+
+FIAT requires the commonly used \verb.Numeric. package.
+
+
+\chapter{Using FIAT: A tutorial with Lagrange elements}
+\section{Importing FIAT}
 FIAT is organized as a package in Python, consisting of several
 modules.  In order to get some of the packages, we use the line
 \begin{verbatim}
@@ -82,7 +93,8 @@ from FIAT import Lagrange, quadrature, shapes
 This loads several modules for the Lagrange elements, quadrature
 rules, and the simplicial element shapes which FIAT implements.  The
 roles each of these plays will become clear shortly.
-\subsection{Instantiating elements}
+
+\section{Instantiating elements}
 FIAT uses a lightweight object-oriented infrastructure to define
 finite elements.  The \verb.Lagrange. module contains a class
 \verb.Lagrange. modeling the Lagrange finite element family.  This
@@ -109,8 +121,89 @@ returns the nodes of the finite element (including information related
 to topological association of nodes with mesh entities, needed for
 creating degree of freedom orderings).  
 
-\subsection{Quadrature rules}
-\subsection{Tabulation}
-Tabulation of function values; Tabulation of derivatives, jets.
+\section{Quadrature rules}
+FIAT implements arbitrary-order collapsed quadrature, as discussed in
+Karniadakis and Sherwin~\cite{}, for the simplex of dimension one,
+two, or three.  The simplest way to get a quadrature rule is through
+the function \verb.make_quadrature(shape,m)., which takes a shape code
+and an integer indicating the number of points per direction.  For
+building element matrices using quadratics, we will typically need a
+second or third order integration rule, so we can get such a rule by
+\begin{verbatim}
+>>> Q = quadrature.make_quadrature( shape , 2 )
+\end{verbatim}
+This uses two points in each direction on the reference square, then
+maps them to the reference triangle.  We may get a
+\verb/Numeric.array/ of the quadrature weights with the method
+\verb/Q.get_weights()/ and a list of tuples storing the quadrature
+points with the method \verb/Q.get_points()/.
+
+\section{Tabulation}
+FIAT provides functions for tabulating the element basis functions and
+their derivatives.  To get the \verb.FunctionSpace. object, we do
+\begin{verbatim}
+>>> Ufs = U.function_space()
+\end{verbatim}
+To get the values of each basis function at each of the quadrature
+points, we use the \verb.tabulate(). method
+\begin{verbatim}
+>>> Ufs.tabulate( Q.get_points() )
+array([[ 0.22176167, -0.12319761, -0.11479229, -0.06377178],
+       [-0.11479229, -0.06377178,  0.22176167, -0.12319761],
+       [-0.10696938,  0.18696938, -0.10696938,  0.18696938],
+       [ 0.11074286,  0.19356495,  0.41329796,  0.72239423],
+       [ 0.41329796,  0.72239423,  0.11074286,  0.19356495],
+       [ 0.47595918,  0.08404082,  0.47595918,  0.08404082]])
+\end{verbatim}
+This returns a two-dimensional \verb/Numeric.array/ with rows for each
+basis function and columns for each input point.
+
+Also, finite element codes require tabulation of the basis functions'
+derivatives.  Each \verb/FunctionSpace/ object also provides a method
+\verb/tabulate_jet(i,xs)/ that returns a list of Python dictionaries.
+The \verb.i.th entry of the list is a dictionary storing the values of
+all \verb.i.th order derivatives.  Each dictionary maps a multiindex
+(a tuple of length \verb.i.) to the table of the associated partial
+derivatives of the basis functions at those points.  For example,
+\begin{verbatim}
+>>> Ufs_jet = Ufs.tabulate_jet( 1 , Q.get_points() )
+\end{verbatim}
+tabulates the zeroth and first partial derivatives of the function
+space at the quadrature points.  Then,
+\begin{verbatim}
+>>> Ufs_jet[0]
+{(0, 0): array([[ 0.22176167, -0.12319761, -0.11479229, -0.06377178],
+       [-0.11479229, -0.06377178,  0.22176167, -0.12319761],
+       [-0.10696938,  0.18696938, -0.10696938,  0.18696938],
+       [ 0.11074286,  0.19356495,  0.41329796,  0.72239423],
+       [ 0.41329796,  0.72239423,  0.11074286,  0.19356495],
+       [ 0.47595918,  0.08404082,  0.47595918,  0.08404082]])}
+\end{verbatim}
+gives us a dictionary mapping the only zeroth-order partial derivative
+to the values of the basis functions at the quadrature points.  More
+interestingly, we may get the first derivatives in the x- and y-
+directions with
+\begin{verbatim}
+>>> Ufs_jet[1][(1,0)]
+array([[-0.83278049, -0.06003983,  0.14288254,  0.34993778],
+       [-0.14288254, -0.34993778,  0.83278049,  0.06003983],
+       [ 0.        ,  0.        ,  0.        ,  0.        ],
+       [ 0.31010205,  1.28989795,  0.31010205,  1.28989795],
+       [-0.31010205, -1.28989795, -0.31010205, -1.28989795],
+       [ 0.97566304,  0.40997761, -0.97566304, -0.40997761]])
+>>> Ufs_jet[1][(0,1)] 
+array([[ -8.32780492e-01,  -6.00398310e-02,   1.42882543e-01,   3.49937780e-01],
+       [  7.39494156e-17,   4.29608279e-17,   4.38075188e-17,   7.47961065e-17],
+       [ -1.89897949e-01,   7.89897949e-01,  -1.89897949e-01,   7.89897949e-01],
+       [  3.57117457e-01,   1.50062220e-01,   1.33278049e+00,   5.60039831e-01],
+       [  1.02267844e+00,  -7.29858118e-01,   4.70154051e-02,  -1.13983573e+00],
+       [ -3.57117457e-01,  -1.50062220e-01,  -1.33278049e+00,  -5.60039831e-01]])
+\end{verbatim}
+
+
+\chapter{Lower-level API}
+Not only does FIAT provide a high-level library interface for users to
+evaluate existing finite element bases, but it also provides
+lower-level tools for constructing new elements.
 
 \end{document}
