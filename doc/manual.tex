@@ -94,6 +94,13 @@ This loads several modules for the Lagrange elements, quadrature
 rules, and the simplicial element shapes which FIAT implements.  The
 roles each of these plays will become clear shortly.
 
+\section{Important note}
+Throughout, FIAT defines the reference elements based on the interval
+$(-1,1)$ rather than the more common $(0,1)$.  So, the one-dimensional
+reference element is $(-1,1)$, the three vertices of the reference
+triangle are $(-1,-1),(1,-1),(1,-1)$, and the four vertices of the
+reference tetrahedron are $(-1,-1,-1),(1,-1,-1),(-1,1,-1),(-1,-1,1)$.
+
 \section{Instantiating elements}
 FIAT uses a lightweight object-oriented infrastructure to define
 finite elements.  The \verb.Lagrange. module contains a class
@@ -200,10 +207,44 @@ array([[ -8.32780492e-01,  -6.00398310e-02,   1.42882543e-01,   3.49937780e-01],
        [ -3.57117457e-01,  -1.50062220e-01,  -1.33278049e+00,  -5.60039831e-01]])
 \end{verbatim}
 
-
 \chapter{Lower-level API}
 Not only does FIAT provide a high-level library interface for users to
 evaluate existing finite element bases, but it also provides
-lower-level tools for constructing new elements.
+lower-level tools.  Here, we survey these tools module-by-module.
+
+\section{shapes.py}
+FIAT currenly only supports simplicial reference elements, but does so
+in a fairly dimensionally-independent way (up to tetrahedra).
+
+\section{jacobi.py}
+This is a low-level module that tabulates the Jacobi polynomials and
+their derivatives, and also provides Gauss-Jacobi points.  This module
+will seldom if ever be imported directly by users.  For more
+information, consult the documentation strings and source code.
+
+\section{expansions.py}
+
+
+\section{quadrature.py}
+
+
+\section{polynomial.py}
+
+
+
+\chapter{Wish list and open problems}
+While FIAT is highly functional as a tool for tabulating basis
+functions at quadrature points, there are a lot of interesting
+things to do.  In case anybody wants to help out, I have
+chosen to describe some of these issues here.
+
+\section{Stable/fast VDM inversion}
+
+\section{Symmetric quadrature rules}
+
+\section{Declarative top-level language}
+
+\section{Integration with SMART-type tools}
+
 
 \end{document}
