@@ -8,7 +8,7 @@
 # modified 1 June 2005 by RCK
 
 
-import expansions, shapes, Numeric, curry, LinearAlgebra
+import expansions, shapes, Numeric, LinearAlgebra
 from LinearAlgebra import singular_value_decomposition as svd
 class PolynomialBase( object ):
     """Defines an object that can tabulate the orthonormal polynomials
