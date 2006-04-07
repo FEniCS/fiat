@@ -114,7 +114,7 @@ shape = shapes.TRIANGLE
 degree = 2
 U = Lagrange.Lagrange( shape , degree )
 \end{verbatim}
-Here, \verb*shapes.TRIANGLE* is an integer code indicating the two
+Here, \verb/shapes.TRIANGLE/ is an integer code indicating the two
 dimensional simplex.  \verb.shapes. also defines
 \verb.LINE. and \verb.TETRAHEDRON..  Most of the
 upper-level interface to FIAT is dimensionally abstracted over element
@@ -223,10 +223,50 @@ will seldom if ever be imported directly by users.  For more
 information, consult the documentation strings and source code.
 
 \section{expansions.py}
-
+FIAT relies on orthonormal polynomial bases.  These are constructed by
+mapping appropriate Jacobi polynomials from the reference cube to the
+reference simplex, as described in the reference of Karniadakis and
+Sherwin~\cite{}.  The module \texttt{expansions.py} implements these
+orthonormal expansions.  This is also a low-level module that will
+infrequently be used directly, but it forms the backbone for the
+module \texttt{polynomial.py}
 
 \section{quadrature.py}
+FIAT makes heavy use of numerical quadrature, both internally and in
+the user interface.  Internally, many function spaces or degrees of
+freedom are defined in terms of integral quantities having certain
+behavior.  Keeping with the theme of arbitrary order approximations,
+FIAT provides arbitrary order quadrature rules on the reference
+simplices.  These are constructed by mapping Gauss-Jacobi rules from
+the reference cube.  While these rules are suboptimal in terms of
+order of accuracy achieved for a given number of points, they may be
+generated mechanically in a simpler way than symmetric quadrature
+rules.  In the future, we hope to have the best symmetric existing
+rules integrated into FIAT.
 
+Unless one is modifying the quadrature rules available, all of the
+functionality of \texttt{quadrature.py} may be accessed through the
+single function \verb.make_quadrature..
+This function takes the code for a shape and the number of points in
+each coordinate direction and returns a quadrature rule.  Internally,
+there is a lightweight class hierarchy rooted at an abstract
+\texttt{QuadratureRule} class, where the quadrature rules for
+different shapes are actually different classes.  However, the dynamic
+typing of Python relieves the user from these considerations.  The
+interface to an instance consists in the following methods
+\begin{itemize}
+\item \verb.get_points()., which returns a list of the quadrature
+  points, each stored as a tuple.  For dimensional uniformity,
+  one-dimensional quadrature rules are stored as lists of 1-tuples
+  rather than as lists of numbers.
+\item \verb.get_weights()., which returns a \texttt{Numeric.array}
+  of quadrature weights.
+\item \verb.integrate(f)., which takes a callable object \texttt{f}
+  and returns the (approximate) integral over the domain
+\item Also, the \verb.__call__. method is overloaded so that a
+  quadrature rule may be applied to a callable object.  This is
+  syntactic sugar on top of the \texttt{integrate} method.
+\end{itemize}
 
 \section{polynomial.py}
 
