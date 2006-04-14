@@ -269,6 +269,22 @@ interface to an instance consists in the following methods
 \end{itemize}
 
 \section{polynomial.py}
+The \texttt{polynomial} module provides the bulk of the classes
+needed to represent polynomial bases and finite element spaces.
+The class \texttt{PolynomialBase} provides a high-level access to
+the orthonormal expansion bases; it is typically not instantiated
+directly in an application, but all other kinds of polynomial bases
+are constructed as linear combinations of the members of a
+\texttt{PolynomialBase} instance.  The module provides classes for
+scalar and vector-valued polynomial sets, as well as an interface to individual
+polynomials and finite element spaces.
+
+\subsection{\texttt{PolynomialBase}}
+
+\subsection{\texttt{PolynomialSet}}
+The \texttt{PolynomialSet} function is a factory function interface into
+the hierarchy 
+
 
 
 
