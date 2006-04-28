@@ -94,7 +94,7 @@ class AbstractPolynomialSet( object ):
         d at points xs, which are specified on the reference element
         of dimension d."""
         myshape = self.domain_shape()
-        xs_dim = map( shapes.pt_maps[ myshape ][ d ][ e ] , xs )
+        xs_dim = map( shapes.pt_maps[ myshape ][ d ]( e ) , xs )
         return self.tabulate( xs_dim )
     def degree( self ):
         """Returns the polynomial degree of the space.  If the polynomial

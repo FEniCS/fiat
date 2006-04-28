@@ -1,9 +1,10 @@
 # Written by Robert C. Kirby
-# Copyright 2005 by The University of Chicago
+# Copyright 2005-2006 by The University of Chicago
 # Distributed under the LGPL license
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
+# Modified 28 April 2006 by RCK to fix error in FacetMoment
 # Modified 26 Sept 2005 by RCK to fix FacetDirectionMoment
 # Modified 23 Sept 2005
 # Last modified 21 April 2005
@@ -148,7 +149,7 @@ def FacetMoment( U , shape , d , e , p ):
         ref_pts = [ x[0] for x in Qref.get_points() ]
     else:
         ref_pts = Qref.get_points()
-    pts = map( shapes.pt_maps[ shape ][ d ][ e ] , \
+    pts = map( shapes.pt_maps[ shape ][ d ]( e ) , \
                ref_pts )
     wts = alpha * Qref.get_weights()
     us = U.base.tabulate( pts )
