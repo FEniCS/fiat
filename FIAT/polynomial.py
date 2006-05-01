@@ -190,6 +190,20 @@ class ScalarPolynomialSet( AbstractPolynomialSet ):
                 a[i][alpha] = self.multi_deriv_all( alpha ).tabulate( xs )
         return a
 
+    def trace_tabulate_jet( self , d , e , order, xs ):
+        """Computes all partial derivatives of the members of the set
+        up to order on entity e of topological dimension d at points
+        xs, which are specified on the reference element of dimension d.
+        Returns an array of dictionaries a[i][mi] where i is the order
+        of partial differentiation and mi is a multiindex with |mi| = i.
+        The value of a[i][mi] is an array A[i][j] containing the
+        appropriate derivative of the i:th member of the set at the
+        j:th member of xs."""
+        myshape = self.domain_shape()
+        xs_dim = map( shapes.pt_maps[ myshape ][ d ]( e ) , xs )
+        return self.tabulate_jet( order, xs_dim )
+
+
     def tensor_shape( self ):
         return (1,)
 
