@@ -275,6 +275,13 @@ class VectorPolynomialSet( AbstractPolynomialSet ):
         could change in later versions."""
         return ScalarPolynomialSet( self.base , self.coeffs[:,i,:] )
 
+	def trace_tabulate_jet( self , d , e , order , xs ):
+		myshape = self.domain_shape()
+		xs_dim = map( shapes.pt_maps[ myshape ][ d ]( e ) , xs ) 
+		return [ self.select_vector_component( i ).tabulate_jet( order , \
+			   												    xs_dim ) \
+	            for i in range(self.tensor_shape()[0]) ]
+
     def tensor_shape( self ):
         return self.coeffs.shape[1:2]
 
