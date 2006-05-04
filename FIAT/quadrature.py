@@ -158,4 +158,4 @@ def make_quadrature_by_degree( shape , deg ):
         # The gauss-type rule of m has m pts per direction
         # so it gets degree 2m-1 correct, so m = (deg+1)/2
         # add one to make sure
-        return make_quadrature(shape, (deg+1)/2+1 )
+        return make_quadrature(shape, int(math.ceil((deg+1)/2.0)) )
