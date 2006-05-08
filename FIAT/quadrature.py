@@ -111,35 +111,6 @@ rules = { shapes.LINE: GaussQuadrature , \
           shapes.TETRAHEDRON: make_quadrature_tetrahedron }
     
 
-# best_rules dictionaries map the degree to the best rule I
-# know about for each shape
-##alpha1 =  0.05971587 
-##beta1 =  0.47014206 
-##alpha2 =  0.79742699 
-##beta2 =  0.10128651 
-##
-##best_rules_triangle = { 1: ( [ 2.0 ] , \
-##                             [(-1./3.,-1./3.)] ) , \
-##                        2: ( [ 2.0/3.0 ] * 3 , \
-##                             [ x for e in shapes.entity_range(2,1) \
-##                               for x in points.make_points(2,1,e,2) ] ) ,\
-##                        3: ( ( [ 0.1 ] * 3 ) + ( [ 2./15. ] * 3 ) + [9./20.] ,
-##                             [ x for i in (0,1,2) \
-##                               for e in shapes.entity_range(2,i)
-##                               for x in points.make_points(2,i,e,i+1) ] ) , \
-##                        5: ( [ 2 * 0.225 ] \
-##                             + ( [ 2 * 0.13239415 ] * 3 ) \
-##                             + ( [ 2 * 0.12593918 ] * 3 ) , \
-##                             map( points.barycentric_to_ref_tri ,
-##                                  [ (1./3,1./3,1./3.) , \
-##                                    (alpha1,beta1,beta1) , \
-##                                    (beta1,alpha1,beta1) , \
-##                                    (beta1,beta1,alpha1) , \
-##                                    (alpha2,beta2,beta2) , \
-##                                    (beta2,alpha2,beta2) , \
-##                                    (beta2,beta2,alpha2) ] ) ) }
-##
-##best_rules = { shapes.TRIANGLE: best_rules_triangle }
 best_rules = {}
                              
 def make_quadrature( shape , m ):
@@ -159,3 +130,4 @@ def make_quadrature_by_degree( shape , deg ):
         # so it gets degree 2m-1 correct, so m = (deg+1)/2
         # add one to make sure
         return make_quadrature(shape, int(math.ceil((deg+1)/2.0)) )
+
