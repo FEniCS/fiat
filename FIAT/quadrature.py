@@ -109,7 +109,7 @@ def make_quadrature_tetrahedron( m ):
 rules = { shapes.LINE: GaussQuadrature , \
           shapes.TRIANGLE: make_quadrature_triangle, \
           shapes.TETRAHEDRON: make_quadrature_tetrahedron }
-    
+  
 
 best_rules = {}
                              

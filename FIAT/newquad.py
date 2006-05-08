@@ -1,5 +1,4 @@
-import xpermutations
-import quadrature
+import xpermutations, Numeric, quadrature
 
 # classes for Cools' symmetric rules
 # need way of handling permutation and rotation symmetry
@@ -7,9 +6,6 @@ import quadrature
 # I need functions for each kind of symmetry that take
 # the (x,y) coordinate point and return the list of all points
 # generated
-
-# We remark that Cools lists everything on the [0,1] element, and we
-# will need to convert to [-1,1] to be heh heh cool
 
 eps = 1.e-8
 
@@ -84,6 +80,7 @@ cools_tri_8_16 = [(0.072157803838893584,"fs",(0.33333333333333333, 0.33333333333
 				  (0.047545817133642312,"fs",(0.45929258829272315, 0.45929258829272315)),\
 				  (0.013615157087217497,"fs",(0.72849239295540428, 0.26311282963463811))]
 
+
 def make_rule( l_of_t ):
 	wts = []
 	pts = []
@@ -92,7 +89,14 @@ def make_rule( l_of_t ):
 		new_pts = generate[g]( pt )
 		wts.extend( [ w for foo in new_pts ] )
 		pts.extend( new_pts )
-	return quadrature.QuadratureRule( pts , wts )
+
+# Cools lists everything on the [0,1] element, and we
+# need to convert to [-1,1] to be heh heh cool
+
+	wts_big = 2.0 * Numeric.array( wts )
+	pts_big = [ tuple( [ 2.0*x-1 for x in pt ] ) for pt in pts ]
+
+	return quadrature.QuadratureRule( pts_big , wts_big )
 
 def main():
 	for foo in [cools_tri_1_1,cools_tri_2_3,cools_tri_4_6,\
@@ -100,9 +104,8 @@ def main():
 	            cools_tri_8_16]:
 		Q = make_rule( foo )
 		print len(Q.x),len(Q.w)
-#		print Q.x
-#		print Q.w
-#		print
+		print Q.x
+		print Q.w
 
 if __name__ == "__main__":
 	main()
