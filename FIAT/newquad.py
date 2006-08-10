@@ -93,6 +93,17 @@ cools_tet_4_14 = [(3.1746031746031746e-3,"fs",\
 				  (0.022139791114265119,"fs",\
 				  (0.31437287349319219,0.31437287349319219,0.31437287349319219))]
 
+cools = { 2 : { 1: cools_tri_1_1 , \
+			   2: cools_tri_2_3 , \
+			   4: cools_tri_4_6 , \
+			   5: cools_tri_5_7 , \
+			   6: cools_tri_6_12 , \
+			   7: cools_tri_7_12 , \
+			   8: cools_tri_8_16 } , \
+		 3 : { 1: cools_tet_1_1 , \
+		 	   2: cools_tet_2_4 , \
+		 	   3: cools_tet_3_8 , \
+		 	   4: cools_tet_4_14 } }
 
 
 def make_rule( l_of_t ):
@@ -116,6 +127,10 @@ def make_rule( l_of_t ):
 	pts_big = [ tuple( [ 2.0*x-1 for x in pt ] ) for pt in pts ]
 
 	return quadrature.QuadratureRule( pts_big , wts_big )
+
+def make_quad_by_degree( shape , deg ):
+	return make_rule( cools[shape][deg] )
+
 
 def main():
 	for foo in [cools_tri_1_1,cools_tri_2_3,cools_tri_4_6,\

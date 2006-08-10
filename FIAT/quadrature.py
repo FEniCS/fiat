@@ -1,10 +1,10 @@
 # Written by Robert C. Kirby
-# Copyright 2005 by The University of Chicago
+# Copyright 2005-2006 by The University of Chicago
 # Distributed under the LGPL license
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-# last modified 2 February 2005
+# last modified 16 May 2006
 
 """quadrature.py defines a class for general quadrature rules and then
 implements Jacobi-based quadrature rules on lines, triangles, and
@@ -111,7 +111,6 @@ rules = { shapes.LINE: GaussQuadrature , \
           shapes.TETRAHEDRON: make_quadrature_tetrahedron }
   
 
-best_rules = {}
                              
 def make_quadrature( shape , m ):
     """Takes a shape code (see shapes.py) and the number of points
@@ -122,12 +121,11 @@ def make_quadrature( shape , m ):
         raise RuntimeError, "No quadrature rule for that shape"
 
 def make_quadrature_by_degree( shape , deg ):
-    if best_rules.has_key( shape ) and best_rules[shape].has_key( deg ):
-        (wts,pts) = best_rules[shape][deg]
-        return QuadratureRule(pts,wts)
-    else:
-        # The gauss-type rule of m has m pts per direction
-        # so it gets degree 2m-1 correct, so m = (deg+1)/2
-        # add one to make sure
-        return make_quadrature(shape, int(math.ceil((deg+1)/2.0)) )
+	return make_quadrature(shape, int(math.ceil((deg+1)/2.0)) )
 
+def make_good_quadrature_by_degree( shape , deg ):
+	try:
+		import newquad
+		return newquad.make_quad_by_degree( shape , deg )
+	except:
+		return make_quadrature_by_degree(shape,deg)
