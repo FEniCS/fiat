@@ -10,53 +10,63 @@
 
 import expansions, shapes, Numeric, LinearAlgebra
 from LinearAlgebra import singular_value_decomposition as svd
-class PolynomialBase( object ):
-    """Defines an object that can tabulate the orthonormal polynomials
-    of a particular degree on a particular shape """
-    def __init__( self , shape , n ):
-        """shape is a shape code defined in shapes.py
-        n is the polynomial degree"""
-        self.bs = expansions.make_expansion( shape , n )
-	self.shape,self.n = shape,n
-        d = shapes.dimension( shape )
-        if n == 0:
-            self.dmats = [ Numeric.array( [ [ 0.0 ] ] , "d" ) ] * d
-        else:
-            dtildes = [ Numeric.zeros( (len(self.bs),len(self.bs)) , "d" ) \
+
+class AbstractPolynomialBase( object ):
+	# I need to define the eval_all, tabulate, degree,
+	# spatial_dimension, domain_shape, __len__, __getitem__
+	# functions, plus the dmats
+	pass
+
+#class MonomialPolynomialBase( AbstractPolynomialBase ):
+#	def __init__( self , shape , n ):
+		
+
+class OrthonormalPolynomialBase( AbstractPolynomialBase ):
+	"""Defines an object that can tabulate the orthonormal polynomials
+	of a particular degree on a particular shape """
+	def __init__( self , shape , n ):
+		"""shape is a shape code defined in shapes.py	
+		n is the polynomial degree"""
+		self.bs = expansions.make_expansion( shape , n )
+		self.shape,self.n = shape,n
+		d = shapes.dimension( shape )
+		if n == 0:
+			self.dmats = [ Numeric.array( [ [ 0.0 ] ] , "d" ) ] * d
+		else:
+			dtildes = [ Numeric.zeros( (len(self.bs),len(self.bs)) , "d" ) \
                       for i in range(0,d) ]
-            pts = shapes.make_points( shape , d , 0 , n + d + 1 )
-	    v = Numeric.transpose( expansions.tabulators[shape](n,pts) )
-            vinv = LinearAlgebra.inverse( v )
-	    dtildes = [Numeric.transpose(a) \
+			pts = shapes.make_points( shape , d , 0 , n + d + 1 )
+			v = Numeric.transpose( expansions.tabulators[shape](n,pts) )
+			vinv = LinearAlgebra.inverse( v )
+			dtildes = [Numeric.transpose(a) \
 		       for a in expansions.deriv_tabulators[shape](n,pts)]
-            self.dmats = [ Numeric.dot( vinv , dtilde ) for dtilde in dtildes ]
-        return
+			self.dmats = [ Numeric.dot( vinv , dtilde ) for dtilde in dtildes ]
+		return
 
-    def eval_all( self , x ):
-        """Returns the array A[i] = phi_i(x)."""
-        return self.tabulate( Numeric.array([x]))[:,0]
+	def eval_all( self , x ):
+		"""Returns the array A[i] = phi_i(x)."""
+		return self.tabulate( Numeric.array([x]))[:,0]
 
-    def tabulate( self , xs ):
-	"""xs is an iterable object of points.
-	returns an array A[i,j] where i runs over the basis functions
-	and j runs over the elements of xs."""
-	return expansions.tabulators[self.shape](self.n,Numeric.array(xs))
+	def tabulate( self , xs ):
+		"""xs is an iterable object of points.
+		returns an array A[i,j] where i runs over the basis functions
+		and j runs over the elements of xs."""
+		return expansions.tabulators[self.shape](self.n,Numeric.array(xs))
 
-    def degree( self ):
-        return self.n
+	def degree( self ):
+		return self.n
 
-    def spatial_dimension( self ):
-        return shapes.dimension( self.shape )
+	def spatial_dimension( self ):
+		return shapes.dimension( self.shape )
+	def domain_shape( self ):
+		return self.shape 
 
-    def domain_shape( self ):
-        return self.shape 
+	def __len__( self ):
+		"""Returns the number of items in the set."""
+		return len( self.bs )
 
-    def __len__( self ):
-        """Returns the number of items in the set."""
-        return len( self.bs )
-
-    def __getitem__( self , i ):
-        return self.bs[i]
+	def __getitem__( self , i ):
+		return self.bs[i]
 
 
 class AbstractPolynomialSet( object ):
@@ -139,7 +149,7 @@ class ScalarPolynomialSet( AbstractPolynomialSet ):
         if Numeric.rank( coeffs ) != 2:
             raise RuntimeError, \
                   "Illegal coeff matrix: ScalarPolynomialSet"
-        if isinstance( base, PolynomialBase ):
+        if isinstance( base, AbstractPolynomialBase ):
             AbstractPolynomialSet.__init__( self , base , coeffs )
         elif isinstance( base , ScalarPolynomialSet ):
             new_base = base.base
@@ -219,7 +229,7 @@ class ScalarPolynomialSet( AbstractPolynomialSet ):
 class VectorPolynomialSet( AbstractPolynomialSet ):
     """class modeling sets of vector-valued polynomials."""
     def __init__( self , base , coeffs ):
-        if isinstance( base , PolynomialBase ):
+        if isinstance( base , AbstractPolynomialBase ):
             if Numeric.rank( coeffs ) != 3:
                 raise RuntimeError, \
                       "Illegal coeff matrix: VectorPolynomialSet"
@@ -303,7 +313,7 @@ def PolynomialSet( base , coeffs ):
     either returns the appropriate kind of subclass of
     AbstractPolynomialSet or else raises an exception."""
     if len( coeffs.shape ) == 2:
-        if isinstance( base , PolynomialBase ):
+        if isinstance( base , AbstractPolynomialBase ):
             return ScalarPolynomialSet( base , coeffs )
         elif isinstance( base , VectorPolynomialSet ):
             return VectorPolynomialSet( base , coeffs )
@@ -330,7 +340,7 @@ class AbstractPolynomial( object ):
         """Constructor for AbstractPolynomial -- must be provided
         with PolynomialBase instance and a Numeric.array of
         coefficients."""
-        if not isinstance( base , PolynomialBase ):
+        if not isinstance( base , AbstractPolynomialBase ):
             raise RuntimeError, "Illegal base: AbstractPolynomial"
         self.base , self.dof = base , dof
         return
@@ -386,7 +396,7 @@ class TensorPolynomial( AbstractPolynomial ):
 def Polynomial( base , dof ):
     """Returns a instance of the appropriate subclass of
     AbstractPolynomial."""
-    if not isinstance( base , PolynomialBase ) and \
+    if not isinstance( base , AbstractPolynomialBase ) and \
        not isinstance( base , PolynomialSet ):
         raise RuntimeError, "Illegal types, Polynomial"
     if Numeric.rank( dof ) == 1:
@@ -403,7 +413,7 @@ def OrthogonalPolynomialSet( element_shape , degree ):
     orthormal basis functions on element_shape.  This allows
     us to arbitrarily differentiate the orthogonal polynomials
     if we need to."""
-    b = PolynomialBase( element_shape , degree )
+    b = OrthonormalPolynomialBase( element_shape , degree )
     coeffs = Numeric.identity( shapes.poly_dims[element_shape](degree) , \
                                "d" )
     return ScalarPolynomialSet( b , coeffs )
@@ -412,7 +422,7 @@ def OrthogonalPolynomialArraySet( element_shape , degree , nc = None ):
     """Returns a VectorPolynomialSet that models the orthnormal basis
     for vector-valued functions with d components, where d is the spatial
     dimension of element_shape"""
-    b = PolynomialBase( element_shape , degree )
+    b = OrthonormalPolynomialBase( element_shape , degree )
     space_dim = shapes.dimension( element_shape )
     if nc == None:
         nc = space_dim

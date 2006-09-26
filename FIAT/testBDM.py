@@ -1,12 +1,13 @@
 import BDM, shapes, Numeric, time
 shape = 2
-kmax = 2
+kmax = 1
 d = shapes.dimension(shape)
 
 for k in range(1,kmax+1):
     t1 = time.time()
     bdm = BDM.BDM(shape,k)
     print time.time() - t1
+    print bdm.dual_basis().entity_ids
 
 # test: compute normal on edge/face 0 at control points.
 # everything should be either zero or one.
