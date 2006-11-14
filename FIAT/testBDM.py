@@ -1,4 +1,4 @@
-import BDM, shapes, Numeric, time
+import BDM, shapes, numpy, time
 shape = 2
 kmax = 1
 d = shapes.dimension(shape)
@@ -14,11 +14,11 @@ for k in range(1,kmax+1):
 ##U = bdm.function_space()
 ##pts = shapes.make_points(shape,d-1,0,d+k)
 ##Utab = U.tabulate(pts)
-##A = Numeric.zeros(Utab.shape[:2],"d")
+##A = numpy.zeros(Utab.shape[:2],"d")
 ##for i in range(Utab.shape[0]):
 ##    for j in range(Utab.shape[1]):
 ##        for k in range(d):
-##            A[i,j] += Utab[i,j,k] / Numeric.sqrt(d)
+##            A[i,j] += Utab[i,j,k] / numpy.sqrt(d)
 ##
 ##
 ##for i in range(A.shape[0]):

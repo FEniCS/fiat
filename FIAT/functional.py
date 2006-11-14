@@ -9,16 +9,16 @@
 # Modified 23 Sept 2005
 # Last modified 21 April 2005
 
-import Numeric, quadrature, polynomial, shapes
+import numpy, quadrature, polynomial, shapes
 
 def frob(a,b):
     alen = reduce( lambda a,b:a*b , a.shape )
-    return Numeric.dot( Numeric.reshape( a , (alen,)) , \
-                        Numeric.reshape( b , (alen,)) )
+    return numpy.dot( numpy.reshape( a , (alen,)) , \
+                        numpy.reshape( b , (alen,)) )
 
 class Functional( object ):
     def __init__( self , U , a ):
-        self.U, self.a = U, Numeric.asarray( a )
+        self.U, self.a = U, numpy.asarray( a )
         return
     def __call__( self , p ):
         # need to add type checking to confirm that
@@ -41,13 +41,13 @@ def make_point_evaluations( U , pts ):
 	     for i in range(len(pts)) ]
 
 def ComponentPointEvaluation( U , comp , pt ):
-    mat = Numeric.zeros( U.coeffs.shape[1:] , "d" )
+    mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
     bvals = U.base.eval_all( pt )
     mat[comp,:] = bvals
     return Functional( U , mat )
 
 def DirectionalComponentPointEvaluation( U , dir , pt ):
-    mat = Numeric.zeros( U.coeffs.shape[1:] , "d" )
+    mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
     bvals = U.base.eval_all( pt )
     for i in range(len(dir)):
         mat[i,:] = dir[i] * bvals
@@ -55,7 +55,7 @@ def DirectionalComponentPointEvaluation( U , dir , pt ):
 
 def make_directional_component_batch( U , dir , pts ):
     mat_shape = tuple( [len(pts)] + list( U.coeffs.shape[1:] ) )
-    mat = Numeric.zeros(mat_shape,"d")
+    mat = numpy.zeros(mat_shape,"d")
     bvals = U.base.tabulate( pts )
     for p in range(len(pts)):
         bvals_cur = bvals[:,p]
@@ -78,7 +78,7 @@ def make_directional_component_point_evaluations( U , dirs ):
     bvals = U.base.tabulate( pts )
     # need a matrix to store the functionals
     mat_shape = tuple( [ len(pts) ] + list( U.coeffs.shape[1:] ) )
-    mat = Numeric.zeros( mat_shape , "d" )
+    mat = numpy.zeros( mat_shape , "d" )
     cur = 0
     for dir in dirs:
         for pno in range(len(dirs[dir])):
@@ -123,7 +123,7 @@ def IntegralMoment( U , p ):
 def IntegralMomentOfDerivative( U , i , p ):
     return Functional( self , \
                        U , \
-                       Numeric.dot( Numeric.transpose( U.base.dmats[i] ) , \
+                       numpy.dot( numpy.transpose( U.base.dmats[i] ) , \
                                     p.dof ) )
     pass
 
@@ -132,9 +132,9 @@ def IntegralMomentOfDerivative( U , i , p ):
 # as above, we need to build an array L[i][j] = (dphi_j / dx_i , p )
 # that may be contracted with a member of U.
 def IntegralMomentOfDivergence( U , p ):
-    mat = Numeric.zeros( U.coeffs.shape[1:] , "d" )
+    mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
     for i in range( U.coeffs.shape[1] ):
-        mat[i,:] = Numeric.dot( Numeric.transpose( U.base.dmats[i] ) , \
+        mat[i,:] = numpy.dot( numpy.transpose( U.base.dmats[i] ) , \
                                 p.dof )
     return Functional( U , mat )
 
@@ -153,8 +153,8 @@ def FacetMoment( U , shape , d , e , p ):
                ref_pts )
     wts = alpha * Qref.get_weights()
     us = U.base.tabulate( pts )
-    ps = Numeric.array( [ p(x) for x in Qref.get_points() ] )
-    vec = Numeric.array( len( U ) , "d" )
+    ps = numpy.array( [ p(x) for x in Qref.get_points() ] )
+    vec = numpy.array( len( U ) , "d" )
     for i in len( U ):
         vec[i] = sum( wts * ps * us[i] )
 
@@ -170,26 +170,26 @@ def FacetMoment( U , shape , d , e , p ):
     pts = Qref.get_points()
     wts = Qref.get_weights() / alpha
     pt_map = shapes.pt_maps[ shape ][ d ]( e )
-    mapped_pts = Numeric.array( [ pt_map( x ) for x in pts ] )
-    ps = Numeric.array( [ p( x ) for x in Qref.get_points() ] )
+    mapped_pts = numpy.array( [ pt_map( x ) for x in pts ] )
+    ps = numpy.array( [ p( x ) for x in Qref.get_points() ] )
     phis = U.base.tabulate( mapped_pts )
-    vec = Numeric.dot( phis , wts * ps )
+    vec = numpy.dot( phis , wts * ps )
 
     return Functional( U , vec )
 
 def FacetDirectionalMoment( U , shape , dir , d , e , p ):
-    mat = Numeric.zeros( U.coeffs.shape[1:] , "d" )
+    mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
     Qref = quadrature.make_quadrature( d , 2 * U.degree() )
     alpha = shapes.scale_factor( shape , d , e )
     pts = Qref.get_points()
     wts = Qref.get_weights() / alpha
     pt_map = shapes.pt_maps[ shape ][ d ]( e )
-    mapped_pts = Numeric.array( [ pt_map( x ) for x in pts ] )
-    ps = Numeric.array( [ p( x ) for x in Qref.get_points() ] )
+    mapped_pts = numpy.array( [ pt_map( x ) for x in pts ] )
+    ps = numpy.array( [ p( x ) for x in Qref.get_points() ] )
     phis = U.base.tabulate( mapped_pts )
 
     for i in range(len(dir)):
-        mat[i,:] = Numeric.dot( phis , dir[i] * wts * ps )
+        mat[i,:] = numpy.dot( phis , dir[i] * wts * ps )
 
     return Functional( U , mat )
 

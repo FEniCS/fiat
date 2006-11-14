@@ -8,7 +8,7 @@
 # Edited 26 Sept 2005 by RCK
 
 import dualbasis, polynomial, functionalset, functional, shapes, \
-       quadrature, Numeric, PhiK
+       quadrature, numpy, PhiK
 
 def BDFMSpace( shape , k ):
     U = polynomial.OrthogonalPolynomialArraySet( shape , k )

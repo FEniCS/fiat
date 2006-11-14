@@ -1,4 +1,4 @@
-import xpermutations, Numeric, quadrature
+import xpermutations, numpy, quadrature
 
 # classes for Cools' symmetric rules
 # need way of handling permutation and rotation symmetry
@@ -123,7 +123,7 @@ def make_rule( l_of_t ):
 	elif len( pts[0] ) == 3:
 		factor = 8.0
 
-	wts_big = factor * Numeric.array( wts )
+	wts_big = factor * numpy.array( wts )
 	pts_big = [ tuple( [ 2.0*x-1 for x in pt ] ) for pt in pts ]
 
 	return quadrature.QuadratureRule( pts_big , wts_big )

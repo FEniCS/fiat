@@ -13,23 +13,23 @@
 """shapes.py
 Module defining topological and geometric information for simplices in one, two, and
 three dimensions."""
-import Numeric, LinearAlgebra, exceptions
+import numpy, numpy.linalg, exceptions
 from factorial import factorial
 from math import sqrt
 
 
 def strike_col( A , j ):
     m,n = A.shape
-    return Numeric.take( A , [ k for k in range(0,n) if k != j ] , 1 )
+    return numpy.take( A , [ k for k in range(0,n) if k != j ] , 1 )
 
 def cross( vecs ):
     """Multidimensional cross product of d+1 vecs in R^{d}."""
     n,d = len(vecs),len(vecs[0]) 
-    mat = Numeric.array( vecs )
+    mat = numpy.array( vecs )
     if n != d-1:
         raise RuntimeError, "This won't work"
-    return Numeric.array( \
-        [ (-1)**i * LinearAlgebra.determinant(strike_col(mat,i)) \
+    return numpy.array( \
+        [ (-1)**i * numpy.linalg.det(strike_col(mat,i)) \
           for i in range(0,d) ] )
 
 class ShapeError( exceptions.Exception ):
@@ -85,10 +85,10 @@ def distance( a , b ):
 def area( a , b , c ):
     if len( a ) != 3 or len( b ) != 3 or len( c ) != 3:
         raise ShapeError, "Can't compute area"
-    v1 = Numeric.array( a ) - Numeric.array( c )
-    v2 = Numeric.array( b ) - Numeric.array( c )
+    v1 = numpy.array( a ) - numpy.array( c )
+    v2 = numpy.array( b ) - numpy.array( c )
     crss = cross( [ v1 , v2 ] )
-    return sqrt( Numeric.dot( crss , crss ) )
+    return sqrt( numpy.dot( crss , crss ) )
 
 # mapping from edge ids of a triangle to the pair of vertices
 triangle_edges = { 0 : ( 1 , 2 ) , \
@@ -153,22 +153,22 @@ normals[shp]={}
 vert_dict = vertex_relation[ shp ][ dim[ shp ] - 1 ]
 for i in vert_dict.keys():
     vert_ids = vert_dict[ i ]
-    vert_vecs = [ Numeric.array( vertices[ shp ][ j ] ) \
+    vert_vecs = [ numpy.array( vertices[ shp ][ j ] ) \
                   for j in vert_ids ]
     vecs = [ v - vert_vecs[ 0 ] for v in vert_vecs[ 1: ] ]
     crss = cross( vecs )
-    normals[ shp ][ i ] = crss / sqrt( Numeric.dot( crss , crss ) )
+    normals[ shp ][ i ] = crss / sqrt( numpy.dot( crss , crss ) )
 
 shp=TETRAHEDRON
 normals[ shp ] = {}
 vert_dict = vertex_relation[ shp ][ dim[ shp ] - 1 ]
 for i in vert_dict.keys():
     vert_ids = vert_dict[ i ]
-    vert_vecs = [ Numeric.array( vertices[ shp ][ j ] ) \
+    vert_vecs = [ numpy.array( vertices[ shp ][ j ] ) \
                   for j in vert_ids ]
     vecs = [ v - vert_vecs[ 0 ] for v in vert_vecs[ 1: ] ]
     crss = cross( vecs )
-    normals[ shp ][ i ] = -crss / sqrt( Numeric.dot( crss , crss ) )
+    normals[ shp ][ i ] = -crss / sqrt( numpy.dot( crss , crss ) )
 
 tangents = {}
 for shp in ( TRIANGLE , TETRAHEDRON ):
@@ -177,21 +177,21 @@ for shp in ( TRIANGLE , TETRAHEDRON ):
     vert_dict = vertex_relation[ shp ][ 1 ]
     for i in vert_dict.keys():
         vert_ids = vert_dict[ i ]
-        vert_vecs = [ Numeric.array( vertices[ shp ][ j ] ) \
+        vert_vecs = [ numpy.array( vertices[ shp ][ j ] ) \
                       for j in vert_ids ]
         diff = vert_vecs[ 1 ] - vert_vecs[ 0 ]
-        tangents[ shp ][1][ i ] = diff / sqrt( Numeric.dot( diff , diff ) )
+        tangents[ shp ][1][ i ] = diff / sqrt( numpy.dot( diff , diff ) )
 
 tangents[TETRAHEDRON][2] = {}
 for f in range(4):
     vert_ids = vertex_relation[ TETRAHEDRON ][ 2 ][ f ]
-    v = Numeric.array( [ vertices[ TETRAHEDRON ][ vert_ids[i ] ] for i in range(3) ] )
+    v = numpy.array( [ vertices[ TETRAHEDRON ][ vert_ids[i ] ] for i in range(3) ] )
     v10 = v[1]-v[0]
     v20 = v[2]-v[0]
-    t0 = v10 / Numeric.sqrt( Numeric.dot( v10 , v10 ) )
+    t0 = v10 / numpy.sqrt( numpy.dot( v10 , v10 ) )
     alpha = sum( v20 * v10 ) / sum( v10 * v10 )
     t1nonunit = v[2] - v[0] - alpha * v[1]
-    t1 = t1nonunit / Numeric.sqrt( Numeric.dot( t1nonunit , t1nonunit ) )
+    t1 = t1nonunit / numpy.sqrt( numpy.dot( t1nonunit , t1nonunit ) )
     tangents[TETRAHEDRON][2][ f ] = (t0,t1)
 
 
@@ -247,7 +247,7 @@ def make_lattice_line( n , interior = 0 ):
 
 def make_lattice_triangle( n , interior = 0 ):
     if n == 0: return tuple( )
-    vs = [ Numeric.array( vertices[ TRIANGLE ][ i ] ) \
+    vs = [ numpy.array( vertices[ TRIANGLE ][ i ] ) \
              for i in vertices[ TRIANGLE ].iterkeys() ]
     hs = [ vs[ i ] - vs[ 0 ] for i in (1,2) ]
     return tuple( [ tuple( vs[ 0 ] + ii * hs[ 1 ] / n + jj * hs[ 0 ] / n ) \
@@ -256,7 +256,7 @@ def make_lattice_triangle( n , interior = 0 ):
 
 def make_lattice_tetrahedron( n , interior = 0 ):
     if n == 0: return tuple( )
-    vs = [ Numeric.array( vertices[ TETRAHEDRON ][ i ] ) \
+    vs = [ numpy.array( vertices[ TETRAHEDRON ][ i ] ) \
              for i in vertices[ TETRAHEDRON ].iterkeys() ]
     hs = [ vs[ i ] - vs[ 0 ] for i in (1,2,3) ]
     return tuple( [ tuple( vs[ 0 ] \
@@ -283,8 +283,8 @@ def make_pt_to_edge( shp , verts ):
     a0 = vertices[ 1 ][ 0 ][ 0 ]
     b0 = vertices[ 1 ][ 1 ][ 0 ]
     h = 1./(b0 - a0)
-    v0 = Numeric.array( vertices[ shp ][ verts[ 0 ] ] )
-    v1 = Numeric.array( vertices[ shp ][ verts[ 1 ] ] )
+    v0 = numpy.array( vertices[ shp ][ verts[ 0 ] ] )
+    v1 = numpy.array( vertices[ shp ][ verts[ 1 ] ] )
     diff = v1 - v0
     return lambda x: tuple( v0 + h * ( x[ 0 ] - a0 ) * diff )
 
@@ -298,9 +298,9 @@ def make_pt_to_face_tetrahedron( verts ):
     Returns a function mapping points (2-tuples) on the reference triangle
     to points on that face of the reference tetrahedron."""
     # get reference triangle vertices
-    v0 = Numeric.array( vertices[ TETRAHEDRON ][ verts[ 0 ] ] )
-    v1 = Numeric.array( vertices[ TETRAHEDRON ][ verts[ 1 ] ] )
-    v2 = Numeric.array( vertices[ TETRAHEDRON ][ verts[ 2 ] ] )
+    v0 = numpy.array( vertices[ TETRAHEDRON ][ verts[ 0 ] ] )
+    v1 = numpy.array( vertices[ TETRAHEDRON ][ verts[ 1 ] ] )
+    v2 = numpy.array( vertices[ TETRAHEDRON ][ verts[ 2 ] ] )
     d = [ v1 - v0 , v2 - v0 ]
     return lambda x: tuple( v0 \
                             + 0.5*(x[ 0 ]+1.0) * d[ 0 ] \

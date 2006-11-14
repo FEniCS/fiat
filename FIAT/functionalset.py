@@ -6,8 +6,8 @@
 
 # last modified 7 April 2005
 
-import Numeric
-from LinearAlgebra import singular_value_decomposition as svd
+import numpy
+from numpy.linalg import svd
 from polynomial import outer_product
 
 class FunctionalSet( object ):
@@ -21,7 +21,7 @@ class FunctionalSet( object ):
             raise RuntimeError, "Not all functionals have the same base!"
         self.U = U
         self.ls = ls
-	self.mat = Numeric.array( [ Numeric.array( l.a ) for l in ls ] )
+	self.mat = numpy.array( [ numpy.array( l.a ) for l in ls ] )
         pass
     def __getitem__( self , i ):
         """Recovers the i:th functional in the set."""

@@ -5,15 +5,15 @@
 # under award number DE-FG02-04ER25650
 
 # last edited 16 May 2005
-import shapes, dualbasis, polynomial, Numeric, functional
+import shapes, dualbasis, polynomial, numpy, functional
 import functionalset
 
 class P0Dual( dualbasis.DualBasis ):
     def __init__( self , shape , U ):
         # get barycenter
         vs = shapes.vertices[shape]
-        bary = Numeric.average( Numeric.array( map( Numeric.array , \
-                                                   vs.values() ) ) )
+        bary = numpy.average( numpy.array( map( numpy.array , \
+                                                   vs.values() ) ) , 0 )
         
         self.pts = ( tuple(bary) , )
         ls = [ functional.PointEvaluation( U , bary ) ]
@@ -41,7 +41,7 @@ class VecP0Dual( dualbasis.DualBasis ):
         d = shapes.dimension( shape )
         nc = U.tensor_shape()[0]
         vs = shapes.vertices[ shape ]
-        bary = Numeric.average( Numeric.array( map( Numeric.array , \
+        bary = numpy.average( numpy.array( map( numpy.array , \
                                                     vs.values() ) ) )
         self.pts = ( tuple(bary) , )
         ls = [ functional.ComponentPointEvaluation( U , c , bary ) \

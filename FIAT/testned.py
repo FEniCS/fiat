@@ -1,4 +1,4 @@
-import Nedelec, functional, Numeric, polynomial, quadrature, shapes
+import Nedelec, functional, numpy, polynomial, quadrature, shapes
 
 shape = shapes.TRIANGLE
 degree = 1

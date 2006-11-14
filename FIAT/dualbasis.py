@@ -6,7 +6,7 @@
 #
 # Last modified 10 May 2005 by RCK
 
-import functional, Numeric
+import functional, numpy
 
 #class DualBasis( functional.FunctionalList ):
 class DualBasis( object ):

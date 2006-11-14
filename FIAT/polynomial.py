@@ -8,8 +8,8 @@
 # modified 1 June 2005 by RCK
 
 
-import expansions, shapes, Numeric, LinearAlgebra
-from LinearAlgebra import singular_value_decomposition as svd
+import expansions, shapes, numpy, numpy.linalg
+from numpy.linalg import svd
 
 class AbstractPolynomialBase( object ):
 	# I need to define the eval_all, tabulate, degree,
@@ -31,27 +31,27 @@ class OrthonormalPolynomialBase( AbstractPolynomialBase ):
 		self.shape,self.n = shape,n
 		d = shapes.dimension( shape )
 		if n == 0:
-			self.dmats = [ Numeric.array( [ [ 0.0 ] ] , "d" ) ] * d
+			self.dmats = [ numpy.array( [ [ 0.0 ] ] , "d" ) ] * d
 		else:
-			dtildes = [ Numeric.zeros( (len(self.bs),len(self.bs)) , "d" ) \
+			dtildes = [ numpy.zeros( (len(self.bs),len(self.bs)) , "d" ) \
                       for i in range(0,d) ]
 			pts = shapes.make_points( shape , d , 0 , n + d + 1 )
-			v = Numeric.transpose( expansions.tabulators[shape](n,pts) )
-			vinv = LinearAlgebra.inverse( v )
-			dtildes = [Numeric.transpose(a) \
+			v = numpy.transpose( expansions.tabulators[shape](n,pts) )
+			vinv = numpy.linalg.inv( v )
+			dtildes = [numpy.transpose(a) \
 		       for a in expansions.deriv_tabulators[shape](n,pts)]
-			self.dmats = [ Numeric.dot( vinv , dtilde ) for dtilde in dtildes ]
+			self.dmats = [ numpy.dot( vinv , dtilde ) for dtilde in dtildes ]
 		return
 
 	def eval_all( self , x ):
 		"""Returns the array A[i] = phi_i(x)."""
-		return self.tabulate( Numeric.array([x]))[:,0]
+		return self.tabulate( numpy.array([x]))[:,0]
 
 	def tabulate( self , xs ):
 		"""xs is an iterable object of points.
 		returns an array A[i,j] where i runs over the basis functions
 		and j runs over the elements of xs."""
-		return expansions.tabulators[self.shape](self.n,Numeric.array(xs))
+		return expansions.tabulators[self.shape](self.n,numpy.array(xs))
 
 	def degree( self ):
 		return self.n
@@ -116,7 +116,7 @@ class AbstractPolynomialSet( object ):
     def rank( self ):
         """Returns the tensor rank of the range of the functions (0
         for scalar, two for vector, etc"""
-        return Numeric.rank( self.coeffs ) - 2
+        return numpy.rank( self.coeffs ) - 2
     def tensor_dim( self ):
         if self.rank() == 0:
             return tuple()
@@ -136,7 +136,7 @@ class AbstractPolynomialSet( object ):
     def take( self , items ):
         """Extracts the subset of polynomials given by indices stored
         in iterable items.""" 
-        return PolynomialSet( self.base , Numeric.take( self.coeffs , items ) )
+        return PolynomialSet( self.base , numpy.take( self.coeffs , items ) )
 
 # ScalarPolynomialSet can be made with either
 # -- ScalarPolynomialSet OR
@@ -146,32 +146,32 @@ class AbstractPolynomialSet( object ):
 # a member of the new set
 class ScalarPolynomialSet( AbstractPolynomialSet ):
     def __init__( self , base , coeffs ):
-        if Numeric.rank( coeffs ) != 2:
+        if numpy.rank( coeffs ) != 2:
             raise RuntimeError, \
                   "Illegal coeff matrix: ScalarPolynomialSet"
         if isinstance( base, AbstractPolynomialBase ):
             AbstractPolynomialSet.__init__( self , base , coeffs )
         elif isinstance( base , ScalarPolynomialSet ):
             new_base = base.base
-            new_coeffs = Numeric.dot( coeffs , base.coeffs )
+            new_coeffs = numpy.dot( coeffs , base.coeffs )
             AbstractPolynomialSet.__init__( self , new_base , new_coeffs )
         return
     def eval_all( self , x ):
         """Returns the array A[i] = psi_i(x)."""
         bvals = self.base.eval_all( x )
-        return Numeric.dot( self.coeffs , bvals )
+        return numpy.dot( self.coeffs , bvals )
 
     def tabulate( self , xs ):
         """Returns the array A[i][j] with i running members of the set
         and j running over the members of xs."""
         bvals = self.base.tabulate( xs )
-        return Numeric.dot( self.coeffs , bvals )    
+        return numpy.dot( self.coeffs , bvals )    
 
     def deriv_all( self , i ):
         """Returns the PolynomialSet containing the partial derivative
         in the i:th direction of each component."""
         D = self.base.dmats[i]
-        new_coeffs = Numeric.dot( self.coeffs , Numeric.transpose(D) )
+        new_coeffs = numpy.dot( self.coeffs , numpy.transpose(D) )
         return ScalarPolynomialSet( self.base , new_coeffs )
     
     def multi_deriv_all( self , alpha ):
@@ -230,24 +230,24 @@ class VectorPolynomialSet( AbstractPolynomialSet ):
     """class modeling sets of vector-valued polynomials."""
     def __init__( self , base , coeffs ):
         if isinstance( base , AbstractPolynomialBase ):
-            if Numeric.rank( coeffs ) != 3:
+            if numpy.rank( coeffs ) != 3:
                 raise RuntimeError, \
                       "Illegal coeff matrix: VectorPolynomialSet"
             AbstractPolynomialSet.__init__( self , base , coeffs )
             pass
         elif isinstance( base , VectorPolynomialSet ):
-            if Numeric.rank( coeffs ) != 2:
+            if numpy.rank( coeffs ) != 2:
                 raise RuntimeError, \
                       "Illegal coeff matrix: VectorPolynomialSet"
             new_base_shape = (base.coeffs.shape[0], \
                          reduce(lambda a,b:a*b, \
                                 base.coeffs.shape[1:] ) )
-            base_coeffs_reshaped = Numeric.reshape( base.coeffs , \
+            base_coeffs_reshaped = numpy.reshape( base.coeffs , \
                                                     new_base_shape )
             new_coeffs_shape = tuple( [coeffs.shape[0]] \
                                       + list(base.coeffs.shape[1:]) )
-            new_coeffs_flat = Numeric.dot( coeffs , base_coeffs_reshaped )
-            new_coeffs = Numeric.reshape( new_coeffs_flat , new_coeffs_shape )
+            new_coeffs_flat = numpy.dot( coeffs , base_coeffs_reshaped )
+            new_coeffs = numpy.reshape( new_coeffs_flat , new_coeffs_shape )
             AbstractPolynomialSet.__init__( self , base.base , new_coeffs )
             return
         else:
@@ -258,11 +258,11 @@ class VectorPolynomialSet( AbstractPolynomialSet ):
         set and j runs over the components of each member."""
         bvals = self.base.eval_all( x )
         old_shape = self.coeffs.shape
-        flat_coeffs = Numeric.reshape( self.coeffs , \
+        flat_coeffs = numpy.reshape( self.coeffs , \
                                        (old_shape[0]*old_shape[1] , \
                                         old_shape[2] ) )
-        flat_dot = Numeric.dot( flat_coeffs , bvals )
-        return Numeric.reshape( flat_dot , old_shape[:2] )
+        flat_dot = numpy.dot( flat_coeffs , bvals )
+        return numpy.reshape( flat_dot , old_shape[:2] )
                       
     def tabulate( self , xs ):
 	"""xs is an iterable object of points.
@@ -271,11 +271,11 @@ class VectorPolynomialSet( AbstractPolynomialSet ):
 	over the points."""
         bvals = self.base.tabulate( xs )
         old_shape = self.coeffs.shape
-        flat_coeffs = Numeric.reshape( self.coeffs , \
+        flat_coeffs = numpy.reshape( self.coeffs , \
                                        ( old_shape[0]*old_shape[1] , \
                                          old_shape[2] ) )
-        flat_dot = Numeric.dot( flat_coeffs , bvals )
-        unflat_dot = Numeric.reshape( flat_dot , \
+        flat_dot = numpy.dot( flat_coeffs , bvals )
+        unflat_dot = numpy.reshape( flat_dot , \
                                 ( old_shape[0] , old_shape[1] , len(xs) ) )
         return unflat_dot
 
@@ -338,7 +338,7 @@ class AbstractPolynomial( object ):
     some base set of polynomials."""
     def __init__( self , base , dof ):
         """Constructor for AbstractPolynomial -- must be provided
-        with PolynomialBase instance and a Numeric.array of
+        with PolynomialBase instance and a numpy.array of
         coefficients."""
         if not isinstance( base , AbstractPolynomialBase ):
             raise RuntimeError, "Illegal base: AbstractPolynomial"
@@ -352,7 +352,7 @@ class ScalarPolynomial( AbstractPolynomial ):
     """class of scalar-valued polynomials supporting
     evaluation and differentiation."""
     def __init__( self , base , dof ):
-        if Numeric.rank( dof ) != 1:
+        if numpy.rank( dof ) != 1:
             raise RuntimeError, \
                   "This isn't a scalar polynomial."
         AbstractPolynomial.__init__( self , base , dof )
@@ -360,13 +360,13 @@ class ScalarPolynomial( AbstractPolynomial ):
     def __call__( self , x ):
         """Evaluates the polynomial at point x"""
         bvals = self.base.eval_all( x )
-        return Numeric.dot( self.dof , bvals )
+        return numpy.dot( self.dof , bvals )
     def deriv( self , i ):
         """Computes the partial derivative in the i:th direction,
         represented as a polynomial over the same base."""
         b = self.base
         D = b.dmats[i]
-        deriv_dof = Numeric.dot( D , self.dof )
+        deriv_dof = numpy.dot( D , self.dof )
         return ScalarPolynomial( b , deriv_dof )
     def __getitem__( self , i ):
         if i != 0: raise RuntimeError, "Illegal indexing into ScalarPolynomial"
@@ -376,13 +376,13 @@ class VectorPolynomial( AbstractPolynomial ):
     """class of vector-valued polynomials supporting evaluation
     and component selection."""
     def __init__( self , base , dof ):
-        if Numeric.rank( dof ) != 2 :
+        if numpy.rank( dof ) != 2 :
             raise RuntimeError, "This isn't a vector polynomial."
         AbstractPolynomial.__init__( self , base , dof )
         return
     def __call__( self , x ):
         bvals = self.base.eval_all( x )
-        return Numeric.dot( self.dof , bvals )
+        return numpy.dot( self.dof , bvals )
     def __getitem__( self , i ):
         if type( i ) != type( 1 ):
             raise RuntimeError, "Illegal input type."
@@ -399,11 +399,11 @@ def Polynomial( base , dof ):
     if not isinstance( base , AbstractPolynomialBase ) and \
        not isinstance( base , PolynomialSet ):
         raise RuntimeError, "Illegal types, Polynomial"
-    if Numeric.rank( dof ) == 1:
+    if numpy.rank( dof ) == 1:
         return ScalarPolynomial( base , dof )
-    elif Numeric.rank( dof ) == 2:
+    elif numpy.rank( dof ) == 2:
         return VectorPolynomial( base , dof )
-    elif Numeric.rank( dof ) > 2:
+    elif numpy.rank( dof ) > 2:
         return TensorPolynomial( base , dof )
     else:
         raise RuntimeError, "Illegal shape dimensions"
@@ -414,7 +414,7 @@ def OrthogonalPolynomialSet( element_shape , degree ):
     us to arbitrarily differentiate the orthogonal polynomials
     if we need to."""
     b = OrthonormalPolynomialBase( element_shape , degree )
-    coeffs = Numeric.identity( shapes.poly_dims[element_shape](degree) , \
+    coeffs = numpy.identity( shapes.poly_dims[element_shape](degree) , \
                                "d" )
     return ScalarPolynomialSet( b , coeffs )
 
@@ -427,8 +427,8 @@ def OrthogonalPolynomialArraySet( element_shape , degree , nc = None ):
     if nc == None:
         nc = space_dim
     M = shapes.polynomial_dimension( element_shape , degree )
-    coeffs = Numeric.zeros( (nc * M , nc , M ) , "d" )
-    ident = Numeric.identity( M , "d" )
+    coeffs = numpy.zeros( (nc * M , nc , M ) , "d" )
+    ident = numpy.identity( M , "d" )
     for i in range(nc):
         coeffs[(i*M):(i+1)*M,i,:] = ident[:,:]
 
@@ -439,8 +439,8 @@ class FiniteElement( object ):
     def __init__( self , Udual , U ):
         self.Udual = Udual
         v = outer_product( Udual.get_functional_set() , U )
-        vinv = LinearAlgebra.inverse( v )
-        self.U = PolynomialSet( U , Numeric.transpose(vinv) )
+        vinv = numpy.linalg.inv( v )
+        self.U = PolynomialSet( U , numpy.transpose(vinv) )
         return
     def domain_shape( self ): return self.U.domain_shape()
     def function_space( self ): return self.U
@@ -457,7 +457,7 @@ def ConstrainedPolynomialSet( fset ):
     # some of the constraint functionals may be redundant.  I
     # must check to see how many singular values there are, as this
     # is what determines the rank and nullity of L
-    Sig_L_nonzero = Numeric.array( [ a for a in Sig_L if abs(a) > tol ] )
+    Sig_L_nonzero = numpy.array( [ a for a in Sig_L if abs(a) > tol ] )
     num_nonzero_svs = len( Sig_L_nonzero )
     vcal = Vt_L[ num_nonzero_svs: ]
     return PolynomialSet( fset.function_space() , vcal )
@@ -469,20 +469,20 @@ def outer_product(flist,plist):
     if len(shp) > 2:
         num_cols = reduce( lambda a,b:a*b , shp[1:] )
         new_shp = (shp[0],num_cols)
-        A = Numeric.reshape( flist.mat,(flist.mat.shape[0],num_cols) )
-        B = Numeric.reshape( plist.coeffs,(plist.coeffs.shape[0],num_cols) )
+        A = numpy.reshape( flist.mat,(flist.mat.shape[0],num_cols) )
+        B = numpy.reshape( plist.coeffs,(plist.coeffs.shape[0],num_cols) )
     else:
         A = flist.mat
         B = plist.coeffs
 
-    return Numeric.dot( A , Numeric.transpose( B ) )
+    return numpy.dot( A , numpy.transpose( B ) )
        
 def gradient( u ):
     if not isinstance( u , ScalarPolynomial ):
         raise RuntimeError, "Illegal input to gradient"
-    new_dof = Numeric.zeros( (u.base.spatial_dimension() , len(u.dof) ) , "d" )
+    new_dof = numpy.zeros( (u.base.spatial_dimension() , len(u.dof) ) , "d" )
     for i in range(u.base.spatial_dimension()):
-        new_dof[i,:] = Numeric.dot( u.base.dmats[i] , \
+        new_dof[i,:] = numpy.dot( u.base.dmats[i] , \
                                     u.dof )
     return VectorPolynomial( u.base , new_dof )
 
@@ -492,17 +492,17 @@ def gradients( U ):
     if not isinstance( U , ScalarPolynomialSet ):
         raise RuntimeError, "Illegal input to gradients"
     # new matrix is len(U) by spatial_dimension by length of poly base
-    new_dofs = Numeric.zeros( (len(U),U.spatial_dimension(),len(U.base)) , "d" )
+    new_dofs = numpy.zeros( (len(U),U.spatial_dimension(),len(U.base)) , "d" )
     for i in range(U.spatial_dimension()):
-        new_dofs[:,i,:] = Numeric.dot( U.coeffs , U.base.dmats[i] )
+        new_dofs[:,i,:] = numpy.dot( U.coeffs , U.base.dmats[i] )
     return VectorPolynomialSet( U.base , new_dofs )
 
 def divergence( u ):
     if not isinstance( u , VectorPolynomial ):
         raise RuntimeError, "Illegal input to divergence"
-    new_dof = Numeric.zeros( len(u.base) , "d" )
+    new_dof = numpy.zeros( len(u.base) , "d" )
     for i in range(u.base.spatial_dimension()):
-        new_dof[:] += Numeric.dot( u.base.dmats[i] , \
+        new_dof[:] += numpy.dot( u.base.dmats[i] , \
                                    u.dof[i] )
     return ScalarPolynomial( u.base , new_dof )
 
@@ -511,7 +511,7 @@ def curl( u ):
         raise RuntimeError, "Illegal input to curl"
     if u.base.domain_shape() != shapes.TETRAHEDRON:
         raise RuntimeError, "Illegal shape to curl"
-    new_dof = Numeric.zeros( (3,len(u.base)) , "d" )
+    new_dof = numpy.zeros( (3,len(u.base)) , "d" )
     new_dof[0] = u[2].deriv(1).dof - u[1].deriv(2).dof
     new_dof[1] = u[0].deriv(2).dof - u[2].deriv(0).dof
     new_dof[2] = u[1].deriv(0).dof - u[0].deriv(1).dof
@@ -537,18 +537,18 @@ def curl_transpose( u ):
         raise RuntimeError, "Illegal input to curl"
     if u.base.domain_shape() != shapes.TETRAHEDRON:
         raise RuntimeError, "Illegal shape to curl"
-    new_dof = Numeric.zeros( (3,len(u.base)) , "d" )
-    new_dof[0] = Numeric.dot( Numeric.transpose( u.base.dmats[2] ) , \
+    new_dof = numpy.zeros( (3,len(u.base)) , "d" )
+    new_dof[0] = numpy.dot( numpy.transpose( u.base.dmats[2] ) , \
                               u[1].dof ) \
-                 - Numeric.dot( Numeric.transpose( u.base.dmats[1] ) , \
+                 - numpy.dot( numpy.transpose( u.base.dmats[1] ) , \
                                 u[2].dof )
-    new_dof[1] = Numeric.dot( Numeric.transpose( u.base.dmats[0] ) , \
+    new_dof[1] = numpy.dot( numpy.transpose( u.base.dmats[0] ) , \
                               u[2].dof ) \
-                 - Numeric.dot( Numeric.transpose( u.base.dmats[2]) , \
+                 - numpy.dot( numpy.transpose( u.base.dmats[2]) , \
                                 u[0].dof )
-    new_dof[2] = Numeric.dot( Numeric.transpose( u.base.dmats[1] ) , \
+    new_dof[2] = numpy.dot( numpy.transpose( u.base.dmats[1] ) , \
                               u[0].dof ) \
-                 - Numeric.dot( Numeric.transpose( u.base.dmats[0] ) , \
+                 - numpy.dot( numpy.transpose( u.base.dmats[0] ) , \
                                 u[1].dof )
     return VectorPolynomial( u.base , new_dof )
                                  
@@ -571,7 +571,7 @@ def projection( U , f , Q ):
     f_at_qps = [ f(x) for x in Q.get_points() ]
     phis_at_qps = U.tabulate( Q.get_points() )
     return ScalarPolynomial( U.base , \
-                             Numeric.array( [ sum( Q.get_weights() \
+                             numpy.array( [ sum( Q.get_weights() \
                                                    * f_at_qps \
                                                    * phi ) \
                                               for phi in phis_at_qps ] ) )
@@ -584,7 +584,7 @@ def poly_set_union( U , V ):
     """Takes the union of two polynomial sets by appending their
     coefficient tensors and computing the range of the resulting set
     by the SVD."""
-    new_coeffs = Numeric.array( list( U.coeffs ) + list( V.coeffs ) )
+    new_coeffs = numpy.array( list( U.coeffs ) + list( V.coeffs ) )
     func_shape = new_coeffs.shape[1:]
     if len( func_shape ) == 1:
         (u,sig,vt) = svd( new_coeffs )
@@ -593,11 +593,11 @@ def poly_set_union( U , V ):
     else:
         new_shape0 = new_coeffs.shape[0]
         new_shape1 = reduce(lambda a,b:a*b,func_shape)
-        nc = Numeric.reshape( new_coeffs , (new_shape0,new_shape1) )
+        nc = numpy.reshape( new_coeffs , (new_shape0,new_shape1) )
         (u,sig,vt) = svd( nc , 1 )
         num_sv = len( [ s for s in sig if abs( s ) > 1.e-10 ] )
         coeffs = vt[:num_sv]
         return PolynomialSet( U.base , \
-                              Numeric.reshape( coeffs , \
+                              numpy.reshape( coeffs , \
                                                tuple( [len(coeffs)] \
                                                       + list( func_shape ) ) ) )

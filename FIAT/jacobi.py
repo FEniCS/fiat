@@ -4,7 +4,7 @@ via Newton's method.  These mainly are used in defining the expansion
 functions over the simplices and in defining quadrature
 rules over each domain."""
 
-import math,Numeric
+import math, numpy
 
 def eval_jacobi(a,b,n,x):
     """Evaluates the nth jacobi polynomial with weight parameters a,b at a
@@ -38,11 +38,11 @@ def eval_jacobi(a,b,n,x):
 
 def eval_jacobi_batch(a,b,n,xs):
     """Evaluates all jacobi polynomials with weights a,b
-    up to degree n.  xs is a Numeric.array of points.
+    up to degree n.  xs is a numpy.array of points.
     Returns a two-dimensional array of points, where the
     rows correspond to the Jacobi polynomials and the
     columns correspond to the points."""
-    result = Numeric.zeros( (n+1,len(xs)),"d" )
+    result = numpy.zeros( (n+1,len(xs)),"d" )
     result[0,:] = 1.0
 
     if n > 0:
@@ -72,7 +72,7 @@ def eval_jacobi_deriv(a,b,n,x):
         return 0.5 * ( a + b + n + 1 ) * eval_jacobi(a+1,b+1,n-1,x)
 
 def eval_jacobi_deriv_batch(a,b,n,xs):
-    results = Numeric.zeros( (n+1,len(xs)), "d" )
+    results = numpy.zeros( (n+1,len(xs)), "d" )
     if n == 0:
 	return results
     else:

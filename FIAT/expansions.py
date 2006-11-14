@@ -6,7 +6,7 @@
 
 # Last modified 4 Feb 2005 by RCK
 
-import jacobi, shapes, math, Numeric
+import jacobi, shapes, math, numpy
 
 """Principal expansion functions as defined by Karniadakis & Sherwin.
 The main point of entry to this module is the function
@@ -34,7 +34,7 @@ def psitilde_c( i , j , k , z ):
 # coordinate changes from Karniadakis & Sherwin
 
 def make_scalings( n , etas ):
-    scalings = Numeric.zeros( (n+1,len(etas)) ,"d")
+    scalings = numpy.zeros( (n+1,len(etas)) ,"d")
     scalings[0,:] = 1.0
     if n > 0:
 	scalings[1,:] = 0.5 * (1.0 - etas)
@@ -131,14 +131,14 @@ def tabulate_phis_line( n , xs ):
     """Tabulates all the basis functions over the line up to
     degree in at points xs."""
     # extract raw points from singletons
-    ys = Numeric.array( [ x for (x,) in xs ] )
+    ys = numpy.array( [ x for (x,) in xs ] )
     phis = jacobi.eval_jacobi_batch(0,0,n,ys)
     for i in range(0,len(phis)):
 	phis[i,:] *= math.sqrt(1.0*i+0.5)
     return phis
 
 def tabulate_phis_derivs_line( n , xs ):
-    ys = Numeric.array( [ x for (x,) in xs ] )
+    ys = numpy.array( [ x for (x,) in xs ] )
     phi_derivs = jacobi.eval_jacobi_deriv_batch(0,0,n,ys)
     for i in range(0,len(xs)):
 	phi_derivs[i,:] *= math.sqrt(1.0*i+0.5)
@@ -150,8 +150,8 @@ def tabulate_phis_triangle( n , xs ):
 
     # unpack coordinates
     etas = map( eta_triangle , xs )
-    eta1s = Numeric.array( [ eta1 for (eta1,eta2) in etas ] )
-    eta2s = Numeric.array( [ eta2 for (eta1,eta2) in etas ] )
+    eta1s = numpy.array( [ eta1 for (eta1,eta2) in etas ] )
+    eta2s = numpy.array( [ eta2 for (eta1,eta2) in etas ] )
 
     # get Legendre functions for eta1 direction
     psitilde_as = jacobi.eval_jacobi_batch(0,0,n,eta1s)
@@ -166,7 +166,7 @@ def tabulate_phis_triangle( n , xs ):
     psitilde_bs = [ jacobi.eval_jacobi_batch(2*i+1,0,n-i,eta2s) \
 		    for i in range(0,n+1) ]
 	    
-    results = Numeric.zeros( (shapes.poly_dims[shapes.TRIANGLE](n),len(xs)) , \
+    results = numpy.zeros( (shapes.poly_dims[shapes.TRIANGLE](n),len(xs)) , \
 			     "d" )
     cur = 0
     for k in range(0,n+1):
@@ -185,8 +185,8 @@ def tabulate_phis_derivs_triangle(n,xs):
     so we can't differentiation for eta2 == 0."""
     # unpack coordinates
     etas = map( eta_triangle , xs )
-    eta1s = Numeric.array( [ eta1 for (eta1,eta2) in etas ] )
-    eta2s = Numeric.array( [ eta2 for (eta1,eta2) in etas ] )
+    eta1s = numpy.array( [ eta1 for (eta1,eta2) in etas ] )
+    eta2s = numpy.array( [ eta2 for (eta1,eta2) in etas ] )
 
     psitilde_as = jacobi.eval_jacobi_batch(0,0,n,eta1s)
     psitilde_derivs_as = jacobi.eval_jacobi_deriv_batch(0,0,n,eta1s)
@@ -195,17 +195,17 @@ def tabulate_phis_derivs_triangle(n,xs):
     psitilde_derivs_bs = [ jacobi.eval_jacobi_deriv_batch(2*i+1,0,n-i,eta2s) \
 			   for i in range(0,n+1) ]
 
-    scalings = Numeric.zeros( (n+1,len(xs)) ,"d")
+    scalings = numpy.zeros( (n+1,len(xs)) ,"d")
     scalings[0,:] = 1.0
     if n > 0:
 	scalings[1,:] = 0.5 * (1.0 - eta2s)
 	for k in range(2,n+1):
 	    scalings[k,:] = scalings[k-1,:] * scalings[1,:]
 	    
-    xderivs = Numeric.zeros( (shapes.poly_dims[shapes.TRIANGLE](n),len(xs)) , \
+    xderivs = numpy.zeros( (shapes.poly_dims[shapes.TRIANGLE](n),len(xs)) , \
 			     "d" )
-    yderivs = Numeric.zeros( xderivs.shape , "d" )
-    tmp = Numeric.zeros( (len(xs),) , "d" )
+    yderivs = numpy.zeros( xderivs.shape , "d" )
+    tmp = numpy.zeros( (len(xs),) , "d" )
 
     cur = 0
     for k in range(0,n+1):
@@ -245,14 +245,14 @@ def tabulate_phis_tetrahedron( n , xs ):
     up to degree n"""
     # unpack coordinates
     etas = map( eta_tetrahedron , xs )
-    eta1s = Numeric.array( [ eta1 for (eta1,eta2,eta3) in etas ] )
-    eta2s = Numeric.array( [ eta2 for (eta1,eta2,eta3) in etas ] )
-    eta3s = Numeric.array( [ eta3 for (eta1,eta2,eta3) in etas ] )
+    eta1s = numpy.array( [ eta1 for (eta1,eta2,eta3) in etas ] )
+    eta2s = numpy.array( [ eta2 for (eta1,eta2,eta3) in etas ] )
+    eta3s = numpy.array( [ eta3 for (eta1,eta2,eta3) in etas ] )
 
     # get Legendre functions for eta1 direction
     psitilde_as = jacobi.eval_jacobi_batch(0,0,n,eta1s)
 
-    eta2_scalings = Numeric.zeros( (n+1,len(xs)) ,"d")
+    eta2_scalings = numpy.zeros( (n+1,len(xs)) ,"d")
     eta2_scalings[0,:] = 1.0
     if n > 0:
 	eta2_scalings[1,:] = 0.5 * (1.0 - eta2s)
@@ -264,7 +264,7 @@ def tabulate_phis_tetrahedron( n , xs ):
 
     # (0.5*(1-z))**i+j, since for k=0, we can have i+j up to n,
     # we need same structure as eta2_scalings
-    eta3_scalings = Numeric.zeros( (n+1,len(xs)) ,"d" )
+    eta3_scalings = numpy.zeros( (n+1,len(xs)) ,"d" )
     eta3_scalings[0,:] = 1.0
     if n > 0:
 	eta3_scalings[1,:] = 0.5 * (1.0 - eta3s)
@@ -278,7 +278,7 @@ def tabulate_phis_tetrahedron( n , xs ):
 					       n-i-j,eta3s) \
 		      for j in range(0,n+1-i) ] for i in range(0,n+1) ]
 
-    results = Numeric.zeros( (shapes.poly_dims[shapes.TETRAHEDRON](n), \
+    results = numpy.zeros( (shapes.poly_dims[shapes.TETRAHEDRON](n), \
 			      len(xs)) , \
 			     "d" )
     cur = 0
@@ -305,9 +305,9 @@ def tabulate_phis_derivs_tetrahedron(n,xs):
     up to degree n at points xs"""
     # unpack coordinates
     etas = map( eta_tetrahedron , xs )
-    eta1s = Numeric.array( [ eta1 for (eta1,eta2,eta3) in etas ] )
-    eta2s = Numeric.array( [ eta2 for (eta1,eta2,eta3) in etas ] )
-    eta3s = Numeric.array( [ eta3 for (eta1,eta2,eta3) in etas ] )
+    eta1s = numpy.array( [ eta1 for (eta1,eta2,eta3) in etas ] )
+    eta2s = numpy.array( [ eta2 for (eta1,eta2,eta3) in etas ] )
+    eta3s = numpy.array( [ eta3 for (eta1,eta2,eta3) in etas ] )
 
     psitilde_as = jacobi.eval_jacobi_batch(0,0,n,eta1s)
     psitilde_as_derivs = jacobi.eval_jacobi_deriv_batch(0,0,n,eta1s)
@@ -322,14 +322,14 @@ def tabulate_phis_derivs_tetrahedron(n,xs):
                                                             n-i-j,eta3s) \
                              for j in range(0,n+1-i) ] for i in range(0,n+1) ]
     
-    eta2_scalings = Numeric.zeros( (n+1,len(xs)) ,"d")
+    eta2_scalings = numpy.zeros( (n+1,len(xs)) ,"d")
     eta2_scalings[0,:] = 1.0
     if n > 0:
 	eta2_scalings[1,:] = 0.5 * (1.0 - eta2s)
 	for k in range(2,n+1):
 	    eta2_scalings[k,:] = eta2_scalings[k-1,:] * eta2_scalings[1,:]
 
-    eta3_scalings = Numeric.zeros( (n+1,len(xs)) ,"d" )
+    eta3_scalings = numpy.zeros( (n+1,len(xs)) ,"d" )
     eta3_scalings[0,:] = 1.0
     if n > 0:
 	eta3_scalings[1,:] = 0.5 * (1.0 - eta3s)
@@ -337,12 +337,12 @@ def tabulate_phis_derivs_tetrahedron(n,xs):
 	    eta3_scalings[k,:] = eta3_scalings[k-1,:] \
 		* eta3_scalings[1,:]
 
-    tmp = Numeric.zeros( (len(xs),) , "d" )
-    xderivs = Numeric.zeros( (shapes.poly_dims[shapes.TETRAHEDRON](n), \
+    tmp = numpy.zeros( (len(xs),) , "d" )
+    xderivs = numpy.zeros( (shapes.poly_dims[shapes.TETRAHEDRON](n), \
 			      len(xs)) , \
 			     "d" )
-    yderivs = Numeric.zeros( xderivs.shape , "d" )
-    zderivs = Numeric.zeros( xderivs.shape , "d" )
+    yderivs = numpy.zeros( xderivs.shape , "d" )
+    zderivs = numpy.zeros( xderivs.shape , "d" )
 
     cur = 0
     for k in range(0,n+1):  # loop over degree
@@ -437,9 +437,9 @@ def tabulate_phis_derivs_tetrahedron_old(n,xs):
     up to degree n at points xs"""
     # unpack coordinates
     etas = map( eta_tetrahedron , xs )
-    eta1s = Numeric.array( [ eta1 for (eta1,eta2,eta3) in etas ] )
-    eta2s = Numeric.array( [ eta2 for (eta1,eta2,eta3) in etas ] )
-    eta3s = Numeric.array( [ eta3 for (eta1,eta2,eta3) in etas ] )
+    eta1s = numpy.array( [ eta1 for (eta1,eta2,eta3) in etas ] )
+    eta2s = numpy.array( [ eta2 for (eta1,eta2,eta3) in etas ] )
+    eta3s = numpy.array( [ eta3 for (eta1,eta2,eta3) in etas ] )
 
     psitilde_as = jacobi.eval_jacobi_batch(0,0,n,eta1s)
     psitilde_as_derivs = jacobi.eval_jacobi_deriv_batch(0,0,n,eta1s)
@@ -454,14 +454,14 @@ def tabulate_phis_derivs_tetrahedron_old(n,xs):
                                                             n-i-j,eta3s) \
                              for j in range(0,n+1-i) ] for i in range(0,n+1) ]
     
-    eta2_scalings = Numeric.zeros( (n+1,len(xs)) ,"d")
+    eta2_scalings = numpy.zeros( (n+1,len(xs)) ,"d")
     eta2_scalings[0,:] = 1.0
     if n > 0:
 	eta2_scalings[1,:] = 0.5 * (1.0 - eta2s)
 	for k in range(2,n+1):
 	    eta2_scalings[k,:] = eta2_scalings[k-1,:] * eta2_scalings[1,:]
 
-    eta3_scalings = Numeric.zeros( (n+1,len(xs)) ,"d" )
+    eta3_scalings = numpy.zeros( (n+1,len(xs)) ,"d" )
     eta3_scalings[0,:] = 1.0
     if n > 0:
 	eta3_scalings[1,:] = 0.5 * (1.0 - eta3s)
@@ -469,12 +469,12 @@ def tabulate_phis_derivs_tetrahedron_old(n,xs):
 	    eta3_scalings[k,:] = eta3_scalings[k-1,:] \
 		* eta3_scalings[1,:]
 
-    tmp = Numeric.zeros( (len(xs),) , "d" )
-    xderivs = Numeric.zeros( (shapes.poly_dims[shapes.TETRAHEDRON](n), \
+    tmp = numpy.zeros( (len(xs),) , "d" )
+    xderivs = numpy.zeros( (shapes.poly_dims[shapes.TETRAHEDRON](n), \
 			      len(xs)) , \
 			     "d" )
-    yderivs = Numeric.zeros( xderivs.shape , "d" )
-    zderivs = Numeric.zeros( xderivs.shape , "d" )
+    yderivs = numpy.zeros( xderivs.shape , "d" )
+    zderivs = numpy.zeros( xderivs.shape , "d" )
 
     cur = 0
     for k in range(0,n+1):  # loop over degree

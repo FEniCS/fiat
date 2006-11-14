@@ -9,7 +9,7 @@
 # Nedelec indexing from 0
 
 import dualbasis, polynomial, functionalset, functional, shapes, \
-       quadrature, Numeric, RaviartThomas
+       quadrature, numpy, RaviartThomas
 
 def NedelecSpace3D( k ):
     shape = shapes.TETRAHEDRON
@@ -28,7 +28,7 @@ def NedelecSpace3D( k ):
     Pkp1 = polynomial.OrthogonalPolynomialSet( shape , k+1 )
     Q = quadrature.make_quadrature( shape , 2 * (k+1) )
     Pi = lambda f: polynomial.projection( Pkp1 , f , Q )
-    PkCrossXcoeffs = Numeric.array( \
+    PkCrossXcoeffs = numpy.array( \
         [ [ Pi( lambda x: ( x[(i+2)%3] * p[(i+1)%3]( x ) \
                             - x[(i+1)%3] * p[(i+2)%3]( x ) ) ).dof \
             for i in range( d ) ] for p in vec_Pke ] )
@@ -48,7 +48,7 @@ def Nedelec02D():
 	P1 = polynomial.OrthogonalPolynomialSet(shape,1)
 	P0H=P1[:dimP0]
 	Q=quadrature.make_quadrature(shape,2)
-	P0Hrotxcoeffs = Numeric.array( \
+	P0Hrotxcoeffs = numpy.array( \
 	  [ [ polynomial.projection(P1,lambda x:x[1]*p(x),Q).dof , \
 	      polynomial.projection(P1,lambda x:-x[0]*p(x),Q).dof ] \
 	    for p in P0H ] )
@@ -73,7 +73,7 @@ def NedelecSpace2D( k ):
 
 	Q = quadrature.make_quadrature( shape , 2 * k )
 
-	PkHrotxcoeffs = Numeric.array( \
+	PkHrotxcoeffs = numpy.array( \
     	[ [ polynomial.projection( Pkp1 , \
                                    lambda x:x[1]*p(x), Q ).dof , \
 			polynomial.projection( Pkp1 , \

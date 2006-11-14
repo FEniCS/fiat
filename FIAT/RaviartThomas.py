@@ -7,7 +7,7 @@
 # last modified 2 May 2005
 
 import dualbasis, polynomial, functionalset, functional, shapes, \
-       quadrature, Numeric
+       quadrature, numpy
 
 
 def RT0Space( shape ):
@@ -24,7 +24,7 @@ def RT0Space( shape ):
 
     Q = quadrature.make_quadrature( shape , 2 )
 
-    P0Hxcoeffs = Numeric.array( [ [ polynomial.projection( P1 , \
+    P0Hxcoeffs = numpy.array( [ [ polynomial.projection( P1 , \
                                                            lambda x:x[i]*p(x), \
                                                            Q ).dof \
                                     for i in range(d) ] \
@@ -52,7 +52,7 @@ def RTSpace( shape , k ):
 
     Q = quadrature.make_quadrature( shape , 2 * k )
 
-    PkHxcoeffs = Numeric.array( [ [ polynomial.projection( Pkp1 , \
+    PkHxcoeffs = numpy.array( [ [ polynomial.projection( Pkp1 , \
                                                            lambda x:x[i]*p(x), \
                                                            Q ).dof \
                                     for i in range(d) ] \

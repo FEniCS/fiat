@@ -15,7 +15,7 @@ rule object."""
 
 
 import shapes, expansions, jacobi, gamma, factorial
-import Numeric, math
+import numpy, math
 
 fact = factorial.factorial
 
@@ -44,7 +44,7 @@ class QuadratureRule( object ):
     provides a function integrate that integrates a function f.  Can
     also be used as a callable object."""
     def __init__( self, x , w ):
-        self.x, self.w = x , Numeric.array( w )
+        self.x, self.w = x , numpy.array( w )
         return
     def get_points(self):
         return self.x
@@ -53,8 +53,8 @@ class QuadratureRule( object ):
     def __call__( self , f ):
         return self.integrate( f )
     def integrate(self,f):
-        fs = Numeric.array( [ f( x ) for x in self.x ] )
-        return Numeric.sum( self.w * fs )
+        fs = numpy.array( [ f( x ) for x in self.x ] )
+        return numpy.sum( self.w * fs )
 
 class JacobiQuadrature( QuadratureRule ):
     def __init__( self , a , b , m ):
@@ -75,7 +75,7 @@ class CollapsedQuadratureTriangle( QuadratureRule ):
     def __init__( self , m ):
         ptx,wx = jacobi_quadrature_rule(0.,0.,m)
         pty,wy = jacobi_quadrature_rule(1.,0.,m)
-        ws = Numeric.array( [ 0.5 * w1 * w2 for w1 in wx for w2 in wy ] )
+        ws = numpy.array( [ 0.5 * w1 * w2 for w1 in wx for w2 in wy ] )
         pts = map( expansions.xi_triangle, \
                    [ (x,y) for x in ptx for y in pty ] )
         QuadratureRule.__init__( self , pts , ws )
@@ -88,7 +88,7 @@ class CollapsedQuadratureTetrahedron( QuadratureRule ):
         ptx,wx = jacobi_quadrature_rule(0.,0.,m)
         pty,wy = jacobi_quadrature_rule(1.0,0.0,m)
         ptz,wz = jacobi_quadrature_rule(2.0,0.0,m)
-        ws = Numeric.array( [ 0.125 * w1 * w2 *w3 \
+        ws = numpy.array( [ 0.125 * w1 * w2 *w3 \
                               for w1 in wx \
                               for w2 in wy \
                               for w3 in wz ] )

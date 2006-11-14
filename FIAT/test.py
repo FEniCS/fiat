@@ -1,4 +1,4 @@
-import polynomial, Numeric, shapes, BDFM, functional, quadrature
+import polynomial, numpy, shapes, BDFM, functional, quadrature
 
 shape = shapes.TRIANGLE
 n = 1
@@ -8,11 +8,11 @@ U = BDFM.BDFMSpace( shape , 1 )
 
 pts = shapes.make_points( shape , 1 , facet , 3 )
 
-normal = Numeric.array( shapes.normals[shape][facet] )
+normal = numpy.array( shapes.normals[shape][facet] )
 
 u = U[0]
 
-un = polynomial.Polynomial( U.base , Numeric.dot( normal , \
+un = polynomial.Polynomial( U.base , numpy.dot( normal , \
                                                   u.dof ) )
 
 Q = quadrature.make_quadrature( 1 , 4 )
