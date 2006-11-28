@@ -42,7 +42,7 @@ class VecP0Dual( dualbasis.DualBasis ):
         nc = U.tensor_shape()[0]
         vs = shapes.vertices[ shape ]
         bary = numpy.average( numpy.array( map( numpy.array , \
-                                                    vs.values() ) ) )
+                                                    vs.values() ) ) , 0 )
         self.pts = ( tuple(bary) , )
         ls = [ functional.ComponentPointEvaluation( U , c , bary ) \
                for c in range( nc ) ]
