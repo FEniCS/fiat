@@ -141,7 +141,9 @@ class BDMDual( dualbasis.DualBasis ):
         pts_flat = reduce( lambda a,b:a+b , pts_per_edge )
         ls = [ ]
         for i in range(d+1):
-            nrml = shapes.normals[ shape ][ i ]
+            # for Anders: scale normal by edge length 
+            nrml = shapes.normals[shape][i] * shapes.jac_factors[d][d-1][i]
+
             ls_cur = [ DCPE(U,nrml,pt) for pt in pts_per_edge[i] ]
             ls.extend(ls_cur)
 
