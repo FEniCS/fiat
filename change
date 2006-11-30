@@ -1,4 +1,8 @@
 What's new in:
+0.3.0:
+  small changes to H(div) elements preparing for integration with FFC
+  switch to numpy
+  added primitive testing harness in fiat/testing
 0.2.4:
   fixed but in P0.py
 0.2.3:
