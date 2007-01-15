@@ -31,6 +31,8 @@ class DiscLagrangeDual( dualbasis.DualBasis ):
         entity_ids = {}
         for d in range( shapes.dimension( shape ) ):
             entity_ids[d] = {}
+            for e in shapes.entity_range(shape,d):
+                entity_ids[d][e] = []
         entity_ids[ shapes.dimension( shape ) ] = {}
         entity_ids[ shapes.dimension( shape ) ][ 0 ] = range( len( self.pts ) )
             
