@@ -60,8 +60,8 @@ class BDMDualBulk1( dualbasis.DualBasis ):
             for k in range(pts_per_bdry):
                 entity_ids[d-1][j] = node_cur
                 node_cur += 1
-        entity_ids[d] = range(node_cur,\
-                              node_cur+len(interior_moments))
+        entity_ids[d] = {0:range(node_cur,\
+                                 node_cur+len(interior_moments))}
 
 
         dualbasis.DualBasis.__init__( self , \
@@ -118,9 +118,8 @@ class BDMDualBulk2( dualbasis.DualBasis ):
             for k in range(pts_per_bdry):
                 entity_ids[d-1][j] = node_cur
                 node_cur += 1
-        entity_ids[d] = range(node_cur,\
-                              node_cur+len(interior_moments))
-
+        entity_ids[d] = {0:range(node_cur,\
+                                 node_cur+len(interior_moments))}
 
         dualbasis.DualBasis.__init__( self , \
                                       functionalset.FunctionalSet( U , ls ) , \
@@ -182,8 +181,8 @@ class BDMDual( dualbasis.DualBasis ):
         for j in shapes.entity_range(shape,d-1):
             entity_ids[d-1][j] = range(node_cur,node_cur+pts_per_bdry)
             node_cur += pts_per_bdry
-        entity_ids[d] = range(node_cur,\
-                              node_cur+len(interior_moments))
+        entity_ids[d] = {0:range(node_cur,\
+                                 node_cur+len(interior_moments))}
 
         dualbasis.DualBasis.__init__( self , \
                                       functionalset.FunctionalSet( U , ls ) , \
