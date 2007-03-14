@@ -136,7 +136,7 @@ class AbstractPolynomialSet( object ):
     def take( self , items ):
         """Extracts the subset of polynomials given by indices stored
         in iterable items.""" 
-        return PolynomialSet( self.base , numpy.take( self.coeffs , items ) )
+        return PolynomialSet( self.base , numpy.take( self.coeffs , items , 0 ) )
 
 # ScalarPolynomialSet can be made with either
 # -- ScalarPolynomialSet OR
@@ -326,6 +326,7 @@ def PolynomialSet( base , coeffs ):
     elif len( coeffs.shape ) > 3:
         return TensorPolynomialSet( base , coeffs )
     else:
+        print coeffs
         raise RuntimeError, "Unknown error, PolynomialSet"                      
 
 
