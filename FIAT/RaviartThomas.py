@@ -107,8 +107,9 @@ class RTDual( dualbasis.DualBasis ):
         entity_ids[d-1] = {}
         node_cur = 0
         for j in shapes.entity_range(shape,d-1):
+            entity_ids[d-1][j] = []
             for k in range(pts_per_bdry):
-                entity_ids[d-1][j] = node_cur
+                entity_ids[d-1][j].append( node_cur )
                 node_cur += 1
         entity_ids[d] = range(node_cur,\
                               node_cur+len(interior_moments))
