@@ -61,7 +61,7 @@ class Lagrange( polynomial.FiniteElement ):
     def __init__( self , shape , n ):
         if n < 1:
             raise RuntimeError, \
-                  "Lagrange elements are only defind for n >= 1"
+                  "Lagrange elements are only defined for n >= 1"
         U = polynomial.OrthogonalPolynomialSet( shape , n )
         Udual = LagrangeDual( shape , n , U )
         polynomial.FiniteElement.__init__( self , \
