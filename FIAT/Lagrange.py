@@ -62,6 +62,8 @@ class Lagrange( polynomial.FiniteElement ):
         if n < 1:
             raise RuntimeError, \
                   "Lagrange elements are only defind for n >= 1"
+        self.shape = shape
+        self.order = n
         U = polynomial.OrthogonalPolynomialSet( shape , n )
         Udual = LagrangeDual( shape , n , U )
         polynomial.FiniteElement.__init__( self , \
@@ -105,6 +107,8 @@ class VectorLagrange( polynomial.FiniteElement ):
         if n < 1:
             raise RuntimeError, \
                   "Lagrange elements are only defined for n >= 1"
+        self.shape = shape
+        self.order = n
         U = polynomial.OrthogonalPolynomialArraySet( shape , n , nc )
         Udual = VectorLagrangeDual( shape , n , U )
         polynomial.FiniteElement.__init__( self , Udual , U )
