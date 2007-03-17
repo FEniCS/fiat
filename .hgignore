@@ -5,3 +5,5 @@
 ^tailor.state$
 ^tailor.state.old$
 ^tailor.state.journal$
+syntax: glob
+FIAT/*.pyc
