@@ -111,8 +111,8 @@ class RTDual( dualbasis.DualBasis ):
             for k in range(pts_per_bdry):
                 entity_ids[d-1][j].append( node_cur )
                 node_cur += 1
-        entity_ids[d] = range(node_cur,\
-                              node_cur+len(interior_moments))
+        entity_ids[d] = {0:range(node_cur,\
+                              node_cur+len(interior_moments))}
 
 
         dualbasis.DualBasis.__init__( self , \
