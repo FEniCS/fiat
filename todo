@@ -1,5 +1,6 @@
-- finish "type system" for mapping
-- need to look at facet constraints.  They are broken
-   and will affect BDFM (and other yet to be added) elements.
-- Verify Nedelec & BDFM elements
+- finish "type system" for mapping if it needs it
+- Verify Nedelec
+- There is a strange bug keeping RT1 from converging in
+  FFC, but having all BDM and other RT elements converging.
+  Is it my fault or Anders'?
 
