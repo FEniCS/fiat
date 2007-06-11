@@ -29,9 +29,6 @@ def BDFMSpace( shape , k ):
     fset = functionalset.FunctionalSet( U , constraints )
 
     return polynomial.ConstrainedPolynomialSet( fset )
-      
-
-    return polynomial.ConstrainedPolynomialSet( fset )
 
 
 class BDFMDual( dualbasis.DualBasis ):
@@ -93,7 +90,7 @@ class BDFMDual( dualbasis.DualBasis ):
 
 
 
-class BrezziDouglasFortinMarini( polynomial.FiniteElement ):
+class BDFM( polynomial.FiniteElement ):
     def __init__( self , shape , n ):
         U = BDFMSpace( shape , n )
         Udual = BDFMDual( shape , n , U )
