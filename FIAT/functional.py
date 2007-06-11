@@ -17,8 +17,9 @@ def frob(a,b):
                         numpy.reshape( b , (alen,)) )
 
 class Functional( object ):
-    def __init__( self , U , a ):
+    def __init__( self , U , a , f_type = ("Unspecified",) ):
         self.U, self.a = U, numpy.asarray( a )
+	self.type = f_type
         return
     def __call__( self , p ):
         # need to add type checking to confirm that
@@ -30,28 +31,30 @@ class Functional( object ):
 	if not self.U is other.U:
 	    raise RuntimeError, "type mismatch in adding functionals."
 	return Functional( self.U , self.dof + other.dof )
+    def get_type( self ):
+	return self.type
 
 def PointEvaluation( U , pt ):
-    return Functional( U , U.eval_all( pt ) )
+    return Functional( U , U.eval_all( pt ) , ("PointEvaluation",) )
 
 # batch mode for making point evaluation functionals
 def make_point_evaluations( U , pts ):
     uvals = U.tabulate( pts )
-    return [ Functional( U , uvals[:,i] ) \
+    return [ Functional( U , uvals[:,i] , ("PointEvaluation",) ) \
 	     for i in range(len(pts)) ]
 
 def ComponentPointEvaluation( U , comp , pt ):
     mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
     bvals = U.base.eval_all( pt )
     mat[comp,:] = bvals
-    return Functional( U , mat )
+    return Functional( U , mat , ("ComponentPointEvaluation",comp) )
 
 def DirectionalComponentPointEvaluation( U , dir , pt ):
     mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
     bvals = U.base.eval_all( pt )
     for i in range(len(dir)):
         mat[i,:] = dir[i] * bvals
-    return Functional( U , mat )
+    return Functional( U , mat , ("DirectionalComponentPointEvaluation", dir) )
 
 def make_directional_component_batch( U , dir , pts ):
     mat_shape = tuple( [len(pts)] + list( U.coeffs.shape[1:] ) )
@@ -61,10 +64,13 @@ def make_directional_component_batch( U , dir , pts ):
         bvals_cur = bvals[:,p]
         for i in range(len(dir)):
             mat[p,i,:] = dir[i] * bvals_cur
-    return [ Functional(U,m) for m in mat ]
+    return [ Functional(U,m,("DirectionalComponentPointEvaluation",dir)) \
+	     for m in mat ]
 
 # batch mode evaluation for normal components to take advantage of
 # bulk tabulation
+# but this isn't used anywhere else.
+# Can it be deleted?
 def make_directional_component_point_evaluations( U , dirs ):
     """U is a VectorPolynomialSet, dirs is a dictionary mapping
     directions (tuples of component) to the list of points at which we
@@ -87,6 +93,8 @@ def make_directional_component_point_evaluations( U , dirs ):
                 mat[cur,i,:] = dir[i] * bvals_cur
             cur += 1
 
+    # need to fix this to include type information
+    # may be issue
     return [ Functional( U , mat[i] ) for i in range(len(pts)) ]
 
     
@@ -109,7 +117,7 @@ def PointDerivative( U , i , pt ):
 # the coefficients in that orthonormal basis
 
 def IntegralMoment( U , p ):
-    return Functional( U , p.dof )
+    return Functional( U , p.dof ,("IntegralMoment",p))
 
 
 # specifies integration of the i:th partial derivative of a member of
@@ -124,7 +132,8 @@ def IntegralMomentOfDerivative( U , i , p ):
     return Functional( self , \
                        U , \
                        numpy.dot( numpy.transpose( U.base.dmats[i] ) , \
-                                    p.dof ) )
+                                    p.dof ) , \
+		       ("IntegralMomentofDerivative",(i,p)))
     pass
 
 # U is a vector-valued polynomial set and p is a scalar-valued function
@@ -136,29 +145,32 @@ def IntegralMomentOfDivergence( U , p ):
     for i in range( U.coeffs.shape[1] ):
         mat[i,:] = numpy.dot( numpy.transpose( U.base.dmats[i] ) , \
                                 p.dof )
-    return Functional( U , mat )
+    return Functional( U , mat , ("IntegralMomentOfDivergence",p))
 
-def FacetMoment( U , shape , d , e , p ):
-    # p is defined over the reference element
-    # of dimension d and mapped to facet e of dimension d
-    #over facet e of dimension d
-    # U is a scalar-valued space
-    Qref = quadrature.make_quadrature( d , 3 * U.degree() )
-    alpha = shapes.scale_factor( shape , d , e )
-    if shape == shapes.TRIANGLE:
-        ref_pts = [ x[0] for x in Qref.get_points() ]
-    else:
-        ref_pts = Qref.get_points()
-    pts = map( shapes.pt_maps[ shape ][ d ]( e ) , \
-               ref_pts )
-    wts = alpha * Qref.get_weights()
-    us = U.base.tabulate( pts )
-    ps = numpy.array( [ p(x) for x in Qref.get_points() ] )
-    vec = numpy.array( len( U ) , "d" )
-    for i in len( U ):
-        vec[i] = sum( wts * ps * us[i] )
 
-    return Functional( U , vec )
+# what is difference in these two FacetMoment implementations?
+
+#def FacetMoment( U , shape , d , e , p ):
+#    # p is defined over the reference element
+#    # of dimension d and mapped to facet e of dimension d
+#    #over facet e of dimension d
+#    # U is a scalar-valued space
+#    Qref = quadrature.make_quadrature( d , 3 * U.degree() )
+#    alpha = shapes.scale_factor( shape , d , e )
+#    if shape == shapes.TRIANGLE:
+#        ref_pts = [ x[0] for x in Qref.get_points() ]
+#    else:
+#        ref_pts = Qref.get_points()
+#    pts = map( shapes.pt_maps[ shape ][ d ]( e ) , \
+#               ref_pts )
+#    wts = alpha * Qref.get_weights()
+#    us = U.base.tabulate( pts )
+#    ps = numpy.array( [ p(x) for x in Qref.get_points() ] )
+#    vec = numpy.array( len( U ) , "d" )
+#    for i in len( U ):
+#        vec[i] = sum( wts * ps * us[i] )
+#
+#    return Functional( U , vec , ("FacetMoment",(d,e,p)) )
 
 # U is the space, shape is the reference domain
 # we want to integrate members of U against p over
@@ -175,7 +187,7 @@ def FacetMoment( U , shape , d , e , p ):
     phis = U.base.tabulate( mapped_pts )
     vec = numpy.dot( phis , wts * ps )
 
-    return Functional( U , vec )
+    return Functional( U , vec , ("FacetMoment",(d,e,p)) )
 
 def FacetDirectionalMoment( U , shape , dir , d , e , p ):
     mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
