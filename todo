@@ -1,4 +1,5 @@
-- how does cohomology fit into all this?
-- consider "type system" for mapping
+- finish "type system" for mapping
+- need to look at facet constraints.  They are broken
+   and will affect BDFM (and other yet to be added) elements.
 - Verify Nedelec & BDFM elements
 
