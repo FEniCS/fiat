@@ -16,7 +16,7 @@ three dimensions."""
 import numpy, numpy.linalg, exceptions
 from factorial import factorial
 from math import sqrt
-
+import numbering
 
 def strike_col( A , j ):
     m,n = A.shape
@@ -91,22 +91,7 @@ def area( a , b , c ):
     return sqrt( numpy.dot( crss , crss ) )
 
 # mapping from edge ids of a triangle to the pair of vertices
-triangle_edges = { 0 : ( 1 , 2 ) , \
-                   1 : ( 2 , 0 ) , \
-                   2 : ( 0 , 1 ) }
-
-        
-tetrahedron_edges = { 0 : ( 1 , 2 ) , \
-                     1 : ( 2 , 0 ) , \
-                     2 : ( 0 , 1 ) , \
-                     3 : ( 0 , 3 ) , \
-                     4 : ( 1 , 3 ) , \
-                     5 : ( 2 , 3 ) }
-
-tetrahedron_faces = { 0 : ( 1 , 3 , 2 ) , \
-                      1 : ( 2 , 3 , 0 ) , \
-                      2 : ( 3 , 1 , 0 ) , \
-                      3 : ( 0 , 1 , 2 ) }
+(triangle_edges, tetrahedron_edges, tetrahedron_faces) = numbering.get_entities()
 
 edges = { TRIANGLE : triangle_edges , \
           TETRAHEDRON : tetrahedron_edges }
