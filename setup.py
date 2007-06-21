@@ -3,11 +3,11 @@
 from distutils.core import setup
 
 setup(name="FIAT", \
-      version="0.3.0", \
+      version="0.3.1", \
       description="FInite element Automatic Tabulator", \
       author="Robert C. Kirby", \
-      author_email="kirby@uchicago.edu", \
-      url="http://people.cs.uchicago.edu/~kirby", \
+      author_email="robert.c.kirby@gmail.com", \
+      url="http://www.math.ttu.edu/~kirby", \
       license="LGPL", \
       packages=['FIAT'] )
 

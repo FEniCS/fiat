@@ -1,4 +1,9 @@
 What's new in:
+0.3.1:
+  bug fix in DOF orderings for H(div) elements
+  preliminary type system for DOF
+  allow user to change ordering of reference dof
+  Brezzi-Douglas-Fortin-Marini elements working
 0.3.0:
   small changes to H(div) elements preparing for integration with FFC
   switch to numpy
