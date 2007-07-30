@@ -111,8 +111,8 @@ class RTDual( dualbasis.DualBasis ):
             for k in range(pts_per_bdry):
                 entity_ids[d-1][j].append( node_cur )
                 node_cur += 1
-        entity_ids[d] = range(node_cur,\
-                              node_cur+len(interior_moments))
+        entity_ids[d] = {0 : range(node_cur,\
+                              node_cur+len(interior_moments)) }
 
 
         dualbasis.DualBasis.__init__( self , \
@@ -128,6 +128,8 @@ class RT0( polynomial.FiniteElement ):
 
 class RaviartThomas( polynomial.FiniteElement ):
     def __init__( self , shape , n ):
+        self.shape = shape
+        self.order = n
         U = RTSpace( shape , n )
         Udual = RTDual( shape , n , U )
         polynomial.FiniteElement.__init__( self , Udual , U )
