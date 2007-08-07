@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import generators
+#from __future__ import generators
 
 
 __version__ = "1.0"
