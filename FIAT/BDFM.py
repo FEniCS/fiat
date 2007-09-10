@@ -43,7 +43,8 @@ class BDFMDual( dualbasis.DualBasis ):
                         for i in shapes.entity_range( shape , d-1 ) ]
         nrmls = shapes.normals[shape]
         ls = reduce( lambda a,b:a+b , \
-                     [ mdcb(U,nrmls[i],pts_per_edge[i]) \
+                     [ mdcb(U,nrmls[i]*shapes.jac_factors[d][d-1][i], \
+                            pts_per_edge[i]) \
                        for i in shapes.entity_range(shape,d-1) ] )
         interior_moments = []
 
