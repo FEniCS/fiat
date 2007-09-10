@@ -77,11 +77,10 @@ class BDFMDual( dualbasis.DualBasis ):
         entity_ids[d-1] = {}
         node_cur = 0
         for j in shapes.entity_range(shape,d-1):
-            for k in range(pts_per_bdry):
-                entity_ids[d-1][j] = node_cur
-                node_cur += 1
-        entity_ids[d] = range(node_cur,\
-                              node_cur+len(interior_moments))
+            entity_ids[d-1][j] = range(node_cur,node_cur+pts_per_bdry)
+            node_cur += pts_per_bdry
+        entity_ids[d] = {0:range(node_cur,\
+                              node_cur+len(interior_moments))}
 
 
         dualbasis.DualBasis.__init__( self , \
