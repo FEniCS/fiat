@@ -7,14 +7,20 @@
 # Last modified 4 Feb 2005 by RCK
 
 import jacobi, shapes, math, numpy
+from reference import *
 
 """Principal expansion functions as defined by Karniadakis & Sherwin.
 The main point of entry to this module is the function
-make_expansions( shape , n ) which takes the simplex shape and the
+make_expansion( shape , n ) which takes the simplex shape and the
 polynomal degree n and returns the list of expansion functions up to
 that degree."""
 
-
+# We define the principal expansion functions (p.79 K&S). These take
+# values z in [-1, 1] and are clever functions of the Jacobi
+# polynomials. The factors for triangles and tetrahedra are introduced
+# to "keep the expansions are polynomials in terms of the Cartesian
+# coordinates (\eta_1, \eta_2, \eta_3)" and are thus not dependent on
+# the choice of reference cell.
 def psitilde_a( i , z ):
     return jacobi.eval_jacobi( 0 , 0 , i , z )
 
@@ -31,77 +37,12 @@ def psitilde_c( i , j , k , z ):
         return ( 0.5 * (1-z))**(i+j) \
                * jacobi.eval_jacobi( 2*(i+j+1), 0 , k , z )
 
-# coordinate changes from Karniadakis & Sherwin
+# The expansions $\phi$ i.e the polynomials basis functions are
+# defined in terms of the principal basis functions (\tilde \psi^a and
+# in 2D/3D \tilde \psi^b and in 3D \tilde \psi_c).
 
-def make_scalings( n , etas ):
-    scalings = numpy.zeros( (n+1,len(etas)) ,"d")
-    scalings[0,:] = 1.0
-    if n > 0:
-	scalings[1,:] = 0.5 * (1.0 - etas)
-	for k in range(2,n+1):
-	    scalings[k,:] = scalings[k-1,:] * scalings[1,:]
-    return scalings
-
-
-def eta_triangle( xi ):
-    ( xi1 , xi2 ) = xi
-    if xi2 == 1.:
-        eta1 = -1.0
-    else:
-        eta1 = 2.0 * ( 1. + xi1 ) / ( 1. - xi2 ) - 1
-    eta2 = xi2 
-    return eta1 , eta2
-
-def xi_triangle( eta ):
-    eta1, eta2 = eta
-    xi1 = 0.5 * (1. + eta1) * (1. - eta2) - 1.
-    xi2 = eta2
-    return xi1,xi2
-
-def eta_tetrahedron( xi ):
-    xi1,xi2,xi3 = xi
-    if xi2 + xi3 == 0.:
-        eta1 = 1.
-    else:
-        eta1 = -2. * ( 1. + xi1 ) / (xi2 + xi3) - 1.
-    if xi3 == 1.:
-        eta2 = -1.
-    else:
-        eta2 = 2. * (1. + xi2) / (1. - xi3 ) - 1.
-    eta3 = xi3
-    return eta1,eta2,eta3
-
-
-def xi_tetrahedron( eta ):
-    eta1,eta2,eta3 = eta
-
-    xi1 = 0.25 * ( 1. + eta1 ) * ( 1. - eta2 ) * ( 1. - eta3 ) - 1.
-    xi2 = 0.5 * ( 1. + eta2 ) * ( 1. - eta3 ) - 1.
-    xi3 = eta3
-
-    return xi1,xi2,xi3
-
-coord_changes = { shapes.TRIANGLE: eta_triangle , \
-                  shapes.TETRAHEDRON: eta_tetrahedron }
-
-inverse_coord_changes = { shapes.TRIANGLE: xi_triangle , \
-                          shapes.TETRAHEDRON: xi_tetrahedron }
-
-def make_coordinate_change( shape ):
-    """Maps from reference domain to rectangular reference domain."""
-    global coord_changes
-    if coord_changes.has_key( shape ):
-        return coord_changes[shape]
-    else:
-        raise RuntimeError, "Can't collapse coordinates"
-
-def make_inverse_coordinate_change( shape ):
-    """Maps from rectangular reference domain to reference domain."""
-    global inverse_coord_changes
-    if inverse_coord_changes.has_key( shape ):
-        return inverse_coord_changes[shape]
-    else:
-        raise RuntimeError, "Can't collapse coordinates"
+# Example: For the triangle, we have
+# \phi_{p,q}(\xi_1, \xi_2) = \tilde \psi^a_p(\eta_1) \tilde \psi^b_q(\eta_2)
 
 def phi_line( index , xi ):
     (p,) = index
@@ -127,6 +68,88 @@ def phi_tetrahedron( index , xi ):
 
     return alpha * beta * gamma
 
+# Some class to store all this information consistently
+class ExpansionFunction( object ):
+    """The class ExpansionFunction represent a basis function.
+
+    Attributes:
+
+         indices     -   The basis function index
+         phi         -   The basis function phi = phi(indices, xi) 
+         alpha       -   A factor
+
+    An ExpansionFunction takes a point xi and returns alpha*phi_indices(xi)
+    """
+ 
+    def __init__( self , indices , phi , alpha ):
+        self.indices, self.phi,self.alpha = indices , phi , alpha
+        return
+    def __call__( self , x ):
+        if len( x ) != len( self.indices ):
+            raise RuntimeError, "Illegal number of coordinates"
+        return self.alpha * self.phi( self.indices , x )
+
+class PhiLine( ExpansionFunction ):
+    def __init__( self , i ):
+        ExpansionFunction.__init__( self , \
+                                    (i , ) , \
+                                    phi_line , \
+                                    math.sqrt(1.0*i+0.5) )
+
+class PhiTriangle( ExpansionFunction ):
+    def __init__( self , i , j ):
+        ExpansionFunction.__init__( self , \
+                                    ( i,j ) , \
+                                    phi_triangle, \
+                                    math.sqrt( (i+0.5)*(i+j+1.0) ) )
+        return
+
+class PhiTetrahedron( ExpansionFunction ):
+    def __init__( self , i , j , k ):
+        ExpansionFunction.__init__( self , (i,j,k) , \
+                                    phi_tetrahedron , \
+                                    math.sqrt( (i+0.5)*(i+j+1.0)*(i+j+k+1.5)))
+        return
+
+# Generate basis functions of all polynomial orders up to n:
+def make_phis_line( n ):
+    return [ PhiLine( i ) \
+             for i in range(0,n+1) ]
+
+def make_phis_triangle( n ):
+    return [ PhiTriangle( k - i , i ) \
+             for k in range( 0 , n + 1 ) \
+             for i in range( 0 , k + 1 ) ]
+
+def make_phis_tetrahedron( n ):
+    return [ PhiTetrahedron( k - i - j , j , i ) \
+             for k in range( 0 , n + 1 ) \
+             for i in range( 0 , k + 1 ) \
+             for j in range( 0 , k - i + 1 ) ]
+
+make_phis = { shapes.LINE : make_phis_line , \
+              shapes.TRIANGLE : make_phis_triangle , \
+              shapes.TETRAHEDRON : make_phis_tetrahedron }
+
+def make_expansion( shape , n ):
+    """Returns the orthogonal expansion basis on a given shape
+    for polynomials of degree n."""
+    global make_phis
+    try:
+        return make_phis[shape]( n )
+    except:
+        raise shapes.ShapeError, "expansions.make_expansion: Illegal shape"
+
+
+
+# Now this is the tabulation part. Quite independent of the rest.
+# This does the same as the rest I guess, just written out in gory
+# detail and is vectorized so that we can evaluate a lot of points at
+# once. (Where as the others are designed to evaluate one point at a
+# time.) This could probably be cleaned up! One of these should be
+# very unnecessary!
+
+# The phis on the line is very simple. No change of variables involved.
 def tabulate_phis_line( n , xs ):
     """Tabulates all the basis functions over the line up to
     degree in at points xs."""
@@ -143,6 +166,24 @@ def tabulate_phis_derivs_line( n , xs ):
     for i in range(0,len(xs)):
 	phi_derivs[i,:] *= math.sqrt(1.0*i+0.5)
     return (phi_derivs,)
+
+# Gets a bit more messy on the triangle. In particular, we need some
+# scalings also known as the factors that were used in front of the
+# definitions for psitilde_xxx above. (Add them explicitely here.)
+
+# These scalings are intended to do something. Unknown at present.
+def make_scalings( n , etas ):
+    # Initialize an (n+1)xlen(etas) zero matrix filled with doubles ("d").
+    scalings = numpy.zeros( (n+1,len(etas)) ,"d")
+    # Set the first row entries equal to 1
+    scalings[0,:] = 1.0
+    if n > 0:
+        # Let S(n, i) = S(1, i)^n
+        # where S(1, i) = 0.5(1.0-etas(i)) for each i
+	scalings[1,:] = 0.5 * (1.0 - etas)
+	for k in range(2,n+1):
+	    scalings[k,:] = scalings[k-1,:] * scalings[1,:]
+    return scalings
 
 def tabulate_phis_triangle( n , xs ):
     """Tabulates all the basis functions over the triangle
@@ -168,6 +209,8 @@ def tabulate_phis_triangle( n , xs ):
 	    
     results = numpy.zeros( (shapes.poly_dims[shapes.TRIANGLE](n),len(xs)) , \
 			     "d" )
+    # Multiply the separate factors together to form phi. Note that
+    # the scalings simply is connected with the definition of psi_b
     cur = 0
     for k in range(0,n+1):
 	for i in range(0,k+1):
@@ -188,6 +231,7 @@ def tabulate_phis_derivs_triangle(n,xs):
     eta1s = numpy.array( [ eta1 for (eta1,eta2) in etas ] )
     eta2s = numpy.array( [ eta2 for (eta1,eta2) in etas ] )
 
+    # Generate the psis as for the non-derivative case.
     psitilde_as = jacobi.eval_jacobi_batch(0,0,n,eta1s)
     psitilde_derivs_as = jacobi.eval_jacobi_deriv_batch(0,0,n,eta1s)
     psitilde_bs = [ jacobi.eval_jacobi_batch(2*i+1,0,n-i,eta2s) \
@@ -195,47 +239,47 @@ def tabulate_phis_derivs_triangle(n,xs):
     psitilde_derivs_bs = [ jacobi.eval_jacobi_deriv_batch(2*i+1,0,n-i,eta2s) \
 			   for i in range(0,n+1) ]
 
-    scalings = numpy.zeros( (n+1,len(xs)) ,"d")
-    scalings[0,:] = 1.0
-    if n > 0:
-	scalings[1,:] = 0.5 * (1.0 - eta2s)
-	for k in range(2,n+1):
-	    scalings[k,:] = scalings[k-1,:] * scalings[1,:]
+    # These are the missing factors for psitilde_bs:
+    scalings = make_scalings(n, eta2s);
 	    
+    # Arrays to store the results in:
     xderivs = numpy.zeros( (shapes.poly_dims[shapes.TRIANGLE](n),len(xs)) , \
 			     "d" )
     yderivs = numpy.zeros( xderivs.shape , "d" )
     tmp = numpy.zeros( (len(xs),) , "d" )
 
+    # The following block differentiates the expansion function phi
+    # (using the chain rule).
+    scale = get_chain_rule_scaling()
     cur = 0
     for k in range(0,n+1):
 	for i in range(0,k+1):
 	    ii = k-i
 	    jj = i
 
-	    xderivs[cur,:] = psitilde_derivs_as[ii,:] \
-		* psitilde_bs[ii][jj,:]
+            # Differentiate using the chain rule w.r.t x (aka xi1):
+            xderivs[cur,:] = psitilde_derivs_as[ii,:]*psitilde_bs[ii][jj,:]
 	    if ii > 0:
 		xderivs[cur,:] *= scalings[ii-1,:]
 
-	    yderivs[cur,:] = psitilde_derivs_as[ii,:] \
-		* psitilde_bs[ii][jj,:] \
-		* 0.5 * (1.0+eta1s[:])
+            # Differentiate using the chain rule w.r.t y (aka xi2).
+            # Term 1: deta1/dxi2 * d/deta1(psitilde_a(eta1)*psitilde_b(eta2))
+	    yderivs[cur,:] = psitilde_derivs_as[ii,:]*psitilde_bs[ii][jj,:] \
+                             *0.5*(1.0+eta1s[:])
 	    if ii > 0:
 		yderivs[cur,:] *= scalings[ii-1,:]
 
-
-	    tmp[:] = psitilde_derivs_bs[ii][jj,:] \
-		* scalings[ii,:]
+            # Term 2: deta2/dxi2 * d/deta2(psitilde_a(eta1)*psitilde_b(eta2))
+	    tmp[:] = psitilde_derivs_bs[ii][jj,:]*scalings[ii,:]
 	    if ii > 0:
-		tmp[:] -= 0.5 * ii * psitilde_bs[ii][jj,:] \
-		    * scalings[ii-1]
+		tmp[:] -= 0.5 * ii * psitilde_bs[ii][jj,:]*scalings[ii-1]
 
-	    yderivs[cur,:] += psitilde_as[ii,:] * tmp
+	    yderivs[cur,:] += psitilde_as[ii,:]*tmp
 	    
+            # Normalize with alpha:
 	    alpha = math.sqrt( (ii+0.5)*(ii+jj+1.0) )
-	    xderivs[cur,:] *= alpha
-	    yderivs[cur,:] *= alpha
+	    xderivs[cur,:] *= scale*alpha
+	    yderivs[cur,:] *= scale*alpha
 	    cur += 1
 
     return (xderivs,yderivs)
@@ -251,29 +295,14 @@ def tabulate_phis_tetrahedron( n , xs ):
 
     # get Legendre functions for eta1 direction
     psitilde_as = jacobi.eval_jacobi_batch(0,0,n,eta1s)
-
-    eta2_scalings = numpy.zeros( (n+1,len(xs)) ,"d")
-    eta2_scalings[0,:] = 1.0
-    if n > 0:
-	eta2_scalings[1,:] = 0.5 * (1.0 - eta2s)
-	for k in range(2,n+1):
-	    eta2_scalings[k,:] = eta2_scalings[k-1,:] * eta2_scalings[1,:]
+    eta2_scalings = make_scalings(n, eta2s)
 
     psitilde_bs = [ jacobi.eval_jacobi_batch(2*i+1,0,n-i,eta2s) \
 		    for i in range(0,n+1) ]
-
-    # (0.5*(1-z))**i+j, since for k=0, we can have i+j up to n,
-    # we need same structure as eta2_scalings
-    eta3_scalings = numpy.zeros( (n+1,len(xs)) ,"d" )
-    eta3_scalings[0,:] = 1.0
-    if n > 0:
-	eta3_scalings[1,:] = 0.5 * (1.0 - eta3s)
-	for k in range(2,n+1):
-	    eta3_scalings[k,:] = eta3_scalings[k-1,:] * eta3_scalings[1,:]
+    eta3_scalings = make_scalings(n, eta3s)
 
     # I need psitilde_c[i][j][k]
     # for 0<=i+j+k<=n
-
     psitilde_cs = [ [ jacobi.eval_jacobi_batch(2*(i+j+1),0,\
 					       n-i-j,eta3s) \
 		      for j in range(0,n+1-i) ] for i in range(0,n+1) ]
@@ -322,20 +351,8 @@ def tabulate_phis_derivs_tetrahedron(n,xs):
                                                             n-i-j,eta3s) \
                              for j in range(0,n+1-i) ] for i in range(0,n+1) ]
     
-    eta2_scalings = numpy.zeros( (n+1,len(xs)) ,"d")
-    eta2_scalings[0,:] = 1.0
-    if n > 0:
-	eta2_scalings[1,:] = 0.5 * (1.0 - eta2s)
-	for k in range(2,n+1):
-	    eta2_scalings[k,:] = eta2_scalings[k-1,:] * eta2_scalings[1,:]
-
-    eta3_scalings = numpy.zeros( (n+1,len(xs)) ,"d" )
-    eta3_scalings[0,:] = 1.0
-    if n > 0:
-	eta3_scalings[1,:] = 0.5 * (1.0 - eta3s)
-	for k in range(2,n+1):
-	    eta3_scalings[k,:] = eta3_scalings[k-1,:] \
-		* eta3_scalings[1,:]
+    eta2_scalings = make_scalings(n, eta2s)
+    eta3_scalings = make_scalings(n, eta3s)
 
     tmp = numpy.zeros( (len(xs),) , "d" )
     xderivs = numpy.zeros( (shapes.poly_dims[shapes.TETRAHEDRON](n), \
@@ -343,6 +360,7 @@ def tabulate_phis_derivs_tetrahedron(n,xs):
 			     "d" )
     yderivs = numpy.zeros( xderivs.shape , "d" )
     zderivs = numpy.zeros( xderivs.shape , "d" )
+    scale = get_chain_rule_scaling()
 
     cur = 0
     for k in range(0,n+1):  # loop over degree
@@ -379,6 +397,8 @@ def tabulate_phis_derivs_tetrahedron(n,xs):
 		tmp[:] *= psitilde_cs[ii][jj][kk,:]
 		if ii+jj>0:
 		    tmp[:] *= eta3_scalings[ii+jj-1]
+
+                # Adding the two terms, gives the final yderivs
 		yderivs[cur,:] += tmp[:]
 
 		# zderivative
@@ -415,15 +435,15 @@ def tabulate_phis_derivs_tetrahedron(n,xs):
 		tmp[:] *= eta2_scalings[ii]
 		zderivs[cur,:] += tmp[:]
 
-                xderivs[cur,:] *= math.sqrt( (ii+0.5) \
+                xderivs[cur,:] *= scale*math.sqrt( (ii+0.5) \
 					     * (ii+jj+1.0) \
 					     * (ii+jj+kk+1.5) )
 
-                yderivs[cur,:] *= math.sqrt( (ii+0.5) \
+                yderivs[cur,:] *= scale*math.sqrt( (ii+0.5) \
 					     * (ii+jj+1.0) \
 					     * (ii+jj+kk+1.5) )
 
-                zderivs[cur,:] *= math.sqrt( (ii+0.5) \
+                zderivs[cur,:] *= scale*math.sqrt( (ii+0.5) \
 					     * (ii+jj+1.0) \
 					     * (ii+jj+kk+1.5) )
 
@@ -431,6 +451,19 @@ def tabulate_phis_derivs_tetrahedron(n,xs):
 		cur += 1
 
     return (xderivs,yderivs,zderivs)
+
+
+tabulators = { shapes.LINE : tabulate_phis_line , \
+	       shapes.TRIANGLE : tabulate_phis_triangle , \
+	       shapes.TETRAHEDRON : tabulate_phis_tetrahedron }
+
+deriv_tabulators = { shapes.LINE : tabulate_phis_derivs_line , \
+		     shapes.TRIANGLE : tabulate_phis_derivs_triangle , \
+		     shapes.TETRAHEDRON : tabulate_phis_derivs_tetrahedron }
+
+
+#####################################################3
+#################  OLD STUFF:
 
 def tabulate_phis_derivs_tetrahedron_old(n,xs):
     """Tabulates all the derivatives of basis functions over the tetrahedron
@@ -541,75 +574,3 @@ def tabulate_phis_derivs_tetrahedron_old(n,xs):
 		cur += 1
 
     return (xderivs,yderivs,zderivs)
-
-
-
-class ExpansionFunction( object ):
-    def __init__( self , indices , phi , alpha ):
-        self.indices, self.phi,self.alpha = indices , phi , alpha
-        return
-    def __call__( self , x ):
-        if len( x ) != len( self.indices ):
-            raise RuntimeError, "Illegal number of coordinates"
-        return self.alpha * self.phi( self.indices , x )
-
-class PhiLine( ExpansionFunction ):
-    def __init__( self , i ):
-        ExpansionFunction.__init__( self , \
-                                    (i , ) , \
-                                    phi_line , \
-                                    math.sqrt(1.0*i+0.5) )
-
-class PhiTriangle( ExpansionFunction ):
-    def __init__( self , i , j ):
-        ExpansionFunction.__init__( self , \
-                                    ( i,j ) , \
-                                    phi_triangle, \
-                                    math.sqrt( (i+0.5)*(i+j+1.0) ) )
-        return
-
-class PhiTetrahedron( ExpansionFunction ):
-    def __init__( self , i , j , k ):
-        ExpansionFunction.__init__( self , (i,j,k) , \
-                                    phi_tetrahedron , \
-                                    math.sqrt( (i+0.5)*(i+j+1.0)*(i+j+k+1.5)))
-        return
-
-def make_phis_line( n ):
-    return [ PhiLine( i ) \
-             for i in range(0,n+1) ]
-
-def make_phis_triangle( n ):
-    return [ PhiTriangle( k - i , i ) \
-             for k in range( 0 , n + 1 ) \
-             for i in range( 0 , k + 1 ) ]
-
-def make_phis_tetrahedron( n ):
-    return [ PhiTetrahedron( k - i - j , j , i ) \
-             for k in range( 0 , n + 1 ) \
-             for i in range( 0 , k + 1 ) \
-             for j in range( 0 , k - i + 1 ) ]
-
-make_phis = { shapes.LINE : make_phis_line , \
-              shapes.TRIANGLE : make_phis_triangle , \
-              shapes.TETRAHEDRON : make_phis_tetrahedron }
-
-def make_expansion( shape , n ):
-    """Returns the orthogonal expansion basis on a given shape
-    for polynomials of degree n."""
-    global make_phis
-    try:
-        return make_phis[shape]( n )
-    except:
-        raise shapes.ShapeError, "expansions.make_expansion: Illegal shape"
-
-tabulators = { shapes.LINE : tabulate_phis_line , \
-	       shapes.TRIANGLE : tabulate_phis_triangle , \
-	       shapes.TETRAHEDRON : tabulate_phis_tetrahedron }
-
-deriv_tabulators = { shapes.LINE : tabulate_phis_derivs_line , \
-		     shapes.TRIANGLE : tabulate_phis_derivs_triangle , \
-		     shapes.TETRAHEDRON : tabulate_phis_derivs_tetrahedron }
-
-
-
