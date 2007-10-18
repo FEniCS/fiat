@@ -142,14 +142,12 @@ def make_expansion( shape , n ):
 
 
 
-# Now this is the tabulation part. Quite independent of the rest.
-# This does the same as the rest I guess, just written out in gory
-# detail and is vectorized so that we can evaluate a lot of points at
-# once. (Where as the others are designed to evaluate one point at a
-# time.) This could probably be cleaned up! One of these should be
-# very unnecessary!
+# Now, the following is the tabulation part which is code-wise quite
+# independent of the previous but in effect does more or less the
+# same. It is designed to efficiently evaluate a lot of points at once
+# (where as the previous evaluates one point at a time).
 
-# The phis on the line is very simple. No change of variables involved.
+# The phis on the line are very simple. No change of variables involved.
 def tabulate_phis_line( n , xs ):
     """Tabulates all the basis functions over the line up to
     degree in at points xs."""
@@ -168,10 +166,9 @@ def tabulate_phis_derivs_line( n , xs ):
     return (phi_derivs,)
 
 # Gets a bit more messy on the triangle. In particular, we need some
-# scalings also known as the factors that were used in front of the
-# definitions for psitilde_xxx above. (Add them explicitely here.)
+# scalings also known as the factors used in the definitions of
+# psitilde_xxx above.
 
-# These scalings are intended to do something. Unknown at present.
 def make_scalings( n , etas ):
     # Initialize an (n+1)xlen(etas) zero matrix filled with doubles ("d").
     scalings = numpy.zeros( (n+1,len(etas)) ,"d")
@@ -209,8 +206,7 @@ def tabulate_phis_triangle( n , xs ):
 	    
     results = numpy.zeros( (shapes.poly_dims[shapes.TRIANGLE](n),len(xs)) , \
 			     "d" )
-    # Multiply the separate factors together to form phi. Note that
-    # the scalings simply is connected with the definition of psi_b
+    # Multiply the separate factors together to form phi.
     cur = 0
     for k in range(0,n+1):
 	for i in range(0,k+1):
@@ -239,7 +235,7 @@ def tabulate_phis_derivs_triangle(n,xs):
     psitilde_derivs_bs = [ jacobi.eval_jacobi_deriv_batch(2*i+1,0,n-i,eta2s) \
 			   for i in range(0,n+1) ]
 
-    # These are the missing factors for psitilde_bs:
+    # These are the "missing" factors for psitilde_bs:
     scalings = make_scalings(n, eta2s);
 	    
     # Arrays to store the results in:
