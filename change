@@ -1,4 +1,7 @@
 What's new in:
+0.3.3:
+  bug fix in Nedelec
+  support for ufc element
 0.3.1:
   bug fix in DOF orderings for H(div) elements
   preliminary type system for DOF
