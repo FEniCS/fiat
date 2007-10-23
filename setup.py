@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name="FIAT", \
-      version="0.3.2-1", \
+      version="0.3.3", \
       description="FInite element Automatic Tabulator", \
       author="Robert C. Kirby", \
       author_email="robert.c.kirby@gmail.com", \
