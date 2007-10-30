@@ -50,7 +50,7 @@ def RTSpace( shape , k ):
     Pkp1     = polynomial.OrthogonalPolynomialSet( shape , k + 1 )
     PkH      = Pkp1[dimPkm1:dimPk]
 
-    Q = quadrature.make_quadrature( shape , 2 * k )
+    Q = quadrature.make_quadrature( shape , 2 * k + 2 )
 
     PkHxcoeffs = numpy.array( [ [ polynomial.projection( Pkp1 , \
                                                            lambda x:x[i]*p(x), \
