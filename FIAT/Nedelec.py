@@ -72,7 +72,7 @@ def NedelecSpace2D( k ):
 	Pkp1     = polynomial.OrthogonalPolynomialSet( shape , k + 1 )
 	PkH      = Pkp1[dimPkm1:dimPk]
 
-	Q = quadrature.make_quadrature( shape , 2 * k )
+	Q = quadrature.make_quadrature( shape , 2 * (k+1) )
 
 	PkHrotxcoeffs = numpy.array( \
     	[ [ polynomial.projection( Pkp1 , \
@@ -106,11 +106,8 @@ class NedelecDual3D( dualbasis.DualBasis ):
         mdcb = functional.make_directional_component_batch
 		
 
-        ls_per_edge = [ mdcb( U , \
-                              shapes.tangents[shape][1][i] , \
-                              edge_pts[i] ) \
+        ls_per_edge = [ mdcb( U, shapes.jac_factors[shape][1][i]*shapes.tangents[shape][1][i], edge_pts[i] ) \
                         for i in shapes.entity_range( shape , 1 ) ]
-        
         
         edge_ls = reduce( lambda a,b:a+b , ls_per_edge )
         
@@ -123,8 +120,10 @@ class NedelecDual3D( dualbasis.DualBasis ):
         ls_per_face = []
         for i in shapes.entity_range( shape , 2 ):
             ls_cur = []
-            t0s = mdcb( U , shapes.tangents[shape][2][i][0] , face_pts[i] )
-            t1s = mdcb( U , shapes.tangents[shape][2][i][1] , face_pts[i] )
+            # Multiplied by the jac_factors for the faces in order to
+            # ensure continuity:
+            t0s = mdcb( U , shapes.jac_factors[shape][2][i]*shapes.tangents[shape][2][i][0] , face_pts[i] )
+            t1s = mdcb( U , shapes.jac_factors[shape][2][i]*shapes.tangents[shape][2][i][1] , face_pts[i] )
             for j in range(len(t0s)):
                 ls_cur.append( t0s[j] )
                 ls_cur.append( t1s[j] )
@@ -191,8 +190,10 @@ class NedelecDual2D( dualbasis.DualBasis ):
                                                         d+k ) ] \
                         for i in shapes.entity_range( shape , d-1 ) ]
 		tngnts = shapes.tangents[shapes.TRIANGLE][1]
+                # Again scale tangents by edge length as for H(div).
 		ls = reduce( lambda a,b:a+b , \
-                     [ mdcb(U,tngnts[i],pts_per_edge[i]) \
+                             [ mdcb(U,shapes.jac_factors[shape][1][i]*tngnts[i],
+                                    pts_per_edge[i]) \
                        for i in shapes.entity_range(shapes.TRIANGLE,1) ] )
 		if k > 0:
 			Pkp1 = polynomial.OrthogonalPolynomialArraySet( shape , k+1 )
@@ -220,11 +221,12 @@ class NedelecDual2D( dualbasis.DualBasis ):
 		entity_ids[d-1] = {}
 		node_cur = 0
 		for j in shapes.entity_range(shape,d-1):
-			for k in range(pts_per_bdry):
-				entity_ids[d-1][j] = node_cur
-				node_cur += 1
-		entity_ids[d] = range(node_cur,\
-                              node_cur+len(interior_moments))
+                    entity_ids[d-1][j] = []
+                    for k in range(pts_per_bdry):
+                        entity_ids[d-1][j].append( node_cur )
+                        node_cur += 1
+                entity_ids[d] = {0: range(node_cur,\
+                                          node_cur+len(interior_moments))}
 
 
 		dualbasis.DualBasis.__init__( self , \
@@ -248,3 +250,4 @@ class Nedelec( polynomial.FiniteElement ):
 #        print dir( Udual )
         polynomial.FiniteElement.__init__( self , Udual , U )
 
+ 

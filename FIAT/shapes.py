@@ -24,7 +24,7 @@ def strike_col( A , j ):
     return numpy.take( A , [ k for k in range(0,n) if k != j ] , 1 )
 
 def cross( vecs ):
-    """Multidimensional cross product of d+1 vecs in R^{d}."""
+    """Multidimensional cross product of n=d-1 vecs in R^{d}."""
     n,d = len(vecs),len(vecs[0]) 
     mat = numpy.array( vecs )
     if n != d-1:
