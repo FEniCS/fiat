@@ -60,18 +60,26 @@ def test_piola( ):
 
     newpts = ((0.5,0.5),(0.0,0.5),(0.5,0.0))
 
-    Uvals = numpy.transpose( Utrans.tabulate( newpts ) ,(0,2,1) )
-    Vvals = numpy.transpose( Vtrans.tabulate( newpts ) , (0,2,1) )
+    Ujet = Utrans.tabulate_jet( 1 , newpts )
+    Vjet = Vtrans.tabulate_jet( 1 , newpts )
 
-    print "loop over bfs"
-    for i in range( Uvals.shape[0] ):
-        print "\tbf ",i
-        print "\tloop over pts"
-        for j in range( Uvals.shape[1] ):
-            print "\t\t", Uvals[i,j]
+    U0vals = Ujet[0][0][(0,0)]
+    U1vals = Ujet[1][0][(0,0)]
 
-    # is BDFM(1) == RT(0)??
-    print numpy.allclose( Uvals, Vvals )
+    V0vals = Vjet[0][0][(0,0)]
+    V1vals = Vjet[1][0][(0,0)]
+
+    print "X and Y components of vectors agree?"
+    print numpy.allclose( U0vals , V0vals )
+    print numpy.allclose( U1vals , V1vals )
+
+    print "X-partials of X and Y components agree?"
+    print numpy.allclose( Ujet[0][1][(1,0)] , Vjet[0][1][(1,0)] )
+    print numpy.allclose( Ujet[0][1][(0,1)] , Vjet[0][1][(0,1)] )
+
+    print "Y-partials of X and Y components agree?"
+    print numpy.allclose( Ujet[1][1][(1,0)] , Vjet[1][1][(1,0)] )
+    print numpy.allclose( Ujet[1][1][(0,1)] , Vjet[1][1][(0,1)] )
 
 
 

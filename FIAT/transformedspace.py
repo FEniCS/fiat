@@ -152,8 +152,9 @@ class HDivPiolaTransformedSpace:
         return unflat_dot
 
     def select_vector_component( self , i ):
-        return AffineTransformedFunctionSpace( self.fspace , \
+        newfs = polynomial.ScalarPolynomialSet( self.fspace.base ,
                                                self.coeffs[:,i,:] )
+        return AffineTransformedFunctionSpace( newfs , self.verts )
 
     def trace_tabulate_jet( self , d , e , order , xs , drefverts ):
         (Alow,blow) = pullback_mapping( drefverts )
@@ -183,7 +184,7 @@ class HDivPiolaTransformedSpace:
         return self.fspace.tensor_shape( )
 
     def tabulate_jet( self , order , xs ):
-        newxs = map( self.pullback( xs ) )
+        newxs = tuple( [ tuple( self.pullback( x ) ) for x in xs ] )
         return [ self.select_vector_component( i ).tabulate_jet( order , \
                                                                  newxs ) \
                  for i in range(self.tensor_shape()[0]) ]
