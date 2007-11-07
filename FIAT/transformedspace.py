@@ -36,18 +36,19 @@ def pushforward_function(A,b):
 class AffineTransformedFunctionSpace:
     def __init__( self , fspace , verts ):
         (self.A,self.b) = pullback_mapping( verts )
-
         self.pullback = pullback_function( self.A , self.b )
         self.pushforward = pushforward_function(self.A,self.b)
         self.fspace = fspace
         self.verts = verts
+        return
 
     def degree( self ): return self.fspace.degree()
     def spatial_dimension( self ): return self.fspace.spatial_dimension()
     def __len__( self ): return self.fspace.__len__()
 
     def eval_all( self , x ):
-        return self.tabulate( numpy.array([x]))[:,0]
+        xnew = self.pullback( x )
+        return self.tabulate( numpy.array([xnew]))[:,0]
     
     def tabulate( self , pts ):
         newpts = tuple( [ tuple(self.pullback( x )) for x in pts ] )
@@ -103,4 +104,86 @@ class AffineTransformedFunctionSpace:
 
     def tensor_shape( self ):
         return (1,)
+
+
+class HDivPiolaTransformedSpace:
+    def __init__( self , fspace , verts ):
+        self.fspace = fspace
+        self.verts = verts
+        (self.A,self.b) = pullback_mapping( verts )
+        self.J = numpy.linalg.det( self.A )
+        self.pullback = pullback_function( self.A , self.b )
+        self.pushforward = pushforward_function(self.A,self.b)
+
+        # now need to make Piola
+        self.piola = lambda x: numpy.dot( self.A , x ) / J
+
+        # make transformed coefficients
+        cold = numpy.transpose( fspace.coeffs , (0 , 2 , 1) )
+        cnewa = numpy.array( [ [ self.piola( c ) for c in coldrow ] \
+                               for coldrow in cold ] )
+        self.coeffs = numpy.transpose( cnewa , (0 ,2 ,1 ) )
+        
+    def eval_all( self , x ):
+        """Returns arr[i,j] where i runs over the members of the
+        set and j runs over the components of each member."""
+        bvals = self.fspace.base.eval_all( self.pullback( x ) )
+        old_shape = self.coeffs.shape
+        flat_coeffs = numpy.reshape( self.coeffs , \
+                                     (old_shape[0]*old_shape[1] , \
+                                      old_shape[2] ) )
+        flat_dot = numpy.dot( flat_coeffs , bvals )
+        return numpy.reshape( flat_dot , old_shape[:2] )
     
+    def tabulate( self , xs ):
+        """xs is an iterable object of points.
+        returns an array A[i,j,k] where i runs over the members of the
+        set, j runs over the components of the vectors, and k runs
+        over the points."""
+        bvals = self.base.tabulate( map( self.pullback( xs ) ) )
+        old_shape = self.coeffs.shape
+        flat_coeffs = numpy.reshape( self.coeffs , \
+                                       ( old_shape[0]*old_shape[1] , \
+                                         old_shape[2] ) )
+        flat_dot = numpy.dot( flat_coeffs , bvals )
+        unflat_dot = numpy.reshape( flat_dot , \
+                                ( old_shape[0] , old_shape[1] , len(xs) ) )
+        return unflat_dot
+
+    def select_vector_component( self , i ):
+        return AffineTransformedFunctionSpace( self.fspace , \
+                                               self.coeffs[:,i,:] )
+
+    def trace_tabulate_jet( self , d , e , order , xs , drefverts ):
+        (Alow,blow) = pullback_mapping( drefverts )
+        lowdimpullback = pullback_function(Alow,blow)
+
+        xspullback = tuple( map( tuple , map( lowdimpullback , xs ) ) )
+
+        # embed the pulled-back vertices into the right space
+        spacedim = self.spatial_dimension()
+        xsfulldimpullback = \
+           map( shapes.pt_maps[spacedim][d](e),\
+                xspullback )  
+        
+        # push them forward into the right space
+        xs_dim = tuple( map( tuple , \
+                             map( self.pushforward ,\
+                                  xsfulldimpullback ) ) )
+
+        return [ self.select_vector_component( i ).tabulate_jet( order , \
+                                                                 xs_dim ) \
+                 for i in range(self.tensor_shape()[0]) ]
+        
+
+        return
+
+    def tensor_shape( self ):
+        return self.fspace.tensor_shape( )
+
+    def tabulate_jet( self , order , xs ):
+        newxs = map( self.pullback( xs ) )
+        return [ self.select_vector_component( i ).tabulate_jet( order , \
+                                                                 newxs ) \
+                 for i in range(self.tensor_shape()[0]) ]
+
