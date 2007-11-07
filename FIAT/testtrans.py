@@ -1,4 +1,4 @@
-import shapes,transformedspace,Lagrange,numpy,RaviartThomas
+import shapes,transformedspace,Lagrange,numpy,RaviartThomas,BDFM
 
 def test_scalar():
     pts = shapes.make_lattice( 2 , 1 )
@@ -54,20 +54,26 @@ def test_piola( ):
     pts = shapes.make_lattice( 2 , 1 )
     newverts = ((0.0,0.0),(1.0,0.0),(0.0,1.0))
     U=RaviartThomas.RaviartThomas(2,0).function_space()
+    V=BDFM.BDFM(2,1).function_space()
     Utrans = transformedspace.HDivPiolaTransformedSpace(U,newverts)
+    Vtrans = transformedspace.HDivPiolaTransformedSpace(V,newverts)
 
     newpts = ((0.5,0.5),(0.0,0.5),(0.5,0.0))
 
-    vals = numpy.transpose( Utrans.tabulate( newpts ) ,(0,2,1) )
-
-
+    Uvals = numpy.transpose( Utrans.tabulate( newpts ) ,(0,2,1) )
+    Vvals = numpy.transpose( Vtrans.tabulate( newpts ) , (0,2,1) )
 
     print "loop over bfs"
-    for i in range( vals.shape[0] ):
+    for i in range( Uvals.shape[0] ):
         print "\tbf ",i
         print "\tloop over pts"
-        for j in range( vals.shape[1] ):
-            print "\t\t", vals[i,j]
+        for j in range( Uvals.shape[1] ):
+            print "\t\t", Uvals[i,j]
+
+    # is BDFM(1) == RT(0)??
+    print numpy.allclose( Uvals, Vvals )
+
+
 
 
 if __name__=="__main__":
