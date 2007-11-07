@@ -116,7 +116,7 @@ class HDivPiolaTransformedSpace:
         self.pushforward = pushforward_function(self.A,self.b)
 
         # now need to make Piola
-        self.piola = lambda x: numpy.dot( self.A , x ) / J
+        self.piola = lambda x: numpy.dot( self.A , x ) / self.J
 
         # make transformed coefficients
         cold = numpy.transpose( fspace.coeffs , (0 , 2 , 1) )
@@ -140,7 +140,8 @@ class HDivPiolaTransformedSpace:
         returns an array A[i,j,k] where i runs over the members of the
         set, j runs over the components of the vectors, and k runs
         over the points."""
-        bvals = self.base.tabulate( map( self.pullback( xs ) ) )
+        newxs = tuple( [ tuple( self.pullback(x))  for x in xs] )
+        bvals = self.fspace.base.tabulate( newxs ) 
         old_shape = self.coeffs.shape
         flat_coeffs = numpy.reshape( self.coeffs , \
                                        ( old_shape[0]*old_shape[1] , \
