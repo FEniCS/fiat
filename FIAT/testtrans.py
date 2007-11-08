@@ -55,13 +55,21 @@ def test_piola( ):
     newverts = ((0.0,0.0),(1.0,0.0),(0.0,1.0))
     U=RaviartThomas.RaviartThomas(2,0).function_space()
     V=BDFM.BDFM(2,1).function_space()
-    Utrans = transformedspace.HDivPiolaTransformedSpace(U,newverts)
-    Vtrans = transformedspace.HDivPiolaTransformedSpace(V,newverts)
+    Utrans = transformedspace.PiolaTransformedSpace(U,newverts,"div")
+    Vtrans = transformedspace.PiolaTransformedSpace(V,newverts,"div")
 
     newpts = ((0.5,0.5),(0.0,0.5),(0.5,0.0))
 
+    edge_pts_transformed = ((1./3.,),(2./3.,))
+    edge_pts = ((-1./3,),(1./3.,))
+
     Ujet = Utrans.tabulate_jet( 1 , newpts )
     Vjet = Vtrans.tabulate_jet( 1 , newpts )
+
+    Utrjet = Utrans.trace_tabulate_jet(1,1,1, edge_pts_transformed, \
+                                       ((0.0,),(1.0,)))
+    Vtrjet = Vtrans.trace_tabulate_jet(1,1,1, edge_pts_transformed, \
+                                       ((0.0,),(1.0,)))
 
     U0vals = Ujet[0][0][(0,0)]
     U1vals = Ujet[1][0][(0,0)]
@@ -81,6 +89,17 @@ def test_piola( ):
     print numpy.allclose( Ujet[1][1][(1,0)] , Vjet[1][1][(1,0)] )
     print numpy.allclose( Ujet[1][1][(0,1)] , Vjet[1][1][(0,1)] )
 
+    print "X and Y components of trace agree?"
+    print numpy.allclose( Utrjet[0][0][(0,0)] , Vtrjet[0][0][(0,0)] )
+    print numpy.allclose( Utrjet[1][0][(0,0)] , Vtrjet[1][0][(0,0)] )
+
+    print "X-partials of trace X and Y components agree?"
+    print numpy.allclose( Utrjet[0][1][(1,0)] , Vtrjet[0][1][(1,0)] )
+    print numpy.allclose( Utrjet[0][1][(0,1)] , Vtrjet[0][1][(0,1)] )
+
+    print "Y-partials of trace X and Y components agree?"
+    print numpy.allclose( Utrjet[1][1][(1,0)] , Vtrjet[1][1][(1,0)] )
+    print numpy.allclose( Utrjet[1][1][(0,1)] , Vtrjet[1][1][(0,1)] )
 
 
 

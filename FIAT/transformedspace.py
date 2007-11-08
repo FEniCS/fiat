@@ -106,8 +106,8 @@ class AffineTransformedFunctionSpace:
         return (1,)
 
 
-class HDivPiolaTransformedSpace:
-    def __init__( self , fspace , verts ):
+class PiolaTransformedSpace:
+    def __init__( self , fspace , verts , div_or_curl ):
         self.fspace = fspace
         self.verts = verts
         (self.A,self.b) = pullback_mapping( verts )
@@ -116,13 +116,22 @@ class HDivPiolaTransformedSpace:
         self.pushforward = pushforward_function(self.A,self.b)
 
         # now need to make Piola
-        self.piola = lambda x: numpy.dot( self.A , x ) / self.J
+        if div_or_curl == "div":
+            self.piola = lambda x: numpy.dot( self.A , x ) / self.J
+        elif div_or_curl == "curl":
+            self.Atrans = numpy.transpose( self.A , (1,0) )
+            self.piola = lambda x: numpy.dot( self.Atrans , x )
 
         # make transformed coefficients
         cold = numpy.transpose( fspace.coeffs , (0 , 2 , 1) )
         cnewa = numpy.array( [ [ self.piola( c ) for c in coldrow ] \
                                for coldrow in cold ] )
         self.coeffs = numpy.transpose( cnewa , (0 ,2 ,1 ) )
+
+    def degree( self ): return self.fspace.degree()
+    def spatial_dimension( self ): return self.fspace.spatial_dimension()
+    def __len__( self ): return self.fspace.__len__()
+
         
     def eval_all( self , x ):
         """Returns arr[i,j] where i runs over the members of the
