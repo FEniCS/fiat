@@ -122,6 +122,7 @@ class PiolaTransformedFunctionSpace:
         self.J = numpy.linalg.det( self.A )
         self.pullback = pullback_function( self.A , self.b )
         self.pushforward = pushforward_function(self.A,self.b)
+        self.div_or_curl = div_or_curl
 
         # now need to make Piola
         if div_or_curl == "div":
@@ -204,6 +205,15 @@ class PiolaTransformedFunctionSpace:
                                                                  newxs ) \
                  for i in range(self.tensor_shape()[0]) ]
 
+    def rank( self ): return self.fspace.rank()
+    def __getitem__( self , i ):
+        if type(i) == type(1):
+            return PiolaTransformedVectorPolynomial( self , self.coeffs[i] )
+        else:
+            return PiolaTransformedFunctionSpace( self.fspace[i] , \
+                                                  self.verts , \
+                                                  self.div_or_curl )
+
 
 class AffineTransformedScalarPolynomial:
     def __init__( self , atfspace , dof ):
@@ -222,7 +232,7 @@ class PiolaTransformedVectorPolynomial:
         self.ptfspace, self.dof = ptfspace, dof
         return
     def __call__( self , x ):
-        return numpy.dot( self.dof , self.base.eval_all( x ) )
+        return numpy.dot( self.dof , self.ptfspace.eval_all( x ) )
     def __getitem__( self , i ):
         nspace = self.ptfspace.select_vector_component(i)
         return AffineTransformedScalarPolynomial( nspace , self.dof )
