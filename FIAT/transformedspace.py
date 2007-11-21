@@ -105,8 +105,16 @@ class AffineTransformedFunctionSpace:
     def tensor_shape( self ):
         return (1,)
 
+    def rank( self ): return self.fspace.rank()
+    def __len__( self ): return len( self.fspace )
+    def __getitem__( self , i ):
+        if type(i) == type(1): # single item
+            return AffineTransformedScalarPolynomial( )
+        else:
+            return AffineTransformedFunctionSpace( self.fspace[i] , \
+                                                   self.verts )
 
-class PiolaTransformedSpace:
+class PiolaTransformedFunctionSpace:
     def __init__( self , fspace , verts , div_or_curl ):
         self.fspace = fspace
         self.verts = verts
@@ -187,8 +195,6 @@ class PiolaTransformedSpace:
                  for i in range(self.tensor_shape()[0]) ]
         
 
-        return
-
     def tensor_shape( self ):
         return self.fspace.tensor_shape( )
 
@@ -198,3 +204,25 @@ class PiolaTransformedSpace:
                                                                  newxs ) \
                  for i in range(self.tensor_shape()[0]) ]
 
+
+class AffineTransformedScalarPolynomial:
+    def __init__( self , atfspace , dof ):
+        self.atfspace = atfspace
+        self.dof = dof
+        return
+    def __call__( self , x ):
+        bvals = self.atfspace.eval_all( x )
+        return numpy.dot( self.dof , bvals )
+    def deriv( self , i ):
+        nspace = self.atfspace.deriv_all( i )
+        return AffineTransformedScalarPolynomial( nspace , self.dof )
+
+class PiolaTransformedVectorPolynomial:
+    def __init__( self , ptfspace , dof ):
+        self.ptfspace, self.dof = ptfspace, dof
+        return
+    def __call__( self , x ):
+        return numpy.dot( self.dof , self.base.eval_all( x ) )
+    def __getitem__( self , i ):
+        nspace = self.ptfspace.select_vector_component(i)
+        return AffineTransformedScalarPolynomial( nspace , self.dof )
