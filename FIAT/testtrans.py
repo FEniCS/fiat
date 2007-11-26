@@ -90,7 +90,18 @@ def test_piola( ):
     print numpy.allclose( Utrjet[1][1][(0,1)] , Vtrjet[1][1][(0,1)] )
 
 
-def test_poly( ):
+def test_poly_scalar():
+    U = Lagrange.Lagrange(2,1).function_space()
+    pts = shapes.make_lattice( 2 , 1 )
+    newverts = ((0.0,0.0),(1.0,0.0),(0.0,1.0))
+    Utr = transformedspace.AffineTransformedFunctionSpace( U , newverts )
+    print [ Utr[0](v) for v in newverts ]
+    print [ U[0](v) for v in pts ]
+    print [ [ Utr[0].deriv(i)(v) for v in newverts ] for i in (0,1)]
+    print [ [ U[0].deriv(i)(v) for v in newverts ] for i in (0,1) ]
+    
+
+def test_poly_piola( ):
     U = RaviartThomas.RaviartThomas(2,1).function_space()
     pts = shapes.make_lattice( 2 , 1 )
     newverts = ((0.0,0.0),(1.0,0.0),(0.0,1.0))
@@ -102,4 +113,4 @@ def test_poly( ):
 if __name__=="__main__":
     #test_scalar()
     #test_piola()
-    test_poly()
+    test_poly_scalar()

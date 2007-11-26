@@ -47,8 +47,7 @@ class AffineTransformedFunctionSpace:
     def __len__( self ): return self.fspace.__len__()
 
     def eval_all( self , x ):
-        xnew = self.pullback( x )
-        return self.tabulate( numpy.array([xnew]))[:,0]
+        return self.tabulate( ( x , ) )[:,0]
     
     def tabulate( self , pts ):
         newpts = tuple( [ tuple(self.pullback( x )) for x in pts ] )
@@ -109,7 +108,9 @@ class AffineTransformedFunctionSpace:
     def __len__( self ): return len( self.fspace )
     def __getitem__( self , i ):
         if type(i) == type(1): # single item
-            return AffineTransformedScalarPolynomial( )
+            newdof = numpy.zeros( self.fspace.coeffs[0].shape , "d" )
+            newdof[i] = 1.0
+            return AffineTransformedScalarPolynomial( self , newdof )
         else:
             return AffineTransformedFunctionSpace( self.fspace[i] , \
                                                    self.verts )
@@ -214,18 +215,31 @@ class PiolaTransformedFunctionSpace:
                                                   self.verts , \
                                                   self.div_or_curl )
 
-
 class AffineTransformedScalarPolynomial:
     def __init__( self , atfspace , dof ):
-        self.atfspace = atfspace
-        self.dof = dof
+        # dof is the dof on the untransformed space
+        self.atfspace, self.dof = atfspace, dof
         return
     def __call__( self , x ):
-        bvals = self.atfspace.eval_all( x )
-        return numpy.dot( self.dof , bvals )
+        vals = self.atfspace.eval_all( x )
+        return numpy.dot( vals , self.dof )
     def deriv( self , i ):
         nspace = self.atfspace.deriv_all( i )
         return AffineTransformedScalarPolynomial( nspace , self.dof )
+        
+
+
+##class AffineTransformedScalarPolynomial:
+##    def __init__( self , atfspace , dof ):
+##        self.atfspace = atfspace
+##        self.dof = dof
+##        return
+##    def __call__( self , x ):
+##        bvals = self.atfspace.eval_all( x )
+##        return numpy.dot( self.dof , bvals )
+##    def deriv( self , i ):
+##        nspace = self.atfspace.deriv_all( i )
+##        return AffineTransformedScalarPolynomial( nspace , self.dof )
 
 class PiolaTransformedVectorPolynomial:
     def __init__( self , ptfspace , dof ):
