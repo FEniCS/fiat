@@ -1,4 +1,4 @@
-import numpy, polynomial,shapes, numpy.linalg
+import numpy, polynomial,shapes, numpy.linalg, quadrature
 
 # this works on simplices of arbitrary dimension
 def pullback_mapping( verts ):
@@ -228,19 +228,6 @@ class AffineTransformedScalarPolynomial:
         return AffineTransformedScalarPolynomial( nspace , self.dof )
         
 
-
-##class AffineTransformedScalarPolynomial:
-##    def __init__( self , atfspace , dof ):
-##        self.atfspace = atfspace
-##        self.dof = dof
-##        return
-##    def __call__( self , x ):
-##        bvals = self.atfspace.eval_all( x )
-##        return numpy.dot( self.dof , bvals )
-##    def deriv( self , i ):
-##        nspace = self.atfspace.deriv_all( i )
-##        return AffineTransformedScalarPolynomial( nspace , self.dof )
-
 class PiolaTransformedVectorPolynomial:
     def __init__( self , ptfspace , dof ):
         self.ptfspace, self.dof = ptfspace, dof
@@ -250,3 +237,14 @@ class PiolaTransformedVectorPolynomial:
     def __getitem__( self , i ):
         nspace = self.ptfspace.select_vector_component(i)
         return AffineTransformedScalarPolynomial( nspace , self.dof )
+
+class AffineTransformedQuadratureRule(quadrature.QuadratureRule):
+    def __init__( self , q , verts ):
+        self.q, self.verts = q,verts
+        A,b = pullback_mapping( verts )
+        pullback = pullback_function( A , b )
+        newpts = map( pullback , q.get_points() )
+        newwts = q.get_weights()/ numpy.linalg.det( A )
+        quadrature.QuadratureRule.__init__( newpts , newwts )
+        return
+
