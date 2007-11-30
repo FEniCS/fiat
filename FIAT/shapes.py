@@ -87,7 +87,7 @@ def area( a , b , c ):
     return sqrt( numpy.dot( crss , crss ) )
 
 # mapping from edge ids of a triangle to the pair of vertices
-(triangle_edges, tetrahedron_edges, tetrahedron_faces) = numbering.get_entities()
+(triangle_edges, tetrahedron_edges, tetrahedron_faces,tetrahedron_face_edges) = numbering.get_entities()
 
 edges = { TRIANGLE : triangle_edges , \
           TETRAHEDRON : tetrahedron_edges }

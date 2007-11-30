@@ -1,7 +1,7 @@
 import Nedelec, functional, numpy, polynomial, quadrature, shapes
 
 shape = shapes.TETRAHEDRON
-degree = 0
+degree = 1
 
 Uel = Nedelec.Nedelec( shape , degree )
 

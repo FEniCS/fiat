@@ -9,7 +9,7 @@
 # Nedelec indexing from 0
 
 import dualbasis, polynomial, functionalset, functional, shapes, \
-       quadrature, numpy, RaviartThomas
+       quadrature, numpy, RaviartThomas, numbering
 
 def NedelecSpace3D( k ):
     shape = shapes.TETRAHEDRON
@@ -118,17 +118,39 @@ class NedelecDual3D( dualbasis.DualBasis ):
                                                    2 ) ]
 
         ls_per_face = []
-        for i in shapes.entity_range( shape , 2 ):
-            ls_cur = []
-            # Multiplied by the jac_factors for the faces in order to
-            # ensure continuity:
-            t0s = mdcb( U , shapes.jac_factors[shape][2][i]*shapes.tangents[shape][2][i][0] , face_pts[i] )
-            t1s = mdcb( U , shapes.jac_factors[shape][2][i]*shapes.tangents[shape][2][i][1] , face_pts[i] )
-            for j in range(len(t0s)):
-                ls_cur.append( t0s[j] )
-                ls_cur.append( t1s[j] )
-            ls_per_face.append( ls_cur )
-                        
+##        for i in shapes.entity_range( shape , 2 ):
+##            ls_cur = []
+##            # Multiplied by the jac_factors for the faces in order to
+##            # ensure continuity:
+##            t0s = mdcb( U , shapes.jac_factors[shape][2][i]*shapes.tangents[shape][2][i][0] , face_pts[i] )
+##            t1s = mdcb( U , shapes.jac_factors[shape][2][i]*shapes.tangents[shape][2][i][1] , face_pts[i] )
+##            for j in range(len(t0s)):
+##                ls_cur.append( t0s[j] )
+##                ls_cur.append( t1s[j] )
+##            ls_per_face.append( ls_cur )
+        verts = shapes.vertices[ shapes.TETRAHEDRON ]
+
+        
+        (triangle_edges, edges, faces, \
+            face_edges) = numbering.get_entities()
+
+        for face in shapes.entity_range(shape,2):
+            ls_face = []
+            # get face tangents parallel to first two edges
+
+            face_tangents = []
+            for i in (0,1):
+                edge_cur = edges[face_edges[face][i]]
+                vert1 = numpy.array( verts[edge_cur[1]] )
+                vert0 = numpy.array( verts[edge_cur[0]] )
+                face_tangents.append( vert1 - vert0 )
+
+            tnodes = [ mdcb( U , face_tangents[i] , face_pts[face] ) \
+                       for i in (0,1) ]
+            ls_face.extend( tnodes[0] + tnodes[1] )
+            ls_per_face.append( ls_face )
+
+
         face_ls = reduce( lambda a,b:a+b , ls_per_face )
 
 
