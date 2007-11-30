@@ -25,6 +25,11 @@ def get_entities():
                               1 : ( 2 , 3 , 0 ) , \
                               2 : ( 3 , 1 , 0 ) , \
                               3 : ( 0 , 1 , 2 ) }
+
+        tetrahedron_face_edges = { 0 : ( 0 , 4 , 5 ) \
+                                   1 : ( 1 , 3 , 5 ) \
+                                   2 : ( 2 , 3 , 4 ) \
+                                   3 : ( 0 , 1 , 2 ) }
         
     elif numbering_scheme == "UFC":
         
@@ -43,8 +48,24 @@ def get_entities():
                               1 : ( 0 , 2 , 3 ) , \
                               2 : ( 0 , 1 , 3 ) , \
                               3 : ( 0 , 1 , 2 ) }
+
+# face 0 = (v1 , v2 , v3)
+#          edges = e0 (v1,v2) e1 (v1,v3) e2 (v2,v3)
+# face 1 = (v0,v2,v3)
+#          edges = e0 (v2,v3) e3 (v0,v3) e4 (v0,v2)
+# face 2 = (v0,v1,v3)
+#          edges = e1 (v1,v3) e3 (v0,v3) e5 (v0,v1)
+# face 3 = (v0,v1,v2)
+#          edges = e2 (v1,v2) e4 (v0,v2) e5 (v0,v1)
                         
+        tetrahedron_face_edges = { 0 : ( 0 , 1 , 2 ) \
+                                   1 : ( 0 , 3 , 4 ) } \
+                                   2 : ( 1 , 3 , 5 ) \
+                                   3 : ( 2 , 4 , 5 ) }
+
+
     else:
         raise RuntimeError, "Unknown numbering scheme: " + str(scheme)
 
-    return (triangle_edges, tetrahedron_edges, tetrahedron_faces)
+    return (triangle_edges, tetrahedron_edges, tetrahedron_faces, \
+            tetrahedron_face_edges)
