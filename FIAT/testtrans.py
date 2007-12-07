@@ -103,14 +103,17 @@ def test_poly_scalar():
 
 def test_poly_piola( ):
     U = RaviartThomas.RaviartThomas(2,1).function_space()
-    pts = shapes.make_lattice( 2 , 1 )
+#    pts = shapes.make_lattice( 2 , 1 )
     newverts = ((0.0,0.0),(1.0,0.0),(0.0,1.0))
-    u = U[0]
-    print U.eval_all((0,0))
-    print u((0,0))
-
+    Utr = transformedspace.PiolaTransformedFunctionSpace( U , newverts , "div" )
+#    print Utr.eval_all(newverts[0])
+#    print Utr.coeffs.shape
+#    print Utr.fspace.base.eval_all( newverts[0] ).shape
+    print Utr.eval_all( newverts[0] )
+    print Utr[0](newverts[0])
 
 if __name__=="__main__":
     #test_scalar()
     #test_piola()
-    test_poly_scalar()
+    #test_poly_scalar()
+    test_poly_piola()

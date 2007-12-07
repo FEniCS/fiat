@@ -233,7 +233,8 @@ class PiolaTransformedVectorPolynomial:
         self.ptfspace, self.dof = ptfspace, dof
         return
     def __call__( self , x ):
-        return numpy.dot( self.dof , self.ptfspace.eval_all( x ) )
+        newx = self.ptfspace.pullback( x )
+        return numpy.dot( self.dof , self.ptfspace.fspace.base.eval_all( newx ) )
     def __getitem__( self , i ):
         nspace = self.ptfspace.select_vector_component(i)
         return AffineTransformedScalarPolynomial( nspace , self.dof )
