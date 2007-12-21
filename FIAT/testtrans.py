@@ -2,40 +2,33 @@ import shapes,transformedspace,Lagrange,numpy,RaviartThomas,BDFM
 
 def test_scalar():
     pts = shapes.make_lattice( 2 , 1 )
-
     newverts = ((0.0,0.0),(1.0,0.0),(0.0,1.0))
-
     U = Lagrange.Lagrange(2,1).function_space()
-
     Utrans = transformedspace.AffineTransformedFunctionSpace( U , newverts )
-
     Ujet = U.tabulate_jet( 1 , pts )
-
     Utransjet = Utrans.tabulate_jet( 2 , newverts )
-
-
     edge_pts_transformed = ((1./3.,),(2./3.,))
     edge_pts = ((-1./3,),(1./3.,))
-
     Utracejet = U.trace_tabulate_jet( 1 , 1 , 1 , edge_pts )
-
     for i in range(len( Utracejet )):
         for k in Utracejet[i]:
             print k
             print Utracejet[i][k]
-
-
     trans_ref_verts = ((0.0,),(1.0,))
     Utranstracejet = Utrans.trace_tabulate_jet( 1 , 1 , 1 , \
                                                 edge_pts_transformed , \
                                                 trans_ref_verts )
-
-
     for i in range(len( Utranstracejet )):
         for k in Utranstracejet[i]:
             print k
             print Utranstracejet[i][k]
 
+
+    print "deriv mats"
+    for i in range(2):
+        print U.base.dmats[i]
+        print Utrans.dmats[i]
+        print
     return
 
 def test_piola( ):
@@ -103,17 +96,20 @@ def test_poly_scalar():
 
 def test_poly_piola( ):
     U = RaviartThomas.RaviartThomas(2,1).function_space()
-#    pts = shapes.make_lattice( 2 , 1 )
     newverts = ((0.0,0.0),(1.0,0.0),(0.0,1.0))
     Utr = transformedspace.PiolaTransformedFunctionSpace( U , newverts , "div" )
-#    print Utr.eval_all(newverts[0])
-#    print Utr.coeffs.shape
-#    print Utr.fspace.base.eval_all( newverts[0] ).shape
     print Utr.eval_all( newverts[0] )
     print Utr[0](newverts[0])
 
+def testdmats( ):
+    U = Lagrange.Lagrange(2,1).function_space()
+    newverts = ((0.0,0.0),(1.0,0.0),(0.0,1.0))
+    Utr = transformedspace.AffineTransformedSpace( U , newverts )
+    print Utr.dmats
+    print U.base.dmats
+
 if __name__=="__main__":
-    #test_scalar()
+    test_scalar()
     #test_piola()
     #test_poly_scalar()
-    test_poly_piola()
+    #test_poly_piola()

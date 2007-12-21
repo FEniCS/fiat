@@ -40,6 +40,11 @@ class AffineTransformedFunctionSpace:
         self.pushforward = pushforward_function(self.A,self.b)
         self.fspace = fspace
         self.verts = verts
+        self.dmats = []
+        for i in range(self.spatial_dimension()):
+            Acol = self.A[:,i]
+            self.dmats.extend( numpy.array( [ Acol[j] * fspace.base.dmats[j] \
+                               for j in range(self.spatial_dimension()) ] ) )
         return
 
     def degree( self ): return self.fspace.degree()
@@ -141,6 +146,12 @@ class PiolaTransformedFunctionSpace:
     def degree( self ): return self.fspace.degree()
     def spatial_dimension( self ): return self.fspace.spatial_dimension()
     def __len__( self ): return self.fspace.__len__()
+        self.dmats = []
+        for i in range(self.spatial_dimension()):
+            Acol = self.A[:,i]
+            self.dmats.extend( numpy.array( [ Acol[j] * fspace.base.dmats[j] \
+                               for j in range(self.spatial_dimension()) ] ) )
+        return
 
         
     def eval_all( self , x ):
