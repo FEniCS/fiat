@@ -36,8 +36,8 @@ def test_piola( ):
     newverts = ((0.0,0.0),(1.0,0.0),(0.0,1.0))
     U=RaviartThomas.RaviartThomas(2,0).function_space()
     V=BDFM.BDFM(2,1).function_space()
-    Utrans = transformedspace.PiolaTransformedSpace(U,newverts,"div")
-    Vtrans = transformedspace.PiolaTransformedSpace(V,newverts,"div")
+    Utrans = transformedspace.PiolaTransformedFunctionSpace(U,newverts,"div")
+    Vtrans = transformedspace.PiolaTransformedFunctionSpace(V,newverts,"div")
 
     newpts = ((0.5,0.5),(0.0,0.5),(0.5,0.0))
 
@@ -58,30 +58,42 @@ def test_piola( ):
     V0vals = Vjet[0][0][(0,0)]
     V1vals = Vjet[1][0][(0,0)]
 
-    print "X and Y components of vectors agree?"
-    print numpy.allclose( U0vals , V0vals )
-    print numpy.allclose( U1vals , V1vals )
+##    print "X and Y components of vectors agree?"
+##    print numpy.allclose( U0vals , V0vals )
+##    print numpy.allclose( U1vals , V1vals )
+##
+##    print "X-partials of X and Y components agree?"
+##    print numpy.allclose( Ujet[0][1][(1,0)] , Vjet[0][1][(1,0)] )
+##    print numpy.allclose( Ujet[0][1][(0,1)] , Vjet[0][1][(0,1)] )
+##
+##    print "Y-partials of X and Y components agree?"
+##    print numpy.allclose( Ujet[1][1][(1,0)] , Vjet[1][1][(1,0)] )
+##    print numpy.allclose( Ujet[1][1][(0,1)] , Vjet[1][1][(0,1)] )
+##
+##    print "X and Y components of trace agree?"
+##    print numpy.allclose( Utrjet[0][0][(0,0)] , Vtrjet[0][0][(0,0)] )
+##    print numpy.allclose( Utrjet[1][0][(0,0)] , Vtrjet[1][0][(0,0)] )
+##
+##    print "X-partials of trace X and Y components agree?"
+##    print numpy.allclose( Utrjet[0][1][(1,0)] , Vtrjet[0][1][(1,0)] )
+##    print numpy.allclose( Utrjet[0][1][(0,1)] , Vtrjet[0][1][(0,1)] )
+##
+##    print "Y-partials of trace X and Y components agree?"
+##    print numpy.allclose( Utrjet[1][1][(1,0)] , Vtrjet[1][1][(1,0)] )
+##    print numpy.allclose( Utrjet[1][1][(0,1)] , Vtrjet[1][1][(0,1)] )
 
-    print "X-partials of X and Y components agree?"
-    print numpy.allclose( Ujet[0][1][(1,0)] , Vjet[0][1][(1,0)] )
-    print numpy.allclose( Ujet[0][1][(0,1)] , Vjet[0][1][(0,1)] )
+#    print len( U.base.dmats )
+#    print len( Utrans.dmats )
+#    print Utrans.spatial_dimension()
 
-    print "Y-partials of X and Y components agree?"
-    print numpy.allclose( Ujet[1][1][(1,0)] , Vjet[1][1][(1,0)] )
-    print numpy.allclose( Ujet[1][1][(0,1)] , Vjet[1][1][(0,1)] )
-
-    print "X and Y components of trace agree?"
-    print numpy.allclose( Utrjet[0][0][(0,0)] , Vtrjet[0][0][(0,0)] )
-    print numpy.allclose( Utrjet[1][0][(0,0)] , Vtrjet[1][0][(0,0)] )
-
-    print "X-partials of trace X and Y components agree?"
-    print numpy.allclose( Utrjet[0][1][(1,0)] , Vtrjet[0][1][(1,0)] )
-    print numpy.allclose( Utrjet[0][1][(0,1)] , Vtrjet[0][1][(0,1)] )
-
-    print "Y-partials of trace X and Y components agree?"
-    print numpy.allclose( Utrjet[1][1][(1,0)] , Vtrjet[1][1][(1,0)] )
-    print numpy.allclose( Utrjet[1][1][(0,1)] , Vtrjet[1][1][(0,1)] )
-
+    for dm in U.base.dmats:
+        print dm
+        print
+    print
+    print
+    for dm in Utrans.dmats:
+        print dm
+        print
 
 def test_poly_scalar():
     U = Lagrange.Lagrange(2,1).function_space()
@@ -109,7 +121,7 @@ def testdmats( ):
     print U.base.dmats
 
 if __name__=="__main__":
-    test_scalar()
-    #test_piola()
+    #test_scalar()
+    test_piola()
     #test_poly_scalar()
     #test_poly_piola()

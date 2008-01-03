@@ -32,6 +32,11 @@ def pullback_function( A , b ):
 def pushforward_function(A,b):
     return lambda xhat:numpy.linalg.solve(A,xhat-b)
 
+def transform_dmats( A , dmats ):
+    return [ numpy.array( reduce( lambda a,b: a+b ,
+                                  [ A[j,i] * dmats[j] \
+                                    for j in range( len(dmats) ) ] ) ) \
+             for i in range( len( dmats ) ) ]
     
 class AffineTransformedFunctionSpace:
     def __init__( self , fspace , verts ):
@@ -41,15 +46,18 @@ class AffineTransformedFunctionSpace:
         self.fspace = fspace
         self.verts = verts
         self.dmats = []
-        for i in range(self.spatial_dimension()):
-            Acol = self.A[:,i]
-            self.dmats.extend( numpy.array( [ Acol[j] * fspace.base.dmats[j] \
-                               for j in range(self.spatial_dimension()) ] ) )
+        self.dmats = transform_dmats( self.A , fspace.base.dmats )
+#        for i in range(self.spatial_dimension()):
+#            Acol = self.A[:,i]
+#            self.dmats.extend( numpy.array( [ Acol[j] * fspace.base.dmats[j] \
+#                               for j in range(self.spatial_dimension()) ] ) )
         return
 
     def degree( self ): return self.fspace.degree()
     def spatial_dimension( self ): return self.fspace.spatial_dimension()
     def __len__( self ): return self.fspace.__len__()
+
+    def get_dmats( self ): return self.dmats
 
     def eval_all( self , x ):
         return self.tabulate( ( x , ) )[:,0]
@@ -143,16 +151,19 @@ class PiolaTransformedFunctionSpace:
                                for coldrow in cold ] )
         self.coeffs = numpy.transpose( cnewa , (0 ,2 ,1 ) )
 
+        # make derivative matrices    
+        self.dmats = transform_dmats( self.A , fspace.base.dmats )
+#        self.dmats = [ numpy.array( [ self.A[j,i] * fspace.base.dmats[j] \
+#                                      for j in range( self.spatial_dimension() ) ] ) \
+#                       for i in range( self.spatial_dimension() ) ]
+        return
+
+
+
     def degree( self ): return self.fspace.degree()
     def spatial_dimension( self ): return self.fspace.spatial_dimension()
     def __len__( self ): return self.fspace.__len__()
-        self.dmats = []
-        for i in range(self.spatial_dimension()):
-            Acol = self.A[:,i]
-            self.dmats.extend( numpy.array( [ Acol[j] * fspace.base.dmats[j] \
-                               for j in range(self.spatial_dimension()) ] ) )
-        return
-
+    def get_dmats( self ): return self.dmats
         
     def eval_all( self , x ):
         """Returns arr[i,j] where i runs over the members of the
