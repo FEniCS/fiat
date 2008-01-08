@@ -58,6 +58,7 @@ class AffineTransformedFunctionSpace:
     def __len__( self ): return self.fspace.__len__()
 
     def get_dmats( self ): return self.dmats
+    def get_coeffs(self): return self.fspace.coeffs
 
     def eval_all( self , x ):
         return self.tabulate( ( x , ) )[:,0]
@@ -163,8 +164,10 @@ class PiolaTransformedFunctionSpace:
     def degree( self ): return self.fspace.degree()
     def spatial_dimension( self ): return self.fspace.spatial_dimension()
     def __len__( self ): return self.fspace.__len__()
+
     def get_dmats( self ): return self.dmats
-        
+    def get_coeffs(self): return self.coeffs
+    
     def eval_all( self , x ):
         """Returns arr[i,j] where i runs over the members of the
         set and j runs over the components of each member."""
