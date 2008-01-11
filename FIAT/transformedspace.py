@@ -60,6 +60,8 @@ class AffineTransformedFunctionSpace:
     def get_dmats( self ): return self.dmats
     def get_coeffs(self): return self.fspace.coeffs
 
+    def get_jacobian( self ): return self.A
+
     def eval_all( self , x ):
         return self.tabulate( ( x , ) )[:,0]
     
@@ -167,6 +169,7 @@ class PiolaTransformedFunctionSpace:
 
     def get_dmats( self ): return self.dmats
     def get_coeffs(self): return self.coeffs
+    def get_jacobian( self ): return self.A
     
     def eval_all( self , x ):
         """Returns arr[i,j] where i runs over the members of the
