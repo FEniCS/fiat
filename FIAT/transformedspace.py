@@ -45,8 +45,9 @@ class AffineTransformedFunctionSpace:
         self.pushforward = pushforward_function(self.A,self.b)
         self.fspace = fspace
         self.verts = verts
-        self.dmats = []
-        self.dmats = transform_dmats( self.A , fspace.base.dmats )
+#        self.dmats = transform_dmats( self.A , fspace.base.dmats )
+        self.dmats = transform_dmats( numpy.linalg,inv( self.A ) , \
+                                      fspace.base.dmats )
 #        for i in range(self.spatial_dimension()):
 #            Acol = self.A[:,i]
 #            self.dmats.extend( numpy.array( [ Acol[j] * fspace.base.dmats[j] \
@@ -155,10 +156,9 @@ class PiolaTransformedFunctionSpace:
         self.coeffs = numpy.transpose( cnewa , (0 ,2 ,1 ) )
 
         # make derivative matrices    
-        self.dmats = transform_dmats( self.A , fspace.base.dmats )
-#        self.dmats = [ numpy.array( [ self.A[j,i] * fspace.base.dmats[j] \
-#                                      for j in range( self.spatial_dimension() ) ] ) \
-#                       for i in range( self.spatial_dimension() ) ]
+#        self.dmats = transform_dmats( self.A , fspace.base.dmats )
+        self.dmats = transform_dmats( numpy.linalg,inv( self.A ) , \
+                                      fspace.base.dmats )
         return
 
 
@@ -203,35 +203,34 @@ class PiolaTransformedFunctionSpace:
                                                self.coeffs[:,i,:] )
         return AffineTransformedFunctionSpace( newfs , self.verts )
 
-    def trace_tabulate_jet( self , d , e , order , xs , drefverts ):
-        (Alow,blow) = pullback_mapping( drefverts )
-        lowdimpullback = pullback_function(Alow,blow)
-
-        xspullback = tuple( map( tuple , map( lowdimpullback , xs ) ) )
-
-        # embed the pulled-back vertices into the right space
-        spacedim = self.spatial_dimension()
-        xsfulldimpullback = \
-           map( shapes.pt_maps[spacedim][d](e),\
-                xspullback )  
-        
-        # push them forward into the right space
-        xs_dim = tuple( map( tuple , \
-                             map( self.pushforward ,\
-                                  xsfulldimpullback ) ) )
-
-        return [ self.select_vector_component( i ).tabulate_jet( order , \
-                                                                 xs_dim ) \
-                 for i in range(self.tensor_shape()[0]) ]
+##    def trace_tabulate_jet( self , d , e , order , xs , drefverts ):
+##        (Alow,blow) = pullback_mapping( drefverts )
+##        lowdimpullback = pullback_function(Alow,blow)
+##
+##        xspullback = tuple( map( tuple , map( lowdimpullback , xs ) ) )
+##
+##        # embed the pulled-back vertices into the right space
+##        spacedim = self.spatial_dimension()
+##        xsfulldimpullback = \
+##           map( shapes.pt_maps[spacedim][d](e),\
+##                xspullback )  
+##        
+##        # push them forward into the right space
+##        xs_dim = tuple( map( tuple , \
+##                             map( self.pushforward ,\
+##                                  xsfulldimpullback ) ) )
+##
+##        return [ self.select_vector_component( i ).tabulate_jet( order , \
+##                                                                 xs_dim ) \
+##                 for i in range(self.tensor_shape()[0]) ]
         
 
     def tensor_shape( self ):
         return self.fspace.tensor_shape( )
 
     def tabulate_jet( self , order , xs ):
-        newxs = tuple( [ tuple( self.pullback( x ) ) for x in xs ] )
         return [ self.select_vector_component( i ).tabulate_jet( order , \
-                                                                 newxs ) \
+                                                                 xs ) \
                  for i in range(self.tensor_shape()[0]) ]
 
     def rank( self ): return self.fspace.rank()

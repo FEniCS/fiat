@@ -38,7 +38,7 @@ def get_vertices():
 
 def get_scale():
     if reference_element == "default":
-        scale = 2.0
+        scale = 1.0 #Marie says scale = 2.0 no more
     elif reference_element == "UFC":
         scale = 1.0
     else:
