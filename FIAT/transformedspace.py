@@ -45,9 +45,7 @@ class AffineTransformedFunctionSpace:
         self.pushforward = pushforward_function(self.A,self.b)
         self.fspace = fspace
         self.verts = verts
-#        self.dmats = transform_dmats( self.A , fspace.base.dmats )
-        self.dmats = transform_dmats( numpy.linalg,inv( self.A ) , \
-                                      fspace.base.dmats )
+        self.dmats = transform_dmats( self.A , fspace.base.dmats )
 #        for i in range(self.spatial_dimension()):
 #            Acol = self.A[:,i]
 #            self.dmats.extend( numpy.array( [ Acol[j] * fspace.base.dmats[j] \
@@ -144,7 +142,7 @@ class PiolaTransformedFunctionSpace:
 
         # now need to make Piola
         if div_or_curl == "div":
-            self.piola = lambda x: numpy.dot( self.A , x ) / self.J
+            self.piola = lambda x: numpy.dot( numpy.linalg.inv(self.A) , x ) * self.J
         elif div_or_curl == "curl":
             self.Atrans = numpy.transpose( self.A , (1,0) )
             self.piola = lambda x: numpy.dot( self.Atrans , x )
@@ -156,9 +154,8 @@ class PiolaTransformedFunctionSpace:
         self.coeffs = numpy.transpose( cnewa , (0 ,2 ,1 ) )
 
         # make derivative matrices    
-#        self.dmats = transform_dmats( self.A , fspace.base.dmats )
-        self.dmats = transform_dmats( numpy.linalg,inv( self.A ) , \
-                                      fspace.base.dmats )
+        self.dmats = transform_dmats( self.A , fspace.base.dmats )
+
         return
 
 
