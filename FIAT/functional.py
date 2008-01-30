@@ -9,7 +9,8 @@
 # Modified 23 Sept 2005
 # Last modified 21 April 2005
 
-import numpy, quadrature, polynomial, shapes
+import numpy, quadrature, polynomial, shapes, functionaltype
+from functionaltype import *
 
 def frob(a,b):
     alen = reduce( lambda a,b:a*b , a.shape )
@@ -17,9 +18,9 @@ def frob(a,b):
                         numpy.reshape( b , (alen,)) )
 
 class Functional( object ):
-    def __init__( self , U , a , f_type = ("Unspecified",) ):
+    def __init__( self , U , a , f_type = "Unspecified" ):
         self.U, self.a = U, numpy.asarray( a )
-	self.type = f_type
+	self.type = functionaltype.Functionaltype(f_type)
         return
     def __call__( self , p ):
         # need to add type checking to confirm that
@@ -32,29 +33,34 @@ class Functional( object ):
 	    raise RuntimeError, "type mismatch in adding functionals."
 	return Functional( self.U , self.dof + other.dof )
     def get_type( self ):
-	return self.type
+	return self.type.get_attributes()
 
 def PointEvaluation( U , pt ):
-    return Functional( U , U.eval_all( pt ) , ("PointEvaluation",) )
+    return Functional( U , U.eval_all( pt ) ,
+                       Functionaltype("PointEvaluation", [pt]))
 
 # batch mode for making point evaluation functionals
 def make_point_evaluations( U , pts ):
     uvals = U.tabulate( pts )
-    return [ Functional( U , uvals[:,i] , ("PointEvaluation",) ) \
+    return [ Functional( U , uvals[:,i] ,
+                         Functionaltype("PointEvaluation", [pts[i]])) \
 	     for i in range(len(pts)) ]
 
 def ComponentPointEvaluation( U , comp , pt ):
     mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
     bvals = U.base.eval_all( pt )
     mat[comp,:] = bvals
-    return Functional( U , mat , ("ComponentPointEvaluation",comp) )
+    return Functional( U , mat ,
+                       Functionaltype("ComponentPointEvaluation",[pt],[comp]))
 
 def DirectionalComponentPointEvaluation( U , dir , pt ):
     mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
     bvals = U.base.eval_all( pt )
     for i in range(len(dir)):
         mat[i,:] = dir[i] * bvals
-    return Functional( U , mat , ("DirectionalComponentPointEvaluation", dir) )
+    return Functional( U , mat ,
+                       Functionaltype("DirectionalComponentPointEvaluation",
+                                      [pt], [dir]) )
 
 def make_directional_component_batch( U , dir , pts ):
     mat_shape = tuple( [len(pts)] + list( U.coeffs.shape[1:] ) )
@@ -64,8 +70,10 @@ def make_directional_component_batch( U , dir , pts ):
         bvals_cur = bvals[:,p]
         for i in range(len(dir)):
             mat[p,i,:] = dir[i] * bvals_cur
-    return [ Functional(U,m,("DirectionalComponentPointEvaluation",dir)) \
-	     for m in mat ]
+    return [ Functional(U, mat[p],
+                        Functionaltype("DirectionalComponentPointEvaluation",
+                                       [pts[p]], [dir])) \
+	     for p in range(len(pts)) ]
 
 # batch mode evaluation for normal components to take advantage of
 # bulk tabulation
@@ -95,6 +103,7 @@ def make_directional_component_point_evaluations( U , dirs ):
 
     # need to fix this to include type information
     # may be issue
+    # (Marie has not done anything with this wrt type information.)
     return [ Functional( U , mat[i] ) for i in range(len(pts)) ]
 
     
@@ -104,7 +113,8 @@ def make_directional_component_point_evaluations( U , dirs ):
 # Generally, I don't have to do this but 6 or twelve times,
 # so I'm not optimizing now.
 def PointDerivative( U , i , pt ):
-    return Functional( U , [ u.deriv(i)(pt) for u in U ] )
+    ftype = Functionaltype("PointDerivative", [pt], None, None, [i])
+    return Functional( U , [ u.deriv(i)(pt) for u in U ], ftype)
 
 # Integral moments on the interior are not hard
 # l_u (v) = int( u * v ) means we have to dot the vector of
@@ -117,7 +127,9 @@ def PointDerivative( U , i , pt ):
 # the coefficients in that orthonormal basis
 
 def IntegralMoment( U , p ):
-    return Functional( U , p.dof ,("IntegralMoment",p))
+    # Marie: Must do something clever with the type here.
+    ftype = Functionaltype("IntegralMoment")
+    return Functional( U , p.dof , ftype)
 
 
 # specifies integration of the i:th partial derivative of a member of
@@ -129,11 +141,12 @@ def IntegralMoment( U , p ):
 # using summation notation, or else
 # the dot product of dmats[i] transposed with p.
 def IntegralMomentOfDerivative( U , i , p ):
-    return Functional( self , \
-                       U , \
-                       numpy.dot( numpy.transpose( U.base.dmats[i] ) , \
-                                    p.dof ) , \
-		       ("IntegralMomentofDerivative",(i,p)))
+    # Marie: Must do something clever with the type here.
+    ftype = Functionaltype("IntegralMomentofDerivative")
+                           
+    return Functional(self, U, 
+                      numpy.dot( numpy.transpose( U.base.dmats[i] ), p.dof ),
+                      ftype)
     pass
 
 # U is a vector-valued polynomial set and p is a scalar-valued function
@@ -145,7 +158,8 @@ def IntegralMomentOfDivergence( U , p ):
     for i in range( U.coeffs.shape[1] ):
         mat[i,:] = numpy.dot( numpy.transpose( U.base.dmats[i] ) , \
                                 p.dof )
-    return Functional( U , mat , ("IntegralMomentOfDivergence",p))
+    ftype = Functionaltype("IntegralMomentofDivergence")
+    return Functional( U, mat, ftype)
 
 
 # what is difference in these two FacetMoment implementations?
@@ -187,7 +201,8 @@ def FacetMoment( U , shape , d , e , p ):
     phis = U.base.tabulate( mapped_pts )
     vec = numpy.dot( phis , wts * ps )
 
-    return Functional( U , vec , ("FacetMoment",(d,e,p)) )
+    ftype = Functionaltype("FacetMoment", pts, None, wts)
+    return Functional( U , vec , ftype )
 
 def FacetDirectionalMoment( U , shape , dir , d , e , p ):
     mat = numpy.zeros( U.coeffs.shape[1:] , "d" )
@@ -203,5 +218,6 @@ def FacetDirectionalMoment( U , shape , dir , d , e , p ):
     for i in range(len(dir)):
         mat[i,:] = numpy.dot( phis , dir[i] * wts * ps )
 
-    return Functional( U , mat )
+    ftype = Functionaltype("FacetDirectionalMoment", pts, [dir], wts)
+    return Functional( U , mat , ftype )
 
