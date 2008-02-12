@@ -127,8 +127,8 @@ def PointDerivative( U , i , pt ):
 # the coefficients in that orthonormal basis
 
 def IntegralMoment( U , p ):
-    degree = 2*U.degree() # "Which degree ?" says Marie. 
-    Qref = quadrature.make_quadrature(U.domain_shape(), degree)
+    degree = U.degree() + p.degree() # "Correct degree ?" says Marie. 
+    Qref = quadrature.make_quadrature_by_degree(U.domain_shape(), degree)
     points = Qref.get_points()
     weights = Qref.get_weights()
     ftype = Functionaltype("IntegralMoment", points,
@@ -144,7 +144,6 @@ def IntegralMoment( U , p ):
 # using summation notation, or else
 # the dot product of dmats[i] transposed with p.
 def IntegralMomentOfDerivative( U , i , p ):
-    # Marie: Must do something clever with the type here.
     ftype = Functionaltype("IntegralMomentofDerivative")
                            
     return Functional(self, U, 
