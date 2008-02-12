@@ -47,3 +47,8 @@ class DualBasis( object ):
             return self.entity_ids[ dim ].values()
         except:
             raise RuntimeError, "Illegal dimension for this dual basis"
+
+    def get_dualbasis_types(self):
+        types = [self.node_set[i].get_type()
+                 for i in range(len(self.node_set))]
+        return types
