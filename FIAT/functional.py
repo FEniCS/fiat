@@ -127,10 +127,13 @@ def PointDerivative( U , i , pt ):
 # the coefficients in that orthonormal basis
 
 def IntegralMoment( U , p ):
-    # Marie: Must do something clever with the type here.
-    ftype = Functionaltype("IntegralMoment")
+    degree = 2*U.degree() # "Which degree ?" says Marie. 
+    Qref = quadrature.make_quadrature(U.domain_shape(), degree)
+    points = Qref.get_points()
+    weights = Qref.get_weights()
+    ftype = Functionaltype("IntegralMoment", points,
+                           [p(pt) for pt in points], weights)
     return Functional( U , p.dof , ftype)
-
 
 # specifies integration of the i:th partial derivative of a member of
 # U against p.
