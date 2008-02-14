@@ -156,6 +156,11 @@ class ScalarPolynomialSet( AbstractPolynomialSet ):
             new_coeffs = numpy.dot( coeffs , base.coeffs )
             AbstractPolynomialSet.__init__( self , new_base , new_coeffs )
         return
+
+    def select_vector_component( self , i ):
+        if i != 0: raise RuntimeError, "Illegal indexing into ScalarPolynomialSet"
+        return self
+
     def eval_all( self , x ):
         """Returns the array A[i] = psi_i(x)."""
         bvals = self.base.eval_all( x )

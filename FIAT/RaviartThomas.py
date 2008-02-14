@@ -128,6 +128,8 @@ class RT0( polynomial.FiniteElement ):
 
 class RaviartThomas( polynomial.FiniteElement ):
     def __init__( self , shape , n ):
+        self.shape = shape
+        self.order = n
         U = RTSpace( shape , n )
         Udual = RTDual( shape , n , U )
         polynomial.FiniteElement.__init__( self , Udual , U )

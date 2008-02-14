@@ -42,18 +42,17 @@ class LagrangeDual( dualbasis.DualBasis ):
         # the ids of entities of that dimension to the list of
         # ids of nodes associated with that entity.
         # see FIAT.base.dualbasis for description of entity_ids
-        entity_ids = {}
+        self.entity_ids = {}
         id_cur = 0
         for d in shapes.dimension_range( shape ):
-            entity_ids[d] = {}
+            self.entity_ids[d] = {}
             for v in shapes.entity_range( shape, d ):
                 num_nods = len( pts[d][v] )
-                entity_ids[d][v] = range(id_cur,id_cur + num_nods)
+                self.entity_ids[d][v] = range(id_cur,id_cur + num_nods)
                 id_cur += num_nods
-
         dualbasis.DualBasis.__init__( self , \
                                       functionalset.FunctionalSet( U , ls ) , \
-                                      entity_ids )
+                                      self.entity_ids )
                                       
         return
 
@@ -61,7 +60,9 @@ class Lagrange( polynomial.FiniteElement ):
     def __init__( self , shape , n ):
         if n < 1:
             raise RuntimeError, \
-                  "Lagrange elements are only defind for n >= 1"
+                  "Lagrange elements are only defined for n >= 1"
+        self.shape = shape
+        self.order = n
         U = polynomial.OrthogonalPolynomialSet( shape , n )
         Udual = LagrangeDual( shape , n , U )
         polynomial.FiniteElement.__init__( self , \
@@ -105,6 +106,8 @@ class VectorLagrange( polynomial.FiniteElement ):
         if n < 1:
             raise RuntimeError, \
                   "Lagrange elements are only defined for n >= 1"
+        self.shape = shape
+        self.order = n
         U = polynomial.OrthogonalPolynomialArraySet( shape , n , nc )
         Udual = VectorLagrangeDual( shape , n , U )
         polynomial.FiniteElement.__init__( self , Udual , U )

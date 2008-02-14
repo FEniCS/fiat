@@ -70,6 +70,7 @@ class GaussQuadrature( JacobiQuadrature ):
     the weights both to be zero."""
     def __init__( self , m ):
         JacobiQuadrature.__init__( self , 0. , 0. , m )
+        self.degree = m;
         return
 
 class CollapsedQuadratureTriangle( QuadratureRule ):
@@ -83,6 +84,7 @@ class CollapsedQuadratureTriangle( QuadratureRule ):
         pts = map( reference.xi_triangle, \
                    [ (x,y) for x in ptx for y in pty ] )
         QuadratureRule.__init__( self , pts , ws )
+        self.degree = m;
         return
 
 class CollapsedQuadratureTetrahedron( QuadratureRule ):
@@ -103,6 +105,7 @@ class CollapsedQuadratureTetrahedron( QuadratureRule ):
                      for y in pty \
                      for z in ptz ] )
         QuadratureRule.__init__( self , pts , ws )
+        self.degree = m;
         return
 
 def make_quadrature_triangle( m ):

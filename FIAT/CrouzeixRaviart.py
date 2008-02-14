@@ -35,7 +35,10 @@ class CrouzeixRaviartDual( dualbasis.DualBasis ):
         dualbasis.DualBasis.__init__( self , fset , entity_ids )
 
 class CrouzeixRaviart( polynomial.FiniteElement ):
-    def __init__( self , shape ):
+    def __init__( self , shape, order = 1 ):
+        self.shape = shape
+        self.order = order
+        if (order != 1): raise RuntimeError("Crouzeix-Raviart elements are only defined for order 1")
         U = polynomial.OrthogonalPolynomialSet( shape , 1 )
         Udual = CrouzeixRaviartDual( shape , U )
         polynomial.FiniteElement.__init__( self , Udual , U )
@@ -71,7 +74,10 @@ class VectorCrouzeixRaviartDual( dualbasis.DualBasis ):
         dualbasis.DualBasis.__init__( self , fset , entity_ids,nc )
 
 class VectorCrouzeixRaviart( polynomial.FiniteElement ):
-    def __init__( self , shape , nc = None):
+    def __init__( self , shape , order = 1, nc = None):
+        self.shape = shape
+        self.order = order
+        if (order != 1): raise RuntimeError("Crouzeix-Raviart elements are only defined for order 1")
         U = polynomial.OrthogonalPolynomialArraySet( shape , 1, nc )
         Udual = VectorCrouzeixRaviartDual( shape , U )
         polynomial.FiniteElement.__init__( self , Udual , U )
