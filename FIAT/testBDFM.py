@@ -1,9 +1,9 @@
-import RaviartThomas, shapes
+import BDFM, shapes
 
 shape = 2
-degree = 0
+degree = 2
 
-U = RaviartThomas.RaviartThomas(shape,degree)
+U = BDFM.BDFM(shape,degree)
 
 #pts = shapes.make_points(shape,shape,0,degree+3)
 #pts = shapes.make_lattice( shape , 1 )
@@ -18,8 +18,6 @@ for i in range(3):
     vals = U.function_space().tabulate( pts )
     n = shapes.normals[shape][i]
     print n
-    print vals[:,0,:]
-    print vals[:,1,:]
     print vals[:,0,:]*n[0] + vals[:,1,:]*n[1]
     print
 

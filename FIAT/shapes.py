@@ -16,6 +16,7 @@ three dimensions."""
 import numpy, numpy.linalg, exceptions
 from factorial import factorial
 from math import sqrt
+import numbering, reference # UFC vs. FIAT modules.
 
 
 def strike_col( A , j ):
@@ -23,7 +24,7 @@ def strike_col( A , j ):
     return numpy.take( A , [ k for k in range(0,n) if k != j ] , 1 )
 
 def cross( vecs ):
-    """Multidimensional cross product of d+1 vecs in R^{d}."""
+    """Multidimensional cross product of n=d-1 vecs in R^{d}."""
     n,d = len(vecs),len(vecs[0]) 
     mat = numpy.array( vecs )
     if n != d-1:
@@ -64,15 +65,10 @@ poly_dims = { LINE: lambda n: max(0,n + 1), \
               TRIANGLE: lambda n: max(0,(n+1)*(n+2)/2) ,\
               TETRAHEDRON: lambda n: max(0,(n+1)*(n+2)*(n+3)/6) }
 
-# dictionaries of vertices. 
-vertices = { LINE : { 0 : ( -1.0 , ) , 1 : ( 1.0 , ) } , \
-             TRIANGLE : { 0 : ( -1.0 , -1.0 ) , \
-                          1 : ( 1.0 , -1.0 ) , \
-                          2 : ( -1.0 , 1.0 ) } , \
-             TETRAHEDRON : { 0 : ( -1.0 , -1.0 , -1.0 ) , \
-                             1 : ( 1.0 , -1.0 , -1.0 ) , \
-                             2 : ( -1.0 , 1.0 , -1.0 ) , \
-                             3 : ( -1.0 , -1.0 , 1.0 ) } }
+# Entities dependent on the choice of reference element:
+# Dictionaries of vertices and the scale of the reference element
+vertices = reference.get_vertices()
+scale = reference.get_scale()
 
 def distance( a , b ):
     if len( a ) != len( b ):
@@ -91,22 +87,7 @@ def area( a , b , c ):
     return sqrt( numpy.dot( crss , crss ) )
 
 # mapping from edge ids of a triangle to the pair of vertices
-triangle_edges = { 0 : ( 1 , 2 ) , \
-                   1 : ( 2 , 0 ) , \
-                   2 : ( 0 , 1 ) }
-
-        
-tetrahedron_edges = { 0 : ( 1 , 2 ) , \
-                     1 : ( 2 , 0 ) , \
-                     2 : ( 0 , 1 ) , \
-                     3 : ( 0 , 3 ) , \
-                     4 : ( 1 , 3 ) , \
-                     5 : ( 2 , 3 ) }
-
-tetrahedron_faces = { 0 : ( 1 , 3 , 2 ) , \
-                      1 : ( 2 , 3 , 0 ) , \
-                      2 : ( 3 , 1 , 0 ) , \
-                      3 : ( 0 , 1 , 2 ) }
+(triangle_edges, tetrahedron_edges, tetrahedron_faces,tetrahedron_face_edges) = numbering.get_entities()
 
 edges = { TRIANGLE : triangle_edges , \
           TETRAHEDRON : tetrahedron_edges }
@@ -122,17 +103,18 @@ vertex_relation = { LINE : { 1 : { 0 : tuple( range( 2 ) ) } } , \
                                     2 : tetrahedron_faces , \
                                     3 : { 0 : tuple( range( 4 ) ) } } }
 
-# hard-wired for reference element [-1,1]
 edge_jac_factors = {}
 for shp in ( TRIANGLE , TETRAHEDRON ):
     edge_jac_factors[ shp ] = {}
-    for i in range( num_entities[ shp ][ 1 ] ):
+    num_edges = num_entities[ shp ][ 1 ]
+    for i in range( num_edges ):
         verts = edges[ shp ][ i ]
         a = vertices[ shp ][ verts[ 0 ] ]
         b = vertices[ shp ][ verts[ 1 ] ]
-        edge_jac_factors[ shp ][ i ] = distance( a , b ) / 2.0
+        edge_jac_factors[ shp ][ i ] = distance( a , b )/scale
 
 # hard-wired for reference element on [-1,1]
+# meg: What about this is hard-wired?
 face_jac_factors = {}
 for shp in ( TETRAHEDRON , ):
     face_jac_factors[ shp ] = {}
@@ -193,8 +175,6 @@ for f in range(4):
     t1nonunit = v[2] - v[0] - alpha * v[1]
     t1 = t1nonunit / numpy.sqrt( numpy.dot( t1nonunit , t1nonunit ) )
     tangents[TETRAHEDRON][2][ f ] = (t0,t1)
-
-
     
 def scale_factor( shape , d , ent_id ):
     global jac_factors
@@ -292,19 +272,21 @@ def make_pt_to_face( shp , verts ):
     if shp == TRIANGLE: return lambda x: x
     else: return make_pt_to_face_tetrahedron( verts )
 
-# hard-wired for (-1,1)
 def make_pt_to_face_tetrahedron( verts ):
     """verts is a triple of vertex ids on the reference tetrahedron.
     Returns a function mapping points (2-tuples) on the reference triangle
     to points on that face of the reference tetrahedron."""
-    # get reference triangle vertices
     v0 = numpy.array( vertices[ TETRAHEDRON ][ verts[ 0 ] ] )
     v1 = numpy.array( vertices[ TETRAHEDRON ][ verts[ 1 ] ] )
     v2 = numpy.array( vertices[ TETRAHEDRON ][ verts[ 2 ] ] )
+    
+    c0 = 1.0/(distance(vertices[TRIANGLE][0], vertices[TRIANGLE][1]))
+    c1 = 1.0/(distance(vertices[TRIANGLE][0], vertices[TRIANGLE][2]))
+    a = numpy.array(vertices[TRIANGLE][0])
     d = [ v1 - v0 , v2 - v0 ]
     return lambda x: tuple( v0 \
-                            + 0.5*(x[ 0 ]+1.0) * d[ 0 ] \
-                            + 0.5*(x[ 1 ]+1.0) * d[ 1 ] )
+                            + c0*(x[ 0 ] - a[ 0 ]) * d[ 0 ] \
+                            + c1*(x[ 1 ] - a[ 1 ]) * d[ 1 ] )
 
 pt_to_edge = { TRIANGLE : \
                lambda i: \

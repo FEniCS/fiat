@@ -14,7 +14,7 @@ make_quadrature, which takes a shape and the number of points
 rule object."""
 
 
-import shapes, expansions, jacobi, gamma, factorial
+import shapes, jacobi, gamma, factorial, reference
 import numpy, math
 
 fact = factorial.factorial
@@ -58,8 +58,11 @@ class QuadratureRule( object ):
 
 class JacobiQuadrature( QuadratureRule ):
     def __init__( self , a , b , m ):
+        #xs,ws = jacobi_quadrature_rule( a , b , m )
         xs,ws = jacobi_quadrature_rule( a , b , m )
-        QuadratureRule.__init__( self , [ (x,) for x in xs ] , ws ) 
+        pts = map(reference.xi_line, [(x,) for x in xs])
+        scale = reference.get_quadrature_weight_scale(shapes.LINE)
+        QuadratureRule.__init__(self, pts, [scale*w for w in ws] ) 
         return
 
 class GaussQuadrature( JacobiQuadrature ):
@@ -76,8 +79,9 @@ class CollapsedQuadratureTriangle( QuadratureRule ):
     def __init__( self , m ):
         ptx,wx = jacobi_quadrature_rule(0.,0.,m)
         pty,wy = jacobi_quadrature_rule(1.,0.,m)
-        ws = numpy.array( [ 0.5 * w1 * w2 for w1 in wx for w2 in wy ] )
-        pts = map( expansions.xi_triangle, \
+        scale = reference.get_quadrature_weight_scale(shapes.TRIANGLE)
+        ws = numpy.array( [ scale * w1 * w2 for w1 in wx for w2 in wy ] )
+        pts = map( reference.xi_triangle, \
                    [ (x,y) for x in ptx for y in pty ] )
         QuadratureRule.__init__( self , pts , ws )
         self.degree = m;
@@ -90,11 +94,12 @@ class CollapsedQuadratureTetrahedron( QuadratureRule ):
         ptx,wx = jacobi_quadrature_rule(0.,0.,m)
         pty,wy = jacobi_quadrature_rule(1.0,0.0,m)
         ptz,wz = jacobi_quadrature_rule(2.0,0.0,m)
-        ws = numpy.array( [ 0.125 * w1 * w2 *w3 \
+        scale = reference.get_quadrature_weight_scale(shapes.TETRAHEDRON)
+        ws = numpy.array( [ scale * w1 * w2 *w3 \
                               for w1 in wx \
                               for w2 in wy \
                               for w3 in wz ] )
-        pts = map( expansions.xi_tetrahedron, \
+        pts = map( reference.xi_tetrahedron, \
                    [ (x,y,z) \
                      for x in ptx \
                      for y in pty \

@@ -50,7 +50,7 @@ def RTSpace( shape , k ):
     Pkp1     = polynomial.OrthogonalPolynomialSet( shape , k + 1 )
     PkH      = Pkp1[dimPkm1:dimPk]
 
-    Q = quadrature.make_quadrature( shape , 2 * k )
+    Q = quadrature.make_quadrature( shape , 2 * k + 2 )
 
     PkHxcoeffs = numpy.array( [ [ polynomial.projection( Pkp1 , \
                                                            lambda x:x[i]*p(x), \
@@ -111,8 +111,8 @@ class RTDual( dualbasis.DualBasis ):
             for k in range(pts_per_bdry):
                 entity_ids[d-1][j].append( node_cur )
                 node_cur += 1
-        entity_ids[d] = {0 : range(node_cur,\
-                              node_cur+len(interior_moments)) }
+        entity_ids[d] = {0:range(node_cur,\
+                              node_cur+len(interior_moments))}
 
 
         dualbasis.DualBasis.__init__( self , \

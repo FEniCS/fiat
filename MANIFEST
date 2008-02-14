@@ -9,7 +9,7 @@ FIAT/P0.py
 FIAT/PhiK.py
 FIAT/RaviartThomas.py
 FIAT/__init__.py
-FIAT/curry.py
+FIAT/constrainedspaces.py
 FIAT/divfree.py
 FIAT/dualbasis.py
 FIAT/expansions.py
@@ -18,11 +18,15 @@ FIAT/functional.py
 FIAT/functionalset.py
 FIAT/gamma.py
 FIAT/jacobi.py
-FIAT/points.py
+FIAT/newquad.py
+FIAT/numbering.py
 FIAT/polynomial.py
 FIAT/quadrature.py
 FIAT/shapes.py
 FIAT/test.py
+FIAT/testBDFM.py
 FIAT/testBDM.py
 FIAT/testRT.py
+FIAT/testfunctional.py
 FIAT/testned.py
+FIAT/xpermutations.py

@@ -26,7 +26,7 @@ def constrained_scalar_space( shape , max_order , orders ):
     constraints = []
 
     for i in orders:
-        Uref = polynomial.PolynomialBase( i , max_order )
+        Uref = polynomial.OrthogonalPolynomialSet( i , max_order )
         orders_cur = orders[ i ]
         for j in orders_cur:
             order_cur = orders_cur[ j ]

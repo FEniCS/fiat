@@ -29,9 +29,6 @@ def BDFMSpace( shape , k ):
     fset = functionalset.FunctionalSet( U , constraints )
 
     return polynomial.ConstrainedPolynomialSet( fset )
-      
-
-    return polynomial.ConstrainedPolynomialSet( fset )
 
 
 class BDFMDual( dualbasis.DualBasis ):
@@ -46,7 +43,8 @@ class BDFMDual( dualbasis.DualBasis ):
                         for i in shapes.entity_range( shape , d-1 ) ]
         nrmls = shapes.normals[shape]
         ls = reduce( lambda a,b:a+b , \
-                     [ mdcb(U,nrmls[i],pts_per_edge[i]) \
+                     [ mdcb(U,nrmls[i]*shapes.jac_factors[d][d-1][i], \
+                            pts_per_edge[i]) \
                        for i in shapes.entity_range(shape,d-1) ] )
         interior_moments = []
 
@@ -80,11 +78,10 @@ class BDFMDual( dualbasis.DualBasis ):
         entity_ids[d-1] = {}
         node_cur = 0
         for j in shapes.entity_range(shape,d-1):
-            for k in range(pts_per_bdry):
-                entity_ids[d-1][j] = node_cur
-                node_cur += 1
-        entity_ids[d] = range(node_cur,\
-                              node_cur+len(interior_moments))
+            entity_ids[d-1][j] = range(node_cur,node_cur+pts_per_bdry)
+            node_cur += pts_per_bdry
+        entity_ids[d] = {0:range(node_cur,\
+                              node_cur+len(interior_moments))}
 
 
         dualbasis.DualBasis.__init__( self , \
@@ -93,7 +90,7 @@ class BDFMDual( dualbasis.DualBasis ):
 
 
 
-class BrezziDouglasFortinMarini( polynomial.FiniteElement ):
+class BDFM( polynomial.FiniteElement ):
     def __init__( self , shape , n ):
         U = BDFMSpace( shape , n )
         Udual = BDFMDual( shape , n , U )
