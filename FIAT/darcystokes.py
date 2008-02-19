@@ -91,14 +91,16 @@ class DarcyStokesDual( DualBasis ):
 				for i in shapes.entity_range( shape , d - 1 ) ]
 
 	normal_ls = reduce( lambda a,b: a + b , \
-			[ mdcb( U , normals[i] , normal_pts_per_edge[i] ) \
+			[ mdcb( U , normals[i]*shapes.jac_factors[d][d-1][i] , \
+                                normal_pts_per_edge[i] ) \
 			  for i in shapes.entity_range( shape , d - 1 ) ] )
 
 	tangential_pts_per_edge = [ shapes.make_points( shape , d-1 , i , d+k ) \
 				for i in shapes.entity_range( shape , d - 1 ) ]
 
 	tangential_ls = reduce( lambda a,b: a + b , \
-				[ mdcb( U , tangents[i] , tangential_pts_per_edge[i] ) \
+				[ mdcb( U , shapes.jac_factors[shape][1][i]*tangents[i] , \
+                                        tangential_pts_per_edge[i] ) \
 				  for i in shapes.entity_range( shape , d - 1 ) ] )
 	
 	#internal dof are like RT3
