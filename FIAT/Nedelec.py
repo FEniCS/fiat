@@ -33,6 +33,8 @@ def NedelecSpace3D( k ):
                             - x[(i+1)%3] * p[(i+2)%3]( x ) ) ).dof \
             for i in range( d ) ] for p in vec_Pke ] )
 
+    print PkCrossXcoeffs
+
 
     PkCrossX = polynomial.VectorPolynomialSet( Pkp1.base , PkCrossXcoeffs )
     return polynomial.poly_set_union( vec_Pk , PkCrossX )

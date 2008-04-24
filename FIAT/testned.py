@@ -1,13 +1,29 @@
 import Nedelec, functional, numpy, polynomial, quadrature, shapes
 
-shape = shapes.TETRAHEDRON
-degree = 1
+#shape = shapes.TETRAHEDRON
+shape = shapes.TRIANGLE
+degree = 0
 
-Uel = Nedelec.Nedelec( shape , degree )
+Ufs = Nedelec.Nedelec( shape , degree ).function_space()
 
-U = Uel.function_space()
+pts = shapes.make_lattice( shape , 1 )
 
-pts = shapes.make_points( shape , 1 , 2 , 3 )
+#print pts
+#print Ufs.tabulate( pts ).shape
+vals = Ufs.tabulate_jet( 1 , pts )
 
-print pts
-print U.tabulate( pts )
+for v in vals:
+    for u in v:
+        for w in u:
+            print w
+            print u[w]
+            print
+
+
+
+#U = Uel.function_space()
+
+#pts = shapes.make_points( shape , 1 , 2 , 3 )
+
+#print pts
+#print U.tabulate( pts )

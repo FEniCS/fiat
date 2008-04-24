@@ -196,8 +196,10 @@ class ScalarPolynomialSet( AbstractPolynomialSet ):
         and mi is a multiindex with |mi| = i.  The value of
         a[i][mi] is an array A[i][j] containing the appropriate derivative
         of the i:th member of the set at the j:th member of xs."""
+	
         alphas = [ mis( shapes.dimension( self.base.shape ) , i ) \
                    for i in range(order+1) ]
+
         a = [ None ] * len(alphas)
         for i in range(len(alphas)):
             a[i] = {}
