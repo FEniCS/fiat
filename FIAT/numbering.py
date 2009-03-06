@@ -1,3 +1,9 @@
+# Written by Robert C. Kirby
+# Copyright 2009 by Texas Tech University
+# Distributed under the LGPL license
+# This work is partially supported by the US Department of Energy
+# under award number DE-FG02-07ER25821
+
 """Numbering schemes for entities on edges and faces. The "default"
 numbering scheme gives the numbering scheme used in FIAT 0.3.0 and
 the "UFC" numbering scheme gives the numbering scheme defined in the

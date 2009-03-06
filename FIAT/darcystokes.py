@@ -1,3 +1,10 @@
+# Written by Robert C. Kirby
+# Copyright 2007 by Texas Tech University
+# Distributed under the LGPL license
+# This work is partially supported by the US Department of Energy
+# under award number DE-FG02-07ER25821
+
+
 # implement a general family of elements extending the Darcy-Stokes element
 from FIAT.polynomial import ConstrainedPolynomialSet, OrthogonalPolynomialSet, \
 	OrthogonalPolynomialArraySet, outer_product

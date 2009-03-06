@@ -1,3 +1,9 @@
+# Written by Robert C. Kirby
+# Copyright 2009 by Texas Tech University
+# Distributed under the LGPL license
+# This work is partially supported by the US Department of Energy
+# under award number DE-FG02-07ER25821
+
 """Several functions related to the one-dimensional jacobi polynomials:
 Evaluation, evaluation of derivatives, plus computation of the roots
 via Newton's method.  These mainly are used in defining the expansion
