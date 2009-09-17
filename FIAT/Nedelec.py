@@ -36,7 +36,7 @@ def NedelecSpace3D( k ):
 
     PkCrossX = polynomial.VectorPolynomialSet( Pkp1.base , PkCrossXcoeffs )
     return polynomial.poly_set_union( vec_Pk , PkCrossX )
-   
+
 def Nedelec02D():
 	d = 2
 	shape = shapes.TRIANGLE
@@ -55,7 +55,7 @@ def Nedelec02D():
 	    for p in P0H ] )
 	P0Hrotx = polynomial.VectorPolynomialSet(P1.base,P0Hrotxcoeffs)
 	return polynomial.poly_set_union(vec_P0,P0Hrotx)
-	    
+
 
 def NedelecSpace2D( k ):
 	if k==0:
@@ -97,21 +97,21 @@ class NedelecDual3D( dualbasis.DualBasis ):
         d = shapes.dimension( shape )
         ls = []
         # tangent at k+1 points on each edge
-        
+
         edge_pts = [ shapes.make_points( shape , \
                                          1 , i , k+2 ) \
                      for i in shapes.entity_range( shape , \
                                                    1 ) ]
-                                          
+
         mdcb = functional.make_directional_component_batch
-		
+
 
         ls_per_edge = [ mdcb( U, shapes.jac_factors[shape][1][i]*shapes.tangents[shape][1][i], edge_pts[i] ) \
                         for i in shapes.entity_range( shape , 1 ) ]
-        
+
         edge_ls = reduce( lambda a,b:a+b , ls_per_edge )
-        
-        # tangential at dim(P_{k-1}) points per face	
+
+        # tangential at dim(P_{k-1}) points per face
         face_pts = [ shapes.make_points( shape , \
                                          2 , i , k+2 ) \
                      for i in shapes.entity_range( shape , \
@@ -130,7 +130,7 @@ class NedelecDual3D( dualbasis.DualBasis ):
 ##            ls_per_face.append( ls_cur )
         verts = shapes.vertices[ shapes.TETRAHEDRON ]
 
-        
+
         (triangle_edges, edges, faces, \
             face_edges) = numbering.get_entities()
 
@@ -166,16 +166,16 @@ class NedelecDual3D( dualbasis.DualBasis ):
                             for p in vec_Pkm2 ]
         else:
             interior_ls = []
-            
+
         ls = edge_ls + face_ls + interior_ls
-            
+
         cur = 0
         entity_ids = {}
         for i in range(d+1):
             entity_ids[i] = {}
             for j in shapes.entity_range(shape,i):
                 entity_ids[i][j] = []
-                
+
         nodes_per_edge = len( ls_per_edge[0] )
         nodes_per_face = len( ls_per_face[0] )
         internal_nodes = len( interior_ls )
@@ -199,7 +199,7 @@ class NedelecDual3D( dualbasis.DualBasis ):
                                       functionalset.FunctionalSet(U , ls ) , \
                                       entity_ids )
 
- 
+
 class NedelecDual2D( dualbasis.DualBasis ):
 	def __init__( self , U , k ):
 		shape = shapes.TRIANGLE
@@ -225,11 +225,11 @@ class NedelecDual2D( dualbasis.DualBasis ):
 			Pkm1 = Pkp1.take( reduce( lambda a,b:a+b , \
                                       [ range(i*dim_Pkp1,i*dim_Pkp1+dim_Pkm1) \
                                         for i in range(d) ] ) )
-            
+
 
 			interior_moments = [ functional.IntegralMoment( U , p ) \
                                  for p in Pkm1 ]
-            
+
 			ls.extend( interior_moments )
 		else:
 			interior_moments = []
@@ -264,12 +264,9 @@ def NedelecDual( shape , U , degree ):
 
 class Nedelec( polynomial.FiniteElement ):
     def __init__( self , shape , k ):
-#        print "Building Nedelec space"
-        U = NedelecSpace( shape , k )
-#       print "Building dual space"
-        Udual = NedelecDual( shape , U , k )
-#        print dir( U )
-#        print dir( Udual )
+        self.order = k -1
+        U = NedelecSpace( shape , self.order )
+        Udual = NedelecDual( shape , U , self.order )
         polynomial.FiniteElement.__init__( self , Udual , U )
 
- 
+

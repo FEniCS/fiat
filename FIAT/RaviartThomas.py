@@ -33,7 +33,7 @@ def RT0Space( shape ):
     P0Hx = polynomial.VectorPolynomialSet( P1.base , P0Hxcoeffs )
 
     return polynomial.poly_set_union( vec_P0 , P0Hx )
-    
+
 
 # (P_k)^2 + x (P_k)
 def RTSpace( shape , k ):
@@ -88,16 +88,16 @@ class RTDual( dualbasis.DualBasis ):
             Pkm1 = Pkp1.take( reduce( lambda a,b:a+b , \
                                       [ range(i*dim_Pkp1,i*dim_Pkp1+dim_Pkm1) \
                                         for i in range(d) ] ) )
-            
+
 
             interior_moments = [ functional.IntegralMoment( U , p ) \
                                  for p in Pkm1 ]
-            
+
             ls.extend( interior_moments )
         else:
             interior_moments = []
 
-        
+
         entity_ids = {}
         for i in range(d-1):
             entity_ids[i] = {}
@@ -129,8 +129,8 @@ class RT0( polynomial.FiniteElement ):
 class RaviartThomas( polynomial.FiniteElement ):
     def __init__( self , shape , n ):
         self.shape = shape
-        self.order = n
-        U = RTSpace( shape , n )
-        Udual = RTDual( shape , n , U )
+        self.order = n - 1
+        U = RTSpace( shape , self.order)
+        Udual = RTDual( shape , self.order , U )
         polynomial.FiniteElement.__init__( self , Udual , U )
 
