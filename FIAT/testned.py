@@ -8,7 +8,7 @@ import Nedelec, functional, numpy, polynomial, quadrature, shapes
 
 #shape = shapes.TETRAHEDRON
 shape = shapes.TRIANGLE
-degree = 0
+degree = 1
 
 Ufs = Nedelec.Nedelec( shape , degree ).function_space()
 

@@ -7,7 +7,7 @@
 import RaviartThomas, shapes
 
 shape = 2
-degree = 0
+degree = 1
 
 U = RaviartThomas.RaviartThomas(shape,degree)
 
