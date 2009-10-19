@@ -1,4 +1,3 @@
-- There is a strange bug keeping RT1 from converging in
-  FFC, but having all BDM and other RT elements converging.
-  Is it my fault or Anders'?  Fix also in UFC element
+- Bug in Nedelec in FIAT_NEW.  Why?
+- Keep working on new branch.
 
