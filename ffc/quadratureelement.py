@@ -4,23 +4,27 @@ __copyright__ = "Copyright (C) 2007-2008 Kristian B. Oelgaard"
 __license__  = "GNU GPL version 3 or any later version"
 
 # Modified by Garth N. Wells 2006-2009
-# Last changed: 2009-12-08
+# Last changed: 2009-12-09
 
+# Python modules.
+import numpy
+
+# FIAT modules.
 from FIAT.shapes import num_entities
 
-# FFC fem modules
+# UFL modules.
+from ufl.classes import Cell
+from ufl.classes import Measure
+
+# FFC modules.
+from log import error
 from finiteelement import ufl_domain2fiat_domain
 from dofrepresentation import DofRepresentation
-from quadrature import make_quadrature
-from finiteelement import FiniteElement, AFFINE, CONTRAVARIANT_PIOLA, COVARIANT_PIOLA
-
-# FFC common modules
-from ffc.common.log import error
-
-# UFL modules
-from ufl.classes import Cell, Measure
-
-import numpy
+from ffcquadraturerules import make_quadrature
+from finiteelement import FiniteElement
+from finiteelement import AFFINE
+from finiteelement import CONTRAVARIANT_PIOLA
+from finiteelement import COVARIANT_PIOLA
 
 # Default quadrature element degree
 default_quadrature_degree = 1
