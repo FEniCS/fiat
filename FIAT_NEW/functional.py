@@ -9,12 +9,9 @@
 
 import numpy,string
 
-# this is for importing the AD modules from ScientificPython
-import sys
-sys.path.append( "derivs" )
-import Derivatives, FirstDerivatives
-# end importing AD
-
+# Import AD modules from ScientificPython
+import Scientific.Functions.Derivatives as Derivatives
+import Scientific.Functions.FirstDerivatives as FirstDerivatives
 
 def index_iterator( shp ):
     """Constructs a generator iterating over all indices in

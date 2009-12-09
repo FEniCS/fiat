@@ -8,17 +8,9 @@ import reference_element
 import numpy
 import jacobi, reference_element
 
-# this is for importing the AD modules from ScientificPython
-import sys
-sys.path.append( "derivs" )
-import Derivatives, FirstDerivatives
-# end importing AD
-
-
-# this is for importing the AD modules from ScientificPython
-import sys
-sys.path.append( "derivs" )
-# end path fix for importing AD modules
+# Import AD modules from ScientificPython
+import Scientific.Functions.Derivatives as Derivatives
+import Scientific.Functions.FirstDerivatives as FirstDerivatives
 
 def eta_triangle( xi ):
     """Maps from the (-1,1) reference triangle to [-1,1]^2."""

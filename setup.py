@@ -9,5 +9,5 @@ setup(name="FIAT", \
       author_email="robert.c.kirby@gmail.com", \
       url="http://www.math.ttu.edu/~kirby", \
       license="LGPL", \
-      packages=['FIAT'] )
+      packages=['FIAT', 'FIAT_NEW'] )
 
