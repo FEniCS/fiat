@@ -285,8 +285,8 @@ class DefaultLine( ReferenceElement ):
                      1 : edges } 
         ReferenceElement.__init__( self , LINE , verts , topology )
 
-class UFCLine( ReferenceElement ):
-    """This is the reference line with vertices (0.0,) and (1.0,)."""
+class UFCInterval( ReferenceElement ):
+    """This is the reference interval with vertices (0.0,) and (1.0,)."""
     def __init__( self ):
         verts = ( (0.0,) , (1.0,) )
         edges = { 0 : ( 0 , 1 ) }
@@ -455,7 +455,7 @@ def ufc_simplex( spatial_dim ):
     """Factory function that maps spatial dimension to an instance of
     the UFC reference simplex of that dimension."""
     if spatial_dim == 1:
-        return UFCLine()
+        return UFCInterval()
     elif spatial_dim == 2:
         return UFCTriangle()
     elif spatial_dim == 3:
