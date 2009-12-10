@@ -5,7 +5,7 @@ and Sherwin.  These are parametrized over a reference element so as
 to allow users to get coordinates that they want."""
 
 import reference_element
-import numpy
+import numpy,math
 import jacobi, reference_element
 
 # Import AD modules from ScientificPython
@@ -98,7 +98,7 @@ class LineExpansionSet:
         if ref_el.get_spatial_dimension() != 2:
             raise Exception, "Must have a line"
         self.ref_el = ref_el
-        self.base_ref_el = reference_element.DefaultTriangle
+        self.base_ref_el = reference_element.DefaultLine
         v1 = ref_el.get_vertices()
         v2 = self.base_ref_el.get_vertices()
         self.A,self.b = reference_element.make_affine_mapping( v1 , v2 )       
@@ -143,7 +143,7 @@ class TriangleExpansionSet:
         v2 = self.base_ref_el.get_vertices()
         self.A,self.b = reference_element.make_affine_mapping( v1 , v2 )       
         self.mapping = lambda x: numpy.dot( self.A , x ) + self.b
-        self.scale = numpy.sqrt( numpy.linalg.det( self.A ) )
+#        self.scale = numpy.sqrt( numpy.linalg.det( self.A ) )
         
     def get_num_members( self , n ):
         return (n+1)*(n+2)/2
@@ -208,6 +208,11 @@ class TriangleExpansionSet:
                 results[idx(p,q+1),:] \
                     = ( a1 * y + a2 ) * results[idx(p,q)] \
                     - a3 * results[idx(p,q-1)]
+
+        for p in range(n+1):
+            for q in range(n-p+1):
+                results[idx(p,q),:] *= math.sqrt((p+0.5)*(p+q+1.0))
+
 	return results
         #return self.scale * results
 
@@ -386,6 +391,12 @@ class TetrahedronExpansionSet:
                     results[idx(p,q,r+1)] = \
                                 (ar * z + br) * results[idx(p,q,r) ] \
                                 - cr * results[idx(p,q,r-1) ]
+
+        for p in range(n+1):
+            for q in range(n-p+1):
+                for r in range(n-p-q+1):
+                    results[idx(p,q,r)] *= numpy.sqrt((p+0.5)*(p+q+1.0)*(p+q+r+1.5))
+        
         
         return results 
 
