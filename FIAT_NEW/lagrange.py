@@ -32,20 +32,26 @@ class LagrangeDualSet( dual_set.DualSet ):
 class Lagrange( finite_element.FiniteElement ):
     """The Lagrange finite element.  It is what it is."""
     def __init__( self , ref_el , degree ):
+        print "\nFiat init Lagrange"
         poly_set = polynomial_set.ONPolynomialSet( ref_el , degree )
         dual = LagrangeDualSet( ref_el , degree )
         finite_element.FiniteElement.__init__( self , poly_set , dual , degree )
 
 if __name__=="__main__":
     import reference_element
-    T = reference_element.DefaultTetrahedron()
-    for k in range(2,3):
-        U = Lagrange( T , k )
+    # UFC triangle and points
+    T = reference_element.UFCTriangle()
+    pts = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
 
-    Ufs = U.get_nodal_basis()
-    pts = T.make_lattice( k )
+    # FIAT triangle and points
+#    T = reference_element.DefaultTriangle()
+#    pts = [(-1.0, -1.0), (1.0, -1.0), (-1.0, 1.0)]
+
+    L = Lagrange(T, 1)
+    Ufs = L.get_nodal_basis()
     print pts
     for foo,bar in Ufs.tabulate( pts ,1 ).iteritems():
         print foo
         print bar
         print
+
