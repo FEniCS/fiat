@@ -82,6 +82,8 @@ def make_dmats( ref_el , n ):
 
         dv = numpy.transpose( es.tabulate( n , dpts ) )
         
+        
+        
         dmats = []
 
         for i in range( sd ):
@@ -95,10 +97,10 @@ def make_dmats( ref_el , n ):
 class LineExpansionSet:
     """Evaluates the Legendre basis on a line reference element."""
     def __init__( self , ref_el ):
-        if ref_el.get_spatial_dimension() != 2:
+        if ref_el.get_spatial_dimension() != 1:
             raise Exception, "Must have a line"
         self.ref_el = ref_el
-        self.base_ref_el = reference_element.DefaultLine
+        self.base_ref_el = reference_element.DefaultLine()
         v1 = ref_el.get_vertices()
         v2 = self.base_ref_el.get_vertices()
         self.A,self.b = reference_element.make_affine_mapping( v1 , v2 )       
@@ -107,11 +109,11 @@ class LineExpansionSet:
 
     def tabulate( self , n , pts ):
         """Returns a numpy array A[i,j] = phi_i( pts[j] )"""
-        ref_pts = [ self.mapping( pt ) for pt in pts ]
+        ref_pts = numpy.array([ self.mapping( pt ) for pt in pts ])
         psitilde_as = jacobi.eval_jacobi_batch(0,0,n,ref_pts)
 
         results = numpy.zeros( ( n+1 , len(pts) ) , type( pts[0][0] ) )
-        for k in range( 0 , n + 1 ):
+        for k in range( n + 1 ):
             results[k,:] = psitilde_as[k,:] * numpy.sqrt( k + 0.5 )
 
         return results        
@@ -213,7 +215,7 @@ class TriangleExpansionSet:
             for q in range(n-p+1):
                 results[idx(p,q),:] *= math.sqrt((p+0.5)*(p+q+1.0))
 
-	return results
+        return results
         #return self.scale * results
 
     def tabulate_jet( self , n , pts , order = 1 ):

@@ -12,6 +12,7 @@
 import expansions
 import numpy
 from functional import index_iterator
+import Scientific.Functions.FirstDerivatives as FirstDerivatives
 
 def mis( m , n ):
     """returns all m-tuples of nonnegative integers that sum up to n."""
@@ -157,8 +158,14 @@ class ONPolynomialSet( PolynomialSet ):
             v = numpy.transpose( expansion_set.tabulate( degree , pts ) )
             vinv = numpy.linalg.inv( v )            
 
-            dtildes = expansion_set.tabulate_derivs( degree , pts )
+            #dtildes = expansion_set.tabulate_derivs( degree , pts )
+            dpts = numpy.array( [ tuple( [FirstDerivatives.DerivVar( x[i] , i ) \
+                                 for i in range(len(x) ) ] ) \
+                         for x in pts ] )
 
+            dv = expansion_set.tabulate( degree , dpts )
+            dtildes = [ [ [ a[1][i] for a in dvrow ] for dvrow in dv ] for i in range(sd ) ]
+            
             dmats = [ numpy.dot( vinv , numpy.transpose( dtilde ) ) \
                       for dtilde in dtildes ]    
 

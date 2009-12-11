@@ -47,8 +47,10 @@ def eval_jacobi_batch(a,b,n,xs):
     result = numpy.zeros( (n+1,len(xs)),"d" )
     result[0,:] = 1.0
 
+    xsnew = xs.reshape((-1,))
+
     if n > 0:
-        result[1,:] = 0.5 * ( a - b + ( a + b + 2.0 ) * xs )
+        result[1,:] = 0.5 * ( a - b + ( a + b + 2.0 ) * xsnew )
     
         apb = a + b
         for k in range(2,n+1):
@@ -62,7 +64,7 @@ def eval_jacobi_batch(a,b,n,xs):
             a2 = a2 / a1
             a3 = a3 / a1
             a4 = a4 / a1
-            result[k,:] = ( a2 + a3 * xs ) * result[k-1,:] \
+            result[k,:] = ( a2 + a3 * xsnew ) * result[k-1,:] \
                 - a4 * result[k-2,:]
     return result
 

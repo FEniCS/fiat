@@ -41,7 +41,8 @@ if __name__=="__main__":
     import reference_element
     # UFC triangle and points
     T = reference_element.UFCTriangle()
-    pts = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
+    pts = T.make_lattice(1)
+   # pts = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
 
     # FIAT triangle and points
 #    T = reference_element.DefaultTriangle()
