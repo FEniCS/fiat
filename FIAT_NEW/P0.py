@@ -14,7 +14,7 @@ class P0Dual( dual_set.DualSet ):
         vs = numpy.array( ref_el.get_vertices() )
         bary=tuple( numpy.average( vs , 0 ) )
         
-        nodes = [ functional.PointEvaluation( T, bary ) ]
+        nodes = [ functional.PointEvaluation( ref_el, bary ) ]
         entity_ids = { }
         sd = ref_el.get_spatial_dimension()
         top = ref_el.get_topology()
