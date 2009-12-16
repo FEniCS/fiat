@@ -114,8 +114,10 @@ class FiniteElement:
         shape = self.poly_set.get_shape()
         return shape[i]
 
-    def value_shape(self, i):
-        return tuple((value_dimension(i) for i in range(self.value_rank())])
+    def value_shape(self):
+        if self.value_rank() == 0:
+            return (1,)
+        return tuple([self.value_dimension(i) for i in range(self.value_rank())])
 
     def num_sub_elements(self):
         return 1
