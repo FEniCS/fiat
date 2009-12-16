@@ -23,7 +23,7 @@ class LagrangeDualSet( dual_set.DualSet ):
                 nodes_cur = [ functional.PointEvaluation( ref_el , x ) \
                               for x in pts_cur ]
                 nnodes_cur = len( nodes_cur )
-                nodes +=  nodes_cur 
+                nodes +=  nodes_cur
                 entity_ids[dim][entity] = range(cur,cur+nnodes_cur)
                 cur += nnodes_cur
 
@@ -36,6 +36,9 @@ class Lagrange( finite_element.FiniteElement ):
         poly_set = polynomial_set.ONPolynomialSet( ref_el , degree )
         dual = LagrangeDualSet( ref_el , degree )
         finite_element.FiniteElement.__init__( self , poly_set , dual , degree )
+
+        self._mapping = "affine"
+
 
 if __name__=="__main__":
     import reference_element
