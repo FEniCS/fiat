@@ -136,4 +136,3 @@ class FiniteElement:
 
     def degree(self):
         return self.order
-
