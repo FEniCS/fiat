@@ -39,6 +39,8 @@ class Lagrange( finite_element.FiniteElement ):
 
         self._mapping = "affine"
 
+    def __repr__(self):
+        return "Lagrange on a %s of degree %d" % (self.cell_domain(), self.degree())
 
 if __name__=="__main__":
     import reference_element

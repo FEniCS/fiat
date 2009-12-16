@@ -108,8 +108,6 @@ class FiniteElement:
         shape = self.poly_set.get_shape()
         return len(shape)
 
-        return len(self.poly_set.get_shape())
-
     def value_dimension(self, i):
         if self.value_rank() == 0:
             return 1
@@ -128,9 +126,9 @@ class FiniteElement:
         removeme = {0: "vertex", 1:"interval", 2: "triangle", 3: "tetrahedron"}
         return removeme[self.geometric_dimension()]
 
-
     def extract_elements(self):
         return []
 
     def degree(self):
         return self.order
+
