@@ -10,7 +10,7 @@ class BDMDualSet( dual_set.DualSet ):
 
         t = ref_el.get_topology()
 
-        # codimension 1 facets 
+        # codimension 1 facets
         for i in range( len( t[sd-1] ) ):
             pts_cur = ref_el.make_points( sd - 1 , i , sd + degree )
             for j in range( len( pts_cur ) ):
@@ -31,7 +31,7 @@ class BDMDualSet( dual_set.DualSet ):
             for i in range( len( Ned_at_qpts ) ):
                 phi_cur = Ned_at_qpts[i,:]
                 l_cur = functional.FrobeniusIntegralMoment( ref_el , Q , \
-                                                                phi_cur ) 
+                                                                phi_cur )
                 nodes.append(l_cur)
 
         entity_ids = {}
@@ -47,14 +47,14 @@ class BDMDualSet( dual_set.DualSet ):
         # set codimension 1 (edges 2d, faces 3d) dof
         pts_facet_0 = ref_el.make_points( sd - 1 , 0 , sd + degree )
         pts_per_facet = len( pts_facet_0 )
-        
+
         entity_ids[sd-1] = {}
         for i in range( len( t[sd-1] ) ):
             entity_ids[sd-1][i] = range( cur , cur + pts_per_facet )
             cur += pts_per_facet
 
         # internal nodes, if applicable
-        entity_ids[sd] = {}
+        entity_ids[sd] = {0: []}
 
         if degree > 1:
             num_internal_nodes = len( Ned_at_qpts )
