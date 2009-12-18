@@ -85,54 +85,27 @@ class FiniteElement:
         element."""
         return self.dual.get_nodes()
 
-    def mapping(self):
-        """Returns the appropriate mapping from the reference element
-        to a physical element for the finite element."""
-        return self._mapping
-
     def entity_dofs(self):
         return self.dual.get_entity_ids()
 
     def get_coeffs(self):
         return self.poly_set.get_coeffs()
 
-    def geometric_dimension(self):
-        dim = self.ref_el.get_spatial_dimension()
-        print "dim = ", dim
-        return dim
-
-    def space_dimension(self):
-        return self.poly_set.get_num_members()
-
-    def value_rank(self):
-        shape = self.poly_set.get_shape()
-        return len(shape)
-
-    def value_dimension(self, i):
-        if self.value_rank() == 0:
-            return 1
-        shape = self.poly_set.get_shape()
-        return shape[i]
-
-    def value_shape(self):
-        if self.value_rank() == 0:
-            return (1,)
-        return tuple([self.value_dimension(i) for i in range(self.value_rank())])
+    def mapping(self):
+        """Returns the appropriate mapping from the reference element
+        to a physical element for the finite element."""
+        return self._mapping
 
     def num_sub_elements(self):
         return 1
+
+    def space_dimension(self):
+        return self.poly_set.get_num_members()
 
     def tabulate(self, order, points):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
         return self.poly_set.tabulate(points, order)
 
-    def cell_domain(self):
-        removeme = {0: "vertex", 1:"interval", 2: "triangle", 3: "tetrahedron"}
-        return removeme[self.geometric_dimension()]
-
-    def extract_elements(self):
-        return []
-
-    def degree(self):
-        return self.order
+    def value_shape(self):
+        return self.poly_set.get_shape()
