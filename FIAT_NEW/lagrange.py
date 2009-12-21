@@ -32,11 +32,9 @@ class LagrangeDualSet( dual_set.DualSet ):
 class Lagrange( finite_element.FiniteElement ):
     """The Lagrange finite element.  It is what it is."""
     def __init__( self , ref_el , degree ):
-        print "\nFiat init Lagrange"
         poly_set = polynomial_set.ONPolynomialSet( ref_el , degree )
         dual = LagrangeDualSet( ref_el , degree )
         finite_element.FiniteElement.__init__( self , poly_set , dual , degree )
-
         self._mapping = "affine"
 
 if __name__=="__main__":
@@ -57,4 +55,3 @@ if __name__=="__main__":
         print foo
         print bar
         print
-

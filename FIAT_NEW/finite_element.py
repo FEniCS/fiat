@@ -17,9 +17,8 @@ class FiniteElement:
         self.order = order
 
         self.ref_el = poly_set.get_reference_element()
-
-        print "self.ref_el = ", self.ref_el
         self.dual = dual
+
         # Appropriate mapping for the element space
         self._mapping = None
 

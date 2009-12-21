@@ -1,4 +1,5 @@
 import numpy
+
 class DualSet:
     def __init__( self , nodes , ref_el , entity_ids ):
         self.nodes = nodes
@@ -14,11 +15,11 @@ class DualSet:
 
     def get_reference_element( self ):
         return self.ref_el
-    
+
     def to_riesz( self , poly_set ):
         import time
-        print "riesz"
-        
+        #print "riesz"
+
         # get an array of the right size, then write into it
 
         t1 = time.time()
@@ -34,14 +35,14 @@ class DualSet:
         for i in range( len( self.nodes ) ):
             self.mat[i][:] = self.nodes[i].to_riesz( poly_set )
 
-        print "time new: ", time.time() - t1
-        
+        #print "time new: ", time.time() - t1
+
         t1 = time.time()
 #        from functional import Functional
 #        riesz_reps = [ Functional.to_riesz( n , poly_set ) for n in self.nodes ]
 #        print "time old: ", time.time() - t1
-      
 
-        print "done with riesz"
+
+        #print "done with riesz"
 
         return self.mat
