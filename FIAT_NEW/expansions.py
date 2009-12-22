@@ -12,15 +12,16 @@ import jacobi, reference_element
 import Scientific.Functions.Derivatives as Derivatives
 import Scientific.Functions.FirstDerivatives as FirstDerivatives
 
-def eta_triangle( xi ):
-    """Maps from the (-1,1) reference triangle to [-1,1]^2."""
-    (xi1,xi2) = xi
-    if xi2 == 1.0:
-        eta1 = -1.0
-    else:
-        eta1 = 2.0 * ( 1.0 + xi1 ) / (1.0 - xi2 ) - 1.0
-    eta2 = xi2
-    return eta1 , eta2    
+# FIXME: KBO: This function does not appear to be used anywhere, remove?
+#def eta_triangle( xi ):
+#    """Maps from the (-1,1) reference triangle to [-1,1]^2."""
+#    (xi1,xi2) = xi
+#    if xi2 == 1.0:
+#        eta1 = -1.0
+#    else:
+#        eta1 = 2.0 * ( 1.0 + xi1 ) / (1.0 - xi2 ) - 1.0
+#    eta2 = xi2
+#    return eta1 , eta2    
 
 def xi_triangle( eta ):
     """Maps from [-1,1]^2 to the (-1,1) reference triangle."""
@@ -29,20 +30,21 @@ def xi_triangle( eta ):
     xi2 = eta2
     return (xi1,xi2)
 
-def eta_tetrahedron( xi ):
-    """Maps from the (-1,-1,-1) reference tet to [-1,1]^3"""
-    xi1,xi2,xi3=xi
-    if xi2+xi3 == 0.0:
-        eta1 = 1.0
-    else:
-        eta1 = -2. * ( 1. + xi1 ) / (xi2 + xi3) - 1.
-    if xi3 == 1.:
-        eta2 = -1.
-    else:
-        eta2 = 2. * (1. + xi2) / (1. - xi3 ) - 1.
-    eta3 = xi3
+# FIXME: KBO: This function does not appear to be used anywhere, remove?
+#def eta_tetrahedron( xi ):
+#    """Maps from the (-1,-1,-1) reference tet to [-1,1]^3"""
+#    xi1,xi2,xi3=xi
+#    if xi2+xi3 == 0.0:
+#        eta1 = 1.0
+#    else:
+#        eta1 = -2. * ( 1. + xi1 ) / (xi2 + xi3) - 1.
+#    if xi3 == 1.:
+#        eta2 = -1.
+#    else:
+#        eta2 = 2. * (1. + xi2) / (1. - xi3 ) - 1.
+#    eta3 = xi3
 
-    return eta1,eta2,eta3
+#    return eta1,eta2,eta3
 
 def xi_tetrahedron( eta ):
     """Maps from [-1,1]^3 to the -1/1 reference tetrahedron."""
@@ -52,46 +54,48 @@ def xi_tetrahedron( eta ):
     xi3 = eta3
     return xi1,xi2,xi3
 
-def make_scalings( n , etas ):
-    # Initialize an (n+1)xlen(etas) zero matrix filled with doubles ("d").
-    scalings = numpy.zeros( (n+1,len(etas)) ,"d")
-    # Set the first row entries equal to 1
-    scalings[0,:] = 1.0
-    if n > 0:
-        # Let S(n, i) = S(1, i)^n
-        # where S(1, i) = 0.5(1.0-etas(i)) for each i
-        scalings[1,:] = 0.5 * (1.0 - etas)
-        for k in range(2,n+1):
-            scalings[k,:] = scalings[k-1,:] * scalings[1,:]
-    return scalings
+# FIXME: KBO: This function does not appear to be used anywhere, remove?
+#def make_scalings( n , etas ):
+#    # Initialize an (n+1)xlen(etas) zero matrix filled with doubles ("d").
+#    scalings = numpy.zeros( (n+1,len(etas)) ,"d")
+#    # Set the first row entries equal to 1
+#    scalings[0,:] = 1.0
+#    if n > 0:
+#        # Let S(n, i) = S(1, i)^n
+#        # where S(1, i) = 0.5(1.0-etas(i)) for each i
+#        scalings[1,:] = 0.5 * (1.0 - etas)
+#        for k in range(2,n+1):
+#            scalings[k,:] = scalings[k-1,:] * scalings[1,:]
+#    return scalings
 
 
-def make_dmats( ref_el , n ):
-    sd = ref_el.get_spatial_dimension( )
-    if n == 0:
-        return [ numpy.zeros( (1,1) , "d" ) ] * sd
-    else:
-        pts = ref_el.make_lattice( n )
-        es = get_expansion_set( ref_el )
-        v = numpy.transpose( es.tabulate( n , pts ) )
-        vinv = numpy.linalg.inv( v )
+# FIXME: KBO: This function does not appear to be used anywhere, remove?
+#def make_dmats( ref_el , n ):
+#    sd = ref_el.get_spatial_dimension( )
+#    if n == 0:
+#        return [ numpy.zeros( (1,1) , "d" ) ] * sd
+#    else:
+#        pts = ref_el.make_lattice( n )
+#        es = get_expansion_set( ref_el )
+#        v = numpy.transpose( es.tabulate( n , pts ) )
+#        vinv = numpy.linalg.inv( v )
 
-        dpts = [ tuple( [FirstDerivatives.DerivVar( x[i] , i ) \
-                             for i in range( len( x ) ) ] ) \
-                     for x in pts ]
+#        dpts = [ tuple( [FirstDerivatives.DerivVar( x[i] , i ) \
+#                             for i in range( len( x ) ) ] ) \
+#                     for x in pts ]
 
-        dv = numpy.transpose( es.tabulate( n , dpts ) )
-        
-        
-        
-        dmats = []
+#        dv = numpy.transpose( es.tabulate( n , dpts ) )
+#        
+#        
+#        
+#        dmats = []
 
-        for i in range( sd ):
-            dtilde_i = numpy.array( [ [ dvqr[1][i] for dvqr in dvrow ] \
-                                          for dvrow in dv ] )
-            dmats.append( numpy.dot( vinv , dtilde_i ) )
+#        for i in range( sd ):
+#            dtilde_i = numpy.array( [ [ dvqr[1][i] for dvqr in dvrow ] \
+#                                          for dvrow in dv ] )
+#            dmats.append( numpy.dot( vinv , dtilde_i ) )
 
-        return dmats
+#        return dmats
         
 
 class LineExpansionSet:
@@ -391,7 +395,7 @@ if __name__=="__main__":
 
 #    print dphis_x
 
-    for dmat in make_dmats( E , k ):
-        print dmat
-        print
+#    for dmat in make_dmats( E , k ):
+#        print dmat
+#        print
 
