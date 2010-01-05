@@ -93,7 +93,7 @@ class FiniteElement:
     def mapping(self):
         """Returns the appropriate mapping from the reference element
         to a physical element for the finite element."""
-        return self._mapping
+        return [self._mapping]*self.space_dimension()
 
     def num_sub_elements(self):
         return 1
