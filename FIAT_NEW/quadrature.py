@@ -12,11 +12,11 @@ class QuadratureRule:
         self.wts = wts
         return
     def get_points( self ):
-        return self.pts
+        return numpy.array(self.pts)
     def get_weights( self ):
-        return self.wts
+        return numpy.array(self.wts)
     def integrate( self , f ):
-        return sum( [ w * f(x) for (x,w) in zip(self.pts,self.wts) ] )
+        return sum( [ w * f(x) for (x, w) in zip(self.pts, self.wts) ] )
 
 class GaussJacobiQuadratureLineRule( QuadratureRule ):
     """Gauss-Jacobi quadature rule determined by Jacobi weights a and b
@@ -24,7 +24,7 @@ class GaussJacobiQuadratureLineRule( QuadratureRule ):
     def __init__( self , ref_el , a , b , m ):
         # this gives roots on the default (-1,1) reference element
         (xs_ref,ws_ref) = compute_gauss_jacobi_rule( a , b , m )
-        
+
         Ref1 = reference_element.DefaultLine()
         A,b = reference_element.make_affine_mapping( Ref1.get_vertices , \
                                                      ref_el.get_vertices )
@@ -49,7 +49,7 @@ class CollapsedQuadratureTriangleRule( QuadratureRule ):
         ptx,wx = compute_gauss_jacobi_rule(0.,0.,m)
         pty,wy = compute_gauss_jacobi_rule(1.,0.,m)
 
-        # map ptx , pty   
+        # map ptx , pty
         pts_ref = [ expansions.xi_triangle( (x , y) ) \
                     for x in ptx for y in pty ]
 
@@ -58,7 +58,7 @@ class CollapsedQuadratureTriangleRule( QuadratureRule ):
                                                      ref_el.get_vertices() )
         mapping = lambda x: numpy.dot( A , x ) + b
 
-        scale = numpy.linalg.det( A ) 
+        scale = numpy.linalg.det( A )
 
         pts = tuple( [ tuple( mapping( x ) ) for x in pts_ref ] )
 
@@ -77,7 +77,7 @@ class CollapsedQuadratureTetrahedronRule( QuadratureRule ):
         pty,wy = compute_gauss_jacobi_rule(1.,0.,m)
         ptz,wz = compute_gauss_jacobi_rule(2.,0.,m)
 
-        # map ptx , pty   
+        # map ptx , pty
         pts_ref = [ expansions.xi_tetrahedron( (x , y, z ) ) \
                     for x in ptx for y in pty for z in ptz ]
 
@@ -86,7 +86,7 @@ class CollapsedQuadratureTetrahedronRule( QuadratureRule ):
                                                      ref_el.get_vertices() )
         mapping = lambda x: numpy.dot( A , x ) + b
 
-        scale = numpy.linalg.det( A ) 
+        scale = numpy.linalg.det( A )
 
         pts = tuple( [ tuple( mapping( x ) ) for x in pts_ref ] )
 
@@ -119,7 +119,7 @@ def compute_gauss_jacobi_points( a , b , m ):
     for k in range(0,m):
         r = -math.cos(( 2.0*k + 1.0) * math.pi / ( 2.0 * m ) )
         if k > 0:
-            r = 0.5 * ( r + x[k-1] ) 
+            r = 0.5 * ( r + x[k-1] )
         j = 0
         delta = 2 * eps
         while j < max_iter:
@@ -129,9 +129,9 @@ def compute_gauss_jacobi_points( a , b , m ):
             f = jacobi.eval_jacobi(a,b,m,r)
             fp = jacobi.eval_jacobi_deriv(a,b,m,r)
             delta = f / (fp - f * s)
-            
+
             r = r - delta
-            
+
             if math.fabs(delta) < eps:
                 break
             else:
@@ -179,7 +179,7 @@ def ln_gamma( xx ):
         y = y + 1
         ser += cof[j] / y
     return -tmp + math.log( 2.5066282746310005*ser/x )
-    
+
 def gamma( xx ):
     return math.exp( ln_gamma( xx ) )
 
