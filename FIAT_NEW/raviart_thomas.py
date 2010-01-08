@@ -29,7 +29,7 @@ def RTSpace( ref_el , deg ):
     Qwts = numpy.array( Q.get_weights() )
 
     zero_index = tuple( [ 0 for i in range(sd) ] )
-    
+
     PkH_at_Qpts = PkH.tabulate( Qpts )[zero_index]
     Pkp1_at_Qpts = Pkp1.tabulate( Qpts )[zero_index]
 
@@ -88,7 +88,7 @@ class RTDualSet( dual_set.DualSet ):
                 for i in range( len( pts ) ):
                     l_cur = cpe( ref_el , d , (sd,) , pts[i] )
                     nodes.append( l_cur )
-                                                                 
+
 
 #            Q = quadrature.make_quadrature( ref_el , 2 * ( degree + 1 ) )
 #            qpts = Q.get_points()
@@ -117,7 +117,7 @@ class RTDualSet( dual_set.DualSet ):
         # set codimension 1 (edges 2d, faces 3d) dof
         pts_facet_0 = ref_el.make_points( sd - 1 , 0 , sd + degree )
         pts_per_facet = len( pts_facet_0 )
-        
+
         entity_ids[sd-1] = {}
         for i in range( len( t[sd-1] ) ):
             entity_ids[sd-1][i] = range( cur , cur + pts_per_facet )
@@ -132,7 +132,7 @@ class RTDualSet( dual_set.DualSet ):
             entity_ids[sd][0] = range( cur , cur + num_internal_nodes * sd )
 
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
-            
+
 
 class RaviartThomas( finite_element.FiniteElement ):
     """The Raviart-Thomas finite element"""
@@ -142,7 +142,8 @@ class RaviartThomas( finite_element.FiniteElement ):
         print "done getting space"
         dual = RTDualSet( ref_el , degree )
         print "getting dual"
-        finite_element.FiniteElement.__init__( self , poly_set , dual , degree )
+        finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
+                                               mapping="contravariant piola")
         return
 
 
@@ -153,7 +154,7 @@ if __name__=="__main__":
 
     for k in range(6):
         RT = RaviartThomas( T , k )
-    
+
 
 #    RTfs = RT.get_nodal_basis()
 

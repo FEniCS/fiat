@@ -35,7 +35,6 @@ class Lagrange( finite_element.FiniteElement ):
         poly_set = polynomial_set.ONPolynomialSet( ref_el , degree )
         dual = LagrangeDualSet( ref_el , degree )
         finite_element.FiniteElement.__init__( self , poly_set , dual , degree )
-        self._mapping = "affine"
 
 if __name__=="__main__":
     import reference_element

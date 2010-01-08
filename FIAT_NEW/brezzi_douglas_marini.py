@@ -74,7 +74,8 @@ class BrezziDouglasMarini( finite_element.FiniteElement ):
         print "getting dual"
         print poly_set.get_num_members()
         print len(dual.get_nodes())
-        finite_element.FiniteElement.__init__( self , poly_set , dual , degree )
+        finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
+                                               mapping="contravariant piola")
 
         return
 

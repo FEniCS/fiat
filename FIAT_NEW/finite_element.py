@@ -7,7 +7,7 @@ from polynomial_set import PolynomialSet
 class FiniteElement:
     """Class implementing Ciarlet's abstraction of a finite element
     being a domain, function space, and set of nodes."""
-    def __init__( self , poly_set , dual , order ):
+    def __init__( self , poly_set , dual , order, mapping="affine"):
         # first, compare ref_el of poly_set and dual
         # need to overload equality
         #if poly_set.get_reference_element() != dual.get_reference_element:
@@ -20,7 +20,7 @@ class FiniteElement:
         self.dual = dual
 
         # Appropriate mapping for the element space
-        self._mapping = None
+        self._mapping = mapping
 
         # build generalized Vandermonde matrix
         old_coeffs = poly_set.get_coeffs()

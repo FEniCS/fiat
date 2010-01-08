@@ -66,7 +66,7 @@ def NedelecSpace2D( ref_el , k ):
 
     return polynomial_set.polynomial_set_union_normalized( vec_Pk_from_Pkp1 , \
                                                            PkHcrossx )
-    
+
 
 def NedelecSpace3D( ref_el , k ):
     """Constructs a nodal basis for the 3d first-kind Nedelec space"""
@@ -119,7 +119,7 @@ def NedelecSpace3D( ref_el , k ):
     t = time.time()
     print "bad loop"
     for i in range( vec_Pke.get_num_members() ):
-        for j in range( sd ): # vector components 
+        for j in range( sd ): # vector components
             qwts_cur_bf_val = ( Qpts[:,(j+2)%3]*Pke_qpts[i,(j+1)%3,:] \
                 - Qpts[:,(j+1)%3] * Pke_qpts[i,(j+2)%3,:] ) * Qwts
             PkCrossXcoeffs[i,j,:] = numpy.dot( Pkp1_at_Qpts , qwts_cur_bf_val )
@@ -143,7 +143,7 @@ def NedelecSpace3D( ref_el , k ):
                                              vec_Pkp1.get_dmats() )
     return polynomial_set.polynomial_set_union_normalized( vec_Pk , \
                                                            PkCrossX )
-    
+
 
 class NedelecDual2D( dual_set.DualSet ):
     """Dual basis for first-kind Nedelec in 2d """
@@ -208,7 +208,7 @@ class NedelecDual2D( dual_set.DualSet ):
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
 
 
-class NedelecDual3D( dual_set.DualSet ): 
+class NedelecDual3D( dual_set.DualSet ):
     """Dual basis for first-kind Nedelec in 3d """
     def __init__( self , ref_el , degree ):
         sd = ref_el.get_spatial_dimension()
@@ -221,7 +221,7 @@ class NedelecDual3D( dual_set.DualSet ):
 
         # how many edges
         num_edges = len( t[1] )
-        
+
         for i in range( num_edges ):
             # points to specify P_k on each edge
             pts_cur = ref_el.make_points( 1 , i , degree + 2 )
@@ -298,7 +298,8 @@ class Nedelec( finite_element.FiniteElement ):
             dual = NedelecDual2D( ref_el , degree)
         else:
             raise Exception, "Not implemented"
-        finite_element.FiniteElement.__init__( self , poly_set , dual , degree )
+        finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
+                                               mapping="covariant piola")
 
 if __name__ == "__main__":
     import reference_element
