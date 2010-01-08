@@ -101,8 +101,7 @@ def make_quadrature( ref_el , m ):
     """Returns the collapsed quadrature rule using m points per
     direction on the given reference element."""
     if ref_el.get_shape() == reference_element.LINE:
-        # FIXME: Rob, is this correct?
-        return GaussJacobiQuadratureLineRule( ref_el , 1.0, 0.0, m )
+        return GaussJacobiQuadratureLineRule( ref_el , m )
     elif ref_el.get_shape() == reference_element.TRIANGLE:
         return CollapsedQuadratureTriangleRule( ref_el , m )
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
