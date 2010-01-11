@@ -124,7 +124,7 @@ class RTDualSet( dual_set.DualSet ):
             cur += pts_per_facet
 
         # internal nodes, if applicable
-        entity_ids[sd] = {}
+        entity_ids[sd] = {0: []}
 
         if degree > 0:
             num_internal_nodes = expansions.polynomial_dimension( ref_el , \
