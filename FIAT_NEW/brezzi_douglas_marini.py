@@ -3,13 +3,17 @@ import finite_element, raviart_thomas, quadrature, functional, \
 
 class BDMDualSet( dual_set.DualSet ):
     def __init__( self , ref_el , degree ):
+
+        # Initialize containers for map: mesh_entity -> dof number and
+        # dual basis
         entity_ids = {}
         nodes = []
 
         sd = ref_el.get_spatial_dimension()
-
         t = ref_el.get_topology()
 
+
+        # Define each functional for the dual set
         # codimension 1 facets
         for i in range( len( t[sd-1] ) ):
             pts_cur = ref_el.make_points( sd - 1 , i , sd + degree )
@@ -33,8 +37,6 @@ class BDMDualSet( dual_set.DualSet ):
                 l_cur = functional.FrobeniusIntegralMoment( ref_el , Q , \
                                                                 phi_cur )
                 nodes.append(l_cur)
-
-        entity_ids = {}
 
         # sets vertices (and in 3d, edges) to have no nodes
         for i in range( sd - 1 ):
@@ -66,14 +68,13 @@ class BDMDualSet( dual_set.DualSet ):
 class BrezziDouglasMarini( finite_element.FiniteElement ):
     """The BDM element"""
     def __init__( self , ref_el , degree ):
+
+        if degree < 1:
+            raise Exception, "BDM_k elements only valid for k >= 1"
+
         sd = ref_el.get_spatial_dimension()
-        print "getting space"
         poly_set = polynomial_set.ONPolynomialSet( ref_el , degree , (sd,) )
-        print "done getting space"
         dual = BDMDualSet( ref_el , degree )
-        print "getting dual"
-        print poly_set.get_num_members()
-        print len(dual.get_nodes())
         finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
                                                mapping="contravariant piola")
 
@@ -82,7 +83,7 @@ class BrezziDouglasMarini( finite_element.FiniteElement ):
 if __name__=="__main__":
     T = reference_element.UFCTetrahedron()
 
-    for k in range(1,6):
+    for k in range(1,3):
         print k
         BDM = BrezziDouglasMarini( T , k )
         print
