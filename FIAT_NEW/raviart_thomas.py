@@ -136,7 +136,10 @@ class RTDualSet( dual_set.DualSet ):
 
 class RaviartThomas( finite_element.FiniteElement ):
     """The Raviart-Thomas finite element"""
-    def __init__( self , ref_el , degree ):
+    def __init__( self , ref_el , q ):
+
+        degree = q - 1
+
         print "getting space"
         poly_set = RTSpace( ref_el , degree )
         print "done getting space"

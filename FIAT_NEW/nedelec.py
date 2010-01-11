@@ -289,7 +289,10 @@ class NedelecDual3D( dual_set.DualSet ):
 
 class Nedelec( finite_element.FiniteElement ):
     """Nedelec finite element"""
-    def __init__( self , ref_el , degree ):
+    def __init__( self , ref_el , q ):
+
+        degree = q - 1
+
         if ref_el.get_spatial_dimension() == 3:
             poly_set = NedelecSpace3D( ref_el , degree )
             dual = NedelecDual3D( ref_el , degree )

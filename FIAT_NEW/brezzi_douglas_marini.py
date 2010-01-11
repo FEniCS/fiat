@@ -27,7 +27,7 @@ class BDMDualSet( dual_set.DualSet ):
         if degree > 1:
             Q = quadrature.make_quadrature( ref_el , 2 * (degree + 1) )
             qpts = Q.get_points()
-            Nedel = nedelec.Nedelec( ref_el , degree - 2 )
+            Nedel = nedelec.Nedelec( ref_el , degree - 1 )
             Nedfs = Nedel.get_nodal_basis()
             zero_index = tuple( [ 0 for i in range( sd ) ] )
             Ned_at_qpts = Nedfs.tabulate( qpts )[ zero_index ]
