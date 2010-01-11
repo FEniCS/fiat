@@ -146,7 +146,6 @@ class ONPolynomialSet( PolynomialSet ):
             for idx in index_iterator( shape ):
                 for exp_bf in range(0,expansions.polynomial_dimension(ref_el,embedded_degree) ):
                     cur_idx = tuple( [cur_bf] + list( idx ) + [ exp_bf ] )
-                    #print cur_idx
                     coeffs[cur_idx] = 1.0
                     cur_bf += 1
 

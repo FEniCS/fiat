@@ -44,8 +44,10 @@ def eval_jacobi_batch(a,b,n,xs):
     Returns a two-dimensional array of points, where the
     rows correspond to the Jacobi polynomials and the
     columns correspond to the points."""
-    result = numpy.zeros( (n+1,len(xs)),"d" )
-    result[0,:] = 1.0
+    result = numpy.zeros( (n+1,len(xs)),xs.dtype )
+    # hack to make sure AD type is propogated through
+    for ii in range(result.shape[1]):
+        result[0,ii] = 1.0 + xs[ii,0] - xs[ii,0]
 
     xsnew = xs.reshape((-1,))
 
