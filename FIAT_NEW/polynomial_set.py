@@ -45,7 +45,7 @@ class PolynomialSet:
          coeffs[i,j,k] where i is the label of the member, k is
          the label of the expansion function, and j is a (possibly
          empty) tuple giving the index for a vector- or tensor-valued
-         function. 
+         function.
     """
     def __init__( self , ref_el , degree , embedded_degree , \
                   expansion_set , coeffs , dmats ):
@@ -90,7 +90,7 @@ class PolynomialSet:
     def get_shape( self ):
         """Returns the shape of phi(x), where () corresponds to
         scalar (2,) a vector of length 2, etc"""
-        return self.coeffs.shape[1:-2]
+        return self.coeffs.shape[1:-1]
     def take( self , items ):
         """Extracts subset of polynomials given by items."""
         new_coeffs =  numpy.take( self.get_coeffs() , items , 0 )
@@ -107,18 +107,19 @@ class PolynomialSet:
         T1 = reference_element.DefaultReferenceElement()
         T2 = self.get_reference_element()
         A,b = reference_element.make_affine_mapping( T2.get_vertices() , T1.get_vertices() )
-        
+
         if len( self.coeffs.shape ) == 2:
             return [ sympy.Polynomial( sum( [ self.coeffs[i,j] * ds[j] \
                                                   for j in range( self.coeffs.shape[1] ) ] ) ) \
                          for i in range( self.coeffs.shape[0] ) ]
 
-                              
+
 class ONPolynomialSet( PolynomialSet ):
     """Constructs an orthonormal basis out of expansion set by having
     an identity matrix of coefficients.  Can be used to specify ON
     bases  for vector- and tensor-valued sets as well."""
     def __init__( self , ref_el , degree , shape = tuple() ):
+
         if shape == tuple():
             num_components = 1
         else:
@@ -132,9 +133,10 @@ class ONPolynomialSet( PolynomialSet ):
 
         # set up coefficients
         coeffs_shape = tuple( [ num_members ] \
-                              + list( shape ) \
+                              + list(shape) \
                               + [ num_exp_functions ] )
         coeffs = numpy.zeros( coeffs_shape , "d" )
+
         # use functional's index_iterator function
         cur_bf = 0
 
@@ -147,16 +149,16 @@ class ONPolynomialSet( PolynomialSet ):
                     #print cur_idx
                     coeffs[cur_idx] = 1.0
                     cur_bf += 1
-                    
+
         # construct dmats
         if degree == 0:
             dmats = [ numpy.array( [ [ 0.0 ] ] , "d" ) \
                       for i in range( sd ) ]
         else:
             pts = ref_el.make_points( sd , 0 , degree + sd + 1 )
-            
+
             v = numpy.transpose( expansion_set.tabulate( degree , pts ) )
-            vinv = numpy.linalg.inv( v )            
+            vinv = numpy.linalg.inv( v )
 
             #dtildes = expansion_set.tabulate_derivs( degree , pts )
             dpts = numpy.array( [ tuple( [FirstDerivatives.DerivVar( x[i] , i ) \
@@ -165,11 +167,11 @@ class ONPolynomialSet( PolynomialSet ):
 
             dv = expansion_set.tabulate( degree , dpts )
             dtildes = [ [ [ a[1][i] for a in dvrow ] for dvrow in dv ] for i in range(sd ) ]
-            
-            dmats = [ numpy.dot( vinv , numpy.transpose( dtilde ) ) \
-                      for dtilde in dtildes ]    
 
-        PolynomialSet.__init__( self , ref_el , 
+            dmats = [ numpy.dot( vinv , numpy.transpose( dtilde ) ) \
+                      for dtilde in dtildes ]
+
+        PolynomialSet.__init__( self , ref_el ,
                                 degree , embedded_degree , \
                                 expansion_set , coeffs , dmats )
 
@@ -185,7 +187,7 @@ def project( f , U , Q ):
     coeffs = numpy.array( [ sum( wts * f_at_qps * phi ) \
                             for phi in U_at_qps ] )
     return coeffs
-        
+
 def form_matrix_product( mats , alpha ):
     """forms product over mats[i]**alpha[i]"""
     m = mats[0].shape[0]
