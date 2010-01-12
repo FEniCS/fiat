@@ -21,13 +21,15 @@ class QuadratureRule:
 class GaussJacobiQuadratureLineRule( QuadratureRule ):
     """Gauss-Jacobi quadature rule determined by Jacobi weights a and b
     using m roots of m:th order Jacobi polynomial."""
-    def __init__( self , ref_el , a , b , m ):
+#    def __init__( self , ref_el , a , b , m ):
+    def __init__( self , ref_el , m ):
         # this gives roots on the default (-1,1) reference element
-        (xs_ref,ws_ref) = compute_gauss_jacobi_rule( a , b , m )
+#        (xs_ref,ws_ref) = compute_gauss_jacobi_rule( a , b , m )
+        (xs_ref,ws_ref) = compute_gauss_jacobi_rule( 0. , 0. , m )
 
         Ref1 = reference_element.DefaultLine()
-        A,b = reference_element.make_affine_mapping( Ref1.get_vertices , \
-                                                     ref_el.get_vertices )
+        A,b = reference_element.make_affine_mapping( Ref1.get_vertices() , \
+                                                     ref_el.get_vertices() )
 
         mapping = lambda x: numpy.dot( A , x ) + b
 
