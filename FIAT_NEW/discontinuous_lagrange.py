@@ -32,7 +32,7 @@ class DiscontinuousLagrangeDualSet( dual_set.DualSet ):
 
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
 
-class DiscontinuousLagrange( finite_element.FiniteElement ):
+class HigherOrderDiscontinuousLagrange( finite_element.FiniteElement ):
     """The discontinuous Lagrange finite element.  It is what it is."""
     def __init__( self , ref_el , degree ):
         poly_set = polynomial_set.ONPolynomialSet( ref_el , degree )
@@ -43,7 +43,7 @@ def DiscontinuousLagrange( ref_el , degree ):
     if degree == 0:
         return P0.P0( ref_el )
     else:
-        return DiscontinuousLagrange( ref_el , degree )
+        return HigherOrderDiscontinuousLagrange( ref_el , degree )
 
 if __name__=="__main__":
     import reference_element
