@@ -33,9 +33,9 @@ def linalg_subspace_intersection( A , B ):
 
     #A,B are matrices of column vectors
     # compute the intersection of span(A) and span(B)
-   
+
     # Compute the principal vectors/angles between the subspaces, G&vL
-    # p.604 
+    # p.604
     (qa,ra) = numpy.linalg.qr( A )
     (qb,rb) = numpy.linalg.qr( B )
 
@@ -63,7 +63,7 @@ def lattice_iter( start , finish , depth ):
         for ii in xrange( start , finish ):
             for jj in lattice_iter( start , finish-ii , depth - 1 ):
                 yield [ii] + jj
-    
+
 class ReferenceElement:
     """Abstract class for a reference element simplex.  Provides
     accessors for geometry (vertex coordinates) as well as topology
@@ -93,7 +93,7 @@ class ReferenceElement:
     def get_topology( self ):
         """Returns a dictionary encoding the topology of the element.
         The dictionary's keys are the spatial dimensions (0,1,...)
-        and each value is a dictionary mapping 
+        and each value is a dictionary mapping
         """
         return self.topology
     def get_vertices_of_subcomplex( self , t ):
@@ -106,7 +106,7 @@ class ReferenceElement:
         # This is trivial if we have a d-simplex in R^d.
         # Not so otherwise.
         vert_vecs =  [ numpy.array( v ) \
-                       for v in self.vertices ] 
+                       for v in self.vertices ]
         vert_vecs_foo = numpy.array( [ vert_vecs[i] - vert_vecs[0] \
                                        for i in range(1,len(vert_vecs) ) ] )
 
@@ -120,7 +120,7 @@ class ReferenceElement:
         sd = self.get_spatial_dimension()
         vert_coords_of_facet = \
             self.get_vertices_of_subcomplex( t[sd-1][facet_i] )
-        
+
         # now I find everything normal to the facet.
         vcf = [ numpy.array( foo ) \
                 for foo in vert_coords_of_facet ]
@@ -132,7 +132,7 @@ class ReferenceElement:
         rankfacet = len( [ si for si in sf if si > 1.e-10 ] )
         facet_normal_space = numpy.transpose( vft[rankfacet:,:] )
 
-        # now, I have to compute the intersection of 
+        # now, I have to compute the intersection of
         # facet_span with facet_normal_space
         foo = linalg_subspace_intersection( facet_normal_space , spanu )
 
@@ -140,9 +140,9 @@ class ReferenceElement:
 
         if num_cols != 1:
             raise Exception, "barf in normal computation"
-        
+
         # now need to get the correct sign
-        # get a vector in the direction 
+        # get a vector in the direction
         nfoo = foo[:,0]
 
         # what is the vertex not in the facet?
@@ -198,7 +198,7 @@ class ReferenceElement:
         """Computes the two tangents to a face.  Only implemented
         for a tetrahedron."""
         if self.get_spatial_dimension() != 3:
-            raise Exception, "can't get face tangents yet" 
+            raise Exception, "can't get face tangents yet"
         t = self.get_topology()
         (v0,v1,v2) = map( numpy.array , \
                           self.get_vertices_of_subcomplex( t[2][face_i] ) )
@@ -226,7 +226,7 @@ class ReferenceElement:
             for i in range(len(indices)):
                 res_cur += indices[i] * hs[m-i-1]
             result.append( tuple( res_cur ) )
-        
+
         return result
 
     def make_points( self , dim , entity_id , order ):
@@ -264,17 +264,17 @@ class ReferenceElement:
         return volume( self.get_vertices_of_subcomplex( vids ) )
 
     def compute_scaled_normal( self , facet_i ):
-        """Returns the unit normal to facet_i of scaled by the 
+        """Returns the unit normal to facet_i of scaled by the
         volume of that facet."""
         t = self.get_topology()
         sd = self.get_spatial_dimension()
         facet_verts_ids = t[sd-1][facet_i]
         facet_verts_coords = self.get_vertices_of_subcomplex( facet_verts_ids )
-        
+
         v = volume( facet_verts_coords )
 
-        return self.compute_normal( facet_i ) * v 
-       
+        return self.compute_normal( facet_i ) * v
+
 
 class DefaultLine( ReferenceElement ):
     """This is the reference line with vertices (-1.0,) and (1.0,)."""
@@ -282,7 +282,7 @@ class DefaultLine( ReferenceElement ):
         verts = ( (-1.0,) , (1.0,) )
         edges = { 0 : ( 0 , 1 ) }
         topology = { 0 : { 0 : (0,) , 1: (1,) } , \
-                     1 : edges } 
+                     1 : edges }
         ReferenceElement.__init__( self , LINE , verts , topology )
 
 class UFCInterval( ReferenceElement ):
@@ -315,8 +315,15 @@ class UFCTriangle( ReferenceElement ):
         edges = { 0 : ( 1 , 2 ) , 1 : ( 0 , 2 ) , 2 : ( 0 , 1 ) }
         faces = { 0 : ( 0 , 1 , 2 ) }
         topology = { 0 : { 0 : (0,) , 1 : (1,) , 2 : (2,) } , \
-                     1 : edges , 2 : faces } 
+                     1 : edges , 2 : faces }
         ReferenceElement.__init__( self , TRIANGLE , verts , topology )
+
+    def compute_normal(self, i):
+        "UFC consistent normal"
+        t = self.compute_tangents(1, i)[0]
+        n = numpy.array((t[1], -t[0]))
+        return n/numpy.linalg.norm(n)
+
 
 class IntrepidTriangle( ReferenceElement ):
     """This is the Intrepid triangle with vertices (0,0),(1,0),(0,1)"""
@@ -402,6 +409,11 @@ class UFCTetrahedron( ReferenceElement ):
         topology = { 0: vs , 1 : edges , 2 : faces , 3 : tets }
         ReferenceElement.__init__( self , TETRAHEDRON , verts , topology )
 
+    def compute_normal(self, i):
+        "UFC consistent normals."
+        t = self.compute_tangents(2, i)
+        n = numpy.cross(t[0], t[1])
+        return n/numpy.linalg.norm(n)
 
 
 def make_affine_mapping( xs , ys ):
