@@ -9,9 +9,14 @@ import numpy,math
 import jacobi, reference_element
 
 # Import AD modules from ScientificPython
-import Scientific.Functions.Derivatives as Derivatives
-import Scientific.Functions.FirstDerivatives as FirstDerivatives
-
+try:
+    import Scientific.Functions.Derivatives as Derivatives
+    import Scientific.Functions.FirstDerivatives as FirstDerivatives
+except:
+    raise Exception, """\
+Unable to import the Python Scientific module required by FIAT.
+Consider installing the package python-scientific.
+"""
 
 def xi_triangle( eta ):
     """Maps from [-1,1]^2 to the (-1,1) reference triangle."""
@@ -37,7 +42,7 @@ class LineExpansionSet:
         self.base_ref_el = reference_element.DefaultLine()
         v1 = ref_el.get_vertices()
         v2 = self.base_ref_el.get_vertices()
-        self.A,self.b = reference_element.make_affine_mapping( v1 , v2 )       
+        self.A,self.b = reference_element.make_affine_mapping( v1 , v2 )
         self.mapping = lambda x: numpy.dot( self.A , x ) + self.b
         self.scale = numpy.sqrt( numpy.linalg.det( self.A ) )
 
@@ -49,12 +54,12 @@ class LineExpansionSet:
         if len( pts ) > 0:
             ref_pts = numpy.array([ self.mapping( pt ) for pt in pts ])
             psitilde_as = jacobi.eval_jacobi_batch(0,0,n,ref_pts)
-            
+
             results = numpy.zeros( ( n+1 , len(pts) ) , type( pts[0][0] ) )
             for k in range( n + 1 ):
                 results[k,:] = psitilde_as[k,:] * math.sqrt( k + 0.5 )
-            
-            return results        
+
+            return results
         else:
             return []
 
@@ -71,7 +76,7 @@ class LineExpansionSet:
             results[k,:] = psitilde_as_derivs[k,:] * numpy.sqrt( k + 0.5 )
 
         return (results,)
-        
+
 
 class TriangleExpansionSet:
     """Evaluates the orthonormal Dubiner basis on a triangular
@@ -83,10 +88,10 @@ class TriangleExpansionSet:
         self.base_ref_el = reference_element.DefaultTriangle( )
         v1 = ref_el.get_vertices()
         v2 = self.base_ref_el.get_vertices()
-        self.A,self.b = reference_element.make_affine_mapping( v1 , v2 )       
+        self.A,self.b = reference_element.make_affine_mapping( v1 , v2 )
         self.mapping = lambda x: numpy.dot( self.A , x ) + self.b
 #        self.scale = numpy.sqrt( numpy.linalg.det( self.A ) )
-        
+
     def get_num_members( self , n ):
         return (n+1)*(n+2)/2
 
@@ -139,11 +144,11 @@ class TriangleExpansionSet:
             b = p / (p+1.0)
             results[idx(p+1,0)] = a * f1 * results[idx(p,0),:] \
                 - p/(1.0+p) * f3 *results[idx(p-1,0),:]
-        
+
         for p in range(n):
             results[idx(p,1),:] = 0.5 * (1+2.0*p+(3.0+2.0*p)*y) \
                 * results[idx(p,0)]
-            
+
         for p in range(n-1):
             for q in range(1,n-p):
                 (a1,a2,a3) = jrc(2*p+1,0,q)
@@ -170,7 +175,7 @@ class TriangleExpansionSet:
             result.append( numpy.array( result_d ) )
 
         return result
-                                       
+
 
 class TetrahedronExpansionSet:
     """Collapsed orthonormal polynomial expanion on a tetrahedron."""
@@ -181,7 +186,7 @@ class TetrahedronExpansionSet:
         self.base_ref_el = reference_element.DefaultTetrahedron( )
         v1 = ref_el.get_vertices()
         v2 = self.base_ref_el.get_vertices()
-        self.A,self.b = reference_element.make_affine_mapping( v1 , v2 )       
+        self.A,self.b = reference_element.make_affine_mapping( v1 , v2 )
         self.mapping = lambda x: numpy.dot( self.A , x ) + self.b
         self.scale = numpy.sqrt( numpy.linalg.det( self.A ) )
 
@@ -209,7 +214,7 @@ class TetrahedronExpansionSet:
                 / float( (n+1)*(n+1+a+b)*(2*n+a+b) )
             return an,bn,cn
 
-        apts = numpy.array( pts ) 
+        apts = numpy.array( pts )
 
         results = numpy.zeros( ( (n+1)*(n+2)*(n+3)/6,len(pts)), type(pts[0][0]))
         results[0,:] = 1.0 + apts[:,0]-apts[:,0]+apts[:,1]-apts[:,1]+apts[:,2]-apts[:,2]
@@ -218,10 +223,10 @@ class TetrahedronExpansionSet:
             return results
 
         x = numpy.array( [ pt[0] for pt in ref_pts ] )
-        y = numpy.array( [ pt[1] for pt in ref_pts ] ) 
+        y = numpy.array( [ pt[1] for pt in ref_pts ] )
         z = numpy.array( [ pt[2] for pt in ref_pts ] )
 
-        factor1 = 0.5 * ( 2.0 + 2.0*x + y + z ) 
+        factor1 = 0.5 * ( 2.0 + 2.0*x + y + z )
         factor2 = (0.5*(y+z))**2
         factor3 = 0.5 * ( 1 + 2.0 * y + z )
         factor4 = 0.5 * ( 1 - z )
@@ -238,7 +243,7 @@ class TetrahedronExpansionSet:
         for p in range(0,n):
             results[idx(p,1,0)] = results[idx(p,0,0)] \
                 * ( p * (1.0 + y) + ( 2.0 + 3.0 * y + z ) / 2 )
-            
+
         for p in range(0,n-1):
             for q in range(1,n-p):
                 (aq,bq,cq) = jrc(2*p+1,0,q)
@@ -252,7 +257,7 @@ class TetrahedronExpansionSet:
             for q in range(n-p):
                 results[idx(p,q,1)] = results[idx(p,q,0)] \
                     * ( 1.0 + p + q + ( 2.0 + q + p ) * z )
- 
+
         # general r by recurrence
         for p in range(n-1):
             for q in range(0,n-p-1):
@@ -266,9 +271,9 @@ class TetrahedronExpansionSet:
             for q in range(n-p+1):
                 for r in range(n-p-q+1):
                     results[idx(p,q,r)] *= math.sqrt((p+0.5)*(p+q+1.0)*(p+q+r+1.5))
-        
-        
-        return results 
+
+
+        return results
 
     def tabulate_jet( self , n , pts , order = 1 ):
         from Derivatives import DerivVar
@@ -290,7 +295,7 @@ def get_expansion_set( ref_el ):
         return LineExpansionSet( ref_el )
     elif ref_el.get_shape() == reference_element.TRIANGLE:
         return TriangleExpansionSet( ref_el )
-    elif ref_el.get_shape() == reference_element.TETRAHEDRON: 
+    elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return TetrahedronExpansionSet( ref_el )
     else:
         raise Exception, "Unknown reference element type."
@@ -302,7 +307,7 @@ def polynomial_dimension( ref_el , degree ):
         return max( 0 , degree + 1 )
     elif ref_el.get_shape() == reference_element.TRIANGLE:
         return max( (degree+1)*(degree+2)/2 , 0 )
-    elif ref_el.get_shape() == reference_element.TETRAHEDRON: 
+    elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return max( 0 , (degree+1)*(degree+2)*(degree+3)/6 )
     else:
         raise Exception, "Unknown reference element type."
