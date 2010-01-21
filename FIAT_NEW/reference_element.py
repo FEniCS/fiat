@@ -413,7 +413,7 @@ class UFCTetrahedron( ReferenceElement ):
         "UFC consistent normals."
         t = self.compute_tangents(2, i)
         n = numpy.cross(t[0], t[1])
-        return n/numpy.linalg.norm(n)
+        return -2.0*n/numpy.linalg.norm(n)
 
 
 def make_affine_mapping( xs , ys ):
