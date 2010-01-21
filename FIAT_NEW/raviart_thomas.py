@@ -39,14 +39,10 @@ def RTSpace( ref_el , deg ):
 
     import time
     t1 = time.time()
-    print "bad loop"
     for i in range( PkH.get_num_members() ):
         for j in range( sd ):
             fooij = PkH_at_Qpts[i,:] * Qpts[:,j] * Qwts
             PkHx_coeffs[i,j,:] = numpy.dot( Pkp1_at_Qpts , fooij )
-
-    print "done with bad loop ", time.time() - t1
-
 
     PkHx = polynomial_set.PolynomialSet( ref_el , \
                                          deg , \
@@ -139,12 +135,8 @@ class RaviartThomas( finite_element.FiniteElement ):
     def __init__( self , ref_el , q ):
 
         degree = q - 1
-
-        print "getting space"
         poly_set = RTSpace( ref_el , degree )
-        print "done getting space"
         dual = RTDualSet( ref_el , degree )
-        print "getting dual"
         finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
                                                mapping="contravariant piola")
         return
@@ -153,7 +145,6 @@ class RaviartThomas( finite_element.FiniteElement ):
 if __name__=="__main__":
     T = reference_element.UFCTriangle()
     sd = T.get_spatial_dimension()
-
 
     for k in range(6):
         RT = RaviartThomas( T , k )

@@ -117,7 +117,6 @@ def NedelecSpace3D( ref_el , k ):
 
     import time
     t = time.time()
-    print "bad loop"
     for i in range( vec_Pke.get_num_members() ):
         for j in range( sd ): # vector components
             qwts_cur_bf_val = ( Qpts[:,(j+2)%3]*Pke_qpts[i,(j+1)%3,:] \
@@ -133,7 +132,6 @@ def NedelecSpace3D( ref_el , k ):
 #                    PkCrossXcoeffs[i,j,k] += Qwts[l] \
 #                                             * cur_bf_val \
 #                                             * Pkp1_at_Qpts[k,l]
-    print "bad loop done " , time.time() - t
 
     PkCrossX = polynomial_set.PolynomialSet( ref_el , \
                                              k + 1 , \
