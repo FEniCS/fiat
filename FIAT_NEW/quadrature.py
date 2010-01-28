@@ -33,7 +33,7 @@ class GaussJacobiQuadratureLineRule( QuadratureRule ):
 
         mapping = lambda x: numpy.dot( A , x ) + b
 
-        scale = numpy.linalg.det( A ) * 0.5
+        scale = numpy.linalg.det( A )
 
         xs = tuple( [ tuple( mapping( x_ref ) ) for x_ref in xs_ref ] )
         ws = tuple( [ scale * w for w in ws_ref ] )
@@ -200,6 +200,30 @@ if __name__ == "__main__":
                            for i in range( phis.shape[0] ) ] \
                              for j in range( phis.shape[0] ) ] )
 
-    print qpts
-    print qwts
+#    print qpts
+#    print qwts
     #print foo
+    cells = [(reference_element.default_simplex(i), reference_element.ufc_simplex(i)) for i in range(1,4)]
+    order = 1
+    for def_elem, ufc_elem in cells:
+        print "\n\ndefault element"
+        print def_elem.get_vertices()
+        print "ufc element"
+        print ufc_elem.get_vertices()
+
+        qd = make_quadrature(def_elem, order)
+        print "\ndefault points:"
+        print qd.get_points()
+        print "default weights:"
+        print qd.get_weights()
+        print "sum: ", sum(qd.get_weights())
+
+        qu = make_quadrature(ufc_elem, order)
+        print "\nufc points:"
+        print qu.get_points()
+        print "ufc weights:"
+        print qu.get_weights()
+        print "sum: ", sum(qu.get_weights())
+
+
+
