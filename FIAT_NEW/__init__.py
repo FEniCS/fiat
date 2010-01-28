@@ -13,6 +13,7 @@ from FIAT_NEW.morley import Morley
 from FIAT_NEW.nedelec import Nedelec
 from FIAT_NEW.P0 import P0
 from FIAT_NEW.raviart_thomas import RaviartThomas
+from FIAT_NEW.crouzeix_raviart import CrouzeixRaviart
 
 # List of supported elements and mapping to element classes
 element_classes = {"Argyris":                  Argyris,
@@ -24,7 +25,8 @@ element_classes = {"Argyris":                  Argyris,
                    "Morley":                   Morley,
                    "Nedelec 1st kind H(curl)": Nedelec,
                    "P0":                       P0,
-                   "Raviart-Thomas":           RaviartThomas}
+                   "Raviart-Thomas":           RaviartThomas,
+                   "Crouzeix-Raviart":         CrouzeixRaviart}
 
 # Important functionality
 from quadrature import make_quadrature
