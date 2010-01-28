@@ -3,17 +3,17 @@ evaluating arbitrary order Lagrange and many other elements.
 Simplices in one, two, and three dimensions are supported."""
 
 # Import finite element classes
-from FIAT_NEW.argyris import Argyris
-from FIAT_NEW.argyris import QuinticArgyris
-from FIAT_NEW.brezzi_douglas_marini import BrezziDouglasMarini
-from FIAT_NEW.discontinuous_lagrange import DiscontinuousLagrange
-from FIAT_NEW.hermite import CubicHermite
-from FIAT_NEW.lagrange import Lagrange
-from FIAT_NEW.morley import Morley
-from FIAT_NEW.nedelec import Nedelec
-from FIAT_NEW.P0 import P0
-from FIAT_NEW.raviart_thomas import RaviartThomas
-from FIAT_NEW.crouzeix_raviart import CrouzeixRaviart
+from FIAT.argyris import Argyris
+from FIAT.argyris import QuinticArgyris
+from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
+from FIAT.discontinuous_lagrange import DiscontinuousLagrange
+from FIAT.hermite import CubicHermite
+from FIAT.lagrange import Lagrange
+from FIAT.morley import Morley
+from FIAT.nedelec import Nedelec
+from FIAT.P0 import P0
+from FIAT.raviart_thomas import RaviartThomas
+from FIAT.crouzeix_raviart import CrouzeixRaviart
 
 # List of supported elements and mapping to element classes
 element_classes = {"Argyris":                  Argyris,
