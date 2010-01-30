@@ -61,7 +61,8 @@ class FiniteElement:
 
         return
 
-
+    def degree(self):
+        return self.poly_set.get_embedded_degree()
 
     def get_reference_element( self ):
         """Returns the reference element for the finite element."""
@@ -108,3 +109,9 @@ class FiniteElement:
 
     def value_shape(self):
         return self.poly_set.get_shape()
+
+    def dmats(self):
+        return self.get_nodal_basis().get_dmats()
+
+    def get_num_members(self, arg):
+        return self.get_nodal_basis().get_expansion_set().get_num_members(arg)
