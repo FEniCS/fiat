@@ -275,7 +275,6 @@ class ReferenceElement:
 
         return self.compute_normal( facet_i ) * v
 
-
 class DefaultLine( ReferenceElement ):
     """This is the reference line with vertices (-1.0,) and (1.0,)."""
     def __init__( self ):
@@ -472,6 +471,8 @@ def ufc_simplex( spatial_dim ):
         return UFCTriangle()
     elif spatial_dim == 3:
         return UFCTetrahedron()
+    else:
+        raise RuntimeError, "Don't know how to create UFC simplex for dimension %s" % str(spatial_dim)
 
 def volume( verts ):
     """Constructs the volume of the simplex spanned by verts"""
@@ -512,4 +513,3 @@ if __name__ == "__main__":
         print V.compute_scaled_normal( i )
         print volume( V.get_vertices_of_subcomplex( V.topology[sd-1][i] ) )
         print
-
