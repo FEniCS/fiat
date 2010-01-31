@@ -30,3 +30,4 @@ element_classes = {"Argyris":                  Argyris,
 
 # Important functionality
 from quadrature import make_quadrature
+from reference_element import ufc_simplex
