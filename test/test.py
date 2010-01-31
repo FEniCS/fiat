@@ -44,7 +44,7 @@ test_cases = (("Lagrange", 2, 1),
 # Parameters
 num_points = 3
 max_derivative = 3
-tolerance = 1e-10
+tolerance = 1e-8
 
 def test():
     "Regression test all elements."
