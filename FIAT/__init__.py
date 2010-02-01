@@ -2,6 +2,9 @@
 evaluating arbitrary order Lagrange and many other elements.
 Simplices in one, two, and three dimensions are supported."""
 
+# Version number
+FIAT_VERSION = "0.3.5"
+
 # Import finite element classes
 from FIAT.argyris import Argyris
 from FIAT.argyris import QuinticArgyris

@@ -1,0 +1,25 @@
+0.9.0 [2010-02-01]
+ - New improved interface with support for arbitrary reference elements
+0.3.5
+0.3.4
+0.3.3
+ - Bug fix in Nedelec
+ - Support for ufc element
+0.3.1
+ - Bug fix in DOF orderings for H(div) elements
+ - Preliminary type system for DOF
+ - Allow user to change ordering of reference dof
+ - Brezzi-Douglas-Fortin-Marini elements working
+0.3.0
+ - Small changes to H(div) elements preparing for integration with FFC
+ - Switch to numpy
+ - Added primitive testing harness in fiat/testing
+0.2.4
+ - Fixed but in P0.py
+0.2.3
+ - Updated topology/ geometry so to allow different orderings of entities
+0.2.2
+ - Added Raviart-Thomas element, verified RT0 against old version of code
+ - Started work on BDFM, Nedelec (not working)
+ - Fixed projection, union of sets (error in SVD usage)
+ - Vector-valued spaces have general number of components
