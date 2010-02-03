@@ -1,4 +1,4 @@
-#!/sw/bin/python
+#!/usr/bin/env python
 
 # 2d mode: x y z, z = f(x,y)
 import sys

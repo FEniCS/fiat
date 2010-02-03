@@ -1,4 +1,4 @@
-#!/sw/bin/python
+#!/usr/bin/env python
 
 # 3d mode: x y z f, f = f(x,y,z)
 import sys
