@@ -35,7 +35,7 @@ class GaussJacobiQuadratureLineRule( QuadratureRule ):
 
         scale = numpy.linalg.det( A )
 
-        xs = tuple( [ tuple( mapping( x_ref ) ) for x_ref in xs_ref ] )
+        xs = tuple( [ tuple( mapping( x_ref )[0] ) for x_ref in xs_ref ] )
         ws = tuple( [ scale * w for w in ws_ref ] )
 
         QuadratureRule.__init__( self , ref_el , xs , ws )
