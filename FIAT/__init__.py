@@ -14,6 +14,7 @@ from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
 from FIAT.morley import Morley
 from FIAT.nedelec import Nedelec
+from FIAT.nedelec_second_kind import NedelecSecondKind
 from FIAT.P0 import P0
 from FIAT.raviart_thomas import RaviartThomas
 from FIAT.crouzeix_raviart import CrouzeixRaviart
@@ -27,6 +28,7 @@ element_classes = {"Argyris":                  Argyris,
                    "Lagrange":                 Lagrange,
                    "Morley":                   Morley,
                    "Nedelec 1st kind H(curl)": Nedelec,
+                   "Nedelec 2nd kind H(curl)": NedelecSecondKind,
                    "P0":                       P0,
                    "Raviart-Thomas":           RaviartThomas,
                    "Crouzeix-Raviart":         CrouzeixRaviart}
