@@ -20,11 +20,23 @@ class NedelecSecondKindDual(DualSet):
 
       vertices: None
 
-      edges:    L(f) = f (x_i) * t       for (d+1) points x_i on each edge
+      edges:    L(f) = f (x_i) * t       for (k+1) points x_i on each edge
 
       cell:     L(f) = \int f * g * dx   for g in RT_{k-1}
 
-    Higher spatial dimensions are not yet implemented.
+
+   d = 3:
+
+      vertices: None
+
+      edges:    L(f)  = f(x_i) * t       for (k+1) points x_i on each edge
+
+      faces:
+
+      cell:
+
+    Higher spatial dimensions are not yet implemented. (For d = 1,
+    these elements coincide with the CG_k elements.)
     """
 
     def __init__ (self, cell, degree):
@@ -41,20 +53,19 @@ class NedelecSecondKindDual(DualSet):
         dofs = []
         ids = {}
 
-        # Extract spatial dimension
+        # Extract spatial dimension and topology
         d = cell.get_spatial_dimension()
-        assert(d == 2), "Second kind Nedelecs only on triangles for now!"
+        topology = cell.get_topology()
 
-        # Zero vertex-based degrees of freedom
-        ids[0] = {}
-        for vertex in range(3):
-            ids[0][vertex] = []
+        # Zero vertex-based degrees of freedom (d+1 of these)
+        ids[0] = dict(zip(range(d+1), ([] for i in range(d+1))))
 
-        # (d+1) degrees of freedom per edge
+        # (d+1) degrees of freedom per entity of codimension 1 (edges)
         ids[1] = {}
-        for edge in range(3):
+        for edge in range(len(topology[1])):
+
             # Create points for evaluation of tangential components
-            points = cell.make_points(d-1, edge, degree + 2)
+            points = cell.make_points(1, edge, degree + 2)
 
             # A tangential component evaluation for each point
             dofs += [Tangent(cell, edge, point) for point in points]
@@ -63,11 +74,18 @@ class NedelecSecondKindDual(DualSet):
             i = len(points)*edge
             ids[1][edge] = range(i, i+len(points))
 
-        # Internal degrees of freedom
-        ids[2] = {0: []}
 
-        # Return if degree == 1 (no internals)
-        if degree == 1: return (dofs, ids)
+        # If this is lowest order element, we just need to fill up ids
+        # with appropriate amounts of empty lists
+        ids[d] = {0: []}
+        if degree == 1:
+            if d == 2:
+                return (dofs, ids)
+
+            ids[2] = dict(zip(range(4), ([] for i in range(4))))
+            return (dofs, ids)
+
+        assert(d == 2), "Only lowest order 2nd kind Nedelecs implemented on tetrahedra"
 
         # Create quadrature points
         Q = make_quadrature(cell, 2*(degree+1))
@@ -84,7 +102,7 @@ class NedelecSecondKindDual(DualSet):
         dofs += [IntegralMoment(cell, Q, phi_at_qs[i, :])
                  for i in range(len(phi_at_qs))]
 
-        # Associate these dofs with this edge
+        # Associate these dofs with the interior
         i = 3*(degree+1)
         ids[2][0] = range(i, i+len(phi_at_qs))
 
@@ -103,7 +121,6 @@ class NedelecSecondKind(FiniteElement):
 
         # Get dimension
         d = cell.get_spatial_dimension()
-        assert(d == 2), "Second kind Nedelecs only implemented on triangles!"
 
         # Construct polynomial basis for d-vector fields
         Ps = ONPolynomialSet(cell, degree, (d, ))
@@ -120,9 +137,13 @@ class NedelecSecondKind(FiniteElement):
 
 if __name__=="__main__":
 
-    from reference_element import UFCTriangle
+    from reference_element import UFCTriangle, UFCTetrahedron
 
     for k in range(1, 4):
         T = UFCTriangle()
+        N2curl = NedelecSecondKind(T, k)
+
+    for k in range(1, 2):
+        T = UFCTetrahedron()
         N2curl = NedelecSecondKind(T, k)
 
