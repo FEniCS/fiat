@@ -41,6 +41,7 @@ test_cases = (("Lagrange", 2, 1),
               ("Nedelec 2nd kind H(curl)", 2, 1),
               ("Nedelec 2nd kind H(curl)", 2, 2),
               ("Nedelec 2nd kind H(curl)", 2, 3),
+              ("Nedelec 2nd kind H(curl)", 3, 1),
               ("Crouzeix-Raviart", 2, 1),
               ("Crouzeix-Raviart", 3, 1))
 
