@@ -29,9 +29,11 @@ element_classes = {"Argyris":                  Argyris,
                    "Morley":                   Morley,
                    "Nedelec 1st kind H(curl)": Nedelec,
                    "Nedelec 2nd kind H(curl)": NedelecSecondKind,
-                   "P0":                       P0,
-                   "Quintic Argyris":          QuinticArgyris,
                    "Raviart-Thomas":           RaviartThomas}
+
+# List of extra classes
+element_classes_extra = {"P0":              P0,
+                         "Quintic Argyris": QuinticArgyris}
 
 # Important functionality
 from quadrature import make_quadrature
