@@ -20,16 +20,16 @@ from FIAT.crouzeix_raviart import CrouzeixRaviart
 
 # List of supported elements and mapping to element classes
 element_classes = {"Argyris":                  Argyris,
-                   "Quintic Argyris":          QuinticArgyris,
                    "Brezzi-Douglas-Marini":    BrezziDouglasMarini,
+                   "Crouzeix-Raviart":         CrouzeixRaviart,
                    "Discontinuous Lagrange":   DiscontinuousLagrange,
-                   "Cubic Hermite":            CubicHermite,
+                   "Hermite":                  CubicHermite,
                    "Lagrange":                 Lagrange,
                    "Morley":                   Morley,
                    "Nedelec 1st kind H(curl)": Nedelec,
                    "P0":                       P0,
-                   "Raviart-Thomas":           RaviartThomas,
-                   "Crouzeix-Raviart":         CrouzeixRaviart}
+                   "Quintic Argyris":          QuinticArgyris,
+                   "Raviart-Thomas":           RaviartThomas}
 
 # Important functionality
 from quadrature import make_quadrature
