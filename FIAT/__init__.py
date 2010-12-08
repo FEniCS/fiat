@@ -20,20 +20,20 @@ from FIAT.raviart_thomas import RaviartThomas
 from FIAT.crouzeix_raviart import CrouzeixRaviart
 
 # List of supported elements and mapping to element classes
-element_classes = {"Argyris":                  Argyris,
-                   "Brezzi-Douglas-Marini":    BrezziDouglasMarini,
-                   "Crouzeix-Raviart":         CrouzeixRaviart,
-                   "Discontinuous Lagrange":   DiscontinuousLagrange,
-                   "Hermite":                  CubicHermite,
-                   "Lagrange":                 Lagrange,
-                   "Morley":                   Morley,
-                   "Nedelec 1st kind H(curl)": Nedelec,
-                   "Nedelec 2nd kind H(curl)": NedelecSecondKind,
-                   "Raviart-Thomas":           RaviartThomas}
+supported_elements = {"Argyris":                  Argyris,
+                      "Brezzi-Douglas-Marini":    BrezziDouglasMarini,
+                      "Crouzeix-Raviart":         CrouzeixRaviart,
+                      "Discontinuous Lagrange":   DiscontinuousLagrange,
+                      "Hermite":                  CubicHermite,
+                      "Lagrange":                 Lagrange,
+                      "Morley":                   Morley,
+                      "Nedelec 1st kind H(curl)": Nedelec,
+                      "Nedelec 2nd kind H(curl)": NedelecSecondKind,
+                      "Raviart-Thomas":           RaviartThomas}
 
-# List of extra classes
-element_classes_extra = {"P0":              P0,
-                         "Quintic Argyris": QuinticArgyris}
+# List of extra elements
+extra_elements = {"P0":              P0,
+                  "Quintic Argyris": QuinticArgyris}
 
 # Important functionality
 from quadrature import make_quadrature
