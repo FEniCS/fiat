@@ -4,7 +4,7 @@ __copyright__ = "Copyright (C) 2010 Anders Logg"
 __license__  = "GNU LGPL version 3 or any later version"
 
 import sys, pickle
-from FIAT import element_classes, make_quadrature, ufc_simplex
+from FIAT import supported_elements, make_quadrature, ufc_simplex
 from numpy import shape, max, abs
 
 # Combinations of (family, dim, degree) to test
@@ -70,7 +70,7 @@ def test():
 
         # Get domain and element class
         domain = ufc_simplex(dim)
-        ElementClass = element_classes[family]
+        ElementClass = supported_elements[family]
 
         # Create element
         element = ElementClass(domain, degree)
