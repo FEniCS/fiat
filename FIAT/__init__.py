@@ -5,7 +5,7 @@ Simplices in one, two, and three dimensions are supported."""
 __version__ = "0.9.2"
 
 # Version number
-FIAT_VERSION = "0.9.2"
+FIAT_VERSION = __version__
 
 # Import finite element classes
 from FIAT.argyris import Argyris
