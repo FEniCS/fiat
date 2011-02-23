@@ -1,4 +1,6 @@
- - Added second kind Nedeles on triangles
+0.9.9
+ - Add __version__
+ - Add second kind Nedeles on triangles
 0.9.2 [2010-07-01]
  - Bug fix for 1D quadrature
 0.9.1 [2010-02-03]
