@@ -8,5 +8,5 @@ setup(name="FIAT", \
       author="Robert C. Kirby", \
       author_email="robert.c.kirby@gmail.com", \
       url="http://www.math.ttu.edu/~kirby", \
-      license="LGPL", \
+      license="LGPL v3 or later", \
       packages=['FIAT'])
