@@ -325,7 +325,7 @@ class PointEdgeTangentEvaluation( Functional ):
     """Implements the evaluation of the tangential component of a
     vector at a point on a facet of dimension 1."""
     def __init__( self , ref_el , edge_no , pt ):
-        t = ref_el.compute_edge_tangent( edge_no )
+        t = ref_el.compute_normalized_edge_tangent( edge_no )
         self.t = t
         sd = ref_el.get_spatial_dimension()
         pt_dict = { pt : [ (t[i],(i,)) for i in range( sd ) ] }
