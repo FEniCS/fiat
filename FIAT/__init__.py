@@ -8,6 +8,7 @@ __version__ = "0.9.9"
 FIAT_VERSION = __version__
 
 # Import finite element classes
+from FIAT.finite_element import FiniteElement
 from FIAT.argyris import Argyris
 from FIAT.argyris import QuinticArgyris
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
