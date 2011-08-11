@@ -2,7 +2,7 @@
 evaluating arbitrary order Lagrange and many other elements.
 Simplices in one, two, and three dimensions are supported."""
 
-__version__ = "0.9.9"
+__version__ = "1.0-beta"
 
 # Version number
 FIAT_VERSION = __version__
