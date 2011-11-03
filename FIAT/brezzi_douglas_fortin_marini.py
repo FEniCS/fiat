@@ -20,19 +20,19 @@ class BDFMDualSet( dual_set.DualSet ):
         # Define each functional for the dual set
         # codimension 1 facet normals.
         # note this will die for degree greater than 1.
-        for facet in  t[sd-1]:
-            for p in t[sd-1][facet]:
-                pt_cur = ref_el.make_points(0,p,0)[0]
-                f = functional.PointNormalEvaluation( ref_el , facet , \
+        # for facet in  t[sd-1]:
+        #     for p in t[sd-1][facet]:
+        #         pt_cur = ref_el.make_points(0,p,0)[0]
+        #         f = functional.PointScaledNormalEvaluation( ref_el , facet , \
+        #                                                     pt_cur )
+        #         nodes.append( f )
+        for i in range( len( t[sd-1] ) ):
+            pts_cur = ref_el.make_points( sd - 1 , i , sd + degree )
+            for j in range( len( pts_cur ) ):
+                pt_cur = pts_cur[j]
+                f = functional.PointScaledNormalEvaluation( ref_el , i , \
                                                             pt_cur )
                 nodes.append( f )
-#         for i in range( len( t[sd-1] ) ):
-#             pts_cur = ref_el.make_points( sd - 1 , i , sd + degree )
-#             for j in range( len( pts_cur ) ):
-#                 pt_cur = pts_cur[j]
-#                 f = functional.PointScaledNormalEvaluation( ref_el , i , \
-#                                                             pt_cur )
-#                 nodes.append( f )
 
         # codimension 1 facet tangents.
         # because the tangent component is discontinuous, these actually
@@ -46,21 +46,6 @@ class BDFMDualSet( dual_set.DualSet ):
                 f = functional.PointEdgeTangentEvaluation( ref_el , i , \
                                                              pt_cur )
                 nodes.append( f )
-
-        # internal nodes
-        if degree > 1:
-            Q = quadrature.make_quadrature( ref_el , 2 * (degree + 1) )
-            qpts = Q.get_points()
-            Nedel = nedelec.Nedelec( ref_el , degree - 1 )
-            Nedfs = Nedel.get_nodal_basis()
-            zero_index = tuple( [ 0 for i in range( sd ) ] )
-            Ned_at_qpts = Nedfs.tabulate( qpts )[ zero_index ]
-
-            for i in range( len( Ned_at_qpts ) ):
-                phi_cur = Ned_at_qpts[i,:]
-                l_cur = functional.FrobeniusIntegralMoment( ref_el , Q , \
-                                                                phi_cur )
-                nodes.append(l_cur)
 
         # sets vertices (and in 3d, edges) to have no nodes
         for i in range( sd - 1 ):
@@ -87,34 +72,38 @@ class BDFMDualSet( dual_set.DualSet ):
             num_internal_nodes = len( Ned_at_qpts )
             entity_ids[sd][0] += range( cur , cur + num_internal_nodes )
 
-
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
 
-def BDFMSpace( ref_el , degree ):
+def BDFMSpace( ref_el , order ):
     sd = ref_el.get_spatial_dimension()
     if sd !=2:
         raise Exception, "BDFM_k elements only valid for dim 2"
     
-    vec_poly_set = polynomial_set.ONPolynomialSet( ref_el, degree+1, (sd,) )
+    # Linear vector valued space.
+    vec_poly_set = polynomial_set.ONPolynomialSet( ref_el, order, (sd,) )
     vec_poly_set = vec_poly_set.take([0,1,2,6,7,8])
 
-    lagrange_ele = lagrange.Lagrange(ref_el, degree+1)
+    # Scalar quadratic Lagrange element.
+    lagrange_ele = lagrange.Lagrange(ref_el, order)
+    # Select the dofs associated with the edges.
     edge_dofs_dict=lagrange_ele.dual.get_entity_ids()[sd-1]
     edge_dofs=numpy.array([(edge,dof) for edge,dofs in edge_dofs_dict.iteritems()
                           for dof in dofs])
+    print edge_dofs
 
     tangent_polys=lagrange_ele.poly_set.take(edge_dofs[:,1])
     new_coeffs=numpy.zeros((tangent_polys.get_num_members(),sd,tangent_polys.coeffs.shape[-1]))
     
     
+    # Outer product of the tangent vectors with the quadratic edge polynomials.
     for i,(edge, dof) in enumerate(edge_dofs):
         tangent=ref_el.compute_edge_tangent(edge)
 
         new_coeffs[i,:,:]=numpy.outer(tangent,tangent_polys.coeffs[i,:])
     
     bubble_set = polynomial_set.PolynomialSet( ref_el , \
-                                               degree, \
-                                               degree + 1 , \
+                                               order, \
+                                               order , \
                                                vec_poly_set.get_expansion_set() , \
                                                new_coeffs , \
                                                vec_poly_set.get_dmats() )    
@@ -130,7 +119,7 @@ class BrezziDouglasFortinMarini( finite_element.FiniteElement ):
         if degree != 1:
             raise Exception, "BDFM_k elements only valid for k == 1"
 
-        poly_set = BDFMSpace(ref_el, degree)
+        poly_set = BDFMSpace(ref_el, degree+1)
         dual = BDFMDualSet( ref_el , degree )
         finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
                                                mapping="contravariant piola")
@@ -138,8 +127,8 @@ class BrezziDouglasFortinMarini( finite_element.FiniteElement ):
         return
 
 if __name__=="__main__":
-    T = reference_element.DefaultTriangle()
+    T = reference_element.UFCTriangle()
 
-    BDFM = BrezziDouglasFortinMarini( T , i )
+    BDFM = BrezziDouglasFortinMarini( T , 1 )
 
     

@@ -1,7 +1,21 @@
-# Copyright 2008 by Robert C. Kirby (Texas Tech University)
-# License: LGPL
+# Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+#
+# This file is part of FIAT.
+#
+# FIAT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# FIAT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import finite_element, polynomial_set, dual_set , functional, numpy
+import finite_element, polynomial_set, dual_set, functional, numpy
 
 class ArgyrisDualSet( dual_set.DualSet ):
     def __init__( self , ref_el , degree ):
@@ -36,15 +50,15 @@ class ArgyrisDualSet( dual_set.DualSet ):
             alphas = [ [2,0] , [0,2] , [1,1] ]
             for alpha in alphas:
                 nodes.append( pd( ref_el , verts[v] , alpha ) )
-            
-                
+
+
             entity_ids[0][v] = range(cur,cur+6)
             cur += 6
 
         # edge dof
         entity_ids[1] = {}
         for e in sorted( top[1] ):
-            # normal derivatives at degree - 4 points on each edge            
+            # normal derivatives at degree - 4 points on each edge
             ndpts = ref_el.make_points( 1 , e , degree - 3 )
             ndnds = [ pnd( ref_el , e , pt ) for pt in ndpts ]
             nodes.extend( ndnds )
@@ -58,7 +72,7 @@ class ArgyrisDualSet( dual_set.DualSet ):
                 nodes.extend( ptvalnds )
                 entity_ids[1][e] += range(cur,cur+len(ptvalpts))
                 cur += len( ptvalpts )
-            
+
         # internal dof
         entity_ids[2] = {}
         if degree > 5:
@@ -67,7 +81,7 @@ class ArgyrisDualSet( dual_set.DualSet ):
             nodes.extend( internalnds )
             entity_ids[2][0] = range(cur,cur+len(internalpts))
             cur += len(internalpts)
-        
+
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
 
 class QuinticArgyrisDualSet( dual_set.DualSet ):
@@ -105,11 +119,11 @@ class QuinticArgyrisDualSet( dual_set.DualSet ):
             alphas = [ [2,0] , [0,2] , [1,1] ]
             for alpha in alphas:
                 nodes.append( pd( ref_el , verts[v] , alpha ) )
-            
-                
+
+
             entity_ids[0][v] = range(cur,cur+6)
             cur += 6
-                          
+
         # edge dof -- normal at each edge midpoint
         entity_ids[1] = {}
         for e in sorted( top[1] ):

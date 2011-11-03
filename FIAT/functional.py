@@ -1,5 +1,19 @@
-# Copyright 2008 by Robert C. Kirby (Texas Tech University)
-# License: LGPL
+# Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+#
+# This file is part of FIAT.
+#
+# FIAT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# FIAT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 # functionals require:
 # - a degree of accuracy (-1 indicates that it works for all functions
@@ -325,7 +339,7 @@ class PointEdgeTangentEvaluation( Functional ):
     """Implements the evaluation of the tangential component of a
     vector at a point on a facet of dimension 1."""
     def __init__( self , ref_el , edge_no , pt ):
-        t = ref_el.compute_normalized_edge_tangent( edge_no )
+        t = ref_el.compute_edge_tangent( edge_no )
         self.t = t
         sd = ref_el.get_spatial_dimension()
         pt_dict = { pt : [ (t[i],(i,)) for i in range( sd ) ] }

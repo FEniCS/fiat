@@ -1,10 +1,27 @@
+# Copyright (C) 2005 The University of Chicago
+#
+# This file is part of FIAT.
+#
+# FIAT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# FIAT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+#
 # Written by Robert C. Kirby
-# Copyright 2005 by The University of Chicago
-# Distributed under the LGPL license
+#
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
+#
+# Last changed: 2005-05-16
 
-# last edited 16 May 2005
 import reference_element, dual_set, numpy, functional, polynomial_set, finite_element
 
 class P0Dual( dual_set.DualSet ):
