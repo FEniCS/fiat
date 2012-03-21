@@ -89,7 +89,6 @@ def BDFMSpace( ref_el , order ):
     edge_dofs_dict=lagrange_ele.dual.get_entity_ids()[sd-1]
     edge_dofs=numpy.array([(edge,dof) for edge,dofs in edge_dofs_dict.iteritems()
                           for dof in dofs])
-    print edge_dofs
 
     tangent_polys=lagrange_ele.poly_set.take(edge_dofs[:,1])
     new_coeffs=numpy.zeros((tangent_polys.get_num_members(),sd,tangent_polys.coeffs.shape[-1]))
