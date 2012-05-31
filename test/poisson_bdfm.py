@@ -62,6 +62,7 @@ def solve_poisson_bdfm(size):
     L = f*q*dx-p0*dot(v,n)*ds
 
     ffc_opt = {"quadrature_degree": 4, "representation": "quadrature"}
+    ffc_opt = {}
 
     # Compute solution
     u=Function(W)
