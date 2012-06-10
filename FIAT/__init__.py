@@ -12,6 +12,7 @@ from FIAT.finite_element import FiniteElement
 from FIAT.argyris import Argyris
 from FIAT.argyris import QuinticArgyris
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
+from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
@@ -25,6 +26,7 @@ from FIAT.crouzeix_raviart import CrouzeixRaviart
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris":                  Argyris,
                       "Brezzi-Douglas-Marini":    BrezziDouglasMarini,
+                      "Brezzi-Douglas-Fortin-Marini":    BrezziDouglasFortinMarini,
                       "Crouzeix-Raviart":         CrouzeixRaviart,
                       "Discontinuous Lagrange":   DiscontinuousLagrange,
                       "Hermite":                  CubicHermite,
