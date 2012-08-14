@@ -76,44 +76,53 @@ class FiniteElement:
         return
 
     def degree(self):
+        "Return the degree of the (embedding) polynomial space."
         return self.poly_set.get_embedded_degree()
 
     def get_reference_element( self ):
-        """Returns the reference element for the finite element."""
+        "Return the reference element for the finite element."
         return self.ref_el
 
     def get_nodal_basis( self ):
-        """Returns the nodal basis, encoded as a PolynomialSet object,
+        """Return the nodal basis, encoded as a PolynomialSet object,
         for the finite element."""
         return self.poly_set
 
     def get_dual_set( self ):
-        """Returns the dual for the finite element."""
+        "Return the dual for the finite element."
         return self.dual
 
     def get_order( self ):
+        "Return the order of the element (may be different from the degree)"
         return self.order
 
     def dual_basis(self):
-        """Returns the dual basis (list of functionals) for the finite
+        """Return the dual basis (list of functionals) for the finite
         element."""
         return self.dual.get_nodes()
 
     def entity_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom for the finite element."""
         return self.dual.get_entity_ids()
 
     def get_coeffs(self):
+        """Return the expansion coefficients for the basis of the
+        finite element."""
         return self.poly_set.get_coeffs()
 
     def mapping(self):
-        """Returns the appropriate mapping from the reference element
-        to a physical element for the finite element."""
+        """Return a list of appropriate mappings from the reference
+        element to a physical element for each basis function of the
+        finite element."""
         return [self._mapping]*self.space_dimension()
 
     def num_sub_elements(self):
+        "Return the number of sub-elements."
         return 1
 
     def space_dimension(self):
+        "Return the dimension of the finite element space."
         return self.poly_set.get_num_members()
 
     def tabulate(self, order, points):
@@ -122,10 +131,14 @@ class FiniteElement:
         return self.poly_set.tabulate(points, order)
 
     def value_shape(self):
+        "Return the value shape of the finite element functions."
         return self.poly_set.get_shape()
 
     def dmats(self):
+        """Return dmats: expansion coefficients for basis function
+        derivatives."""
         return self.get_nodal_basis().get_dmats()
 
     def get_num_members(self, arg):
+        "Return number of members of the expansion set."
         return self.get_nodal_basis().get_expansion_set().get_num_members(arg)
