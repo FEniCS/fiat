@@ -60,6 +60,17 @@ class NedelecSecondKindDual(DualSet):
         # Call init of super-class
         DualSet.__init__(self, dofs, cell, ids)
 
+    def _generate_face_dofs(self, cell, degree):
+        "Generate degrees of freedoms (dofs) for faces."
+
+        msg = "Face dofs only applicable in 3D"
+        assert (cell.get_spatial_dimension() == 3), msg
+
+        dofs = []
+        ids = dict(zip(range(4), ([] for i in range(4))))
+        return (dofs, ids)
+
+
     def generate_degrees_of_freedom(self, cell, degree):
         "Generate dofs and geometry-to-dof maps (ids)."
 
@@ -68,14 +79,39 @@ class NedelecSecondKindDual(DualSet):
 
         # Extract spatial dimension and topology
         d = cell.get_spatial_dimension()
+        assert (d in (2, 3)), "Second kind Nedelecs only implemented in 2/3D."
         topology = cell.get_topology()
 
         # Zero vertex-based degrees of freedom (d+1 of these)
         ids[0] = dict(zip(range(d+1), ([] for i in range(d+1))))
 
         # (d+1) degrees of freedom per entity of codimension 1 (edges)
-        ids[1] = {}
-        for edge in range(len(topology[1])):
+        (edge_dofs, edge_ids) = self._generate_edge_dofs(cell, degree)
+        dofs.extend(edge_dofs)
+        ids[1] = edge_ids
+
+        # Include face degrees of freedom if 3D
+        if d == 3:
+            (face_dofs, face_ids) = self._generate_face_dofs(cell, degree)
+            dofs.extend(face_dofs)
+            ids[2] = face_ids
+
+        # Varying degrees of freedom (possibly zero) per cell
+        (cell_dofs, cell_ids) = self._generate_cell_dofs(cell, degree)
+        dofs.extend(cell_dofs)
+        ids[d] = cell_ids
+
+        return (dofs, ids)
+
+    def _generate_edge_dofs(self, cell, degree):
+        """Generate degrees of freedoms (dofs) for entities of
+        codimension 1 (edges)."""
+
+        # (d+1) tangential component point evaluation degrees of
+        # freedom per entity of codimension 1 (edges)
+        dofs = []
+        ids = {}
+        for edge in range(len(cell.get_topology()[1])):
 
             # Create points for evaluation of tangential components
             points = cell.make_points(1, edge, degree + 2)
@@ -85,20 +121,18 @@ class NedelecSecondKindDual(DualSet):
 
             # Associate these dofs with this edge
             i = len(points)*edge
-            ids[1][edge] = range(i, i+len(points))
+            ids[edge] = range(i, i+len(points))
 
+        return (dofs, ids)
 
-        # If this is lowest order element, we just need to fill up ids
-        # with appropriate amounts of empty lists
-        ids[d] = {0: []}
-        if degree == 1:
-            if d == 2:
-                return (dofs, ids)
+    def _generate_cell_dofs(self, cell, degree):
+        """Generate degrees of freedoms (dofs) for entities of
+        codimension d (cells)."""
 
-            ids[2] = dict(zip(range(4), ([] for i in range(4))))
-            return (dofs, ids)
-
-        assert(d == 2), "Only lowest order 2nd kind Nedelecs implemented on tetrahedra"
+        # Return empty info if not applicable
+        d = cell.get_spatial_dimension()
+        if (d == 2 and degree < 2) or (d == 3 and degree < 3):
+            return ([], {0: []})
 
         # Create quadrature points
         Q = make_quadrature(cell, 2*(degree+1))
@@ -112,13 +146,12 @@ class NedelecSecondKindDual(DualSet):
         phi_at_qs = phi.tabulate(qs)[(0, 0)]
 
         # Use (Frobenius) integral moments against RTs as dofs
-        dofs += [IntegralMoment(cell, Q, phi_at_qs[i, :])
-                 for i in range(len(phi_at_qs))]
+        dofs = [IntegralMoment(cell, Q, phi_at_qs[i, :])
+                for i in range(len(phi_at_qs))]
 
         # Associate these dofs with the interior
         i = 3*(degree+1)
-        ids[2][0] = range(i, i+len(phi_at_qs))
-
+        ids = {0: range(i, i+len(phi_at_qs))}
         return (dofs, ids)
 
 

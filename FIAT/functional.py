@@ -274,8 +274,28 @@ class PointNormalDerivative( Functional ):
 
 
 class IntegralMoment (Functional):
-    """ """
-    def __init__( self , ref_el , Q , f_at_qpts , comp = tuple() , shp = tuple()):
+    """
+    An IntegralMoment is a functional
+
+    """
+    def __init__( self , ref_el , Q , f_at_qpts , comp = tuple() ,
+                  shp = tuple()):
+        """
+        Create IntegralMoment
+
+        *Arguments*
+
+          ref_el
+              The reference element (cell)
+          Q (QuadratureRule)
+              A quadrature rule for the integral
+          f_at_qpts
+              ???
+          comp (tuple)
+              A component ??? (Optional)
+          shp  (tuple)
+              The shape ??? (Optional)
+        """
         qpts,qwts = Q.get_points(), Q.get_weights()
         pt_dict = {}
         self.comp = comp
