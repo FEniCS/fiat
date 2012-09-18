@@ -126,7 +126,7 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
 
         # Create quadrature rule on reference triangle
         reference_triangle = reference_element.UFCTriangle()
-        reference_rule = make_quadrature(reference_triangle, degree+1)
+        reference_rule = make_quadrature(reference_triangle, degree)
         ref_points = reference_rule.get_points()
         ref_weights = reference_rule.get_weights()
 
@@ -152,9 +152,14 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
         # Initialize super class with new points and weights
         QuadratureRule.__init__(self, reference_tet, points, weights)
         self._reference_rule = reference_rule
+        self._J = J
 
     def reference_rule(self):
         return self._reference_rule
+
+    def jacobian(self):
+        return self._J
+
 
 def make_quadrature( ref_el , m ):
     """Returns the collapsed quadrature rule using m points per

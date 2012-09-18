@@ -1,4 +1,4 @@
-# Copyright (C) 2010 Marie E. Rognes
+# Copyright (C) 2010-2012 Marie E. Rognes
 #
 # This file is part of FIAT.
 #
@@ -15,13 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+import numpy
+
 from finite_element import FiniteElement
 from dual_set import DualSet
 from polynomial_set import ONPolynomialSet
 from functional import PointEdgeTangentEvaluation as Tangent
 from functional import FrobeniusIntegralMoment as IntegralMoment
 from raviart_thomas import RaviartThomas
-from quadrature import make_quadrature
+from quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
+from reference_element import UFCTriangle, UFCTetrahedron
 
 class NedelecSecondKindDual(DualSet):
     """
@@ -42,11 +45,11 @@ class NedelecSecondKindDual(DualSet):
 
       vertices: None
 
-      edges:    L(f)  = f(x_i) * t       for (k+1) points x_i on each edge
+      edges:    L(f)  = f(x_i) * t         for (k+1) points x_i on each edge
 
-      faces:
+      faces:    L(f) = \int_F f * g * ds   for g in RT_{k-1}(F) for each face F
 
-      cell:
+      cell:     L(f) = \int f * g * dx     for g in RT_{k-2}
 
     Higher spatial dimensions are not yet implemented. (For d = 1,
     these elements coincide with the CG_k elements.)
@@ -59,17 +62,6 @@ class NedelecSecondKindDual(DualSet):
 
         # Call init of super-class
         DualSet.__init__(self, dofs, cell, ids)
-
-    def _generate_face_dofs(self, cell, degree):
-        "Generate degrees of freedoms (dofs) for faces."
-
-        msg = "Face dofs only applicable in 3D"
-        assert (cell.get_spatial_dimension() == 3), msg
-
-        dofs = []
-        ids = dict(zip(range(4), ([] for i in range(4))))
-        return (dofs, ids)
-
 
     def generate_degrees_of_freedom(self, cell, degree):
         "Generate dofs and geometry-to-dof maps (ids)."
@@ -86,28 +78,29 @@ class NedelecSecondKindDual(DualSet):
         ids[0] = dict(zip(range(d+1), ([] for i in range(d+1))))
 
         # (d+1) degrees of freedom per entity of codimension 1 (edges)
-        (edge_dofs, edge_ids) = self._generate_edge_dofs(cell, degree)
+        (edge_dofs, edge_ids) = self._generate_edge_dofs(cell, degree, 0)
         dofs.extend(edge_dofs)
         ids[1] = edge_ids
 
         # Include face degrees of freedom if 3D
         if d == 3:
-            (face_dofs, face_ids) = self._generate_face_dofs(cell, degree)
+            (face_dofs, face_ids) = self._generate_face_dofs(cell, degree,
+                                                             len(dofs))
             dofs.extend(face_dofs)
             ids[2] = face_ids
 
         # Varying degrees of freedom (possibly zero) per cell
-        (cell_dofs, cell_ids) = self._generate_cell_dofs(cell, degree)
+        (cell_dofs, cell_ids) = self._generate_cell_dofs(cell, degree,len(dofs))
         dofs.extend(cell_dofs)
         ids[d] = cell_ids
 
         return (dofs, ids)
 
-    def _generate_edge_dofs(self, cell, degree):
+    def _generate_edge_dofs(self, cell, degree, offset):
         """Generate degrees of freedoms (dofs) for entities of
         codimension 1 (edges)."""
 
-        # (d+1) tangential component point evaluation degrees of
+        # (degree+1) tangential component point evaluation degrees of
         # freedom per entity of codimension 1 (edges)
         dofs = []
         ids = {}
@@ -121,11 +114,71 @@ class NedelecSecondKindDual(DualSet):
 
             # Associate these dofs with this edge
             i = len(points)*edge
-            ids[edge] = range(i, i+len(points))
+            ids[edge] = range(offset + i, offset + i + len(points))
 
         return (dofs, ids)
 
-    def _generate_cell_dofs(self, cell, degree):
+    def _generate_face_dofs(self, cell, degree, offset):
+        """Generate degrees of freedoms (dofs) for faces."""
+
+        # Initialize empty dofs and identifiers (ids)
+        dofs = []
+        ids = dict(zip(range(4), ([] for i in range(4))))
+
+        # Return empty info if not applicable
+        d = cell.get_spatial_dimension()
+        if (degree < 2):
+            return (dofs, ids)
+
+        msg = "2nd kind Nedelec face dofs only available with UFC convention"
+        assert isinstance(cell, UFCTetrahedron),  msg
+
+        # Iterate over the faces of the tet
+        num_faces = len(cell.get_topology()[2])
+        for face in range(num_faces):
+
+            # Construct quadrature scheme for this face
+            m = 2*(degree + 1)
+            Q_face = UFCTetrahedronFaceQuadratureRule(face, m)
+            quad_points = Q_face.get_points()
+
+            # Construct Raviart-Thomas of (degree - 1) on the
+            # reference face
+            reference_face = Q_face.reference_rule().ref_el
+            RT = RaviartThomas(reference_face, degree - 1)
+            num_rts = RT.space_dimension()
+
+            # Evaluate RT basis functions at reference quadrature
+            # points
+            ref_quad_points = Q_face.reference_rule().get_points()
+            num_quad_points = len(ref_quad_points)
+            Phi = RT.get_nodal_basis()
+            Phis = Phi.tabulate(ref_quad_points)[(0, 0)]
+
+            # Note: Phis has dimensions:
+            # num_basis_functions x num_components x num_quad_points
+
+            # Map Phis -> phis (reference values to physical values)
+            J = Q_face.jacobian()
+            phis = numpy.ndarray((d, num_quad_points))
+            for i in range(num_rts):
+                for q in range(num_quad_points):
+                    phi_i_q = J*numpy.matrix(Phis[i, :, q]).transpose()
+                    for j in range(d):
+                        phis[j, q] = phi_i_q[j]
+
+                # Construct degrees of freedom as integral moments on
+                # this cell, using the special face quadrature
+                # weighted against the values of the (physical)
+                # Raviart--Thomas'es on the face
+                dofs += [IntegralMoment(cell, Q_face, phis)]
+
+            # Assign identifiers (num RTs per face + previous edge dofs)
+            ids[face] = range(offset + num_rts*face, offset + num_rts*(face+1))
+
+        return (dofs, ids)
+
+    def _generate_cell_dofs(self, cell, degree, offset):
         """Generate degrees of freedoms (dofs) for entities of
         codimension d (cells)."""
 
@@ -139,25 +192,26 @@ class NedelecSecondKindDual(DualSet):
         qs = Q.get_points()
 
         # Create Raviart-Thomas nodal basis
-        RT = RaviartThomas(cell, degree - 1)
+        RT = RaviartThomas(cell, degree + 1 - d)
         phi = RT.get_nodal_basis()
 
         # Evaluate Raviart-Thomas basis at quadrature points
-        phi_at_qs = phi.tabulate(qs)[(0, 0)]
+        phi_at_qs = phi.tabulate(qs)[(0,)*d]
 
         # Use (Frobenius) integral moments against RTs as dofs
         dofs = [IntegralMoment(cell, Q, phi_at_qs[i, :])
                 for i in range(len(phi_at_qs))]
 
         # Associate these dofs with the interior
-        i = 3*(degree+1)
-        ids = {0: range(i, i+len(phi_at_qs))}
+        ids = {0: range(offset, offset + len(dofs))}
         return (dofs, ids)
-
 
 class NedelecSecondKind(FiniteElement):
     """
-
+    The H(curl) Nedelec elements of the second kind on triangles and
+    tetrahedra: the polynomial space described by the full polynomials
+    of degree k, with a suitable set of degrees of freedom to ensure
+    H(curl) conformity.
     """
 
     def __init__(self, cell, degree):
@@ -183,13 +237,14 @@ class NedelecSecondKind(FiniteElement):
 
 if __name__=="__main__":
 
-    from reference_element import UFCTriangle, UFCTetrahedron
-
     for k in range(1, 4):
         T = UFCTriangle()
         N2curl = NedelecSecondKind(T, k)
 
-    for k in range(1, 2):
+    for k in range(1, 4):
         T = UFCTetrahedron()
         N2curl = NedelecSecondKind(T, k)
+        Nfs = N2curl.get_nodal_basis()
+        pts = T.make_lattice( 1 )
+        vals = Nfs.tabulate( pts , 1 )
 
