@@ -1,3 +1,22 @@
+# Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+#
+# This file is part of FIAT.
+#
+# FIAT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# FIAT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+#
+# Modified by Marie E. Rognes (meg@simula.no), 2012
+
 import reference_element, expansions, jacobi
 import math
 import numpy
@@ -98,6 +117,49 @@ class CollapsedQuadratureTetrahedronRule( QuadratureRule ):
         QuadratureRule.__init__( self , ref_el , tuple( pts ) , tuple( wts ) )
 
         return
+
+class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
+    """Highly specialized quadrature rule for the face of a
+    tetrahedron, mapped from a reference triangle, used for higher
+    order Nedelecs"""
+    def __init__(self, face_number, degree):
+
+        # Create quadrature rule on reference triangle
+        reference_triangle = reference_element.UFCTriangle()
+        reference_rule = make_quadrature(reference_triangle, degree)
+        ref_points = reference_rule.get_points()
+        ref_weights = reference_rule.get_weights()
+
+        # Get geometry information about the face of interest
+        reference_tet = reference_element.UFCTetrahedron()
+        face = reference_tet.get_topology()[2][face_number]
+        vertices = reference_tet.get_vertices_of_subcomplex(face)
+
+        # Use tet to map points and weights on the appropriate face
+        vertices = [numpy.array(list(vertex)) for vertex in vertices]
+        x0 = vertices[0]
+        J = numpy.matrix([vertices[1] - x0, vertices[2] - x0]).transpose()
+        x0 = numpy.matrix(x0).transpose()
+        # This is just a very numpyfied way of writing J*p + x0:
+        F = lambda p: \
+            numpy.array(J*numpy.matrix(p).transpose() + x0).flatten()
+        points = numpy.array([F(p) for p in ref_points])
+
+        # Map weights: multiply reference weights by sqrt(|J^T J|)
+        detJTJ = numpy.linalg.det(J.transpose()*J)
+        weights = numpy.sqrt(detJTJ)*ref_weights
+
+        # Initialize super class with new points and weights
+        QuadratureRule.__init__(self, reference_tet, points, weights)
+        self._reference_rule = reference_rule
+        self._J = J
+
+    def reference_rule(self):
+        return self._reference_rule
+
+    def jacobian(self):
+        return self._J
+
 
 def make_quadrature( ref_el , m ):
     """Returns the collapsed quadrature rule using m points per

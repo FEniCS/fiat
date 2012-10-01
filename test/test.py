@@ -16,7 +16,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # First added:  2010-01-31
-# Last changed: 2010-01-31
+# Last changed: 2012-10-01
 
 import sys, pickle
 from FIAT import supported_elements, make_quadrature, ufc_simplex
@@ -58,6 +58,8 @@ test_cases = (("Lagrange", 2, 1),
               ("Nedelec 2nd kind H(curl)", 2, 2),
               ("Nedelec 2nd kind H(curl)", 2, 3),
               ("Nedelec 2nd kind H(curl)", 3, 1),
+              ("Nedelec 2nd kind H(curl)", 3, 2),
+              ("Nedelec 2nd kind H(curl)", 3, 3),
               ("Crouzeix-Raviart", 2, 1),
               ("Crouzeix-Raviart", 3, 1))
 
