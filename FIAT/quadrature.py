@@ -164,6 +164,9 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
 def make_quadrature( ref_el , m ):
     """Returns the collapsed quadrature rule using m points per
     direction on the given reference element."""
+
+    msg = "Expecting at least one (not %d) quadrature point per direction" % m
+    assert (m > 0), msg
     if ref_el.get_shape() == reference_element.LINE:
         return GaussJacobiQuadratureLineRule( ref_el , m )
     elif ref_el.get_shape() == reference_element.TRIANGLE:
