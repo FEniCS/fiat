@@ -160,10 +160,11 @@ class NedelecSecondKindDual(DualSet):
 
             # Map Phis -> phis (reference values to physical values)
             J = Q_face.jacobian()
+            scale = 1.0/numpy.sqrt(numpy.linalg.det(J.transpose()*J))
             phis = numpy.ndarray((d, num_quad_points))
             for i in range(num_rts):
                 for q in range(num_quad_points):
-                    phi_i_q = J*numpy.matrix(Phis[i, :, q]).transpose()
+                    phi_i_q = scale*J*numpy.matrix(Phis[i, :, q]).transpose()
                     for j in range(d):
                         phis[j, q] = phi_i_q[j]
 
