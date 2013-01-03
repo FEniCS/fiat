@@ -54,8 +54,8 @@ if __name__ == "__main__":
     T = reference_element.UFCTriangle()
     U = P0( T )
 
-    print U.get_dual_set().entity_ids
-    print U.get_nodal_basis().tabulate( T.make_lattice(1) )
+    print(U.get_dual_set().entity_ids)
+    print(U.get_nodal_basis().tabulate( T.make_lattice(1) ))
 
 
 

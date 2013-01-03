@@ -19,19 +19,19 @@
 and Sherwin.  These are parametrized over a reference element so as
 to allow users to get coordinates that they want."""
 
-import reference_element
+from . import reference_element
 import numpy,math
-import jacobi, reference_element
+from . import jacobi, reference_element
 
 # Import AD modules from ScientificPython
 try:
     import Scientific.Functions.Derivatives as Derivatives
     import Scientific.Functions.FirstDerivatives as FirstDerivatives
 except:
-    raise Exception, """\
+    raise Exception("""\
 Unable to import the Python Scientific module required by FIAT.
 Consider installing the package python-scientific.
-"""
+""")
 
 def xi_triangle( eta ):
     """Maps from [-1,1]^2 to the (-1,1) reference triangle."""
@@ -52,7 +52,7 @@ class LineExpansionSet:
     """Evaluates the Legendre basis on a line reference element."""
     def __init__( self , ref_el ):
         if ref_el.get_spatial_dimension() != 1:
-            raise Exception, "Must have a line"
+            raise Exception("Must have a line")
         self.ref_el = ref_el
         self.base_ref_el = reference_element.DefaultLine()
         v1 = ref_el.get_vertices()
@@ -98,7 +98,7 @@ class TriangleExpansionSet:
     reference element."""
     def __init__( self , ref_el ):
         if ref_el.get_spatial_dimension() != 2:
-            raise Exception, "Must have a triangle"
+            raise Exception("Must have a triangle")
         self.ref_el = ref_el
         self.base_ref_el = reference_element.DefaultTriangle( )
         v1 = ref_el.get_vertices()
@@ -196,7 +196,7 @@ class TetrahedronExpansionSet:
     """Collapsed orthonormal polynomial expanion on a tetrahedron."""
     def __init__( self , ref_el ):
         if ref_el.get_spatial_dimension() != 3:
-            raise Exception, "Must be a tetrahedron"
+            raise Exception("Must be a tetrahedron")
         self.ref_el = ref_el
         self.base_ref_el = reference_element.DefaultTetrahedron( )
         v1 = ref_el.get_vertices()
@@ -313,7 +313,7 @@ def get_expansion_set( ref_el ):
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return TetrahedronExpansionSet( ref_el )
     else:
-        raise Exception, "Unknown reference element type."
+        raise Exception("Unknown reference element type.")
 
 def polynomial_dimension( ref_el , degree ):
     """Returns the dimension of the space of polynomials of degree no
@@ -325,10 +325,10 @@ def polynomial_dimension( ref_el , degree ):
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return max( 0 , (degree+1)*(degree+2)*(degree+3)/6 )
     else:
-        raise Exception, "Unknown reference element type."
+        raise Exception("Unknown reference element type.")
 
 if __name__=="__main__":
-    import reference_element, expansions
+    from . import reference_element, expansions
     from FirstDerivatives import DerivVar
 
     E = reference_element.DefaultTriangle( )

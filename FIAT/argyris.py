@@ -28,7 +28,7 @@ class ArgyrisDualSet( dual_set.DualSet ):
         sd = ref_el.get_spatial_dimension()
 
         if sd != 2:
-            raise Exception, "Illegal spatial dimension"
+            raise Exception("Illegal spatial dimension")
 
         pe = functional.PointEvaluation
         pd = functional.PointDerivative
@@ -52,7 +52,7 @@ class ArgyrisDualSet( dual_set.DualSet ):
                 nodes.append( pd( ref_el , verts[v] , alpha ) )
 
 
-            entity_ids[0][v] = range(cur,cur+6)
+            entity_ids[0][v] = list(range(cur,cur+6))
             cur += 6
 
         # edge dof
@@ -62,7 +62,7 @@ class ArgyrisDualSet( dual_set.DualSet ):
             ndpts = ref_el.make_points( 1 , e , degree - 3 )
             ndnds = [ pnd( ref_el , e , pt ) for pt in ndpts ]
             nodes.extend( ndnds )
-            entity_ids[1][e] = range(cur,cur + len(ndpts))
+            entity_ids[1][e] = list(range(cur,cur + len(ndpts)))
             cur += len( ndpts )
 
             # point value at degree-5 points on each edge
@@ -70,7 +70,7 @@ class ArgyrisDualSet( dual_set.DualSet ):
                 ptvalpts = ref_el.make_points( 1 , e , degree - 4 )
                 ptvalnds = [ pe( ref_el , pt ) for pt in ptvalpts ]
                 nodes.extend( ptvalnds )
-                entity_ids[1][e] += range(cur,cur+len(ptvalpts))
+                entity_ids[1][e] += list(range(cur,cur+len(ptvalpts)))
                 cur += len( ptvalpts )
 
         # internal dof
@@ -79,7 +79,7 @@ class ArgyrisDualSet( dual_set.DualSet ):
             internalpts = ref_el.make_points( 2 , 0 , degree - 3 )
             internalnds = [ pe( ref_el , pt ) for pt in internalpts ]
             nodes.extend( internalnds )
-            entity_ids[2][0] = range(cur,cur+len(internalpts))
+            entity_ids[2][0] = list(range(cur,cur+len(internalpts)))
             cur += len(internalpts)
 
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
@@ -99,7 +99,7 @@ class QuinticArgyrisDualSet( dual_set.DualSet ):
         verts = ref_el.get_vertices()
         sd = ref_el.get_spatial_dimension()
         if sd != 2:
-            raise Exception, "Illegal spatial dimension"
+            raise Exception("Illegal spatial dimension")
 
         pd = functional.PointDerivative
 
@@ -121,7 +121,7 @@ class QuinticArgyrisDualSet( dual_set.DualSet ):
                 nodes.append( pd( ref_el , verts[v] , alpha ) )
 
 
-            entity_ids[0][v] = range(cur,cur+6)
+            entity_ids[0][v] = list(range(cur,cur+6))
             cur += 6
 
         # edge dof -- normal at each edge midpoint
@@ -153,16 +153,16 @@ class QuinticArgyris( finite_element.FiniteElement ):
         finite_element.FiniteElement.__init__( self , poly_set , dual , 5 )
 
 if __name__=="__main__":
-    import reference_element
-    import lagrange
+    from . import reference_element
+    from . import lagrange
     T = reference_element.DefaultTriangle()
     for k in range(5,11):
         U = Argyris( T , k )
         U2 = lagrange.Lagrange( T , k )
         c = U.get_nodal_basis().get_coeffs()
         sigma = numpy.linalg.svd( c , compute_uv = 0)
-        print "Argyris ",k, max(sigma) / min(sigma)
+        print("Argyris ",k, max(sigma) / min(sigma))
         c = U2.get_nodal_basis().get_coeffs()
         sigma = numpy.linalg.svd( c , compute_uv = 0)
-        print "Lagrange ",k,max(sigma) / min(sigma )
-        print
+        print("Lagrange ",k,max(sigma) / min(sigma ))
+        print()

@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import expansions, polynomial_set, quadrature, reference_element, dual_set, \
+from . import expansions, polynomial_set, quadrature, reference_element, dual_set, \
     quadrature, finite_element, functional
 import numpy
+from functools import reduce
 
 def RTSpace( ref_el , deg ):
     """Constructs a basis for the the Raviart-Thomas space
@@ -31,12 +32,12 @@ def RTSpace( ref_el , deg ):
     dimPkm1 = expansions.polynomial_dimension( ref_el , deg-1 )
 
     vec_Pk_indices = reduce( lambda a,b: a+b , \
-                             [ range(i*dimPkp1,i*dimPkp1+dimPk) \
+                             [ list(range(i*dimPkp1,i*dimPkp1+dimPk)) \
                                for i in range(sd) ] )
     vec_Pk_from_Pkp1 = vec_Pkp1.take( vec_Pk_indices )
 
     Pkp1 = polynomial_set.ONPolynomialSet( ref_el , deg + 1 )
-    PkH = Pkp1.take( range(dimPkm1,dimPk) )
+    PkH = Pkp1.take( list(range(dimPkm1,dimPk)) )
 
     Q = quadrature.make_quadrature( ref_el , 2 * deg + 2 )
 
@@ -133,7 +134,7 @@ class RTDualSet( dual_set.DualSet ):
 
         entity_ids[sd-1] = {}
         for i in range( len( t[sd-1] ) ):
-            entity_ids[sd-1][i] = range( cur , cur + pts_per_facet )
+            entity_ids[sd-1][i] = list(range( cur , cur + pts_per_facet))
             cur += pts_per_facet
 
         # internal nodes, if applicable
@@ -142,7 +143,7 @@ class RTDualSet( dual_set.DualSet ):
         if degree > 0:
             num_internal_nodes = expansions.polynomial_dimension( ref_el , \
                                                                   degree - 1 )
-            entity_ids[sd][0] = range( cur , cur + num_internal_nodes * sd )
+            entity_ids[sd][0] = list(range( cur , cur + num_internal_nodes * sd))
 
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
 

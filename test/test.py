@@ -81,7 +81,7 @@ def test():
     values = {}
     for test_case in test_cases:
 
-        print "Testing", test_case
+        print("Testing", test_case)
 
         # Get family, dimension and degree
         family, dim, degree = test_case
@@ -106,24 +106,24 @@ def test():
             reference_table = reference[(family, dim, degree)]
             for dtuple in reference_table:
                 if dtuple not in table:
-                    print "*** Missing dtuple in table for " + str(test_case)
+                    print("*** Missing dtuple in table for " + str(test_case))
                     return 1
                 elif shape(table[dtuple]) != shape(reference_table[dtuple]):
-                    print "*** Wrong shape in table for " + str(test_case)
+                    print("*** Wrong shape in table for " + str(test_case))
                     return 1
                 else:
                     diff = max(abs(table[dtuple] - reference_table[dtuple]))
                     if diff > tolerance:
-                        print "*** Wrong values in table for %s, difference is %g" % (str(test_case), diff)
+                        print("*** Wrong values in table for %s, difference is %g" % (str(test_case), diff))
                         return 1
 
     # Write new values if reference is missing
     if reference is None:
-        print "Storing new reference values"
+        print("Storing new reference values")
         pickle.dump(values, open("reference.pickle", "w"))
 
-    print
-    print "Ran %d tests: OK" % len(test_cases)
+    print()
+    print("Ran %d tests: OK" % len(test_cases))
 
     return 0
 

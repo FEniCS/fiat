@@ -44,7 +44,7 @@ pts = K.make_lattice( 4 , 1 )
 
 for i in range( len( pts ) ):
     if not numpy.allclose( pts_hat[i],numpy.dot(A,pts[i]) + b):
-        print "barf"
+        print("barf")
 
 # Tabulate the Morley basis on each triangle
 Mhat_tabulated = Mhat.get_nodal_basis().tabulate_new( pts_hat )
@@ -71,8 +71,8 @@ for i in range(3):
     D[3+i,6+i] = g
 
 for d in D.tolist():
-    print d
-print
+    print(d)
+print()
 
 for i in range(3):
     E[i,i] = 1.0
@@ -86,17 +86,17 @@ for i in range(3):
     E[6+i,evids[1]] = 1.0
     E[6+i,evids[0]] = -1.0
 
-print E
-print
+print(E)
+print()
 transform = numpy.dot( D , E )
 ttrans = numpy.transpose( transform )
 
 for row in ttrans:
-    print row
-print
+    print(row)
+print()
 
-print "max error"
-print numpy.max( numpy.abs( numpy.dot( numpy.transpose( transform ) , Mhat_tabulated )  - M_tabulated ) )
+print("max error")
+print(numpy.max( numpy.abs( numpy.dot( numpy.transpose( transform ) , Mhat_tabulated )  - M_tabulated ) ))
 
 
 

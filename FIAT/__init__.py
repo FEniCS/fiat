@@ -41,5 +41,5 @@ extra_elements = {"P0":              P0,
                   "Quintic Argyris": QuinticArgyris}
 
 # Important functionality
-from quadrature import make_quadrature
-from reference_element import ufc_simplex
+from .quadrature import make_quadrature
+from .reference_element import ufc_simplex

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import finite_element, polynomial_set, dual_set , functional
+from . import finite_element, polynomial_set, dual_set , functional
 
 class MorleyDualSet( dual_set.DualSet ):
     """The dual basis for Lagrange elements.  This class works for
@@ -32,7 +32,7 @@ class MorleyDualSet( dual_set.DualSet ):
         verts = ref_el.get_vertices()
         sd = ref_el.get_spatial_dimension()
         if sd != 2:
-            raise Exception, "Illegal spatial dimension"
+            raise Exception("Illegal spatial dimension")
 
         pd = functional.PointDerivative
 
@@ -64,12 +64,12 @@ class Morley( finite_element.FiniteElement ):
         finite_element.FiniteElement.__init__( self , poly_set , dual , 2 )
 
 if __name__=="__main__":
-    import reference_element
+    from . import reference_element
     T = reference_element.DefaultTriangle()
     U = Morley( T )
 
     Ufs = U.get_nodal_basis()
     pts = T.make_lattice( 1 )
-    print pts
-    print Ufs.tabulate(pts).values()[0]
+    print(pts)
+    print(list(Ufs.tabulate(pts).values())[0])
 

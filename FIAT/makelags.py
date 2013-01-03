@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import lagrange
-import reference_element
+from . import lagrange
+from . import reference_element
 import string
 import numpy
 
@@ -49,12 +49,12 @@ for i in range(3,4):
     nb = L.get_nodal_basis()
     vdm = nb.get_coeffs()
     array_name="Lagrange%s%dCoeffs"%(shape,i)
-    print matrix_to_array( vdm , array_name )
-    print lagclass % (shape,i,shape,i,\
+    print(matrix_to_array( vdm , array_name ))
+    print(lagclass % (shape,i,shape,i,\
                           nb.get_degree(), \
                           nb.get_embedded_degree(), \
                           2,\
                           nb.get_num_members() , \
                           nb.get_num_members() , \
-                          array_name,shape,i)
+                          array_name,shape,i))
 

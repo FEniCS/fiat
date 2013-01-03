@@ -44,7 +44,7 @@ pts = K.make_lattice( 6 )
 
 for i in range( len( pts ) ):
     if not numpy.allclose( pts_hat[i],numpy.dot(A,pts[i]) + b):
-        print "barf"
+        print("barf")
 
 # Tabulate the Hermite basis on each triangle
 Hhat_tabulated = Hhat.get_nodal_basis().tabulate_new( pts_hat )
@@ -66,5 +66,5 @@ M[7:9,7:9] = numpy.transpose( Ainv )
 # entries for rest are Jacobian
 
 
-print numpy.max( numpy.abs( H_tabulated - numpy.dot( numpy.transpose( M ) , Hhat_tabulated ) ) )
+print(numpy.max( numpy.abs( H_tabulated - numpy.dot( numpy.transpose( M ) , Hhat_tabulated ) ) ))
 

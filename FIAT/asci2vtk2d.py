@@ -22,12 +22,12 @@ import sys
 
 if len(sys.argv) > 1:
     filename = sys.argv[1]
-    print filename
+    print(filename)
     base = filename.split(".")[0]
     output = "%s.vtk" % (base,)
-    print "output to %s" % (output,)
+    print("output to %s" % (output,))
 else:
-    print "python asci2vtk.py foo"
+    print("python asci2vtk.py foo")
     sys.exit(0)
 
 
@@ -35,39 +35,39 @@ fin = open( filename , "r" )
 
 coords = [ ]
 
-for line in fin.xreadlines():
+for line in fin:
     coords.append( line.split() )
 
 fin.close()
 
 n = len( coords )
 
-print "%s points" % (str(n),)
+print("%s points" % (str(n),))
 
 
 fout = open( output , "w" )
-print >>fout, """# vtk DataFile Version 2.0
+print("""# vtk DataFile Version 2.0
 points
 ASCII
 DATASET UNSTRUCTURED_GRID
-POINTS %s float""" % (str(n),)
+POINTS %s float""" % (str(n),), file=fout)
 
 for c in coords:
-    print >>fout, "%s %s %s" % (c[0],c[1],0)
+    print("%s %s %s" % (c[0],c[1],0), file=fout)
 
-print >>fout, "CELLS %s %s" % (n,2*n)
+print("CELLS %s %s" % (n,2*n), file=fout)
 for i in range( n ):
-    print >>fout, "1 %s" % (i,)
+    print("1 %s" % (i,), file=fout)
 
-print >>fout, "CELL_TYPES %s" % (n,)
+print("CELL_TYPES %s" % (n,), file=fout)
 for i in range( n ):
-    print >>fout, "1"
+    print("1", file=fout)
 
-print >>fout, "POINT_DATA %s" % (n,)
-print >>fout, """SCALARS Z float 1
-LOOKUP_TABLE default"""
+print("POINT_DATA %s" % (n,), file=fout)
+print("""SCALARS Z float 1
+LOOKUP_TABLE default""", file=fout)
 
 for i in range( n ):
-    print >>fout, coords[i][2]
+    print(coords[i][2], file=fout)
 
 fout.close()

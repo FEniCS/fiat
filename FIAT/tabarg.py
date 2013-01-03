@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import argyris,reference_element
+from . import argyris,reference_element
 
 degree = 5
 lattice_size = 10 * degree
@@ -29,23 +29,23 @@ bfvals = U.get_nodal_basis().tabulate_new( pts )
 u0 = bfvals[0]
 fout = open("arg0.dat","w")
 for i in range(len(pts)):
-    print >>fout, "%s %s %s" % (pts[i][0],pts[i][1],u0[i])
+    print("%s %s %s" % (pts[i][0],pts[i][1],u0[i]), file=fout)
 fout.close()
 
 u1 = bfvals[1]
 fout = open("arg1.dat","w")
 for i in range(len(pts)):
-    print >>fout, "%s %s %s" % (pts[i][0],pts[i][1],u1[i])
+    print("%s %s %s" % (pts[i][0],pts[i][1],u1[i]), file=fout)
 fout.close()
 
 u2 = bfvals[3]
 fout = open("arg2.dat","w")
 for i in range(len(pts)):
-    print >>fout, "%s %s %s" % (pts[i][0],pts[i][1],u2[i])
+    print("%s %s %s" % (pts[i][0],pts[i][1],u2[i]), file=fout)
 fout.close()
 
 u3 = bfvals[18]
 fout = open("arg3.dat","w")
 for i in range(len(pts)):
-    print >>fout, "%s %s %s" % (pts[i][0],pts[i][1],u3[i])
+    print("%s %s %s" % (pts[i][0],pts[i][1],u3[i]), file=fout)
 fout.close()

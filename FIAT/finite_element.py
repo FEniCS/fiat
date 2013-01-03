@@ -16,7 +16,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 import numpy
-from polynomial_set import PolynomialSet
+from .polynomial_set import PolynomialSet
 
 class FiniteElement:
     """Class implementing Ciarlet's abstraction of a finite element

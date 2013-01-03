@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import finite_element, polynomial_set, dual_set , functional, P0
+from . import finite_element, polynomial_set, dual_set , functional, P0
 
 class DiscontinuousLagrangeDualSet( dual_set.DualSet ):
     """The dual basis for Lagrange elements.  This class works for
@@ -42,7 +42,7 @@ class DiscontinuousLagrangeDualSet( dual_set.DualSet ):
                 entity_ids[dim][entity]=[]
                 cur += nnodes_cur
 
-        entity_ids[dim][0] = range(len(nodes))
+        entity_ids[dim][0] = list(range(len(nodes)))
 
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
 
@@ -60,15 +60,15 @@ def DiscontinuousLagrange( ref_el , degree ):
         return HigherOrderDiscontinuousLagrange( ref_el , degree )
 
 if __name__=="__main__":
-    import reference_element
+    from . import reference_element
     T = reference_element.DefaultTetrahedron()
     for k in range(2,3):
         U = DiscontinuousLagrange( T , k )
 
     Ufs = U.get_nodal_basis()
     pts = T.make_lattice( k )
-    print pts
-    for foo,bar in Ufs.tabulate( pts ,1 ).iteritems():
-        print foo
-        print bar
-        print
+    print(pts)
+    for foo,bar in Ufs.tabulate( pts ,1 ).items():
+        print(foo)
+        print(bar)
+        print()

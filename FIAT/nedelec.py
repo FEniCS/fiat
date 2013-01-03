@@ -17,13 +17,14 @@
 
 import polynomial_set, expansions, quadrature, numpy, dual_set, \
        finite_element, functional
+from functools import reduce
 
 def NedelecSpace2D( ref_el , k ):
     """Constructs a basis for the 2d H(curl) space of the first kind
     which is (P_k)^2 + P_k rot( x )"""
     sd = ref_el.get_spatial_dimension()
     if sd != 2:
-        raise Exception, "NedelecSpace2D requires 2d reference element"
+        raise Exception("NedelecSpace2D requires 2d reference element")
 
     vec_Pkp1 = polynomial_set.ONPolynomialSet( ref_el , k+1 , (sd,) )
 
@@ -32,12 +33,12 @@ def NedelecSpace2D( ref_el , k ):
     dimPkm1 = expansions.polynomial_dimension( ref_el , k-1 )
 
     vec_Pk_indices = reduce( lambda a,b: a+b , \
-                             [ range(i*dimPkp1,i*dimPkp1+dimPk) \
+                             [ list(range(i*dimPkp1,i*dimPkp1+dimPk)) \
                                for i in range(sd) ] )
     vec_Pk_from_Pkp1 = vec_Pkp1.take( vec_Pk_indices )
 
     Pkp1 = polynomial_set.ONPolynomialSet( ref_el , k + 1 )
-    PkH = Pkp1.take( range(dimPkm1,dimPk) )
+    PkH = Pkp1.take( list(range(dimPkm1,dimPk)) )
 
     Q = quadrature.make_quadrature( ref_el , 2 * k + 2 )
 
@@ -86,7 +87,7 @@ def NedelecSpace3D( ref_el , k ):
     """Constructs a nodal basis for the 3d first-kind Nedelec space"""
     sd = ref_el.get_spatial_dimension()
     if sd != 3:
-        raise Exception, "NedelecSpace3D requires 3d reference element"
+        raise Exception("NedelecSpace3D requires 3d reference element")
 
 
     vec_Pkp1 = polynomial_set.ONPolynomialSet( ref_el , k + 1 , \
@@ -100,13 +101,13 @@ def NedelecSpace3D( ref_el , k ):
         dimPkm1 = 0
 
     vec_Pk_indices = reduce( lambda a,b: a + b , \
-                             [ range( i * dimPkp1 , i * dimPkp1+dimPk ) \
+                             [ list(range( i * dimPkp1 , i * dimPkp1+dimPk)) \
                                for i in range(sd) ] )
     vec_Pk = vec_Pkp1.take( vec_Pk_indices )
 
 
     vec_Pke_indices = reduce( lambda a,b : a + b , \
-                              [ range(i*dimPkp1+dimPkm1,i*dimPkp1+dimPk) \
+                              [ list(range(i*dimPkp1+dimPkm1,i*dimPkp1+dimPk)) \
                                 for i in range(sd) ] )
 
     vec_Pke = vec_Pkp1.take( vec_Pke_indices )
@@ -162,7 +163,7 @@ class NedelecDual2D( dual_set.DualSet ):
     def __init__( self , ref_el , degree ):
         sd = ref_el.get_spatial_dimension()
         if sd != 2:
-            raise Exception, "Nedelec2D only works on triangles"
+            raise Exception("Nedelec2D only works on triangles")
 
         nodes = []
 
@@ -209,13 +210,13 @@ class NedelecDual2D( dual_set.DualSet ):
         num_edge_pts = len( ref_el.make_points( 1 , 0 , degree + 2 ) )
 
         for i in range( len( t[1] ) ):
-            entity_ids[1][i] = range( cur , cur + num_edge_pts )
+            entity_ids[1][i] = list(range( cur , cur + num_edge_pts))
             cur += num_edge_pts
 
         # moments against P_{degree-1} internally, if degree > 0
         if degree > 0:
             num_internal_dof = sd * Pkm1_at_qpts.shape[0]
-            entity_ids[2][0] = range( cur , cur + num_internal_dof )
+            entity_ids[2][0] = list(range( cur , cur + num_internal_dof))
 
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
 
@@ -225,7 +226,7 @@ class NedelecDual3D( dual_set.DualSet ):
     def __init__( self , ref_el , degree ):
         sd = ref_el.get_spatial_dimension()
         if sd != 3:
-            raise Exception, "NedelecDual3D only works on tetrahedra"
+            raise Exception("NedelecDual3D only works on tetrahedra")
 
         nodes = []
 
@@ -282,19 +283,19 @@ class NedelecDual3D( dual_set.DualSet ):
         # edge dof
         num_pts_per_edge = len( ref_el.make_points( 1 , 0 , degree + 2 ) )
         for i in range( len( t[1] ) ):
-            entity_ids[1][i] = range( cur , cur + num_pts_per_edge )
+            entity_ids[1][i] = list(range( cur , cur + num_pts_per_edge))
             cur += num_pts_per_edge
 
         # face dof
         if degree > 0:
             num_pts_per_face = len( ref_el.make_points( 2 , 0 , degree + 2 ) )
             for i in range( len( t[2] ) ):
-                entity_ids[2][i] = range( cur , cur + 2 * num_pts_per_face )
+                entity_ids[2][i] = list(range( cur , cur + 2 * num_pts_per_face))
                 cur += 2 * num_pts_per_face
 
         if degree > 1:
             num_internal_dof = Pkm2_at_qpts.shape[0] * sd
-            entity_ids[3][0] = range( cur , cur + num_internal_dof )
+            entity_ids[3][0] = list(range( cur , cur + num_internal_dof))
 
 
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
@@ -312,12 +313,12 @@ class Nedelec( finite_element.FiniteElement ):
             poly_set = NedelecSpace2D( ref_el , degree )
             dual = NedelecDual2D( ref_el , degree)
         else:
-            raise Exception, "Not implemented"
+            raise Exception("Not implemented")
         finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
                                                mapping="covariant piola")
 
 if __name__ == "__main__":
-    import reference_element
+    from . import reference_element
     T = reference_element.DefaultTriangle( )
     sd = T.get_spatial_dimension()
 
@@ -327,5 +328,5 @@ if __name__ == "__main__":
         pts = T.make_lattice( 1 )
         vals = Nfs.tabulate( pts , 1 )
         for foo in sorted( vals ):
-            print foo
-            print vals[foo]
+            print(foo)
+            print(vals[foo])

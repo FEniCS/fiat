@@ -17,14 +17,14 @@
 
 import numpy
 
-from finite_element import FiniteElement
-from dual_set import DualSet
-from polynomial_set import ONPolynomialSet
-from functional import PointEdgeTangentEvaluation as Tangent
-from functional import FrobeniusIntegralMoment as IntegralMoment
-from raviart_thomas import RaviartThomas
-from quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
-from reference_element import UFCTriangle, UFCTetrahedron
+from .finite_element import FiniteElement
+from .dual_set import DualSet
+from .polynomial_set import ONPolynomialSet
+from .functional import PointEdgeTangentEvaluation as Tangent
+from .functional import FrobeniusIntegralMoment as IntegralMoment
+from .raviart_thomas import RaviartThomas
+from .quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
+from .reference_element import UFCTriangle, UFCTetrahedron
 
 class NedelecSecondKindDual(DualSet):
     """
@@ -75,7 +75,7 @@ class NedelecSecondKindDual(DualSet):
         topology = cell.get_topology()
 
         # Zero vertex-based degrees of freedom (d+1 of these)
-        ids[0] = dict(zip(range(d+1), ([] for i in range(d+1))))
+        ids[0] = dict(list(zip(list(range(d+1)), ([] for i in range(d+1)))))
 
         # (d+1) degrees of freedom per entity of codimension 1 (edges)
         (edge_dofs, edge_ids) = self._generate_edge_dofs(cell, degree, 0)
@@ -114,7 +114,7 @@ class NedelecSecondKindDual(DualSet):
 
             # Associate these dofs with this edge
             i = len(points)*edge
-            ids[edge] = range(offset + i, offset + i + len(points))
+            ids[edge] = list(range(offset + i, offset + i + len(points)))
 
         return (dofs, ids)
 
@@ -123,7 +123,7 @@ class NedelecSecondKindDual(DualSet):
 
         # Initialize empty dofs and identifiers (ids)
         dofs = []
-        ids = dict(zip(range(4), ([] for i in range(4))))
+        ids = dict(list(zip(list(range(4)), ([] for i in range(4)))))
 
         # Return empty info if not applicable
         d = cell.get_spatial_dimension()
@@ -175,7 +175,7 @@ class NedelecSecondKindDual(DualSet):
                 dofs += [IntegralMoment(cell, Q_face, phis)]
 
             # Assign identifiers (num RTs per face + previous edge dofs)
-            ids[face] = range(offset + num_rts*face, offset + num_rts*(face+1))
+            ids[face] = list(range(offset + num_rts*face, offset + num_rts*(face+1)))
 
         return (dofs, ids)
 
@@ -204,7 +204,7 @@ class NedelecSecondKindDual(DualSet):
                 for i in range(len(phi_at_qs))]
 
         # Associate these dofs with the interior
-        ids = {0: range(offset, offset + len(dofs))}
+        ids = {0: list(range(offset, offset + len(dofs)))}
         return (dofs, ids)
 
 class NedelecSecondKind(FiniteElement):

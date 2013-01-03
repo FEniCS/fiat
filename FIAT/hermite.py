@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import finite_element, polynomial_set, dual_set , functional
+from . import finite_element, polynomial_set, dual_set , functional
 
 class CubicHermiteDualSet( dual_set.DualSet ):
     """The dual basis for Lagrange elements.  This class works for
@@ -44,7 +44,7 @@ class CubicHermiteDualSet( dual_set.DualSet ):
                 
                 nodes.append( pd( ref_el , verts[v] , alpha ) )
 
-            entity_ids[0][v] = range(cur,cur+1+sd)
+            entity_ids[0][v] = list(range(cur,cur+1+sd))
             cur += sd + 1
                           
         # no edge dof
@@ -57,7 +57,7 @@ class CubicHermiteDualSet( dual_set.DualSet ):
             pt = ref_el.make_points( 2 , f , 3 )[0]
             n = functional.PointEvaluation( ref_el , pt )
             nodes.append( n )
-            entity_ids[2] = range(cur,cur+1)
+            entity_ids[2] = list(range(cur,cur+1))
             cur += 1
             
 
@@ -76,12 +76,12 @@ class CubicHermite( finite_element.FiniteElement ):
         finite_element.FiniteElement.__init__( self , poly_set , dual , 3 )
 
 if __name__=="__main__":
-    import reference_element
+    from . import reference_element
     T = reference_element.DefaultTetrahedron()
     U = CubicHermite( T )
 
     Ufs = U.get_nodal_basis()
     pts = T.make_lattice( 3 )
-    print pts
-    print Ufs.tabulate(pts).values()[0]
+    print(pts)
+    print(list(Ufs.tabulate(pts).values())[0])
 

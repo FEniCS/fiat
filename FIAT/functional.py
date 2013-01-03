@@ -26,6 +26,7 @@ import numpy,string
 # Import AD modules from ScientificPython
 import Scientific.Functions.Derivatives as Derivatives
 import Scientific.Functions.FirstDerivatives as FirstDerivatives
+from functools import reduce
 
 def index_iterator( shp ):
     """Constructs a generator iterating over all indices in
@@ -60,7 +61,7 @@ class Functional:
         self.deriv_dict = deriv_dict
         self.functional_type = functional_type
         if len(deriv_dict) > 0:
-            per_point = reduce( lambda a,b : a + b , deriv_dict.values() )
+            per_point = reduce( lambda a,b : a + b , list(deriv_dict.values()) )
             alphas = \
                 [ foo[1] for foo in per_point ]
             self.max_deriv_order = max( [ sum( foo ) for foo in alphas ] )
@@ -120,7 +121,7 @@ class Functional:
         ed = poly_set.get_embedded_degree()
         pt_dict = self.get_point_dict()
 
-        pts = pt_dict.keys()
+        pts = list(pt_dict.keys())
 
         # bfs is matrix that is pdim rows by num_pts cols
         # where pdim is the polynomial dimension
@@ -152,7 +153,7 @@ class Functional:
         dpt_dict = self.deriv_dict
         mdo = self.max_deriv_order
 
-        dpts = dpt_dict.keys()
+        dpts = list(dpt_dict.keys())
         dpts_dv = [ pt_to_dpt( pt , mdo ) for pt in dpts ]
 
         dbfs = es.tabulate( ed , dpts_dv )
@@ -186,7 +187,7 @@ class PointEvaluation( Functional ):
         return
     def tostr( self ):
         import string
-        x = map(str,self.pt_dict.keys()[0])
+        x = list(map(str,list(self.pt_dict.keys())[0]))
         return "u(%s)"%(string.join(x,","),)
 
 class ComponentPointEvaluation( Functional ):
@@ -194,9 +195,9 @@ class ComponentPointEvaluation( Functional ):
     of a vector function at a particular point x."""
     def __init__( self , ref_el , comp , shp , x ):
         if len( shp ) != 1:
-            raise Exception, "Illegal shape"
+            raise Exception("Illegal shape")
         if comp < 0 or comp >= shp[0]:
-            raise Exception, "Illegal component"
+            raise Exception("Illegal component")
         self.comp = comp
         pt_dict = { x : [ ( 1.0 , (comp,) ) ] }
         Functional.__init__( self , ref_el , \
@@ -205,7 +206,7 @@ class ComponentPointEvaluation( Functional ):
 
     def tostr( self ):
         import string
-        x = map(str,self.pt_dict.keys()[0])
+        x = list(map(str,list(self.pt_dict.keys())[0]))
         return "(u[%d](%s)"%(self.comp,string.join(x,","))
 
 
@@ -222,7 +223,7 @@ class PointDerivative( Functional ):
 
         return
     def to_riesz( self , poly_set ):
-        x = self.deriv_dict.keys()[0]
+        x = list(self.deriv_dict.keys())[0]
         dx = tuple( [ Derivatives.DerivVar( x[i] , i , self.order ) \
                           for i in range( len( x ) ) ] )
 
@@ -260,7 +261,7 @@ class PointNormalDerivative( Functional ):
         return
 
     def to_riesz( self , poly_set ):
-        x = self.deriv_dict.keys()[0]
+        x = list(self.deriv_dict.keys())[0]
         dx = tuple( [ FirstDerivatives.DerivVar( x[i] , i ) \
                           for i in range( len( x ) ) ] )
 
@@ -310,9 +311,9 @@ class IntegralMoment (Functional):
         sd = T.get_spatial_dimension()
         es = poly_set.get_expansion_set()
         ed = poly_set.get_embedded_degree()
-        pts = self.pt_dict.keys()
+        pts = list(self.pt_dict.keys())
         bfs = es.tabulate( ed , pts )
-        wts = numpy.array( [ foo[0][0] for foo in self.pt_dict.values() ] )
+        wts = numpy.array( [ foo[0][0] for foo in list(self.pt_dict.values()) ] )
         result = numpy.zeros( poly_set.coeffs.shape[1:] , "d" )
         result[self.comp,:] = numpy.dot( bfs , wts )
         return result
@@ -321,7 +322,7 @@ class FrobeniusIntegralMoment( Functional ):
     def __init__( self , ref_el , Q , f_at_qpts ):
         # f_at_qpts is num components x num_qpts
         if len( Q.get_points() ) != f_at_qpts.shape[1]:
-            raise Exception, "Mismatch in number of quadrature points and values"
+            raise Exception("Mismatch in number of quadrature points and values")
 
         # make sure that shp is same shape as f given
         shp = (f_at_qpts.shape[0],)
@@ -368,11 +369,11 @@ class PointEdgeTangentEvaluation( Functional ):
                              pt_dict , {} , "PointEdgeTangent" )
     def tostr( self ):
         import string
-        x = map(str,self.pt_dict.keys()[0])
+        x = list(map(str,list(self.pt_dict.keys())[0]))
         return "(u.t)(%s)"%(string.join(x,","),)
     def to_riesz( self , poly_set ):
         # should be singleton
-        xs = self.pt_dict.keys()
+        xs = list(self.pt_dict.keys())
         phis = poly_set.get_expansion_set().tabulate( poly_set.get_embedded_degree() , xs )
         return numpy.outer( self.t , phis )
 
@@ -391,10 +392,10 @@ class PointFaceTangentEvaluation( Functional ):
                              pt_dict , {} , "PointFaceTangent" )
     def tostr( self ):
         import string
-        x = map(str,self.pt_dict.keys()[0])
+        x = list(map(str,list(self.pt_dict.keys())[0]))
         return "(u.t%d)(%s)"%(self.tno,string.join(x,","),)
     def to_riesz( self , poly_set ):
-        xs = self.pt_dict.keys()
+        xs = list(self.pt_dict.keys())
         phis = poly_set.get_expansion_set().tabulate( poly_set.get_embedded_degree() , xs )
         return numpy.outer( self.t , phis )
 
@@ -413,11 +414,11 @@ class PointScaledNormalEvaluation( Functional ):
         return
     def tostr( self ):
         import string
-        x = map(str,self.pt_dict.keys()[0])
+        x = list(map(str,list(self.pt_dict.keys())[0]))
         return "(u.n)(%s)"%(string.join(x,","),)
 
     def to_riesz( self , poly_set ):
-        xs = self.pt_dict.keys()
+        xs = list(self.pt_dict.keys())
         phis = poly_set.get_expansion_set().tabulate( poly_set.get_embedded_degree() , xs )
 
         return numpy.outer( self.n , phis )
@@ -441,13 +442,13 @@ def moments_against_set( ref_el , U , Q ):
 
 if __name__=="__main__":
     # test functionals
-    import polynomial_set, reference_element
+    from . import polynomial_set, reference_element
     ref_el = reference_element.DefaultTriangle()
     sd = ref_el.get_spatial_dimension()
     U = polynomial_set.ONPolynomialSet( ref_el , 5 )
 
     f = PointDerivative( ref_el , (0.0,0.0) , (1,0) )
-    print numpy.allclose( Functional.to_riesz( f , U ) , f.to_riesz( U ) )
+    print(numpy.allclose( Functional.to_riesz( f , U ) , f.to_riesz( U ) ))
 
     f = PointNormalDerivative( ref_el , 0 , (0.0,0.0) )
-    print numpy.allclose( Functional.to_riesz( f , U ) , f.to_riesz( U ) )
+    print(numpy.allclose( Functional.to_riesz( f , U ) , f.to_riesz( U ) ))

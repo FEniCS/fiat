@@ -26,9 +26,9 @@
 # we have an interface for defining sets of functionals (moments against
 # an entire set of polynomials)
 
-import expansions
+from . import expansions
 import numpy
-from functional import index_iterator
+from .functional import index_iterator
 import Scientific.Functions.FirstDerivatives as FirstDerivatives
 
 def mis( m , n ):
@@ -243,19 +243,19 @@ def polynomial_set_union_normalized( A , B ):
                           coeffs , A.get_dmats() )
 
 if __name__ == "__main__":
-    import reference_element
+    from . import reference_element
 
     T = reference_element.UFCTriangle()
     U = ONPolynomialSet( T , 2 )
 
-    print U.coeffs[0:6,0:6]
+    print(U.coeffs[0:6,0:6])
 
     pts = T.make_lattice( 3 )
 
     jet = U.tabulate( pts , 1 )
     for alpha in sorted( jet ):
-        print alpha
-        print jet[alpha]
+        print(alpha)
+        print(jet[alpha])
 
 
 #    print U.get_shape()

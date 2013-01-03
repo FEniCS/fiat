@@ -20,11 +20,11 @@
 #
 # Last changed: 2010-01-28
 
-import finite_element, polynomial_set, dual_set , functional
+from . import finite_element, polynomial_set, dual_set , functional
 
 def _initialize_entity_ids(topology):
     entity_ids = {}
-    for (i, entity) in topology.iteritems():
+    for (i, entity) in topology.items():
         entity_ids[i] = {}
         for j in entity:
             entity_ids[i][j] = []
@@ -42,7 +42,7 @@ class CrouzeixRaviartDualSet(dual_set.DualSet):
 
         # Initialize empty nodes and entity_ids
         entity_ids = _initialize_entity_ids(topology)
-        nodes = [None for i in topology[d-1].keys()]
+        nodes = [None for i in list(topology[d-1].keys())]
 
         # Construct nodes and entity_ids
         for i in topology[d-1]:
@@ -69,7 +69,7 @@ class CrouzeixRaviart(finite_element.FiniteElement):
 
         # Crouzeix Raviart is only defined for polynomial degree == 1
         if not (degree == 1):
-            raise Exception, "Crouzeix-Raviart only defined for degree 1"
+            raise Exception("Crouzeix-Raviart only defined for degree 1")
 
         # Construct polynomial spaces, dual basis and initialize
         # FiniteElement
@@ -80,12 +80,12 @@ class CrouzeixRaviart(finite_element.FiniteElement):
 
 if __name__ == "__main__":
 
-    import reference_element
+    from . import reference_element
 
     cells = [reference_element.UFCTriangle(),
              reference_element.UFCTetrahedron()]
     for cell in cells:
-        print "Checking CrouzeixRaviart(cell, 1)"
+        print("Checking CrouzeixRaviart(cell, 1)")
         element = CrouzeixRaviart(cell, 1)
-        print [L.pt_dict for L in element.dual_basis()]
-        print
+        print([L.pt_dict for L in element.dual_basis()])
+        print()

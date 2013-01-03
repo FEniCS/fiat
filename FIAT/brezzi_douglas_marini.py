@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import finite_element, raviart_thomas, quadrature, functional, \
+from . import finite_element, raviart_thomas, quadrature, functional, \
     dual_set, reference_element, polynomial_set, nedelec
 
 class BDMDualSet( dual_set.DualSet ):
@@ -69,7 +69,7 @@ class BDMDualSet( dual_set.DualSet ):
 
         entity_ids[sd-1] = {}
         for i in range( len( t[sd-1] ) ):
-            entity_ids[sd-1][i] = range( cur , cur + pts_per_facet )
+            entity_ids[sd-1][i] = list(range( cur , cur + pts_per_facet))
             cur += pts_per_facet
 
         # internal nodes, if applicable
@@ -77,7 +77,7 @@ class BDMDualSet( dual_set.DualSet ):
 
         if degree > 1:
             num_internal_nodes = len( Ned_at_qpts )
-            entity_ids[sd][0] = range( cur , cur + num_internal_nodes )
+            entity_ids[sd][0] = list(range( cur , cur + num_internal_nodes))
 
 
         dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
@@ -87,7 +87,7 @@ class BrezziDouglasMarini( finite_element.FiniteElement ):
     def __init__( self , ref_el , degree ):
 
         if degree < 1:
-            raise Exception, "BDM_k elements only valid for k >= 1"
+            raise Exception("BDM_k elements only valid for k >= 1")
 
         sd = ref_el.get_spatial_dimension()
         poly_set = polynomial_set.ONPolynomialSet( ref_el , degree , (sd,) )
@@ -101,6 +101,6 @@ if __name__=="__main__":
     T = reference_element.UFCTetrahedron()
 
     for k in range(1,3):
-        print k
+        print(k)
         BDM = BrezziDouglasMarini( T , k )
-        print
+        print()

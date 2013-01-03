@@ -44,7 +44,7 @@ def linalg_subspace_intersection( A , B ):
 
     # check that vectors are in same space
     if A.shape[0] != B.shape[0]:
-        raise Exception, "Dimension error"
+        raise Exception("Dimension error")
 
     #A,B are matrices of column vectors
     # compute the intersection of span(A) and span(B)
@@ -72,10 +72,10 @@ def lattice_iter( start , finish , depth ):
     if depth == 0:
         return
     elif depth == 1:
-        for ii in xrange( start , finish ):
+        for ii in range( start , finish ):
             yield [ii]
     else:
-        for ii in xrange( start , finish ):
+        for ii in range( start , finish ):
             for jj in lattice_iter( start , finish-ii , depth - 1 ):
                 yield [ii] + jj
 
@@ -154,7 +154,7 @@ class ReferenceElement:
         num_cols = foo.shape[1]
 
         if num_cols != 1:
-            raise Exception, "barf in normal computation"
+            raise Exception("barf in normal computation")
 
         # now need to get the correct sign
         # get a vector in the direction
@@ -165,7 +165,7 @@ class ReferenceElement:
         verts_facet = set( t[sd-1][facet_i] )
         verts_diff = verts_set.difference( verts_facet )
         if len( verts_diff ) != 1:
-            raise Exception, "barf in normal computation: getting sign"
+            raise Exception("barf in normal computation: getting sign")
         vert_off = verts_diff.pop()
         vert_on = verts_facet.pop()
 
@@ -184,8 +184,8 @@ class ReferenceElement:
         of dimension dim.  Returns a (possibly empty) list.
         These tangents are *NOT* normalized to have unit length."""
         t = self.get_topology()
-        vs = map( numpy.array , \
-                  self.get_vertices_of_subcomplex( t[dim][i] ) )
+        vs = list(map( numpy.array , \
+                  self.get_vertices_of_subcomplex( t[dim][i] ) ))
         ts = [ v - vs[0] for v in vs[1:] ]
         return ts
 
@@ -213,10 +213,10 @@ class ReferenceElement:
         """Computes the two tangents to a face.  Only implemented
         for a tetrahedron."""
         if self.get_spatial_dimension() != 3:
-            raise Exception, "can't get face tangents yet"
+            raise Exception("can't get face tangents yet")
         t = self.get_topology()
-        (v0,v1,v2) = map( numpy.array , \
-                          self.get_vertices_of_subcomplex( t[2][face_i] ) )
+        (v0,v1,v2) = list(map( numpy.array , \
+                          self.get_vertices_of_subcomplex( t[2][face_i] ) ))
         return (v1-v0,v2-v0)
 
     def make_lattice( self , n , interior = 0):
@@ -251,7 +251,7 @@ class ReferenceElement:
         if dim == 0:
             return ( self.get_vertices()[entity_id] , )
         elif dim > self.get_spatial_dimension():
-            raise Exception, "illegal dimension"
+            raise Exception("illegal dimension")
         elif dim == self.get_spatial_dimension():
             return self.make_lattice( order , 1 )
         else:
@@ -438,7 +438,7 @@ def make_affine_mapping( xs , ys ):
     dim_y = len( ys[0] )
 
     if len( xs ) != len( ys ):
-        raise Exception, ""
+        raise Exception("")
 
     # find A in R^{dim_y,dim_x}, b in R^{dim_y} such that
     # A xs[i] + b = ys[i] for all i
@@ -487,11 +487,11 @@ def ufc_simplex( spatial_dim ):
     elif spatial_dim == 3:
         return UFCTetrahedron()
     else:
-        raise RuntimeError, "Don't know how to create UFC simplex for dimension %s" % str(spatial_dim)
+        raise RuntimeError("Don't know how to create UFC simplex for dimension %s" % str(spatial_dim))
 
 def volume( verts ):
     """Constructs the volume of the simplex spanned by verts"""
-    from factorial import factorial
+    from .factorial import factorial
     # use fact that volume of UFC reference element is 1/n!
     sd = len( verts ) - 1
     ufcel = ufc_simplex( sd )
@@ -524,7 +524,7 @@ if __name__ == "__main__":
 #    print make_affine_mapping(V.get_vertices(),U.get_vertices())
 
     for i in range( len( V.vertices ) ):
-        print V.compute_normal( i )
-        print V.compute_scaled_normal( i )
-        print volume( V.get_vertices_of_subcomplex( V.topology[sd-1][i] ) )
-        print
+        print(V.compute_normal( i ))
+        print(V.compute_scaled_normal( i ))
+        print(volume( V.get_vertices_of_subcomplex( V.topology[sd-1][i] ) ))
+        print()

@@ -33,10 +33,10 @@ def lattice_iter( start , finish , depth ):
     if depth == 0:
         return
     elif depth == 1:
-        for ii in xrange( start , finish ):
+        for ii in range( start , finish ):
             yield [ii]
     else:
-        for ii in xrange( start , finish ):
+        for ii in range( start , finish ):
             for jj in lattice_iter( start , finish-ii , depth - 1 ):
                 yield [ii] + jj
 
@@ -229,5 +229,5 @@ if __name__=="__main__":
 
     vals = tabulate_tetrahedron( D , dpts , gmpy.mpq )
 
-    print vals
+    print(vals)
 
