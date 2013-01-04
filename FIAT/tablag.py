@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from FIAT import shapes, Lagrange
+from . import shapes, Lagrange
 
 shape = 3
 degree = 3
@@ -29,5 +29,5 @@ us = U.function_space().tabulate(pts)
 fout = open("foo.dat","w")
 u0 = us[0]
 for i in range(len(pts)):
-    print("%s %s %s %s" % (pts[i][0],pts[i][1],pts[i][2],u0[i]), file=fout)
+    fout.write("%s %s %s %s" % (pts[i][0],pts[i][1],pts[i][2],u0[i]))
 fout.close()

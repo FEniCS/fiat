@@ -25,7 +25,7 @@ if len(sys.argv) > 1:
     print(filename)
     base = filename.split(".")[0]
     output = "%s.vtk" % (base,)
-    print("output to %s" % (output,))
+    print("output to %s" % output)
 else:
     print("python asci2vtk.py foo")
     sys.exit(0)
@@ -46,28 +46,28 @@ print("%s points" % (str(n),))
 
 
 fout = open( output , "w" )
-print("""# vtk DataFile Version 2.0
+fout.write("""# vtk DataFile Version 2.0
 points
 ASCII
 DATASET UNSTRUCTURED_GRID
-POINTS %s float""" % (str(n),), file=fout)
+POINTS %s float\n""" % str(n))
 
 for c in coords:
-    print("%s %s %s" % (c[0],c[1],0), file=fout)
+    fout.write("%s %s %s\n" % (c[0],c[1],0))
 
-print("CELLS %s %s" % (n,2*n), file=fout)
+fout.write("CELLS %s %s\n" % (n,2*n))
 for i in range( n ):
-    print("1 %s" % (i,), file=fout)
+    fout.write("1 %s\n" % i)
 
-print("CELL_TYPES %s" % (n,), file=fout)
+fout.write("CELL_TYPES %s\n" % (n,))
 for i in range( n ):
-    print("1", file=fout)
+    fout.write("1\n")
 
-print("POINT_DATA %s" % (n,), file=fout)
-print("""SCALARS Z float 1
-LOOKUP_TABLE default""", file=fout)
+fout.write("POINT_DATA %s\n" % (n,))
+fout.write("""SCALARS Z float 1
+LOOKUP_TABLE default\n""")
 
 for i in range( n ):
-    print(coords[i][2], file=fout)
+    fout.write("%s" % coords[i][2])
 
 fout.close()
