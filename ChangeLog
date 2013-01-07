@@ -1,4 +1,4 @@
-1.1 [Not yet released]
+1.1 [2013-01-07]
  - Support second kind Nedelecs on tetrahedra over degree >= 2
  - Support Brezzi-Douglas-Fortin-Marini elements (of degree 1, 2), again
 1.0.0 [2011-12-07]
