@@ -1,5 +1,6 @@
+========================================
 FIAT: FInite element Automatic Tabulator
-----------------------------------------
+========================================
 
 The FInite element Automatic Tabulator FIAT supports generation of
 arbitrary order instances of the Lagrange elements on lines,
@@ -12,8 +13,8 @@ will also support Hermite and nonconforming elements.
 
 For more information, visit http://www.fenicsproject.org
 
-License:
---------
+License
+=======
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
