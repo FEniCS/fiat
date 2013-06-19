@@ -504,8 +504,31 @@ def ufc_simplex( spatial_dim ):
         return UFCTriangle()
     elif spatial_dim == 3:
         return UFCTetrahedron()
+
+def ufc_cell( celltype ):
+    """Factory function that maps spatial dimension to an instance of
+    the UFC reference simplex of that dimension."""
+
+    # celltype could be a string or a cell.
+    if isinstance(celltype, str):
+        if celltype == "interval":
+            return ufc_simplex(1)
+        elif celltype == "triangle":
+            return ufc_simplex(2)
+        elif celltype == "tetrahedron":
+            return ufc_simplex(3)
+        else:
+            raise RuntimeError("Don't know how to create UFC simplex for cell type %s" % str(celltype))
     else:
-        raise RuntimeError("Don't know how to create UFC simplex for dimension %s" % str(spatial_dim))
+        celltype = cell.cellname()
+        if celltype == "interval":
+            return ufc_simplex(1)
+        elif celltype == "triangle":
+            return ufc_simplex(2)
+        elif celltype == "tetrahedron":
+            return ufc_simplex(3)
+        else:
+            raise RuntimeError("Don't know how to create UFC simplex for cell type %s" % str(celltype))
 
 def volume( verts ):
     """Constructs the volume of the simplex spanned by verts"""
