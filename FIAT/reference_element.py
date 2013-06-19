@@ -33,6 +33,7 @@ import numpy
 LINE = 1
 TRIANGLE = 2
 TETRAHEDRON = 3
+TENSORPRODUCT = 99
 
 def linalg_subspace_intersection( A , B ):
     """Computes the intersection of the subspaces spanned by the
@@ -509,30 +510,59 @@ def ufc_simplex( spatial_dim ):
     else:
         raise RuntimeError("Can't create UFC simplex of dimension %s." % str(spatial_dim))
 
-def ufc_cell( celltype ):
-    """Factory function that maps spatial dimension to an instance of
-    the UFC reference simplex of that dimension."""
+
+def ufc_cell( cell ):
+    """Handle incoming calls from FFC."""
 
     # celltype could be a string or a cell.
-    if isinstance(celltype, str):
-        if celltype == "interval":
-            return ufc_simplex(1)
-        elif celltype == "triangle":
-            return ufc_simplex(2)
-        elif celltype == "tetrahedron":
-            return ufc_simplex(3)
-        else:
-            raise RuntimeError("Don't know how to create UFC simplex for cell type %s" % str(celltype))
+    if isinstance(cell, str):
+        celltype = cell
     else:
         celltype = cell.cellname()
-        if celltype == "interval":
-            return ufc_simplex(1)
-        elif celltype == "triangle":
-            return ufc_simplex(2)
-        elif celltype == "tetrahedron":
-            return ufc_simplex(3)
-        else:
-            raise RuntimeError("Don't know how to create UFC simplex for cell type %s" % str(celltype))
+
+    if celltype == "TwoProductCell":
+        # FIXME
+        return two_product_cell()
+    elif celltype == "interval":
+        return ufc_simplex(1)
+    elif celltype == "triangle":
+        return ufc_simplex(2)
+    elif celltype == "tetrahedron":
+        return ufc_simplex(3)
+    else:
+        raise RuntimeError("Don't know how to create UFC cell of type %s" % str(celltype))
+
+
+def two_product_cell( A, B ):
+    """Build a product cell from input cells A and B."""
+
+    # vertices
+    verts = tuple([ a_coord + b_coord for a_coord in A.get_vertices() \
+                                for b_coord in B.get_vertices() ])
+    # topology
+    Atop = A.get_topology()
+    Btop = B.get_topology()
+    topology = {}
+    Asd = A.get_spatial_dimension()
+    Bsd = B.get_spatial_dimension()
+    Bvcount = len(Bref.get_vertices())
+    sd_max = Asd + Bsd
+    for dim in range (0, sd_max + 1):
+        topology[dim] = {}
+        dim_cur = 0
+        for curAdim in range(0, Asd + 1):
+            curBdim = dim - curAdim
+            # make sure we have enough dimensions to play with
+            if curBdim in Btop:
+                for thingA in Atop[curAdim]:
+                    for thingB in Btop[curBdim]:
+                        topology[dim][dim_cur] = \
+                          [x*Bvcount + y for x in Atop[curAdim][thingA] \
+                          for y in Btop[curBdim][thingB]]
+                        dim_cur += 1
+    # no idea how shape is used, needs to be replaced later.  pass in 99 for now.
+    return ReferenceElement( TENSORPRODUCT , verts , topology )
+
 
 def volume( verts ):
     """Constructs the volume of the simplex spanned by verts"""

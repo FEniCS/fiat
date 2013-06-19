@@ -17,7 +17,7 @@
 
 import numpy
 from .finite_element import FiniteElement
-from .reference_element import ReferenceElement
+from .reference_element import ReferenceElement, two_product_cell
 from .polynomial_set import mis
 
 class TensorFiniteElement( FiniteElement ):
@@ -34,35 +34,7 @@ class TensorFiniteElement( FiniteElement ):
 
         # set up reference element - basically just to get spatial dim,
         # but also have a go at topology.
-        Aref = self.A.get_reference_element()
-        Bref = self.B.get_reference_element()
-
-        # vertices - should be a tuple, but I can't figure out the syntax
-        verts = [ a_coord + b_coord for a_coord in Aref.get_vertices() \
-                                    for b_coord in Bref.get_vertices() ]
-        # topology
-        Atop = Aref.get_topology()
-        Btop = Bref.get_topology()
-        topology = {}
-        Asd = Aref.get_spatial_dimension()
-        Bsd = Bref.get_spatial_dimension()
-        Bvcount = len(Bref.get_vertices())
-        sd_max = Asd + Bsd
-        for dim in range (0, sd_max + 1):
-            topology[dim] = {}
-            dim_cur = 0
-            for curAdim in range(0, Asd + 1):
-                curBdim = dim - curAdim
-                # make sure we have enough dimensions to play with
-                if curBdim in Btop:
-                    for thingA in Atop[curAdim]:
-                        for thingB in Btop[curBdim]:
-                            topology[dim][dim_cur] = \
-                              [x*Bvcount + y for x in Atop[curAdim][thingA] \
-                              for y in Btop[curBdim][thingB]]
-                            dim_cur += 1
-
-        self.ref_el = ReferenceElement( 99 , verts , topology )
+        self.ref_el = two_product_cell(self.A.get_reference_element(), self.B.get_reference_element())
 
         if A.mapping()[0] <> "affine":
             self._mapping = A.mapping()[0]
