@@ -44,4 +44,5 @@ extra_elements = {"P0":              P0,
 
 # Important functionality
 from .quadrature import make_quadrature
+from .reference_element import ufc_cell
 from .reference_element import ufc_simplex

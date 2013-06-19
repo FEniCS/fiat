@@ -494,6 +494,8 @@ def default_simplex( spatial_dim ):
         return DefaultTriangle()
     elif spatial_dim == 3:
         return DefaultTetrahedron()
+    else:
+        raise RuntimeError("Can't create default simplex of dimension %s." % str(spatial_dim))
 
 def ufc_simplex( spatial_dim ):
     """Factory function that maps spatial dimension to an instance of
@@ -504,6 +506,8 @@ def ufc_simplex( spatial_dim ):
         return UFCTriangle()
     elif spatial_dim == 3:
         return UFCTetrahedron()
+    else:
+        raise RuntimeError("Can't create UFC simplex of dimension %s." % str(spatial_dim))
 
 def ufc_cell( celltype ):
     """Factory function that maps spatial dimension to an instance of
