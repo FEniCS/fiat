@@ -136,15 +136,15 @@ class TensorFiniteElement( FiniteElement ):
         # if someone then tries to make a new "tensor finite
         # element" where one component is already a
         # tensor-valued space!
-        A_valuedim = len(Atab[(0,)*Asdim].shape) # scalar: 2, vector: 3
-        B_valuedim = len(Btab[(0,)*Bsdim].shape) # scalar: 2, vector: 3
-        if A_valuedim + B_valuedim > 5:
+        A_valuedim = len(self.A.value_shape()) # scalar: 0, vector: 1
+        B_valuedim = len(self.B.value_shape()) # scalar: 0, vector: 1
+        if A_valuedim + B_valuedim > 1:
             raise Exception("tabulate does not support two vector-valued inputs... yet")
         result = {}
         for i in range( order + 1 ):
             alphas = mis( Asdim+Bsdim , i ) # thanks, Rob!
             for alpha in alphas:
-                if A_valuedim == 2 and B_valuedim == 2:
+                if A_valuedim == 0 and B_valuedim == 0:
                     # for each point, get outer product of (A's basis
                     # functions f1, f2, ... evaluated at that point)
                     # with (B's basis functions g1, g2, ... evaluated
@@ -160,7 +160,7 @@ class TensorFiniteElement( FiniteElement ):
                         Btab[alpha[Asdim:Asdim+Bsdim]][...,j])\
                         .ravel() for j in range(npoints)])
                     result[alpha] = temp.transpose()
-                elif A_valuedim == 3 and B_valuedim == 2:
+                elif A_valuedim == 1 and B_valuedim == 0:
                     # similar to above, except A's basis functions
                     # are now vector-valued. numpy.outer flattens the
                     # array, so it's like taking the OP of
@@ -181,7 +181,7 @@ class TensorFiniteElement( FiniteElement ):
                                     .transpose(0,2,1,3)\
                                     .reshape((temp.shape[0],2,-1))\
                                     .transpose(2,1,0)
-                elif A_valuedim == 2 and B_valuedim == 3:
+                elif A_valuedim == 0 and B_valuedim == 1:
                     # as above, with B's functions now vector-valued.
                     # we now do... [numpy.outer ... for ...] gives
                     # temp[point][f_i][g1x,g1y,g2x,g2y,...].
@@ -199,7 +199,14 @@ class TensorFiniteElement( FiniteElement ):
 
     def value_shape(self):
         """Return the value shape of the finite element functions."""
-        raise NotImplementedError("value_shape not implemented")
+        if len(self.A.value_shape()) == 0 and len(self.B.value_shape()) == 0:
+            return ()
+        elif len(self.A.value_shape()) == 1 and len(self.B.value_shape()) == 0:
+            return (self.A.value_shape()[0]+1,)
+        elif len(self.A.value_shape()) == 0 and len(self.B.value_shape()) == 1:
+            return (self.B.value_shape()[0]+1,)
+        else:
+            raise NotImplementedError("value_shape not implemented")
 
     def dmats(self):
         """Return dmats: expansion coefficients for basis function
