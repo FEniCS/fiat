@@ -521,8 +521,7 @@ def ufc_cell( cell ):
         celltype = cell.cellname()
 
     if celltype == "TwoProductCell":
-        # FIXME
-        return two_product_cell()
+        return two_product_cell(cell._A, cell._B)
     elif celltype == "interval":
         return ufc_simplex(1)
     elif celltype == "triangle":
@@ -545,7 +544,7 @@ def two_product_cell( A, B ):
     topology = {}
     Asd = A.get_spatial_dimension()
     Bsd = B.get_spatial_dimension()
-    Bvcount = len(Bref.get_vertices())
+    Bvcount = len(B.get_vertices())
     sd_max = Asd + Bsd
     for dim in range (0, sd_max + 1):
         topology[dim] = {}
