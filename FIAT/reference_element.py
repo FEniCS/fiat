@@ -541,24 +541,20 @@ def two_product_cell( A, B ):
     # topology
     Atop = A.get_topology()
     Btop = B.get_topology()
-    topology = {}
-    Asd = A.get_spatial_dimension()
-    Bsd = B.get_spatial_dimension()
     Bvcount = len(B.get_vertices())
-    sd_max = Asd + Bsd
-    for dim in range (0, sd_max + 1):
-        topology[dim] = {}
-        dim_cur = 0
-        for curAdim in range(0, Asd + 1):
-            curBdim = dim - curAdim
-            # make sure we have enough dimensions to play with
-            if curBdim in Btop:
-                for thingA in Atop[curAdim]:
-                    for thingB in Btop[curBdim]:
-                        topology[dim][dim_cur] = \
-                          [x*Bvcount + y for x in Atop[curAdim][thingA] \
-                          for y in Btop[curBdim][thingB]]
-                        dim_cur += 1
+    topology = {}
+
+    for curAdim in Atop:
+        for curBdim in Btop:
+            topology[(curAdim,curBdim)] = {}
+            dim_cur = 0
+            for thingA in Atop[curAdim]:
+                for thingB in Btop[curBdim]:
+                    topology[(curAdim,curBdim)][dim_cur] = \
+                      [x*Bvcount + y for x in Atop[curAdim][thingA] \
+                      for y in Btop[curBdim][thingB]]
+                    dim_cur += 1
+
     # no idea how shape is used, needs to be replaced later.  pass in 99 for now.
     return ReferenceElement( TENSORPRODUCT , verts , topology )
 

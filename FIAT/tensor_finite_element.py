@@ -32,8 +32,7 @@ class TensorFiniteElement( FiniteElement ):
         self.order = min(self.A.get_order(), self.B.get_order())
         self.fsdim = self.A.space_dimension() * self.B.space_dimension()
 
-        # set up reference element - basically just to get spatial dim,
-        # but also have a go at topology.
+        # set up reference element
         self.ref_el = two_product_cell(self.A.get_reference_element(), self.B.get_reference_element())
 
         if A.mapping()[0] <> "affine":
@@ -46,25 +45,36 @@ class TensorFiniteElement( FiniteElement ):
         # set up entity_ids
         Adofs = self.A.entity_dofs()
         Bdofs = self.B.entity_dofs()
-        Adim = max(sorted(Adofs))
-        Bdim = max(sorted(Bdofs))
         Bsdim = self.B.space_dimension()
         self.entity_ids = {}
 
-        dim_max = Adim + Bdim
-        for dim in range(0,dim_max+1):
-            self.entity_ids[dim] = {}
+        for curAdim in Adofs:
+            for curBdim in Bdofs:
+                self.entity_ids[(curAdim,curBdim)] = {}
+                dim_cur = 0
+                for entityA in Adofs[curAdim]:
+                    for entityB in Bdofs[curBdim]:
+                        self.entity_ids[(curAdim,curBdim)][dim_cur] = \
+                          [x*Bsdim + y for x in Adofs[curAdim][entityA] \
+                          for y in Bdofs[curBdim][entityB]]
+                        dim_cur += 1
+
+        self.flattened_entity_ids = {}
+        if (Bsdim == 1):
+            vertlist = [0]
+        else:
+            vertlist = range(1, Bsdim+1)
+            vertlist[0] = 0
+            vertlist[-1] = 1
+
+        for curAdim in Adofs:
+            self.flattened_entity_ids[curAdim] = {}
             dim_cur = 0
-            for curAdim in range(0,Adim+1):
-                curBdim = dim-curAdim
-                # make sure we have enough dimensions to play with
-                if curBdim in Bdofs:
-                    for entityA in Adofs[curAdim]:
-                        for entityB in Bdofs[curBdim]:
-                            self.entity_ids[dim][dim_cur] = \
-                              [x*Bsdim + y for x in Adofs[curAdim][entityA] \
-                              for y in Bdofs[curBdim][entityB]]
-                            dim_cur += 1
+            for entityA in Adofs[curAdim]:
+                self.flattened_entity_ids[curAdim][dim_cur] = \
+                  [x*Bsdim + y for x in Adofs[curAdim][entityA] \
+                  for y in vertlist]
+                dim_cur += 1
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
@@ -96,6 +106,12 @@ class TensorFiniteElement( FiniteElement ):
         """Return the map of topological entities to degrees of
         freedom for the finite element."""
         return self.entity_ids
+
+    def flattened_entity_dofs(self):
+        """ Return the flattened (w.r.t. 2nd component) map of topological
+        entities to degrees of freedom. Assumes product is something
+        crossed with an interval"""
+        return self.flattened_entity_ids
 
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
