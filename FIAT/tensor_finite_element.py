@@ -72,8 +72,8 @@ class TensorFiniteElement( FiniteElement ):
             dim_cur = 0
             for entityA in Adofs[curAdim]:
                 self.flattened_entity_ids[curAdim][dim_cur] = \
-                  [x*Bsdim + y for x in Adofs[curAdim][entityA] \
-                  for y in vertlist]
+                  [x*Bsdim + y for y in vertlist \
+                  for x in Adofs[curAdim][entityA]]
                 dim_cur += 1
 
     def degree(self):
