@@ -521,7 +521,8 @@ def ufc_cell( cell ):
         celltype = cell.cellname()
 
     if celltype == "TwoProductCell":
-        return two_product_cell(cell._A, cell._B)
+        # cell is a UFL cell
+        return two_product_cell(ufc_cell(cell._A), ufc_cell(cell._B))
     elif celltype == "interval":
         return ufc_simplex(1)
     elif celltype == "triangle":
