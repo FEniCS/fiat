@@ -218,9 +218,9 @@ class TensorFiniteElement( FiniteElement ):
         if len(self.A.value_shape()) == 0 and len(self.B.value_shape()) == 0:
             return ()
         elif len(self.A.value_shape()) == 1 and len(self.B.value_shape()) == 0:
-            return (self.A.value_shape()[0]+1,)
+            return (self.A.value_shape()[0]+self.B.get_reference_element            ().get_spatial_dimension(),)
         elif len(self.A.value_shape()) == 0 and len(self.B.value_shape()) == 1:
-            return (self.B.value_shape()[0]+1,)
+            return (self.B.value_shape()[0]+self.A.get_reference_element            ().get_spatial_dimension(),)
         else:
             raise NotImplementedError("value_shape not implemented")
 
