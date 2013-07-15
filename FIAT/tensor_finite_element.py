@@ -59,23 +59,6 @@ class TensorFiniteElement( FiniteElement ):
                           for y in Bdofs[curBdim][entityB]]
                         dim_cur += 1
 
-        self.flattened_entity_ids = {}
-        if (Bsdim == 1):
-            vertlist = [0]
-        else:
-            vertlist = range(1, Bsdim+1)
-            vertlist[0] = 0
-            vertlist[-1] = 1
-
-        for curAdim in Adofs:
-            self.flattened_entity_ids[curAdim] = {}
-            dim_cur = 0
-            for entityA in Adofs[curAdim]:
-                self.flattened_entity_ids[curAdim][dim_cur] = \
-                  [x*Bsdim + y for y in vertlist \
-                  for x in Adofs[curAdim][entityA]]
-                dim_cur += 1
-
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
@@ -107,11 +90,62 @@ class TensorFiniteElement( FiniteElement ):
         freedom for the finite element."""
         return self.entity_ids
 
-    def flattened_entity_dofs(self):
-        """ Return the flattened (w.r.t. 2nd component) map of topological
-        entities to degrees of freedom. Assumes product is something
-        crossed with an interval"""
-        return self.flattened_entity_ids
+    def flattened_element(self):
+        """Return a reduced-functionality element with B's entity dofs squashed
+        down onto A's. Assumes the second element is an interval."""
+
+        class FlattenedElement( FiniteElement ):
+
+            def __init__(self, A, B):
+                # set up simple things
+                self.polydegree = max(A.degree(), B.degree())
+                self.fsdim = A.space_dimension() * B.space_dimension()
+
+                # set up reference element
+                self.ref_el = A.get_reference_element()
+
+                # set up entity_ids
+                # Return the flattened (w.r.t. 2nd component) map of topological
+                # entities to degrees of freedom. Assumes product is something
+                # crossed with an interval"""
+                Adofs = A.entity_dofs()
+                Bdofs = B.entity_dofs()
+                Bsdim = B.space_dimension()
+                self.entity_ids = {}
+                if (Bsdim == 1):
+                    vertlist = [0]
+                else:
+                    vertlist = range(1, Bsdim+1)
+                    vertlist[0] = 0
+                    vertlist[-1] = 1
+
+                for curAdim in Adofs:
+                    self.entity_ids[curAdim] = {}
+                    dim_cur = 0
+                    for entityA in Adofs[curAdim]:
+                        self.entity_ids[curAdim][dim_cur] = \
+                          [x*Bsdim + y for y in vertlist \
+                          for x in Adofs[curAdim][entityA]]
+                        dim_cur += 1
+
+            def degree(self):
+                """Return the degree of the (embedding) polynomial space."""
+                return self.polydegree
+
+            def entity_dofs(self):
+                """Return the map of topological entities to degrees of
+                freedom for the finite element."""
+                return self.entity_ids
+
+            def get_reference_element( self ):
+                """Return the reference element for the finite element."""
+                return self.ref_el
+
+            def space_dimension(self):
+                """Return the dimension of the finite element space."""
+                return self.fsdim
+
+        return FlattenedElement( self.A, self.B )
 
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
