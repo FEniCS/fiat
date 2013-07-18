@@ -165,8 +165,8 @@ class TensorProductQuadratureRule(QuadratureRule):
     combining the quadrature rules of the two components"""
     def __init__( self , ref_el , m ):
         # Get quadrature rules of subcomponents
-        quadA = make_quadrature( ref_el.A, m[0] )
-        quadB = make_quadrature( ref_el.B, m[1] )
+        quadA = make_quadrature( ref_el.A, m )
+        quadB = make_quadrature( ref_el.B, m )
 
         # Combine them. Coordinates are "concatenated", weights are multiplied
         pts = tuple([pt_a + pt_b for pt_a in quadA.pts for pt_b in quadB.pts ])
@@ -177,7 +177,7 @@ class TensorProductQuadratureRule(QuadratureRule):
 def make_quadrature( ref_el , m ):
     """Returns the collapsed quadrature rule using m points per
     direction on the given reference element. In the tensor product
-    case, m must be a tuple. """
+    case, m WILL need to be a tuple BUT NOT YET. """
 
     if isinstance(m, int):
         msg = "Expecting at least one (not %d) quadrature point per direction" % m
@@ -190,10 +190,6 @@ def make_quadrature( ref_el , m ):
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule( ref_el , m )
     elif ref_el.get_shape() == reference_element.TENSORPRODUCT:
-        if not isinstance(m, tuple):
-            raise Exception("quadrature degree must be a 2-tuple")
-        if len(m) != 2:
-            raise Exception("quadrature degree must be a 2-tuple")
         return TensorProductQuadratureRule( ref_el, m )
 
 # rule to get Gauss-Jacobi points
