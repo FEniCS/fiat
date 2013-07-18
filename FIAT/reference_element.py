@@ -449,6 +449,33 @@ class UFCTetrahedron( ReferenceElement ):
         return -2.0*n/numpy.linalg.norm(n)
 
 
+class two_product_cell( ReferenceElement ):
+    """A cell that is the product of FIAT cells A and B"""
+    def __init__( self, A, B ):
+        self.A = A
+        self.B = B
+        # vertices
+        verts = tuple([ a_coord + b_coord for a_coord in A.get_vertices() \
+                                    for b_coord in B.get_vertices() ])
+        # topology
+        Atop = A.get_topology()
+        Btop = B.get_topology()
+        Bvcount = len(B.get_vertices())
+        topology = {}
+        for curAdim in Atop:
+            for curBdim in Btop:
+                topology[(curAdim,curBdim)] = {}
+                dim_cur = 0
+                for thingA in Atop[curAdim]:
+                    for thingB in Btop[curBdim]:
+                        topology[(curAdim,curBdim)][dim_cur] = \
+                          [x*Bvcount + y for x in Atop[curAdim][thingA] \
+                          for y in Btop[curBdim][thingB]]
+                        dim_cur += 1
+
+        ReferenceElement.__init__( self , TENSORPRODUCT , verts , topology )
+
+
 def make_affine_mapping( xs , ys ):
     """Constructs (A,b) such that x --> A * x + b is the affine
     mapping from the simplex defined by xs to the simplex defined by ys."""
@@ -531,33 +558,6 @@ def ufc_cell( cell ):
         return ufc_simplex(3)
     else:
         raise RuntimeError("Don't know how to create UFC cell of type %s" % str(celltype))
-
-
-def two_product_cell( A, B ):
-    """Build a product cell from input cells A and B."""
-
-    # vertices
-    verts = tuple([ a_coord + b_coord for a_coord in A.get_vertices() \
-                                for b_coord in B.get_vertices() ])
-    # topology
-    Atop = A.get_topology()
-    Btop = B.get_topology()
-    Bvcount = len(B.get_vertices())
-    topology = {}
-
-    for curAdim in Atop:
-        for curBdim in Btop:
-            topology[(curAdim,curBdim)] = {}
-            dim_cur = 0
-            for thingA in Atop[curAdim]:
-                for thingB in Btop[curBdim]:
-                    topology[(curAdim,curBdim)][dim_cur] = \
-                      [x*Bvcount + y for x in Atop[curAdim][thingA] \
-                      for y in Btop[curBdim][thingB]]
-                    dim_cur += 1
-
-    # no idea how shape is used, needs to be replaced later.  pass in 99 for now.
-    return ReferenceElement( TENSORPRODUCT , verts , topology )
 
 
 def volume( verts ):
