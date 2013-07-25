@@ -36,7 +36,7 @@ supported_elements = {"Argyris":                  Argyris,
                       "Nedelec 1st kind H(curl)": Nedelec,
                       "Nedelec 2nd kind H(curl)": NedelecSecondKind,
                       "Raviart-Thomas":           RaviartThomas,
-                      "TensorTwoProductElement":  TensorFiniteElement}
+                      "OuterProductElement":      TensorFiniteElement}
 
 # List of extra elements
 extra_elements = {"P0":              P0,
