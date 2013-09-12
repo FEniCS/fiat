@@ -19,6 +19,8 @@ import numpy
 from .finite_element import FiniteElement
 from .reference_element import ReferenceElement, two_product_cell
 from .polynomial_set import mis
+from . import dual_set
+from . import functional
 
 class TensorFiniteElement( FiniteElement ):
     """Class implementing a finite element that is the tensor product
@@ -59,6 +61,29 @@ class TensorFiniteElement( FiniteElement ):
                           for y in Bdofs[curBdim][entityB]]
                         dim_cur += 1
 
+        # set up dual basis
+        Adual = self.A.get_dual_set()
+        Bdual = self.B.get_dual_set()
+        Anodes = Adual.get_nodes()
+        Bnodes = Bdual.get_nodes()
+
+        # for now, only handle point eval
+        for Anode in Anodes:
+            if not isinstance(Anode, functional.PointEvaluation):
+                raise Exception("can only handle Point Evaluation")
+        for Bnode in Bnodes:
+            if not isinstance(Bnode, functional.PointEvaluation):
+                raise Exception("can only handle Point Evaluation")
+
+        # the point coordinates are stored as the key of a one-item
+        # dictionary, retrieved by calling get_point_dict().
+        # the following line concatenates coordinates, and initialises
+        # a functional.PointEvaluation on each pair
+
+        nodes = [ functional.PointEvaluation( self.ref_el , Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ) for Anode in Anodes for Bnode in Bnodes ]
+
+        self.dual = dual_set.DualSet(nodes, self.ref_el, self.entity_ids)
+
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
@@ -74,7 +99,7 @@ class TensorFiniteElement( FiniteElement ):
 
     def get_dual_set( self ):
         """Return the dual for the finite element."""
-        raise NotImplementedError("get_dual_set not implemented")
+        return self.dual
 
     def get_order( self ):
         """Return the order of the element (may be different from the degree)."""
@@ -83,7 +108,7 @@ class TensorFiniteElement( FiniteElement ):
     def dual_basis(self):
         """Return the dual basis (list of functionals) for the finite
         element."""
-        raise NotImplementedError("dual_basis not implemented")
+        return self.dual.get_nodes()
 
     def entity_dofs(self):
         """Return the map of topological entities to degrees of
