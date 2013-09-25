@@ -67,20 +67,78 @@ class TensorFiniteElement( FiniteElement ):
         Anodes = Adual.get_nodes()
         Bnodes = Bdual.get_nodes()
 
-        # for now, only handle point eval
+        # build the dual set by inspecting the current dual
+        # sets item by item.
+        # Currently supported cases:
+        # PointEval x PointEval = PointEval [scalar x scalar = scalar]
+        # PointScaledNormalEval x PointEval = PointScaledNormalEval [vector x scalar = vector]
+        # ComponentPointEvaluation x PointEval [vector x scalar = vector]
+        nodes = []
         for Anode in Anodes:
-            if not isinstance(Anode, functional.PointEvaluation):
-                raise Exception("can only handle Point Evaluation")
-        for Bnode in Bnodes:
-            if not isinstance(Bnode, functional.PointEvaluation):
-                raise Exception("can only handle Point Evaluation")
+            if isinstance(Anode, functional.PointEvaluation):
+                for Bnode in Bnodes:
+                    if isinstance(Bnode, functional.PointEvaluation):
+                        # case: PointEval x PointEval
+                        # the PointEval functional just requires the
+                        # coordinates. these are currently stored as
+                        # the key of a one-item dictionary. we retrieve
+                        # these by calling get_point_dict(), and
+                        # use the concatenation to make a new PointEval
+                        nodes.append(functional.PointEvaluation( self.ref_el , Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ))
+                    else:
+                        raise Exception("unsupported functional type")
 
-        # the point coordinates are stored as the key of a one-item
-        # dictionary, retrieved by calling get_point_dict().
-        # the following line concatenates coordinates, and initialises
-        # a functional.PointEvaluation on each pair
+            elif isinstance(Anode, functional.PointScaledNormalEvaluation):
+                for Bnode in Bnodes:
+                    if isinstance(Bnode, functional.PointEvaluation):
+                        # case: PointScaledNormalEval x PointEval
+                        # this could be wrong if the second shape
+                        # has spatial dimension >1, since we are not
+                        # explicitly scaling by facet size
+                        if len(Bnode.get_point_dict().keys()[0]) > 1:
+                        # TODO: support this case one day
+                            raise Exception("PointScaledNormalEval x PointEval is not yet supported if the second shape has dimension > 1")
+                        # We cannot make a new functional.PSNEval in
+                        # the natural way, since it tries to compute
+                        # the normal vector by itself.
+                        # Instead, we create things manually, and
+                        # call Functional() with these arguments
+                        sd = self.ref_el.get_spatial_dimension()
+                        shp = (sd,)
+                        # The pt_dict is a one-item dictionary containing
+                        # the details of the functional.
+                        # The key is the spatial coordinate, which
+                        # is just a concatenation of the two parts.
+                        # The value is a list of tuples, representing
+                        # the normal vector (scaled by the volume of
+                        # the facet) at that point.
+                        # Each tuple looks like (foo, (i,)); the i'th
+                        # component of the scaled normal is foo.
 
-        nodes = [ functional.PointEvaluation( self.ref_el , Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ) for Anode in Anodes for Bnode in Bnodes ]
+                        # The following line is only valid when the second
+                        # shape has spatial dimension 1 (enforced above)
+                        pt_dict = { Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] : Anode.get_point_dict().values()[0] + [(0.0, (len(Anode.get_point_dict().keys()[0]),))] }
+
+                        # The following line should be used in the
+                        # general case
+                        #pt_dict = { Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] : Anode.get_point_dict().values()[0] + [(0.0, (ii,)) for ii in range(len(Anode.get_point_dict().keys()[0]),len(Anode.get_point_dict().keys()[0])+len(Bnode.get_point_dict().keys()[0]))] }
+
+                        nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointScaledNormalEval" ))
+                    else:
+                        raise Exception("unsupported functional type")
+
+            elif isinstance(Anode, functional.ComponentPointEvaluation):
+                for Bnode in Bnodes:
+                    if isinstance(Bnode, functional.PointEvaluation):
+                        # case: ComponentPointEval x PointEval
+                        # the CptPointEval functional requires the component
+                        # and the coordinates. very similar to PE x PE case.
+                        sd = self.ref_el.get_spatial_dimension()
+                        nodes.append(functional.ComponentPointEvaluation( self.ref_el , Anode.comp, (sd,), Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ))
+                    else:
+                        raise Exception("unsupported functional type")
+            else:
+                raise Exception("unsupported functional type")
 
         self.dual = dual_set.DualSet(nodes, self.ref_el, self.entity_ids)
 
@@ -277,9 +335,9 @@ class TensorFiniteElement( FiniteElement ):
         if len(self.A.value_shape()) == 0 and len(self.B.value_shape()) == 0:
             return ()
         elif len(self.A.value_shape()) == 1 and len(self.B.value_shape()) == 0:
-            return (self.A.value_shape()[0]+self.B.get_reference_element            ().get_spatial_dimension(),)
+            return (self.A.value_shape()[0]+self.B.get_reference_element().get_spatial_dimension(),)
         elif len(self.A.value_shape()) == 0 and len(self.B.value_shape()) == 1:
-            return (self.B.value_shape()[0]+self.A.get_reference_element            ().get_spatial_dimension(),)
+            return (self.B.value_shape()[0]+self.A.get_reference_element().get_spatial_dimension(),)
         else:
             raise NotImplementedError("value_shape not implemented")
 
