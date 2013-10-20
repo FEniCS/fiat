@@ -95,6 +95,24 @@ class ReferenceElement:
         self.shape = shape
         self.vertices = vertices
         self.topology = topology
+
+        # Given the topology, work out for each entity in the cell,
+        # which other entities it contains.
+        self.sub_entities = {}
+        for dim, entities in topology.iteritems():
+            self.sub_entities[dim] = {}
+
+            for e, v in entities.iteritems():
+                vertices = frozenset(v)
+                sub_entities = []
+
+                for dim_, entities_ in topology.iteritems():
+                    for e_, vertices_ in entities_.iteritems():
+                        if vertices.issuperset(vertices_):
+                            sub_entities.append((dim_,e_))
+
+                self.sub_entities[dim][e] = sorted(sub_entities)
+
     def get_shape( self ):
         """Returns the code for the element's shape."""
         return self.shape
