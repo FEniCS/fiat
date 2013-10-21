@@ -22,10 +22,26 @@ class DualSet:
         self.nodes = nodes
         self.ref_el = ref_el
         self.entity_ids = entity_ids
+
+        # Compute the nodes on the closure of each sub_entity.
+        self.entity_closure_ids = {}
+        for dim, entities in ref_el.sub_entities.iteritems():
+            self.entity_closure_ids[dim] = {}
+
+            for e, sub_entities in entities.iteritems():
+                ids = []
+
+                for d, se in sub_entities:
+                    ids += self.entity_ids[d][se]
+                self.entity_closure_ids[d][e] = ids
+
         return
 
     def get_nodes( self ):
         return self.nodes
+
+    def get_entity_closure_ids( self ):
+        return self.entity_closure_ids
 
     def get_entity_ids( self ):
         return self.entity_ids

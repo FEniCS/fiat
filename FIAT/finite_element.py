@@ -106,6 +106,11 @@ class FiniteElement:
         freedom for the finite element."""
         return self.dual.get_entity_ids()
 
+    def entity_closure_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom on the closure of those entities for the finite element."""
+        return self.dual.get_entity_closure_ids()
+
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
         finite element."""
