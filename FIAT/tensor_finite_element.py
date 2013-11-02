@@ -230,6 +230,18 @@ class TensorFiniteElement( FiniteElement ):
 
         return FlattenedElement( self.A, self.B )
 
+    def get_lower_mask(self):
+        temp = self.entity_closure_dofs().keys()
+        temp.sort()
+        # temp[-2] is e.g. (2, 0) for wedges; ((1, 1), 0) for cubes
+        # temp[-1] is of course (2, 1) or ((1, 1), 1)
+        return self.entity_closure_dofs()[temp[-2]][0]
+
+    def get_upper_mask(self):
+        temp = self.entity_closure_dofs().keys()
+        temp.sort()
+        return self.entity_closure_dofs()[temp[-2]][1]
+
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
         finite element."""
