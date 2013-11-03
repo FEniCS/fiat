@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2012 Robert C. Kirby (Texas Tech University)
+# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This file is part of FIAT.
 #
@@ -155,7 +156,8 @@ class RaviartThomas( finite_element.FiniteElement ):
         degree = q - 1
         poly_set = RTSpace( ref_el , degree )
         dual = RTDualSet( ref_el , degree )
-        finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
+        formdegree = ref_el.get_spatial_dimension() - 1 # (n-1)-form
+        finite_element.FiniteElement.__init__( self , poly_set , dual , degree , formdegree,
                                                mapping="contravariant piola")
         return
 
