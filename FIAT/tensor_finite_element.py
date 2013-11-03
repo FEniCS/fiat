@@ -330,15 +330,11 @@ class TensorFiniteElement( FiniteElement ):
                     Atab[alpha[0:Asdim]][...,j], \
                     Btab[alpha[Asdim:Asdim+Bsdim]][...,j]) \
                     for j in range(npoints)])
-                    # previously had result[alpha] = temp.reshape...
-                    # change this so that we expand to give a vector of a different length
                     temp2 = temp.reshape((temp.shape[0],temp.shape[1]/2,2,temp.shape[2]))\
                                     .transpose(0,2,1,3)\
                                     .reshape((temp.shape[0],2,-1))\
                                     .transpose(2,1,0)
-                    temp3 = numpy.zeros((temp2.shape[0],Asdim+Bsdim,temp2.shape[2]))
-                    temp3[:,:Asdim,:] = temp2[:,:,:]
-                    result[alpha] = temp3
+                    result[alpha] = temp2
                 elif A_valuedim == 0 and B_valuedim == 1:
                     # as above, with B's functions now vector-valued.
                     # we now do... [numpy.outer ... for ...] gives
@@ -350,13 +346,10 @@ class TensorFiniteElement( FiniteElement ):
                     Atab[alpha[0:Asdim]][...,j], \
                     Btab[alpha[Asdim:Asdim+Bsdim]][...,j]) \
                     for j in range(len(Atab[alpha[0:Asdim]][0]))])
-                    # ditto
                     temp2 = temp.reshape((temp.shape[0],temp.shape[1],temp.shape[2]/2,2))\
                                     .reshape((temp.shape[0],-1,2))\
                                     .transpose(1,2,0)
-                    temp3 = numpy.zeros((temp2.shape[0],Asdim+Bsdim,temp2.shape[2]))
-                    temp3[:,Asdim:,:] = temp2[:,:,:]
-                    result[alpha] = temp3
+                    result[alpha] = temp2
         return result
 
     def value_shape(self):
@@ -364,9 +357,9 @@ class TensorFiniteElement( FiniteElement ):
         if len(self.A.value_shape()) == 0 and len(self.B.value_shape()) == 0:
             return ()
         elif len(self.A.value_shape()) == 1 and len(self.B.value_shape()) == 0:
-            return (self.A.value_shape()[0]+self.B.get_reference_element().get_spatial_dimension(),)
+            return (self.A.value_shape()[0],)
         elif len(self.A.value_shape()) == 0 and len(self.B.value_shape()) == 1:
-            return (self.B.value_shape()[0]+self.A.get_reference_element().get_spatial_dimension(),)
+            return (self.B.value_shape()[0],)
         else:
             raise NotImplementedError("value_shape not implemented")
 
