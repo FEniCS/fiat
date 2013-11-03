@@ -38,12 +38,14 @@ class TensorFiniteElement( FiniteElement ):
         # set up reference element
         self.ref_el = two_product_cell(self.A.get_reference_element(), self.B.get_reference_element())
 
-        if A.mapping()[0] <> "affine":
+        if A.mapping()[0] <> "affine" and B.mapping()[0] == "affine":
             self._mapping = A.mapping()[0]
-        elif B.mapping()[0] <> "affine":
+        elif B.mapping()[0] <> "affine" and A.mapping()[0] == "affine":
             self._mapping = B.mapping()[0]
-        else:
+        elif A.mapping()[0] == "affine" and B.mapping()[0] == "affine":
             self._mapping = "affine"
+        else:
+            raise Exception("check tensor product mappings - at least one must be affine")
 
         # set up entity_ids
         Adofs = self.A.entity_dofs()
