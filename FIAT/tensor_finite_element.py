@@ -34,6 +34,7 @@ class TensorFiniteElement( FiniteElement ):
         self.polydegree = max(self.A.degree(), self.B.degree())
         self.order = min(self.A.get_order(), self.B.get_order())
         self.fsdim = self.A.space_dimension() * self.B.space_dimension()
+        self.formdegree = A.get_formdegree() + B.get_formdegree()
 
         # set up reference element
         self.ref_el = two_product_cell(self.A.get_reference_element(), self.B.get_reference_element())
