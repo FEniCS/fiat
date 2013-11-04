@@ -25,6 +25,7 @@ from . import functional
 class TensorFiniteElement( FiniteElement ):
     """Class implementing a finite element that is the tensor product
     of two existing finite elements."""
+
     def __init__( self , A , B ):
         self.A = A
         self.B = B
@@ -160,7 +161,8 @@ class TensorFiniteElement( FiniteElement ):
         return self.dual
 
     def get_order( self ):
-        """Return the order of the element (may be different from the degree)."""
+        """Return the approximation order of the element (the largest n such
+        that all polynomials of degree n are contained in the space)."""
         return self.order
 
     def dual_basis(self):
@@ -231,6 +233,8 @@ class TensorFiniteElement( FiniteElement ):
         return FlattenedElement( self.A, self.B )
 
     def get_lower_mask(self):
+        """Return a list of dof indices corresponding to the lower
+        face of a TFE, assuming B is an interval"""
         temp = self.entity_closure_dofs().keys()
         temp.sort()
         # temp[-2] is e.g. (2, 0) for wedges; ((1, 1), 0) for cubes
@@ -238,6 +242,8 @@ class TensorFiniteElement( FiniteElement ):
         return self.entity_closure_dofs()[temp[-2]][0]
 
     def get_upper_mask(self):
+        """Return a list of dof indices corresponding to the upper
+        face of a TFE, assuming B is an interval"""
         temp = self.entity_closure_dofs().keys()
         temp.sort()
         return self.entity_closure_dofs()[temp[-2]][1]
