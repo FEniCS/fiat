@@ -160,19 +160,37 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
     def jacobian(self):
         return self._J
 
+class TensorProductQuadratureRule(QuadratureRule):
+    """Returns the quadrature rule for a TensorProduct cell, by
+    combining the quadrature rules of the two components"""
+    def __init__( self , ref_el , m ):
+        # Get quadrature rules of subcomponents
+        quadA = make_quadrature( ref_el.A, m )
+        quadB = make_quadrature( ref_el.B, m )
+
+        # Combine them. Coordinates are "concatenated", weights are multiplied
+        pts = tuple([pt_a + pt_b for pt_a in quadA.pts for pt_b in quadB.pts ])
+        wts = tuple([wt_a*wt_b for wt_a in quadA.wts for wt_b in quadB.wts ])
+        QuadratureRule.__init__( self , ref_el , pts , wts )
+
 
 def make_quadrature( ref_el , m ):
     """Returns the collapsed quadrature rule using m points per
-    direction on the given reference element."""
+    direction on the given reference element. In the tensor product
+    case, m WILL need to be a tuple BUT NOT YET. """
 
-    msg = "Expecting at least one (not %d) quadrature point per direction" % m
-    assert (m > 0), msg
+    if isinstance(m, int):
+        msg = "Expecting at least one (not %d) quadrature point per direction" % m
+        assert (m > 0), msg
+
     if ref_el.get_shape() == reference_element.LINE:
         return GaussJacobiQuadratureLineRule( ref_el , m )
     elif ref_el.get_shape() == reference_element.TRIANGLE:
         return CollapsedQuadratureTriangleRule( ref_el , m )
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule( ref_el , m )
+    elif ref_el.get_shape() == reference_element.TENSORPRODUCT:
+        return TensorProductQuadratureRule( ref_el, m )
 
 # rule to get Gauss-Jacobi points
 def compute_gauss_jacobi_points( a , b , m ):

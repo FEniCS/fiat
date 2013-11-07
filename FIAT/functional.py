@@ -73,6 +73,8 @@ class Functional:
         result = 0
 
         # non-derivative part
+        # the line below should be self.pt_dict
+        # however, if this hasn't broken anything, is it even being used?!
         for pt in pt_dict:
             wc_list = pt_dict[pt]
             for (w,c) in wc_list:
