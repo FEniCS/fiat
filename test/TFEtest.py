@@ -16,7 +16,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # First added:  2013-11-03
-# Last changed: 2013-11-03
+# Last changed: 2013-11-12
 
 import sys, numpy, FIAT
 
@@ -57,7 +57,9 @@ def test():
     P0P1_TTcurl = FIAT.Hcurl(P0P1_TT)
     P1P0_TTdiv = FIAT.Hdiv(P1P0_TT)
     P1P0_TTcurl = FIAT.Hcurl(P1P0_TT)
-    for C in [P0P1_TTdiv, P0P1_TTcurl, P1P0_TTdiv, P1P0_TTcurl]:
+    RT_square = FIAT.EnrichedElement(P0P1_TTdiv, P1P0_TTdiv)
+    Ned_square = FIAT.EnrichedElement(P0P1_TTcurl, P1P0_TTcurl)
+    for C in [P0P1_TTdiv, P0P1_TTcurl, P1P0_TTdiv, P1P0_TTcurl, RT_square, Ned_square]:
         assert C.value_shape() == (2,)
         C.tabulate(1, [(0.1, 0.2), (0.3, 0.4)])
     
@@ -135,8 +137,11 @@ def test():
     
     P2P0_STcurl = FIAT.Hcurl(P2P0_ST)
     #FIAT.Hdiv(P2P0_ST)
+    
+    BDMwedge = FIAT.EnrichedElement(BDM1P0_STdiv, P0P1_STdiv)
+    Nedwedge = FIAT.EnrichedElement(BDM1P1_STcurl, P2P0_STcurl)
 
-    for C in [BDM1P0_STdiv, P0P1_STdiv, BDM1P1_STcurl, P2P0_STcurl]:
+    for C in [BDM1P0_STdiv, P0P1_STdiv, BDM1P1_STcurl, P2P0_STcurl, BDMwedge, Nedwedge]:
         assert C.value_shape() == (3,)
         C.tabulate(1, [(0.1, 0.2, 0.3), (0.3, 0.4, 0.5)])
     
@@ -215,7 +220,11 @@ def test():
     
     P1P1P0_TTTcurl = FIAT.Hcurl(P1P1P0_TTT)
     
-    for C in [P0P0P1_TTTdiv, P0P1P0_TTTdiv_a, P0P1P0_TTTdiv_b, P1P0P0_TTTdiv_a, P1P0P0_TTTdiv_b, P0P1P1_TTTcurl_a, P0P1P1_TTTcurl_b, P1P0P1_TTTcurl_a, P1P0P1_TTTcurl_b, P1P1P0_TTTcurl]:
+    RT_cube = FIAT.EnrichedElement(FIAT.EnrichedElement(P0P0P1_TTTdiv, P0P1P0_TTTdiv_a), P1P0P0_TTTdiv_a)
+    
+    Ned_cube = FIAT.EnrichedElement(FIAT.EnrichedElement(P0P1P1_TTTcurl_a, P1P0P1_TTTcurl_a), P1P1P0_TTTcurl)
+    
+    for C in [P0P0P1_TTTdiv, P0P1P0_TTTdiv_a, P0P1P0_TTTdiv_b, P1P0P0_TTTdiv_a, P1P0P0_TTTdiv_b, P0P1P1_TTTcurl_a, P0P1P1_TTTcurl_b, P1P0P1_TTTcurl_a, P1P0P1_TTTcurl_b, P1P1P0_TTTcurl, RT_cube, Ned_cube]:
         assert C.value_shape() == (3,)
         C.tabulate(1, [(0.1, 0.2, 0.3), (0.3, 0.4, 0.5)])
 

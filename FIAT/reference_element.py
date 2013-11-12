@@ -475,6 +475,12 @@ class two_product_cell( ReferenceElement ):
 
         ReferenceElement.__init__( self , TENSORPRODUCT , verts , topology )
 
+    def __eq__(self, other):
+        if (self.A == other.A) and (self.B == other.B):
+            return True
+        else:
+            return False
+
 
 def make_affine_mapping( xs , ys ):
     """Constructs (A,b) such that x --> A * x + b is the affine

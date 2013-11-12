@@ -23,6 +23,7 @@ from FIAT.P0 import P0
 from FIAT.raviart_thomas import RaviartThomas
 from FIAT.crouzeix_raviart import CrouzeixRaviart
 from FIAT.tensor_finite_element import TensorFiniteElement
+from FIAT.enriched import EnrichedElement
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris":                  Argyris,
@@ -36,6 +37,7 @@ supported_elements = {"Argyris":                  Argyris,
                       "Nedelec 1st kind H(curl)": Nedelec,
                       "Nedelec 2nd kind H(curl)": NedelecSecondKind,
                       "Raviart-Thomas":           RaviartThomas,
+                      "EnrichedElement":          EnrichedElement,
                       "OuterProductElement":      TensorFiniteElement}
 
 # List of extra elements
