@@ -327,6 +327,12 @@ class UFCInterval( ReferenceElement ):
                      1 : edges }
         ReferenceElement.__init__( self , LINE , verts , topology )
 
+    def __eq__(self, other):
+        if isinstance(other, UFCInterval):
+            return True
+        else:
+            return False
+
 class DefaultTriangle( ReferenceElement ):
     """This is the reference triangle with vertices (-1.0,-1.0),
     (1.0,-1.0), and (-1.0,1.0)."""
@@ -356,6 +362,12 @@ class UFCTriangle( ReferenceElement ):
         t = self.compute_tangents(1, i)[0]
         n = numpy.array((t[1], -t[0]))
         return n/numpy.linalg.norm(n)
+
+    def __eq__(self, other):
+        if isinstance(other, UFCTriangle):
+            return True
+        else:
+            return False
 
 
 class IntrepidTriangle( ReferenceElement ):
@@ -447,6 +459,12 @@ class UFCTetrahedron( ReferenceElement ):
         t = self.compute_tangents(2, i)
         n = numpy.cross(t[0], t[1])
         return -2.0*n/numpy.linalg.norm(n)
+
+    def __eq__(self, other):
+        if isinstance(other, UFCTetrahedron):
+            return True
+        else:
+            return False
 
 
 class two_product_cell( ReferenceElement ):
