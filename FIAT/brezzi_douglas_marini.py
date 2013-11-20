@@ -1,4 +1,5 @@
 # Copyright (C) 2008-2012 Robert C. Kirby (Texas Tech University)
+# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This file is part of FIAT.
 #
@@ -92,7 +93,8 @@ class BrezziDouglasMarini( finite_element.FiniteElement ):
         sd = ref_el.get_spatial_dimension()
         poly_set = polynomial_set.ONPolynomialSet( ref_el , degree , (sd,) )
         dual = BDMDualSet( ref_el , degree )
-        finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
+        formdegree = sd-1 # (n-1)-form
+        finite_element.FiniteElement.__init__( self , poly_set , dual , degree, formdegree,
                                                mapping="contravariant piola")
 
         return

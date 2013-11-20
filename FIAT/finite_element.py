@@ -1,4 +1,5 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This file is part of FIAT.
 #
@@ -21,7 +22,7 @@ from .polynomial_set import PolynomialSet
 class FiniteElement:
     """Class implementing Ciarlet's abstraction of a finite element
     being a domain, function space, and set of nodes."""
-    def __init__( self , poly_set , dual , order, mapping="affine"):
+    def __init__( self , poly_set , dual , order, formdegree, mapping="affine"):
         # first, compare ref_el of poly_set and dual
         # need to overload equality
         #if poly_set.get_reference_element() != dual.get_reference_element:
@@ -29,6 +30,7 @@ class FiniteElement:
 
         # The order (degree) of the polynomial basis
         self.order = order
+        self.formdegree = formdegree
 
         self.ref_el = poly_set.get_reference_element()
         self.dual = dual
@@ -115,6 +117,10 @@ class FiniteElement:
         """Return the expansion coefficients for the basis of the
         finite element."""
         return self.poly_set.get_coeffs()
+
+    def get_formdegree(self):
+        """Return the degree of the associated form (FEEC)"""
+        return self.formdegree
 
     def mapping(self):
         """Return a list of appropriate mappings from the reference

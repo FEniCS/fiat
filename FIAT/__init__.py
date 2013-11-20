@@ -46,3 +46,4 @@ extra_elements = {"P0":              P0,
 from .quadrature import make_quadrature
 from .reference_element import ufc_cell
 from .reference_element import ufc_simplex
+from .hdivcurl import Hdiv, Hcurl

@@ -1,4 +1,5 @@
 # Copyright (C) 2010-2012 Marie E. Rognes
+# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This file is part of FIAT.
 #
@@ -229,11 +230,14 @@ class NedelecSecondKind(FiniteElement):
         # Construct dual space
         Ls = NedelecSecondKindDual(cell, degree)
 
+        # Set form degree
+        formdegree = 1 # 1-form
+
         # Set mapping
         mapping = "covariant piola"
 
         # Call init of super-class
-        FiniteElement.__init__(self, Ps, Ls, degree, mapping=mapping)
+        FiniteElement.__init__(self, Ps, Ls, degree, formdegree, mapping=mapping)
 
 
 if __name__=="__main__":
