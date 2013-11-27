@@ -1,4 +1,5 @@
-# Copyright (C) 2013 Robert C. Kirby's, Andrew T. T. McRae
+# Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+# Copyright (C) 2013 Andrew T. T. McRae
 #
 # This file is part of FIAT.
 #
@@ -207,6 +208,11 @@ class TensorFiniteElement( FiniteElement ):
                         continue
                     self.entity_ids[dimA] = {}
                     for ent in TFEdofs[(dimA, dimB)]:
+                        # this line is fairly magic.
+                        # it works because an interval has two points.
+                        # we pick up the dofs from the bottom point,
+                        # then the dofs from the interior of the interval,
+                        # then finally the dofs from the top point
                         self.entity_ids[dimA][ent] = \
                           TFEdofs[(dimA, 0)][2*ent] + TFEdofs[(dimA, 1)][ent] + TFEdofs[(dimA, 0)][2*ent+1]
 
