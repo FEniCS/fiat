@@ -114,26 +114,27 @@ class EnrichedElement( FiniteElement ):
 
         class FlattenedElement( FiniteElement ):
 
-            def __init__(self, A, B):
-                # take in flattened elements of A and B
+            def __init__(self, EFE):
+                A = EFE.A
+                B = EFE.B
                 self.polydegree = max(A.degree(), B.degree())
                 self.fsdim = A.space_dimension() + B.space_dimension()
 
                 # set up reference element
-                self.ref_el = A.get_reference_element()
+                self.ref_el = A.flattened_element().get_reference_element()
 
-                # set up entity_ids - concatenate those in flattened elements
-                Adofs = A.entity_dofs()
-                Bdofs = B.entity_dofs()
-                offset = A.space_dimension()  # number of entities belonging to A
+                # set up entity_ids - flatten the full element's dofs
+                dofs = EFE.entity_dofs()
                 self.entity_ids = {}
 
-                for ent_dim in Adofs:
-                    self.entity_ids[ent_dim] = {}
-                    for ent_dim_index in Adofs[ent_dim]:
-                        entlist = Adofs[ent_dim][ent_dim_index]
-                        entlist += [c + offset for c in Bdofs[ent_dim][ent_dim_index]]
-                        self.entity_ids[ent_dim][ent_dim_index] = entlist
+                for dimA, dimB in dofs:
+                    # dimB = 0 or 1.  only look at the 1s, then grab the data from 0s
+                    if dimB == 0:
+                        continue
+                    self.entity_ids[dimA] = {}
+                    for ent in dofs[(dimA, dimB)]:
+                        self.entity_ids[dimA][ent] = \
+                          dofs[(dimA, 0)][2*ent] + dofs[(dimA, 1)][ent] + dofs[(dimA, 0)][2*ent+1]
 
             def degree(self):
                 """Return the degree of the (embedding) polynomial space."""
@@ -153,7 +154,7 @@ class EnrichedElement( FiniteElement ):
                 return self.fsdim
 
         if isinstance(self.A, TensorFiniteElement):
-            return FlattenedElement(self.A.flattened_element(), self.B.flattened_element())
+            return FlattenedElement( self )
         else:
             raise Exception("Can only flatten TensorFiniteElements")
 

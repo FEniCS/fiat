@@ -184,8 +184,10 @@ class TensorFiniteElement( FiniteElement ):
 
         class FlattenedElement( FiniteElement ):
 
-            def __init__(self, A, B):
+            def __init__(self, TFE):
                 # set up simple things
+                A = TFE.A
+                B = TFE.B
                 self.polydegree = max(A.degree(), B.degree())
                 self.fsdim = A.space_dimension() * B.space_dimension()
 
@@ -196,25 +198,17 @@ class TensorFiniteElement( FiniteElement ):
                 # Return the flattened (w.r.t. 2nd component) map of topological
                 # entities to degrees of freedom. Assumes product is something
                 # crossed with an interval"""
-                Adofs = A.entity_dofs()
-                Bdofs = B.entity_dofs()
-                Bsdim = B.space_dimension()
+                TFEdofs = TFE.entity_dofs()
                 self.entity_ids = {}
-                if (Bsdim == 1):
-                    vertlist = [0]
-                else:
-                    vertlist = range(1, Bsdim+1)
-                    vertlist[0] = 0
-                    vertlist[-1] = 1
 
-                for curAdim in Adofs:
-                    self.entity_ids[curAdim] = {}
-                    dim_cur = 0
-                    for entityA in Adofs[curAdim]:
-                        self.entity_ids[curAdim][dim_cur] = \
-                          [x*Bsdim + y for y in vertlist \
-                          for x in Adofs[curAdim][entityA]]
-                        dim_cur += 1
+                for dimA, dimB in TFEdofs:
+                    # dimB = 0 or 1.  only look at the 1s, then grab the data from 0s
+                    if dimB == 0:
+                        continue
+                    self.entity_ids[dimA] = {}
+                    for ent in TFEdofs[(dimA, dimB)]:
+                        self.entity_ids[dimA][ent] = \
+                          TFEdofs[(dimA, 0)][2*ent] + TFEdofs[(dimA, 1)][ent] + TFEdofs[(dimA, 0)][2*ent+1]
 
             def degree(self):
                 """Return the degree of the (embedding) polynomial space."""
@@ -233,7 +227,7 @@ class TensorFiniteElement( FiniteElement ):
                 """Return the dimension of the finite element space."""
                 return self.fsdim
 
-        return FlattenedElement( self.A, self.B )
+        return FlattenedElement( self )
 
     def get_lower_mask(self):
         """Return a list of dof indices corresponding to the lower
