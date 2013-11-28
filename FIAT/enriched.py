@@ -33,11 +33,11 @@ class EnrichedElement( FiniteElement ):
         # - same mapping
         # - same value shape
         if not A.get_reference_element() == B.get_reference_element():
-            raise Exception("Elements must be defined on the same reference element")
+            raise ValueError("Elements must be defined on the same reference element")
         if not A.mapping()[0] == B.mapping()[0]:
-            raise Exception("Elements must have same mapping")
+            raise ValueError("Elements must have same mapping")
         if not A.value_shape() == B.value_shape():
-            raise Exception("Elements must have the same value shape")
+            raise ValueError("Elements must have the same value shape")
 
         # Set up constituent elements
         self.A = A
@@ -162,13 +162,13 @@ class EnrichedElement( FiniteElement ):
         if isinstance(self.A, TensorFiniteElement):
             return FlattenedElement( self )
         else:
-            raise Exception("Can only flatten TensorFiniteElements")
+            raise TypeError("Can only flatten TensorFiniteElements")
 
     def get_lower_mask(self):
         """Return a list of dof indices corresponding to the lower
         face of an extruded cell. Requires constituents to be TFEs"""
         if not isinstance(self.A, TensorFiniteElement):
-            raise Exception("Can only return upper/lower masks for TFEs")
+            raise TypeError("Can only return upper/lower masks for TFEs")
         else:
             temp = self.entity_closure_dofs().keys()
             temp.sort()
@@ -180,7 +180,7 @@ class EnrichedElement( FiniteElement ):
         """Return a list of dof indices corresponding to the upper
         face of an extruded cell. Requires constituents to be TFEs"""
         if not isinstance(self.A, TensorFiniteElement):
-            raise Exception("Can only return upper/lower masks for TFEs")
+            raise TypeError("Can only return upper/lower masks for TFEs")
         else:
             temp = self.entity_closure_dofs().keys()
             temp.sort()
@@ -250,7 +250,7 @@ class EnrichedElement( FiniteElement ):
                 
                 result[index] = temp
             else:
-                raise Exception("not scalar or vector. what happened?")
+                raise NotImplementedError("must be scalar- or vector-valued")
         return result
 
     def value_shape(self):

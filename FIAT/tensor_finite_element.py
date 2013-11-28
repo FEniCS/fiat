@@ -47,7 +47,7 @@ class TensorFiniteElement( FiniteElement ):
         elif A.mapping()[0] == "affine" and B.mapping()[0] == "affine":
             self._mapping = "affine"
         else:
-            raise Exception("check tensor product mappings - at least one must be affine")
+            raise ValueError("check tensor product mappings - at least one must be affine")
 
         # set up entity_ids
         Adofs = self.A.entity_dofs()
@@ -91,7 +91,7 @@ class TensorFiniteElement( FiniteElement ):
                         # use the concatenation to make a new PointEval
                         nodes.append(functional.PointEvaluation( self.ref_el , Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ))
                     else:
-                        raise Exception("unsupported functional type")
+                        raise NotImplementedError("unsupported functional type")
 
             elif isinstance(Anode, functional.PointScaledNormalEvaluation):
                 for Bnode in Bnodes:
@@ -102,7 +102,7 @@ class TensorFiniteElement( FiniteElement ):
                         # explicitly scaling by facet size
                         if len(Bnode.get_point_dict().keys()[0]) > 1:
                         # TODO: support this case one day
-                            raise Exception("PointScaledNormalEval x PointEval is not yet supported if the second shape has dimension > 1")
+                            raise NotImplementedError("PointScaledNormalEval x PointEval is not yet supported if the second shape has dimension > 1")
                         # We cannot make a new functional.PSNEval in
                         # the natural way, since it tries to compute
                         # the normal vector by itself.
@@ -130,7 +130,7 @@ class TensorFiniteElement( FiniteElement ):
 
                         nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointScaledNormalEval" ))
                     else:
-                        raise Exception("unsupported functional type")
+                        raise NotImplementedError("unsupported functional type")
 
             elif isinstance(Anode, functional.ComponentPointEvaluation):
                 for Bnode in Bnodes:
@@ -141,9 +141,9 @@ class TensorFiniteElement( FiniteElement ):
                         sd = self.ref_el.get_spatial_dimension()
                         nodes.append(functional.ComponentPointEvaluation( self.ref_el , Anode.comp, (sd,), Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ))
                     else:
-                        raise Exception("unsupported functional type")
+                        raise NotImplementedError("unsupported functional type")
             else:
-                raise Exception("unsupported functional type")
+                raise NotImplementedError("unsupported functional type")
 
         self.dual = dual_set.DualSet(nodes, self.ref_el, self.entity_ids)
 
@@ -293,7 +293,7 @@ class TensorFiniteElement( FiniteElement ):
         A_valuedim = len(self.A.value_shape()) # scalar: 0, vector: 1
         B_valuedim = len(self.B.value_shape()) # scalar: 0, vector: 1
         if A_valuedim + B_valuedim > 1:
-            raise Exception("tabulate does not support two vector-valued inputs... yet")
+            raise NotImplementedError("tabulate does not support two vector-valued inputs... yet")
         result = {}
         for i in range( order + 1 ):
             alphas = mis( Asdim+Bsdim , i ) # thanks, Rob!
