@@ -25,7 +25,7 @@ def Hdiv(element):
 
     formdegree = element.A.get_formdegree() + element.B.get_formdegree()
     if not (formdegree == element.get_reference_element().get_spatial_dimension() - 1):
-        raise Exception("Tried to use Hdiv on a non-(n-1)-form element")
+        raise ValueError("Tried to use Hdiv on a non-(n-1)-form element")
 
     newelement = TensorFiniteElement(element.A, element.B) # make a copy to return
 
@@ -85,7 +85,7 @@ def Hdiv(element):
                     # second element, so (..., 0, x1, ..., xn)
                     temp[:,Asd:,:] = temp_old[:,:,:]
                 else:
-                    raise Exception("Hdiv contravariant piola couldn't find an existing ConPi subelement")
+                    raise ValueError("Hdiv contravariant piola couldn't find an existing ConPi subelement")
 
             elif self._oldmapping == "covariant piola":
                 temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]))
@@ -96,7 +96,7 @@ def Hdiv(element):
                 if element.A.mapping()[0] == "covariant piola":
                     Asd = self.A.get_reference_element().get_spatial_dimension()
                     if not Asd == 2:
-                        raise Exception("Must be 2d shape to automatically convert covariant to contravariant")
+                        raise ValueError("Must be 2d shape to automatically convert covariant to contravariant")
                     temp_perp = numpy.zeros(temp_old.shape)
                     # first element, so (x2, -x1, 0, ...)
                     temp_perp[:,0,:] = temp_old[:,1,:]
@@ -105,14 +105,14 @@ def Hdiv(element):
                 elif element.B.mapping()[0] == "covariant piola":
                     Bsd = self.B.get_reference_element().get_spatial_dimension()
                     if not Bsd == 2:
-                        raise Exception("Must be 2d shape to automatically convert covariant to contravariant")
+                        raise ValueError("Must be 2d shape to automatically convert covariant to contravariant")
                     temp_perp = numpy.zeros(temp_old.shape)
                     # second element, so (..., 0, x2, -x1)
                     temp_perp[:,0,:] = temp_old[:,1,:]
                     temp_perp[:,1,:] = -temp_old[:,0,:]
                     temp[:,Asd:,:] = temp_old[:,:,:]
                 else:
-                    raise Exception("Hdiv covariant piola couldn't find an existing CovPi subelement")
+                    raise ValueError("Hdiv covariant piola couldn't find an existing CovPi subelement")
             new_result[alpha] = temp
         return new_result
 
@@ -125,7 +125,7 @@ def Hcurl(element):
 
     formdegree = element.A.get_formdegree() + element.B.get_formdegree()
     if not (formdegree == 1):
-        raise Exception("Tried to use Hcurl on a non-1-form element")
+        raise ValueError("Tried to use Hcurl on a non-1-form element")
 
     newelement = TensorFiniteElement(element.A, element.B) # make a copy to return
 
@@ -186,7 +186,7 @@ def Hcurl(element):
                     # second element, so (..., 0, x1, ..., xn)
                     temp[:,Asd:,:] = temp_old[:,:,:]
                 else:
-                    raise Exception("Hdiv contravariant piola couldn't find an existing ConPi subelement")
+                    raise ValueError("Hdiv contravariant piola couldn't find an existing ConPi subelement")
 
             elif self._oldmapping == "contravariant piola":
                 temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]))
@@ -197,7 +197,7 @@ def Hcurl(element):
                 if element.A.mapping()[0] == "contravariant piola":
                     Asd = self.A.get_reference_element().get_spatial_dimension()
                     if not Asd == 2:
-                        raise Exception("Must be 2d shape to automatically convert contravariant to covariant")
+                        raise ValueError("Must be 2d shape to automatically convert contravariant to covariant")
                     temp_perp = numpy.zeros(temp_old.shape)
                     # first element, so (-x2, x1, 0, ...)
                     temp_perp[:,0,:] = -temp_old[:,1,:]
@@ -206,14 +206,14 @@ def Hcurl(element):
                 elif element.B.mapping()[0] == "contravariant piola":
                     Bsd = self.B.get_reference_element().get_spatial_dimension()
                     if not Bsd == 2:
-                        raise Exception("Must be 2d shape to automatically convert contravariant to covariant")
+                        raise ValueError("Must be 2d shape to automatically convert contravariant to covariant")
                     temp_perp = numpy.zeros(temp_old.shape)
                     # second element, so (..., 0, -x2, x1)
                     temp_perp[:,0,:] = -temp_old[:,1,:]
                     temp_perp[:,1,:] = temp_old[:,0,:]
                     temp[:,Asd:,:] = temp_old[:,:,:]
                 else:
-                    raise Exception("Hcurl contravariant piola couldn't find an existing CovPi subelement")
+                    raise ValueError("Hcurl contravariant piola couldn't find an existing CovPi subelement")
             new_result[alpha] = temp
         return new_result
 

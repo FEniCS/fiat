@@ -1,4 +1,5 @@
-# Copyright (C) 2013 Robert C. Kirby's, Andrew T. T. McRae
+# Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+# Copyright (C) 2013 Andrew T. T. McRae
 #
 # This file is part of FIAT.
 #
@@ -46,7 +47,7 @@ class TensorFiniteElement( FiniteElement ):
         elif A.mapping()[0] == "affine" and B.mapping()[0] == "affine":
             self._mapping = "affine"
         else:
-            raise Exception("check tensor product mappings - at least one must be affine")
+            raise ValueError("check tensor product mappings - at least one must be affine")
 
         # set up entity_ids
         Adofs = self.A.entity_dofs()
@@ -90,7 +91,7 @@ class TensorFiniteElement( FiniteElement ):
                         # use the concatenation to make a new PointEval
                         nodes.append(functional.PointEvaluation( self.ref_el , Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ))
                     else:
-                        raise Exception("unsupported functional type")
+                        raise NotImplementedError("unsupported functional type")
 
             elif isinstance(Anode, functional.PointScaledNormalEvaluation):
                 for Bnode in Bnodes:
@@ -101,7 +102,7 @@ class TensorFiniteElement( FiniteElement ):
                         # explicitly scaling by facet size
                         if len(Bnode.get_point_dict().keys()[0]) > 1:
                         # TODO: support this case one day
-                            raise Exception("PointScaledNormalEval x PointEval is not yet supported if the second shape has dimension > 1")
+                            raise NotImplementedError("PointScaledNormalEval x PointEval is not yet supported if the second shape has dimension > 1")
                         # We cannot make a new functional.PSNEval in
                         # the natural way, since it tries to compute
                         # the normal vector by itself.
@@ -129,7 +130,7 @@ class TensorFiniteElement( FiniteElement ):
 
                         nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointScaledNormalEval" ))
                     else:
-                        raise Exception("unsupported functional type")
+                        raise NotImplementedError("unsupported functional type")
 
             elif isinstance(Anode, functional.ComponentPointEvaluation):
                 for Bnode in Bnodes:
@@ -140,9 +141,9 @@ class TensorFiniteElement( FiniteElement ):
                         sd = self.ref_el.get_spatial_dimension()
                         nodes.append(functional.ComponentPointEvaluation( self.ref_el , Anode.comp, (sd,), Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ))
                     else:
-                        raise Exception("unsupported functional type")
+                        raise NotImplementedError("unsupported functional type")
             else:
-                raise Exception("unsupported functional type")
+                raise NotImplementedError("unsupported functional type")
 
         self.dual = dual_set.DualSet(nodes, self.ref_el, self.entity_ids)
 
@@ -184,8 +185,10 @@ class TensorFiniteElement( FiniteElement ):
 
         class FlattenedElement( FiniteElement ):
 
-            def __init__(self, A, B):
+            def __init__(self, TFE):
                 # set up simple things
+                A = TFE.A
+                B = TFE.B
                 self.polydegree = max(A.degree(), B.degree())
                 self.fsdim = A.space_dimension() * B.space_dimension()
 
@@ -196,25 +199,22 @@ class TensorFiniteElement( FiniteElement ):
                 # Return the flattened (w.r.t. 2nd component) map of topological
                 # entities to degrees of freedom. Assumes product is something
                 # crossed with an interval"""
-                Adofs = A.entity_dofs()
-                Bdofs = B.entity_dofs()
-                Bsdim = B.space_dimension()
+                TFEdofs = TFE.entity_dofs()
                 self.entity_ids = {}
-                if (Bsdim == 1):
-                    vertlist = [0]
-                else:
-                    vertlist = range(1, Bsdim+1)
-                    vertlist[0] = 0
-                    vertlist[-1] = 1
 
-                for curAdim in Adofs:
-                    self.entity_ids[curAdim] = {}
-                    dim_cur = 0
-                    for entityA in Adofs[curAdim]:
-                        self.entity_ids[curAdim][dim_cur] = \
-                          [x*Bsdim + y for y in vertlist \
-                          for x in Adofs[curAdim][entityA]]
-                        dim_cur += 1
+                for dimA, dimB in TFEdofs:
+                    # dimB = 0 or 1.  only look at the 1s, then grab the data from 0s
+                    if dimB == 0:
+                        continue
+                    self.entity_ids[dimA] = {}
+                    for ent in TFEdofs[(dimA, dimB)]:
+                        # this line is fairly magic.
+                        # it works because an interval has two points.
+                        # we pick up the dofs from the bottom point,
+                        # then the dofs from the interior of the interval,
+                        # then finally the dofs from the top point
+                        self.entity_ids[dimA][ent] = \
+                          TFEdofs[(dimA, 0)][2*ent] + TFEdofs[(dimA, 1)][ent] + TFEdofs[(dimA, 0)][2*ent+1]
 
             def degree(self):
                 """Return the degree of the (embedding) polynomial space."""
@@ -233,7 +233,7 @@ class TensorFiniteElement( FiniteElement ):
                 """Return the dimension of the finite element space."""
                 return self.fsdim
 
-        return FlattenedElement( self.A, self.B )
+        return FlattenedElement( self )
 
     def get_lower_mask(self):
         """Return a list of dof indices corresponding to the lower
@@ -293,7 +293,7 @@ class TensorFiniteElement( FiniteElement ):
         A_valuedim = len(self.A.value_shape()) # scalar: 0, vector: 1
         B_valuedim = len(self.B.value_shape()) # scalar: 0, vector: 1
         if A_valuedim + B_valuedim > 1:
-            raise Exception("tabulate does not support two vector-valued inputs... yet")
+            raise NotImplementedError("tabulate does not support two vector-valued inputs... yet")
         result = {}
         for i in range( order + 1 ):
             alphas = mis( Asdim+Bsdim , i ) # thanks, Rob!
