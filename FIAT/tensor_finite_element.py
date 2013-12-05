@@ -132,6 +132,20 @@ class TensorFiniteElement( FiniteElement ):
                     else:
                         raise NotImplementedError("unsupported functional type")
 
+            elif isinstance(Anode, functional.PointEdgeTangentEvaluation):
+                for Bnode in Bnodes:
+                    if isinstance(Bnode, functional.PointEvaluation):
+                        # case: PointEdgeTangentEval x PointEval
+                        # this is very similar to the case above, so comments omitted
+                        if len(Bnode.get_point_dict().keys()[0]) > 1:
+                            raise NotImplementedError("PointEdgeTangentEval x PointEval is not yet supported if the second shape has dimension > 1")
+                        sd = self.ref_el.get_spatial_dimension()
+                        shp = (sd,)
+                        pt_dict = { Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] : Anode.get_point_dict().values()[0] + [(0.0, (len(Anode.get_point_dict().keys()[0]),))] }
+                        nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointEdgeTangent" ))
+                    else:
+                        raise NotImplementedError("unsupported functional type")
+
             elif isinstance(Anode, functional.ComponentPointEvaluation):
                 for Bnode in Bnodes:
                     if isinstance(Bnode, functional.PointEvaluation):

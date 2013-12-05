@@ -74,19 +74,20 @@ def test():
     BDM1_S = FIAT.BrezziDouglasMarini(S, 1)
     BDM2_S = FIAT.BrezziDouglasMarini(S, 2) # Not implemented yet
     BDM3_S = FIAT.BrezziDouglasMarini(S, 3) # Not implemented yet
+    BDFM2_S = FIAT.BrezziDouglasFortinMarini(S, 2)
     RT1_S = FIAT.RaviartThomas(S, 1)
     RT2_S = FIAT.RaviartThomas(S, 2)
     RT3_S = FIAT.RaviartThomas(S, 3)
-    Ned1_S = FIAT.Nedelec(S, 1) # Not implemented yet
+    Ned1_S = FIAT.Nedelec(S, 1)
     Ned2_S = FIAT.Nedelec(S, 2) # Not implemented yet
     Ned3_S = FIAT.Nedelec(S, 3) # Not implemented yet
-    NedS1_S = FIAT.NedelecSecondKind(S, 1) # Not implemented yet
+    NedS1_S = FIAT.NedelecSecondKind(S, 1)
     NedS2_S = FIAT.NedelecSecondKind(S, 2) # Not implemented yet
     NedS3_S = FIAT.NedelecSecondKind(S, 3) # Not implemented yet
     
     list2d_scalar = [P0_S, P1DG_S, P2DG_S, P3DG_S, P1_S, P2_S, P3_S]
-    list2d_hdiv = [RT1_S, RT2_S, RT3_S, BDM1_S]#, BDM2_S, BDM3_S]
-    list2d_hcurl = [] #[Ned1_S, Ned2_S, Ned3_S, NedS1_S, NedS2_S, NedS3_S]
+    list2d_hdiv = [RT1_S, RT2_S, RT3_S, BDFM2_S, BDM1_S]#, BDM2_S, BDM3_S]
+    list2d_hcurl = [Ned1_S, NedS1_S] #, Ned2_S, Ned3_S, NedS2_S, NedS3_S]
 
     ### TRIANGLE x INTERVAL tests ###
     for A in list2d_scalar:
