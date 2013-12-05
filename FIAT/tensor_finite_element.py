@@ -156,6 +156,35 @@ class TensorFiniteElement( FiniteElement ):
                         nodes.append(functional.ComponentPointEvaluation( self.ref_el , Anode.comp, (sd,), Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ))
                     else:
                         raise NotImplementedError("unsupported functional type")
+
+            elif isinstance(Anode, functional.FrobeniusIntegralMoment):
+                for Bnode in Bnodes:
+                    if isinstance(Bnode, functional.PointEvaluation):
+                        # case: FroIntMom x PointEval
+                        sd = self.ref_el.get_spatial_dimension()
+                        shp = (sd,)
+                        pt_dict = {}
+                        pt_old = Anode.get_point_dict()
+                        for pt in pt_old:
+                            pt_dict[pt+Bnode.get_point_dict().keys()[0]] = pt_old[pt] + [(0.0, sd-1)]
+                        nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment"))
+                    else:
+                        raise NotImplementedError("unsupported functional type")
+
+            elif isinstance(Anode, functional.IntegralMoment):
+                for Bnode in Bnodes:
+                    if isinstance(Bnode, functional.PointEvaluation):
+                        # case: IntMom x PointEval
+                        sd = self.ref_el.get_spatial_dimension()
+                        shp = (sd,)
+                        pt_dict = {}
+                        pt_old = Anode.get_point_dict()
+                        for pt in pt_old:
+                            pt_dict[pt+Bnode.get_point_dict().keys()[0]] = pt_old[pt]
+                        nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "IntegralMoment"))
+                    else:
+                        raise NotImplementedError("unsupported functional type")
+
             else:
                 raise NotImplementedError("unsupported functional type")
 
