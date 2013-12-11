@@ -128,7 +128,9 @@ class TensorFiniteElement( FiniteElement ):
                         # general case
                         #pt_dict = { Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] : Anode.get_point_dict().values()[0] + [(0.0, (ii,)) for ii in range(len(Anode.get_point_dict().keys()[0]),len(Anode.get_point_dict().keys()[0])+len(Bnode.get_point_dict().keys()[0]))] }
 
-                        nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointScaledNormalEval" ))
+                        # THE ABOVE IS PROBABLY CORRECT BUT UNTESTED
+                        # nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointScaledNormalEval" ))
+                        nodes.append(functional.Functional( None, None, None , {} , "PointScaledNormalEval" ))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
@@ -142,7 +144,9 @@ class TensorFiniteElement( FiniteElement ):
                         sd = self.ref_el.get_spatial_dimension()
                         shp = (sd,)
                         pt_dict = { Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] : Anode.get_point_dict().values()[0] + [(0.0, (len(Anode.get_point_dict().keys()[0]),))] }
-                        nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointEdgeTangent" ))
+                        # THE ABOVE IS PROBABLY CORRECT BUT UNTESTED
+                        # nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointEdgeTangent" ))
+                        nodes.append(functional.Functional( None, None, None , {} , "PointEdgeTangent" ))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
@@ -167,7 +171,9 @@ class TensorFiniteElement( FiniteElement ):
                         pt_old = Anode.get_point_dict()
                         for pt in pt_old:
                             pt_dict[pt+Bnode.get_point_dict().keys()[0]] = pt_old[pt] + [(0.0, sd-1)]
-                        nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment"))
+                        # THE ABOVE IS PROBABLY CORRECT BUT UNTESTED
+                        # nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment"))
+                        nodes.append(functional.Functional(None, None, None, {}, "FrobeniusIntegralMoment"))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
@@ -181,7 +187,9 @@ class TensorFiniteElement( FiniteElement ):
                         pt_old = Anode.get_point_dict()
                         for pt in pt_old:
                             pt_dict[pt+Bnode.get_point_dict().keys()[0]] = pt_old[pt]
-                        nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "IntegralMoment"))
+                        # THE ABOVE IS PROBABLY CORRECT BUT UNTESTED
+                        # nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "IntegralMoment"))
+                        nodes.append(functional.Functional(None, None, None, {}, "IntegralMoment"))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
