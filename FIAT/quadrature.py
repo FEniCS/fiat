@@ -165,8 +165,8 @@ class TensorProductQuadratureRule(QuadratureRule):
     combining the quadrature rules of the two components"""
     def __init__( self , ref_el , m ):
         # Get quadrature rules of subcomponents
-        quadA = make_quadrature( ref_el.A, m )
-        quadB = make_quadrature( ref_el.B, m )
+        quadA = make_quadrature( ref_el.A, m[0] )
+        quadB = make_quadrature( ref_el.B, m[1] )
 
         # Combine them. Coordinates are "concatenated", weights are multiplied
         pts = tuple([pt_a + pt_b for pt_a in quadA.pts for pt_b in quadB.pts ])
@@ -177,11 +177,15 @@ class TensorProductQuadratureRule(QuadratureRule):
 def make_quadrature( ref_el , m ):
     """Returns the collapsed quadrature rule using m points per
     direction on the given reference element. In the tensor product
-    case, m WILL need to be a tuple BUT NOT YET. """
+    case, m is a tuple."""
 
-    if isinstance(m, int):
-        msg = "Expecting at least one (not %d) quadrature point per direction" % m
-        assert (m > 0), msg
+    if isinstance(m, tuple):
+        min_m = min(m)
+    else:
+        min_m = m
+
+    msg = "Expecting at least one (not %d) quadrature point per direction" % min_m
+    assert (min_m > 0), msg
 
     if ref_el.get_shape() == reference_element.LINE:
         return GaussJacobiQuadratureLineRule( ref_el , m )
