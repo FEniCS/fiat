@@ -18,7 +18,7 @@
 # First added:  2010-01-31
 # Last changed: 2012-10-01
 
-import sys, pickle
+import pickle
 from FIAT import supported_elements, make_quadrature, ufc_simplex
 from numpy import shape, max, abs
 
@@ -128,4 +128,5 @@ def test():
     return 0
 
 if __name__ == "__main__":
-    sys.exit(test())
+    import sys, TFEtest
+    sys.exit(test() or TFEtest.test())
