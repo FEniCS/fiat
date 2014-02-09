@@ -18,6 +18,7 @@
 import numpy
 import types
 from .tensor_finite_element import TensorFiniteElement
+from . import functional
 
 def Hdiv(element):
     if not isinstance(element, TensorFiniteElement):
@@ -117,6 +118,19 @@ def Hdiv(element):
         return new_result
 
     newelement.tabulate = types.MethodType(tabulate, newelement)
+
+    # splat any PointEvaluation functionals.
+    # they become a nasty mix of internal and external component DOFs
+    if newelement._oldmapping == "affine":
+        oldnodes = newelement.dual.nodes
+        newnodes = []
+        for node in oldnodes:
+            if isinstance(node, functional.PointEvaluation):
+                newnodes.append(functional.Functional( None, None, None , {} , "Undefined" ))
+            else:
+                newnodes.append(node)
+        newelement.dual.nodes = newnodes
+
     return newelement
 
 def Hcurl(element):
@@ -218,4 +232,17 @@ def Hcurl(element):
         return new_result
 
     newelement.tabulate = types.MethodType(tabulate, newelement)
+
+    # splat any PointEvaluation functionals.
+    # they become a nasty mix of internal and external component DOFs
+    if newelement._oldmapping == "affine":
+        oldnodes = newelement.dual.nodes
+        newnodes = []
+        for node in oldnodes:
+            if isinstance(node, functional.PointEvaluation):
+                newnodes.append(functional.Functional( None, None, None , {} , "Undefined" ))
+            else:
+                newnodes.append(node)
+        newelement.dual.nodes = newnodes
+
     return newelement
