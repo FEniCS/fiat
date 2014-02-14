@@ -55,8 +55,6 @@ def RTSpace( ref_el , deg ):
                                 sd, \
                                 Pkp1.get_num_members()) , "d" )
 
-    import time
-    t1 = time.time()
     for i in range( PkH.get_num_members() ):
         for j in range( sd ):
             fooij = PkH_at_Qpts[i,:] * Qpts[:,j] * Qwts
@@ -80,12 +78,9 @@ class RTDualSet( dual_set.DualSet ):
         nodes = []
 
         sd = ref_el.get_spatial_dimension()
-
-
         t = ref_el.get_topology()
 
         # codimension 1 facets
-
         for i in range( len( t[sd-1] ) ):
             pts_cur = ref_el.make_points( sd - 1 , i , sd + degree )
             for j in range( len( pts_cur ) ):
@@ -103,7 +98,6 @@ class RTDualSet( dual_set.DualSet ):
                     l_cur = cpe( ref_el , d , (sd,) , pts[i] )
                     nodes.append( l_cur )
 
-
 #            Q = quadrature.make_quadrature( ref_el , 2 * ( degree + 1 ) )
 #            qpts = Q.get_points()
 #            Pkm1 = polynomial_set.ONPolynomialSet( ref_el , degree - 1 )
@@ -117,9 +111,6 @@ class RTDualSet( dual_set.DualSet ):
 #                                                       phi_cur , (d,) , (sd,) )
 #                    nodes.append( l_cur )
 
-
-        entity_ids = {}
-
         # sets vertices (and in 3d, edges) to have no nodes
         for i in range( sd - 1 ):
             entity_ids[i] = {}
@@ -131,7 +122,6 @@ class RTDualSet( dual_set.DualSet ):
         # set codimension 1 (edges 2d, faces 3d) dof
         pts_facet_0 = ref_el.make_points( sd - 1 , 0 , sd + degree )
         pts_per_facet = len( pts_facet_0 )
-
         entity_ids[sd-1] = {}
         for i in range( len( t[sd-1] ) ):
             entity_ids[sd-1][i] = list(range( cur , cur + pts_per_facet))
@@ -139,7 +129,6 @@ class RTDualSet( dual_set.DualSet ):
 
         # internal nodes, if applicable
         entity_ids[sd] = {0: []}
-
         if degree > 0:
             num_internal_nodes = expansions.polynomial_dimension( ref_el , \
                                                                   degree - 1 )
@@ -157,7 +146,6 @@ class RaviartThomas( finite_element.FiniteElement ):
         dual = RTDualSet( ref_el , degree )
         finite_element.FiniteElement.__init__( self , poly_set , dual , degree,
                                                mapping="contravariant piola")
-        return
 
 
 if __name__=="__main__":

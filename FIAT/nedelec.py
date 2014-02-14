@@ -130,8 +130,6 @@ def NedelecSpace3D( ref_el , k ):
     Pke_qpts = vec_Pke.tabulate( Qpts )[zero_index]
     Pkp1_at_Qpts = Pkp1.tabulate( Qpts )[ zero_index ]
 
-    import time
-    t = time.time()
     for i in range( vec_Pke.get_num_members() ):
         for j in range( sd ): # vector components
             qwts_cur_bf_val = ( Qpts[:,(j+2)%3]*Pke_qpts[i,(j+1)%3,:] \
