@@ -193,6 +193,10 @@ class TensorFiniteElement( FiniteElement ):
                     else:
                         raise NotImplementedError("unsupported functional type")
 
+            elif isinstance(Anode, functional.Functional):
+                # this should catch everything else
+                for Bnode in Bnodes:
+                    nodes.append(functional.Functional( None, None, None , {} , "Undefined" ))
             else:
                 raise NotImplementedError("unsupported functional type")
 
