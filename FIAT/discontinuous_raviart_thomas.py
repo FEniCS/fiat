@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+#
+# Modified by Jan Blechta 2014
 
 from . import expansions, polynomial_set, quadrature, reference_element, dual_set, \
     quadrature, finite_element, functional
