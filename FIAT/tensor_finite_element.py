@@ -18,31 +18,31 @@
 
 import numpy
 from .finite_element import FiniteElement
-from .reference_element import ReferenceElement, two_product_cell
+from .reference_element import two_product_cell
 from .polynomial_set import mis
 from . import dual_set
 from . import functional
 
-class TensorFiniteElement( FiniteElement ):
+
+class TensorFiniteElement(FiniteElement):
     """Class implementing a finite element that is the tensor product
     of two existing finite elements."""
 
-    def __init__( self , A , B ):
+    def __init__(self, A, B):
         self.A = A
         self.B = B
 
         # set up simple things
-        self.polydegree = max(self.A.degree(), self.B.degree())
-        self.order = min(self.A.get_order(), self.B.get_order())
-        self.fsdim = self.A.space_dimension() * self.B.space_dimension()
+        self.polydegree = max(A.degree(), B.degree())
+        self.order = min(A.get_order(), B.get_order())
         self.formdegree = A.get_formdegree() + B.get_formdegree()
 
         # set up reference element
-        self.ref_el = two_product_cell(self.A.get_reference_element(), self.B.get_reference_element())
+        self.ref_el = two_product_cell(A.get_reference_element(), B.get_reference_element())
 
-        if A.mapping()[0] <> "affine" and B.mapping()[0] == "affine":
+        if A.mapping()[0] != "affine" and B.mapping()[0] == "affine":
             self._mapping = A.mapping()[0]
-        elif B.mapping()[0] <> "affine" and A.mapping()[0] == "affine":
+        elif B.mapping()[0] != "affine" and A.mapping()[0] == "affine":
             self._mapping = B.mapping()[0]
         elif A.mapping()[0] == "affine" and B.mapping()[0] == "affine":
             self._mapping = "affine"
@@ -50,27 +50,25 @@ class TensorFiniteElement( FiniteElement ):
             raise ValueError("check tensor product mappings - at least one must be affine")
 
         # set up entity_ids
-        Adofs = self.A.entity_dofs()
-        Bdofs = self.B.entity_dofs()
-        Bsdim = self.B.space_dimension()
-        self.entity_ids = {}
+        Adofs = A.entity_dofs()
+        Bdofs = B.entity_dofs()
+        Bsdim = B.space_dimension()
+        entity_ids = {}
 
         for curAdim in Adofs:
             for curBdim in Bdofs:
-                self.entity_ids[(curAdim,curBdim)] = {}
+                entity_ids[(curAdim, curBdim)] = {}
                 dim_cur = 0
                 for entityA in Adofs[curAdim]:
                     for entityB in Bdofs[curBdim]:
-                        self.entity_ids[(curAdim,curBdim)][dim_cur] = \
-                          [x*Bsdim + y for x in Adofs[curAdim][entityA] \
-                          for y in Bdofs[curBdim][entityB]]
+                        entity_ids[(curAdim, curBdim)][dim_cur] = \
+                            [x*Bsdim + y for x in Adofs[curAdim][entityA]
+                                for y in Bdofs[curBdim][entityB]]
                         dim_cur += 1
 
         # set up dual basis
-        Adual = self.A.get_dual_set()
-        Bdual = self.B.get_dual_set()
-        Anodes = Adual.get_nodes()
-        Bnodes = Bdual.get_nodes()
+        Anodes = A.dual_basis()
+        Bnodes = B.dual_basis()
 
         # build the dual set by inspecting the current dual
         # sets item by item.
@@ -89,7 +87,7 @@ class TensorFiniteElement( FiniteElement ):
                         # the key of a one-item dictionary. we retrieve
                         # these by calling get_point_dict(), and
                         # use the concatenation to make a new PointEval
-                        nodes.append(functional.PointEvaluation( self.ref_el , Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ))
+                        nodes.append(functional.PointEvaluation(self.ref_el, Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
@@ -109,7 +107,6 @@ class TensorFiniteElement( FiniteElement ):
                         # Instead, we create things manually, and
                         # call Functional() with these arguments
                         sd = self.ref_el.get_spatial_dimension()
-                        shp = (sd,)
                         # The pt_dict is a one-item dictionary containing
                         # the details of the functional.
                         # The key is the spatial coordinate, which
@@ -122,15 +119,16 @@ class TensorFiniteElement( FiniteElement ):
 
                         # The following line is only valid when the second
                         # shape has spatial dimension 1 (enforced above)
-                        pt_dict = { Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] : Anode.get_point_dict().values()[0] + [(0.0, (len(Anode.get_point_dict().keys()[0]),))] }
+                        pt_dict = {Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]: Anode.get_point_dict().values()[0] + [(0.0, (len(Anode.get_point_dict().keys()[0]),))]}
 
                         # The following line should be used in the
                         # general case
-                        #pt_dict = { Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] : Anode.get_point_dict().values()[0] + [(0.0, (ii,)) for ii in range(len(Anode.get_point_dict().keys()[0]),len(Anode.get_point_dict().keys()[0])+len(Bnode.get_point_dict().keys()[0]))] }
+                        # pt_dict = {Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]: Anode.get_point_dict().values()[0] + [(0.0, (ii,)) for ii in range(len(Anode.get_point_dict().keys()[0]), len(Anode.get_point_dict().keys()[0]) + len(Bnode.get_point_dict().keys()[0]))]}
 
-                        # THE ABOVE IS PROBABLY CORRECT BUT UNTESTED
-                        # nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointScaledNormalEval" ))
-                        nodes.append(functional.Functional( None, None, None , {} , "PointScaledNormalEval" ))
+                        # THE FOLLOWING IS PROBABLY CORRECT BUT UNTESTED
+                        # shp = (sd,)
+                        # nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "PointScaledNormalEval"))
+                        nodes.append(functional.Functional(None, None, None, {}, "PointScaledNormalEval"))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
@@ -142,11 +140,11 @@ class TensorFiniteElement( FiniteElement ):
                         if len(Bnode.get_point_dict().keys()[0]) > 1:
                             raise NotImplementedError("PointEdgeTangentEval x PointEval is not yet supported if the second shape has dimension > 1")
                         sd = self.ref_el.get_spatial_dimension()
-                        shp = (sd,)
-                        pt_dict = { Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] : Anode.get_point_dict().values()[0] + [(0.0, (len(Anode.get_point_dict().keys()[0]),))] }
-                        # THE ABOVE IS PROBABLY CORRECT BUT UNTESTED
-                        # nodes.append(functional.Functional( self.ref_el, shp, pt_dict , {} , "PointEdgeTangent" ))
-                        nodes.append(functional.Functional( None, None, None , {} , "PointEdgeTangent" ))
+                        pt_dict = {Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]: Anode.get_point_dict().values()[0] + [(0.0, (len(Anode.get_point_dict().keys()[0]),))]}
+                        # THE FOLLOWING IS PROBABLY CORRECT BUT UNTESTED
+                        # shp = (sd,)
+                        # nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "PointEdgeTangent"))
+                        nodes.append(functional.Functional(None, None, None, {}, "PointEdgeTangent"))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
@@ -157,7 +155,7 @@ class TensorFiniteElement( FiniteElement ):
                         # the CptPointEval functional requires the component
                         # and the coordinates. very similar to PE x PE case.
                         sd = self.ref_el.get_spatial_dimension()
-                        nodes.append(functional.ComponentPointEvaluation( self.ref_el , Anode.comp, (sd,), Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0] ))
+                        nodes.append(functional.ComponentPointEvaluation(self.ref_el, Anode.comp, (sd,), Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
@@ -166,12 +164,12 @@ class TensorFiniteElement( FiniteElement ):
                     if isinstance(Bnode, functional.PointEvaluation):
                         # case: FroIntMom x PointEval
                         sd = self.ref_el.get_spatial_dimension()
-                        shp = (sd,)
                         pt_dict = {}
                         pt_old = Anode.get_point_dict()
                         for pt in pt_old:
                             pt_dict[pt+Bnode.get_point_dict().keys()[0]] = pt_old[pt] + [(0.0, sd-1)]
-                        # THE ABOVE IS PROBABLY CORRECT BUT UNTESTED
+                        # THE FOLLOWING IS PROBABLY CORRECT BUT UNTESTED
+                        # shp = (sd,)
                         # nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment"))
                         nodes.append(functional.Functional(None, None, None, {}, "FrobeniusIntegralMoment"))
                     else:
@@ -182,12 +180,12 @@ class TensorFiniteElement( FiniteElement ):
                     if isinstance(Bnode, functional.PointEvaluation):
                         # case: IntMom x PointEval
                         sd = self.ref_el.get_spatial_dimension()
-                        shp = (sd,)
                         pt_dict = {}
                         pt_old = Anode.get_point_dict()
                         for pt in pt_old:
                             pt_dict[pt+Bnode.get_point_dict().keys()[0]] = pt_old[pt]
-                        # THE ABOVE IS PROBABLY CORRECT BUT UNTESTED
+                        # THE FOLLOWING IS PROBABLY CORRECT BUT UNTESTED
+                        # shp = (sd,)
                         # nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "IntegralMoment"))
                         nodes.append(functional.Functional(None, None, None, {}, "IntegralMoment"))
                     else:
@@ -196,49 +194,26 @@ class TensorFiniteElement( FiniteElement ):
             elif isinstance(Anode, functional.Functional):
                 # this should catch everything else
                 for Bnode in Bnodes:
-                    nodes.append(functional.Functional( None, None, None , {} , "Undefined" ))
+                    nodes.append(functional.Functional(None, None, None, {}, "Undefined"))
             else:
                 raise NotImplementedError("unsupported functional type")
 
-        self.dual = dual_set.DualSet(nodes, self.ref_el, self.entity_ids)
+        self.dual = dual_set.DualSet(nodes, self.ref_el, entity_ids)
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
 
-    def get_reference_element( self ):
-        """Return the reference element for the finite element."""
-        return self.ref_el
-
-    def get_nodal_basis( self ):
+    def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
         for the finite element."""
         raise NotImplementedError("get_nodal_basis not implemented")
-
-    def get_dual_set( self ):
-        """Return the dual for the finite element."""
-        return self.dual
-
-    def get_order( self ):
-        """Return the approximation order of the element (the largest n such
-        that all polynomials of degree n are contained in the space)."""
-        return self.order
-
-    def dual_basis(self):
-        """Return the dual basis (list of functionals) for the finite
-        element."""
-        return self.dual.get_nodes()
-
-    def entity_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom for the finite element."""
-        return self.entity_ids
 
     def flattened_element(self):
         """Return a reduced-functionality element with B's entity dofs squashed
         down onto A's. Assumes the second element is an interval."""
 
-        class FlattenedElement( FiniteElement ):
+        class FlattenedElement(FiniteElement):
 
             def __init__(self, TFE):
                 # set up simple things
@@ -251,9 +226,9 @@ class TensorFiniteElement( FiniteElement ):
                 self.ref_el = A.get_reference_element()
 
                 # set up entity_ids
-                # Return the flattened (w.r.t. 2nd component) map of topological
-                # entities to degrees of freedom. Assumes product is something
-                # crossed with an interval"""
+                # Return the flattened (w.r.t. 2nd component) map of
+                # topological entities to degrees of freedom. Assumes product
+                # is something crossed with an interval"""
                 TFEdofs = TFE.entity_dofs()
                 self.entity_ids = {}
 
@@ -269,7 +244,7 @@ class TensorFiniteElement( FiniteElement ):
                         # then the dofs from the interior of the interval,
                         # then finally the dofs from the top point
                         self.entity_ids[dimA][ent] = \
-                          TFEdofs[(dimA, 0)][2*ent] + TFEdofs[(dimA, 1)][ent] + TFEdofs[(dimA, 0)][2*ent+1]
+                            TFEdofs[(dimA, 0)][2*ent] + TFEdofs[(dimA, 1)][ent] + TFEdofs[(dimA, 0)][2*ent+1]
 
             def degree(self):
                 """Return the degree of the (embedding) polynomial space."""
@@ -280,15 +255,11 @@ class TensorFiniteElement( FiniteElement ):
                 freedom for the finite element."""
                 return self.entity_ids
 
-            def get_reference_element( self ):
-                """Return the reference element for the finite element."""
-                return self.ref_el
-
             def space_dimension(self):
                 """Return the dimension of the finite element space."""
                 return self.fsdim
 
-        return FlattenedElement( self )
+        return FlattenedElement(self)
 
     def get_lower_mask(self):
         """Return a list of dof indices corresponding to the lower
@@ -311,19 +282,10 @@ class TensorFiniteElement( FiniteElement ):
         finite element."""
         raise NotImplementedError("get_coeffs not implemented")
 
-    def mapping(self):
-        """Return a list of appropriate mappings from the reference
-        element to a physical element for each basis function of the
-        finite element."""
-        return [self._mapping]*self.space_dimension()
-
-    def num_sub_elements(self):
-        """Return the number of sub-elements."""
-        return 1
-
     def space_dimension(self):
         """Return the dimension of the finite element space."""
-        return self.fsdim
+        # number of dofs just multiplies
+        return self.A.space_dimension() * self.B.space_dimension()
 
     def tabulate(self, order, points):
         """Return tabulated values of derivatives up to given order of
@@ -345,13 +307,13 @@ class TensorFiniteElement( FiniteElement ):
         # if someone then tries to make a new "tensor finite
         # element" where one component is already a
         # tensor-valued space!
-        A_valuedim = len(self.A.value_shape()) # scalar: 0, vector: 1
-        B_valuedim = len(self.B.value_shape()) # scalar: 0, vector: 1
+        A_valuedim = len(self.A.value_shape())  # scalar: 0, vector: 1
+        B_valuedim = len(self.B.value_shape())  # scalar: 0, vector: 1
         if A_valuedim + B_valuedim > 1:
-            raise NotImplementedError("tabulate does not support two vector-valued inputs... yet")
+            raise NotImplementedError("tabulate does not support two vector-valued inputs")
         result = {}
-        for i in range( order + 1 ):
-            alphas = mis( Asdim+Bsdim , i ) # thanks, Rob!
+        for i in range(order + 1):
+            alphas = mis(Asdim+Bsdim, i)  # thanks, Rob!
             for alpha in alphas:
                 if A_valuedim == 0 and B_valuedim == 0:
                     # for each point, get outer product of (A's basis
@@ -364,9 +326,9 @@ class TensorFiniteElement( FiniteElement ):
                     # We now have temp[point][full basis function]
                     # Transpose this to get temp[bf][point],
                     # and we are done.
-                    temp = numpy.array([numpy.outer( \
-                        Atab[alpha[0:Asdim]][...,j], \
-                        Btab[alpha[Asdim:Asdim+Bsdim]][...,j])\
+                    temp = numpy.array([numpy.outer(
+                                       Atab[alpha[0:Asdim]][..., j],
+                                       Btab[alpha[Asdim:Asdim+Bsdim]][..., j])
                         .ravel() for j in range(npoints)])
                     result[alpha] = temp.transpose()
                 elif A_valuedim == 1 and B_valuedim == 0:
@@ -382,14 +344,17 @@ class TensorFiniteElement( FiniteElement ):
                     # gives us temp[point][x/y][full bf_i]
                     # finally, transpose the first and last indices
                     # to get temp[bf_i][x/y][point], and we are done.
-                    temp = numpy.array([numpy.outer( \
-                    Atab[alpha[0:Asdim]][...,j], \
-                    Btab[alpha[Asdim:Asdim+Bsdim]][...,j]) \
-                    for j in range(npoints)])
-                    temp2 = temp.reshape((temp.shape[0],temp.shape[1]/2,2,temp.shape[2]))\
-                                    .transpose(0,2,1,3)\
-                                    .reshape((temp.shape[0],2,-1))\
-                                    .transpose(2,1,0)
+                    temp = numpy.array([numpy.outer(
+                                       Atab[alpha[0:Asdim]][..., j],
+                                       Btab[alpha[Asdim:Asdim+Bsdim]][..., j])
+                        for j in range(npoints)])
+                    temp2 = temp.reshape((temp.shape[0],
+                                          temp.shape[1]/2,
+                                          2,
+                                          temp.shape[2]))\
+                        .transpose(0, 2, 1, 3)\
+                        .reshape((temp.shape[0], 2, -1))\
+                        .transpose(2, 1, 0)
                     result[alpha] = temp2
                 elif A_valuedim == 0 and B_valuedim == 1:
                     # as above, with B's functions now vector-valued.
@@ -398,13 +363,15 @@ class TensorFiniteElement( FiniteElement ):
                     # reshape to temp[point][f_i][g_j][x/y]
                     # flatten middle: temp[point][full bf_i][x/y]
                     # transpose to temp[bf_i][x/y][point]
-                    temp = numpy.array([numpy.outer( \
-                    Atab[alpha[0:Asdim]][...,j], \
-                    Btab[alpha[Asdim:Asdim+Bsdim]][...,j]) \
-                    for j in range(len(Atab[alpha[0:Asdim]][0]))])
-                    temp2 = temp.reshape((temp.shape[0],temp.shape[1],temp.shape[2]/2,2))\
-                                    .reshape((temp.shape[0],-1,2))\
-                                    .transpose(1,2,0)
+                    temp = numpy.array([numpy.outer(
+                        Atab[alpha[0:Asdim]][..., j],
+                        Btab[alpha[Asdim:Asdim+Bsdim]][..., j])
+                        for j in range(len(Atab[alpha[0:Asdim]][0]))])
+
+                    temp2 = temp.reshape((temp.shape[0], temp.shape[1],
+                                          temp.shape[2]/2, 2))\
+                        .reshape((temp.shape[0], -1, 2))\
+                        .transpose(1, 2, 0)
                     result[alpha] = temp2
         return result
 
@@ -428,7 +395,7 @@ class TensorFiniteElement( FiniteElement ):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented")
 
-if __name__=="__main__":
+if __name__ == "__main__":
     from . import reference_element
     from . import lagrange
     from . import raviart_thomas

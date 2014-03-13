@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import finite_element, Lagrange, dual_set
+from .finite_element import FiniteElement
+from . import Lagrange, dual_set
 
-class Bubble( finite_element.FiniteElement ):
+
+class Bubble(FiniteElement):
     """The Bubble finite element: the interior dofs of the Lagrange FE"""
-    def __init__( self , ref_el , degree ):
+    def __init__(self, ref_el, degree):
         self._element = Lagrange(ref_el, degree)
 
         cell_dim = max(self._element.entity_dofs().keys())
@@ -28,37 +30,28 @@ class Bubble( finite_element.FiniteElement ):
             raise RuntimeError('Bubble element of degree %d has no dofs' % degree)
         # 'index' is the first Lagrange node that we keep
         self.first_node_index = min(cell_entity_dofs)
-        self.entity_ids = {}
+        entity_ids = {}
         # Build empty entity ids
         for dim, entities in self._element.entity_dofs().iteritems():
-            self.entity_ids[dim] = dict((entity, []) for entity in entities)
+            entity_ids[dim] = dict((entity, []) for entity in entities)
         # keep the IDs, starting from 'index'
-        self.entity_ids[cell_dim][0] = [e - self.first_node_index for e in cell_entity_dofs]
-        self.fsdim = len(self.entity_ids[cell_dim][0])
+        entity_ids[cell_dim][0] = [e - self.first_node_index for e in cell_entity_dofs]
+        self.fsdim = len(entity_ids[cell_dim][0])
         # keep the dual set nodes we want, starting from 'index'
-        nodes = self._element.get_dual_set().get_nodes()[self.first_node_index:]
-        self.dual = dual_set.DualSet(nodes, self._element.get_reference_element(), self.entity_ids)
+        nodes = self._element.dual_basis()[self.first_node_index:]
+        self.dual = dual_set.DualSet(nodes, ref_el, entity_ids)
 
     def degree(self):
         return self._element.degree()
 
-    def get_reference_element( self ):
+    def get_reference_element(self):
         return self._element.get_reference_element()
 
-    def get_nodal_basis( self ):
+    def get_nodal_basis(self):
         raise NotImplementedError
 
-    def get_dual_set( self ):
-        return self.dual
-
-    def get_order( self ):
+    def get_order(self):
         return 0  # Can't represent a constant function
-
-    def dual_basis(self):
-        raise NotImplementedError
-
-    def entity_dofs(self):
-        return self.entity_ids
 
     def get_coeffs(self):
         raise NotImplementedError
@@ -76,7 +69,7 @@ class Bubble( finite_element.FiniteElement ):
         return self.fsdim
 
     def tabulate(self, order, points):
-        return dict((k, v[self.first_node_index:,:])
+        return dict((k, v[self.first_node_index:, :])
                     for k, v in self._element.tabulate(order, points).items())
 
     def value_shape(self):
