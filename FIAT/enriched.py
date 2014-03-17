@@ -20,13 +20,13 @@ import numpy
 from .finite_element import FiniteElement
 from .tensor_finite_element import TensorFiniteElement
 from . import dual_set
-from . import functional
 
-class EnrichedElement( FiniteElement ):
+
+class EnrichedElement(FiniteElement):
     """Class implementing a finite element that combined the degrees of freedom
     of two existing finite elements."""
 
-    def __init__( self , A , B ):
+    def __init__(self, A, B):
 
         # Firstly, check it makes sense to enrich.  Elements must have:
         # - same reference element
@@ -48,8 +48,6 @@ class EnrichedElement( FiniteElement ):
         # order is at least max, possibly more, though getting this
         # right isn't important AFAIK
         self.order = max(A.get_order(), B.get_order())
-        # number of dofs just adds
-        self.fsdim = A.space_dimension() + B.space_dimension()
         # form degree is essentially max (not true for Hdiv/Hcurl,
         # but this will raise an error above anyway).
         # E.g. an H^1 function enriched with an L^2 is now just L^2.
@@ -64,56 +62,33 @@ class EnrichedElement( FiniteElement ):
         Adofs = A.entity_dofs()
         Bdofs = B.entity_dofs()
         offset = A.space_dimension()  # number of entities belonging to A
-        self.entity_ids = {}
+        entity_ids = {}
 
         for ent_dim in Adofs:
-            self.entity_ids[ent_dim] = {}
+            entity_ids[ent_dim] = {}
             for ent_dim_index in Adofs[ent_dim]:
                 entlist = Adofs[ent_dim][ent_dim_index]
                 entlist += [c + offset for c in Bdofs[ent_dim][ent_dim_index]]
-                self.entity_ids[ent_dim][ent_dim_index] = entlist
+                entity_ids[ent_dim][ent_dim_index] = entlist
 
         # set up dual basis - just concatenation
-        nodes = A.get_dual_set().get_nodes() + B.get_dual_set().get_nodes()
-        self.dual = dual_set.DualSet(nodes, self.ref_el, self.entity_ids)
+        nodes = A.dual_basis() + B.dual_basis()
+        self.dual = dual_set.DualSet(nodes, self.ref_el, entity_ids)
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
 
-    def get_reference_element( self ):
-        """Return the reference element for the finite element."""
-        return self.ref_el
-
-    def get_nodal_basis( self ):
+    def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
         for the finite element."""
         raise NotImplementedError("get_nodal_basis not implemented")
-
-    def get_dual_set( self ):
-        """Return the dual for the finite element."""
-        return self.dual
-
-    def get_order( self ):
-        """Return the approximation order of the element (the largest n such
-        that all polynomials of degree n are contained in the space)."""
-        return self.order
-
-    def dual_basis(self):
-        """Return the dual basis (list of functionals) for the finite
-        element."""
-        return self.dual.get_nodes()
-
-    def entity_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom for the finite element."""
-        return self.entity_ids
 
     def flattened_element(self):
         """If the constituent elements are TFEs, returns an appropriate
         flattened element"""
 
-        class FlattenedElement( FiniteElement ):
+        class FlattenedElement(FiniteElement):
 
             def __init__(self, EFE):
                 A = EFE.A
@@ -140,7 +115,7 @@ class EnrichedElement( FiniteElement ):
                         # then the dofs from the interior of the interval,
                         # then finally the dofs from the top point
                         self.entity_ids[dimA][ent] = \
-                          dofs[(dimA, 0)][2*ent] + dofs[(dimA, 1)][ent] + dofs[(dimA, 0)][2*ent+1]
+                            dofs[(dimA, 0)][2*ent] + dofs[(dimA, 1)][ent] + dofs[(dimA, 0)][2*ent+1]
 
             def degree(self):
                 """Return the degree of the (embedding) polynomial space."""
@@ -151,7 +126,7 @@ class EnrichedElement( FiniteElement ):
                 freedom for the finite element."""
                 return self.entity_ids
 
-            def get_reference_element( self ):
+            def get_reference_element(self):
                 """Return the reference element for the finite element."""
                 return self.ref_el
 
@@ -160,7 +135,7 @@ class EnrichedElement( FiniteElement ):
                 return self.fsdim
 
         if isinstance(self.A, TensorFiniteElement):
-            return FlattenedElement( self )
+            return FlattenedElement(self)
         else:
             raise TypeError("Can only flatten TensorFiniteElements")
 
@@ -193,19 +168,10 @@ class EnrichedElement( FiniteElement ):
         finite element."""
         raise NotImplementedError("get_coeffs not implemented")
 
-    def mapping(self):
-        """Return a list of appropriate mappings from the reference
-        element to a physical element for each basis function of the
-        finite element."""
-        return [self._mapping]*self.space_dimension()
-
-    def num_sub_elements(self):
-        """Return the number of sub-elements."""
-        return 1
-
     def space_dimension(self):
         """Return the dimension of the finite element space."""
-        return self.fsdim
+        # number of dofs just adds
+        return self.A.space_dimension() + self.B.space_dimension()
 
     def tabulate(self, order, points):
         """Return tabulated values of derivatives up to given order of
@@ -214,14 +180,14 @@ class EnrichedElement( FiniteElement ):
         # Again, simply concatenate at the basis-function level
         # Number of array dimensions depends on whether the space
         # is scalar- or vector-valued, so treat these separately.
-        
+
         Asd = self.A.space_dimension()
         Bsd = self.B.space_dimension()
         Atab = self.A.tabulate(order, points)
         Btab = self.B.tabulate(order, points)
         npoints = len(points)
         vs = self.A.value_shape()
-        rank = len(vs) # scalar: 0, vector: 1
+        rank = len(vs)  # scalar: 0, vector: 1
 
         result = {}
         for index in Atab:
@@ -231,11 +197,11 @@ class EnrichedElement( FiniteElement ):
                 # array[basis_fn][point]
                 # We build a new array, which will be the concatenation
                 # of the two subarrays, in the first index.
-                
+
                 temp = numpy.zeros((Asd+Bsd, npoints))
-                temp[:Asd,:] = Atab[index][:,:]
-                temp[Asd:,:] = Btab[index][:,:]
-                
+                temp[:Asd, :] = Atab[index][:, :]
+                temp[Asd:, :] = Btab[index][:, :]
+
                 result[index] = temp
             elif rank == 1:
                 # vector valued
@@ -243,11 +209,11 @@ class EnrichedElement( FiniteElement ):
                 # array[basis_fn][x/y/z][point]
                 # We build a new array, which will be the concatenation
                 # of the two subarrays, in the first index.
-                
+
                 temp = numpy.zeros((Asd+Bsd, vs[0], npoints))
-                temp[:Asd,:,:] = Atab[index][:,:,:]
-                temp[Asd:,:,:] = Btab[index][:,:,:]
-                
+                temp[:Asd, :, :] = Atab[index][:, :, :]
+                temp[Asd:, :, :] = Btab[index][:, :, :]
+
                 result[index] = temp
             else:
                 raise NotImplementedError("must be scalar- or vector-valued")
