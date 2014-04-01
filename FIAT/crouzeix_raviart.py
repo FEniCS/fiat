@@ -1,5 +1,4 @@
 # Copyright (C) 2010 Marie E. Rognes
-# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This file is part of FIAT.
 #
@@ -76,9 +75,7 @@ class CrouzeixRaviart(finite_element.FiniteElement):
         # FiniteElement
         space = polynomial_set.ONPolynomialSet(cell, 1)
         dual = CrouzeixRaviartDualSet(cell, 1)
-        degree = 1
-        formdegree = None # doesn't fit into FEEC framework
-        finite_element.FiniteElement.__init__(self, space, dual, degree, formdegree)
+        finite_element.FiniteElement.__init__(self, space, dual, 1)
 
 
 if __name__ == "__main__":
