@@ -50,12 +50,7 @@ class DualSet:
         return self.ref_el
 
     def to_riesz( self , poly_set ):
-        import time
-        #print "riesz"
 
-        # get an array of the right size, then write into it
-
-        t1 = time.time()
         tshape = self.nodes[0].target_shape
         num_nodes = len( self.nodes )
         es = poly_set.get_expansion_set( )
@@ -67,15 +62,5 @@ class DualSet:
 
         for i in range( len( self.nodes ) ):
             self.mat[i][:] = self.nodes[i].to_riesz( poly_set )
-
-        #print "time new: ", time.time() - t1
-
-        t1 = time.time()
-#        from functional import Functional
-#        riesz_reps = [ Functional.to_riesz( n , poly_set ) for n in self.nodes ]
-#        print "time old: ", time.time() - t1
-
-
-        #print "done with riesz"
 
         return self.mat
