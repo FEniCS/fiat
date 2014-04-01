@@ -1,5 +1,6 @@
-1.1.x [2013-??-??]
- - 
+- Support discontinuous/broken Raviart-Thomas
+1.3.0 [2014-01-07]
+ - Version bump.
 1.1.0 [2013-01-07]
  - Support second kind Nedelecs on tetrahedra over degree >= 2
  - Support Brezzi-Douglas-Fortin-Marini elements (of degree 1, 2), again
