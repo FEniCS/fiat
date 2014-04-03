@@ -35,7 +35,10 @@ class TensorFiniteElement(FiniteElement):
         # set up simple things
         self.polydegree = max(A.degree(), B.degree())
         self.order = min(A.get_order(), B.get_order())
-        self.formdegree = A.get_formdegree() + B.get_formdegree()
+        if A.get_formdegree() is None or B.get_formdegree() is None:
+            self.formdegree = None
+        else:
+            self.formdegree = A.get_formdegree() + B.get_formdegree()
 
         # set up reference element
         self.ref_el = two_product_cell(A.get_reference_element(), B.get_reference_element())

@@ -51,7 +51,10 @@ class EnrichedElement(FiniteElement):
         # form degree is essentially max (not true for Hdiv/Hcurl,
         # but this will raise an error above anyway).
         # E.g. an H^1 function enriched with an L^2 is now just L^2.
-        self.formdegree = max(A.get_formdegree(), B.get_formdegree())
+        if A.get_formdegree() is None or B.get_formdegree() is None:
+            self.formdegree = None
+        else:
+            self.formdegree = max(A.get_formdegree(), B.get_formdegree())
 
         # set up reference element and mapping, following checks above
         self.ref_el = A.get_reference_element()

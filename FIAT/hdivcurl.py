@@ -25,6 +25,8 @@ def Hdiv(element):
     if not isinstance(element, TensorFiniteElement):
         raise NotImplementedError
 
+    if element.A.get_formdegree() is None or element.B.get_formdegree() is None:
+        raise ValueError("form degree of sub-element was None (not set during initialisation), Hdiv cannot be done without this information")
     formdegree = element.A.get_formdegree() + element.B.get_formdegree()
     if not (formdegree == element.get_reference_element().get_spatial_dimension() - 1):
         raise ValueError("Tried to use Hdiv on a non-(n-1)-form element")
@@ -140,6 +142,8 @@ def Hcurl(element):
     if not isinstance(element, TensorFiniteElement):
         raise NotImplementedError
 
+    if element.A.get_formdegree() is None or element.B.get_formdegree() is None:
+        raise ValueError("form degree of sub-element was None (not set during initialisation), Hcurl cannot be done without this information")
     formdegree = element.A.get_formdegree() + element.B.get_formdegree()
     if not (formdegree == 1):
         raise ValueError("Tried to use Hcurl on a non-1-form element")
