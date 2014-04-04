@@ -20,6 +20,7 @@ import numpy
 from .finite_element import FiniteElement
 from .tensor_finite_element import TensorFiniteElement
 from . import dual_set
+from copy import copy
 
 
 class EnrichedElement(FiniteElement):
@@ -70,7 +71,7 @@ class EnrichedElement(FiniteElement):
         for ent_dim in Adofs:
             entity_ids[ent_dim] = {}
             for ent_dim_index in Adofs[ent_dim]:
-                entlist = Adofs[ent_dim][ent_dim_index]
+                entlist = copy(Adofs[ent_dim][ent_dim_index])
                 entlist += [c + offset for c in Bdofs[ent_dim][ent_dim_index]]
                 entity_ids[ent_dim][ent_dim_index] = entlist
 
