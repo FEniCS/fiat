@@ -135,15 +135,11 @@ class Trace(FiniteElement):
         # dotting with the normal vector.  Also, we only
         # keep the basis functions according to the dofmapping list
         temp = np.zeros((self.fsdim, len(points)))
-        if facetnum > 0:
-            # outwards normal is (0, 0, ..., 0, -1, 0, ..., 0)
-            for i in self.dofmapping:
-                temp[i, :] = -elt_tab[(0,)*dim][self.dofmapping[i], facetnum - 1, :]
-        else:
-            # outwards normal is (1, 1, ..., 1), so dot with normal <==> sum
-            # TODO: DO I NEED TO NORMALISE THIS?  i.e. divide by sqrt(dim)
-            for i in self.dofmapping:
-                temp[i, :] = np.sum(elt_tab[(0,)*dim][self.dofmapping[i]], axis=0)
+        # I don't know if this should be compute_normal or compute_scaled_normal
+        # try this; if there are unexplained issues then try the other one.
+        normal = self.get_reference_element().compute_scaled_normal(facetnum)
+        for i in self.dofmapping:
+            temp[i, :] = np.dot(normal, elt_tab[(0,)*dim][self.dofmapping[i]])
 
         # TODO: Many of these values should be 0.  Should we zero all
         # entries below a certain tolerance?
