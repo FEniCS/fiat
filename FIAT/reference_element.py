@@ -327,25 +327,26 @@ class ReferenceElement:
         sd_f = f_el.get_spatial_dimension()
         
         # Facet vertices in facet space.
-        v_f = f_el.get_vertices()
-        
+        v_f = numpy.array(f_el.get_vertices())
+
         A = numpy.zeros([ sd_f, sd_f ])
 
-        for i in A.shape[0]:
+        for i in range(A.shape[0]):
             A[i, :] = (v_f[i+1] - v_f[0])
             A[i, :] /= A[i,:].dot(A[i,:])
 
         # Facet vertices in cell space.
-        v_fc = self.get_vertices_of_subcomplex( t[sd_c - 1][facet_i] )
+        v_c = numpy.array(
+            self.get_vertices_of_subcomplex( t[sd_c - 1][facet_i] ))
 
         B = numpy.zeros([ sd_c, sd_f ])
 
-        for j in B.shape[1]:
+        for j in range(B.shape[1]):
             B[:, j] = (v_c[j+1] - v_c[0])
 
         C = B.dot(A)
 
-        offset = x_c[0] - C.dot(x_f[0])
+        offset = v_c[0] - C.dot(v_f[0])
 
         return lambda x: offset + C.dot(x)
 
