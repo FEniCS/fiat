@@ -132,7 +132,7 @@ class FiniteElement:
 
         for f in self.entity_dofs()[dim-1].keys():
             # Integrate the square of the basis functions on the facet.
-            vals = numpy.double(self.tabulate(0, q.get_points(f))[(0, 0)])
+            vals = numpy.double(self.tabulate(0, q.get_points(f))[(0,) * dim])
             # Ints contains the square of the basis functions
             # integrated over the facet.
             if self.value_shape():
