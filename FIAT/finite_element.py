@@ -137,7 +137,7 @@ class FiniteElement:
             # integrated over the facet.
             if self.value_shape():
                 # Vector-valued functions.
-                ints = numpy.dot(numpy.einsum("...i,...i", vals, vals),
+                ints = numpy.dot(numpy.einsum("...ij,...ij->...j", vals, vals),
                                  q.get_weights())
             else:
                 ints = numpy.dot(vals**2, q.get_weights())
