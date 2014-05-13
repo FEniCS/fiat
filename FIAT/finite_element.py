@@ -15,6 +15,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+#
+# Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 
 import numpy
 from .polynomial_set import PolynomialSet
