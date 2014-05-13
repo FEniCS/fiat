@@ -120,7 +120,7 @@ class FiniteElement:
         if hasattr(self, "_facet_support_dofs"):
             return self._facet_support_dofs
 
-        q = make_facet_quadrature(self.ref_el, 2*self.degree())
+        q = make_facet_quadrature(self.ref_el, max(2*self.degree(), 1))
 
         dim = self.ref_el.get_spatial_dimension()
 
