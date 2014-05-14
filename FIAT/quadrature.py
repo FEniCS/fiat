@@ -37,7 +37,7 @@ class QuadratureRule( object ):
     def get_weights( self ):
         return numpy.array(self.wts)
     def integrate( self , f ):
-        return sum( [ w * f(x) for (x, w) in zip(self.pts, self.get_wts) ] )
+        return sum( [ w * f(x) for (x, w) in zip(self.pts, self.wts) ] )
 
 class GaussJacobiQuadratureLineRule( QuadratureRule ):
     """Gauss-Jacobi quadature rule determined by Jacobi weights a and b
