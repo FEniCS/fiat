@@ -22,7 +22,7 @@ from . import reference_element, expansions, jacobi
 import math
 import numpy
 from .factorial import factorial
-from reference_element import LINE, TRIANGLE, TETRAHEDRON
+from .reference_element import LINE, TRIANGLE, TETRAHEDRON
 
 class QuadratureRule( object ):
     """General class that models integration over a reference element
