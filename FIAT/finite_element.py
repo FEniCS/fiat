@@ -15,9 +15,12 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+#
+# Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 
 import numpy
 from .polynomial_set import PolynomialSet
+from .quadrature import make_facet_quadrature
 
 class FiniteElement:
     """Class implementing Ciarlet's abstraction of a finite element
@@ -112,6 +115,37 @@ class FiniteElement:
         """Return the map of topological entities to degrees of
         freedom on the closure of those entities for the finite element."""
         return self.dual.get_entity_closure_ids()
+
+    def facet_support_dofs(self):
+        """Return the map of facet id to the degrees of freedom for which the
+        corresponding basis functions take non-zero values."""
+        if hasattr(self, "_facet_support_dofs"):
+            return self._facet_support_dofs
+
+        q = make_facet_quadrature(self.ref_el, max(2*self.degree(), 1))
+
+        dim = self.ref_el.get_spatial_dimension()
+
+        self._facet_support_dofs = {}
+
+        eps = 1.e-8  # Is this a safe value?
+
+        for f in self.entity_dofs()[dim-1].keys():
+            # Integrate the square of the basis functions on the facet.
+            vals = numpy.double(self.tabulate(0, q.get_points(f))[(0,) * dim])
+            # Ints contains the square of the basis functions
+            # integrated over the facet.
+            if self.value_shape():
+                # Vector-valued functions.
+                ints = numpy.dot(numpy.einsum("...ij,...ij->...j", vals, vals),
+                                 q.get_weights())
+            else:
+                ints = numpy.dot(vals**2, q.get_weights())
+
+            self._facet_support_dofs[f] \
+                = [dof for dof, i in enumerate(ints) if i > eps]
+
+        return self._facet_support_dofs
 
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the

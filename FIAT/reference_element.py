@@ -14,7 +14,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
-
+#
+# Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
+ 
 """
 Abstract class and particular implementations of finite element
 reference simplex geometry/topology.
@@ -118,7 +120,7 @@ class ReferenceElement:
         """Returns the code for the element's shape."""
         return self.shape
     def get_vertices( self ):
-        """Returns an iteratble of the element's vertices, each stored
+        """Returns an iterable of the element's vertices, each stored
         as a tuple."""
         return self.vertices
     def get_spatial_dimension( self ):
@@ -309,6 +311,48 @@ class ReferenceElement:
 
         return self.compute_normal( facet_i ) * v
 
+    def get_facet_transform( self , facet_i):
+        """Return a function f such that for a point with facet coordinates
+        x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
+        """
+        t = self.get_topology()
+
+        try:
+            f_el = self.get_facet_element()
+        except NotImplementedError:
+            # Special case for 1D elements.
+            x_c = self.get_vertices_of_subcomplex( t[0][facet_i] )
+
+            return lambda x: x_c
+
+        sd_c = self.get_spatial_dimension()
+        sd_f = f_el.get_spatial_dimension()
+        
+        # Facet vertices in facet space.
+        v_f = numpy.array(f_el.get_vertices())
+
+        A = numpy.zeros([ sd_f, sd_f ])
+
+        for i in range(A.shape[0]):
+            A[i, :] = (v_f[i+1] - v_f[0])
+            A[i, :] /= A[i,:].dot(A[i,:])
+
+        # Facet vertices in cell space.
+        v_c = numpy.array(
+            self.get_vertices_of_subcomplex( t[sd_c - 1][facet_i] ))
+
+        B = numpy.zeros([ sd_c, sd_f ])
+
+        for j in range(B.shape[1]):
+            B[:, j] = (v_c[j+1] - v_c[0])
+
+        C = B.dot(A)
+
+        offset = v_c[0] - C.dot(v_f[0])
+
+        return lambda x: offset + C.dot(x)
+
+
 class DefaultLine( ReferenceElement ):
     """This is the reference line with vertices (-1.0,) and (1.0,)."""
     def __init__( self ):
@@ -317,6 +361,10 @@ class DefaultLine( ReferenceElement ):
         topology = { 0 : { 0 : (0,) , 1: (1,) } , \
                      1 : edges }
         ReferenceElement.__init__( self , LINE , verts , topology )
+
+    def get_facet_element( self ):
+        raise NotImplementedError()
+
 
 class UFCInterval( ReferenceElement ):
     """This is the reference interval with vertices (0.0,) and (1.0,)."""
@@ -333,6 +381,10 @@ class UFCInterval( ReferenceElement ):
         else:
             return False
 
+    def get_facet_element( self ):
+        raise NotImplementedError()
+
+
 class DefaultTriangle( ReferenceElement ):
     """This is the reference triangle with vertices (-1.0,-1.0),
     (1.0,-1.0), and (-1.0,1.0)."""
@@ -345,6 +397,10 @@ class DefaultTriangle( ReferenceElement ):
         topology = { 0 : { 0 : (0,) , 1 : (1,) , 2 : (2,) } , \
                      1 : edges , 2 : faces }
         ReferenceElement.__init__( self , TRIANGLE , verts , topology )
+
+    def get_facet_element( self ):
+        return DefaultInterval()
+
 
 class UFCTriangle( ReferenceElement ):
     """This is the reference triangle with vertices (0.0,0.0),
@@ -369,6 +425,9 @@ class UFCTriangle( ReferenceElement ):
         else:
             return False
 
+    def get_facet_element( self ):
+        return UFCInterval()
+
 
 class IntrepidTriangle( ReferenceElement ):
     """This is the Intrepid triangle with vertices (0,0),(1,0),(0,1)"""
@@ -381,6 +440,11 @@ class IntrepidTriangle( ReferenceElement ):
         topology = { 0 : { 0 : (0,) , 1 : (1,) , 2 : (2,) } , \
                      1 : edges , 2 : faces }
         ReferenceElement.__init__( self , TRIANGLE , verts , topology )
+
+    def get_facet_element( self ):
+        # I think the UFC interval is equivalent to what the
+        # IntrepidInterval would be.
+        return UFCInterval()
 
 
 class DefaultTetrahedron( ReferenceElement ):
@@ -407,6 +471,10 @@ class DefaultTetrahedron( ReferenceElement ):
         topology = { 0: vs , 1 : edges , 2 : faces , 3 : tets }
         ReferenceElement.__init__( self , TETRAHEDRON , verts , topology )
 
+    def get_facet_element( self ):
+        return DefaultTriangle()
+
+
 class IntrepidTetrahedron( ReferenceElement ):
     """This is the reference tetrahedron with vertices (0,0,0),
     (1,0,0),(0,1,0), and (0,0,1) used in the Intrepid project."""
@@ -429,6 +497,9 @@ class IntrepidTetrahedron( ReferenceElement ):
         tets = { 0 : ( 0 , 1 , 2 , 3 ) }
         topology = { 0: vs , 1 : edges , 2 : faces , 3 : tets }
         ReferenceElement.__init__( self , TETRAHEDRON , verts , topology )
+
+    def get_facet_element( self ):
+        return IntrepidTriangle()
 
 
 class UFCTetrahedron( ReferenceElement ):
@@ -465,6 +536,9 @@ class UFCTetrahedron( ReferenceElement ):
             return True
         else:
             return False
+
+    def get_facet_element( self ):
+        return UFCTriangle()
 
 
 class two_product_cell( ReferenceElement ):
