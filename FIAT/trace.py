@@ -99,8 +99,8 @@ class Trace(FiniteElement):
 
     def tabulate(self, order, points):
         """Return tabulated values of basis functions at given points."""
-        if order > 0:
-            raise ValueError("Can not tabulate derivatives")
+        # if order > 0:
+        #     raise ValueError("Can not tabulate derivatives")
         # for simplicity, only tabulate points on a single facet
         # (this can be changed later, but shouldn't be necessary,
         # since I think FFC asks for tabulation on one facet at a time)
@@ -143,7 +143,17 @@ class Trace(FiniteElement):
 
         # TODO: Many of these values should be 0.  Should we zero all
         # entries below a certain tolerance?
-        return {(0,)*dim: temp}
+        if order == 0:
+            return {(0,)*dim: temp}
+        else:
+            from .polynomial_set import mis
+            tempdict = {(0,)*dim: temp}
+            for i in range(order):
+                alphas = mis(self.fsdim, i+1)
+                for alpha in alphas:
+                    tempdict[alpha] = np.zeros((self.fsdim, len(points)))
+                    tempdict[alpha][:] = np.NAN
+            return tempdict
 
     def value_shape(self):
         """Return the value shape of the finite element functions."""
