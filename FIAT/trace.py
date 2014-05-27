@@ -112,34 +112,39 @@ class Trace(FiniteElement):
         on_facet = [abs(points[0][foo]) < tol for foo in range(dim)]
         on_facet.insert(0, abs(sum(points[0]) - 1.0) < tol)
         # make sure the facet is unambiguous
-        if on_facet.count(True) == 0:
-            raise RuntimeError("Attempted to tabulate a Trace space away from a facet")
-        if on_facet.count(True) > 1:
-            raise RuntimeError("Attempted to tabulate a Trace space at an ambiguous location")
+        if on_facet.count(True) != 0:
+            if on_facet.count(True) > 1:
+                # This *has* to be caught, since we don't know which normal to
+                # dot with
+                raise RuntimeError("Attempted to tabulate a Trace space at an ambiguous location")
 
-        # make sure all the points are on the same facet
-        facetnum = on_facet.index(True)
-        if facetnum > 0:
-            check = [abs(points[i][facetnum - 1]) < tol for i in range(len(points))]
-            if check.count(False) != 0:
-                raise RuntimeError("Attempted to tabulate a Trace space on multiple facets simultaneously")
+            # make sure all the points are on the same facet
+            facetnum = on_facet.index(True)
+            if facetnum > 0:
+                check = [abs(points[i][facetnum - 1]) < tol for i in range(len(points))]
+                if check.count(False) != 0:
+                    raise RuntimeError("Attempted to tabulate a Trace space on multiple facets simultaneously")
+            else:
+                check = [abs(sum(points[i]) - 1.0) < tol for i in range(len(points))]
+                if check.count(False) != 0:
+                    raise RuntimeError("Attempted to tabulate a Trace space on multiple facets simultaneously")
+
+            # finally, we are ready to go...
+            elt_tab = self._element.tabulate(order, points)
+            # elt_tab is a 3d array: [basis_fn][cpt][point]
+            # we want to contract this to [basis_fn][point], by
+            # dotting with the normal vector.  Also, we only
+            # keep the basis functions according to the dofmapping list
+            temp = np.zeros((self.fsdim, len(points)))
+            # I don't know if this should be compute_normal or compute_scaled_normal
+            # try this; if there are unexplained issues then try the other one.
+            normal = self.get_reference_element().compute_scaled_normal(facetnum)
+            for i in self.dofmapping:
+                temp[i, :] = np.dot(normal, elt_tab[(0,)*dim][self.dofmapping[i]])
         else:
-            check = [abs(sum(points[i]) - 1.0) < tol for i in range(len(points))]
-            if check.count(False) != 0:
-                raise RuntimeError("Attempted to tabulate a Trace space on multiple facets simultaneously")
-
-        # finally, we are ready to go...
-        elt_tab = self._element.tabulate(order, points)
-        # elt_tab is a 3d array: [basis_fn][cpt][point]
-        # we want to contract this to [basis_fn][point], by
-        # dotting with the normal vector.  Also, we only
-        # keep the basis functions according to the dofmapping list
-        temp = np.zeros((self.fsdim, len(points)))
-        # I don't know if this should be compute_normal or compute_scaled_normal
-        # try this; if there are unexplained issues then try the other one.
-        normal = self.get_reference_element().compute_scaled_normal(facetnum)
-        for i in self.dofmapping:
-            temp[i, :] = np.dot(normal, elt_tab[(0,)*dim][self.dofmapping[i]])
+             # raise RuntimeError("Attempted to tabulate a Trace space away from a facet")
+             temp = np.zeros((self.fsdim, len(points)))
+             temp[:] = np.NAN
 
         # TODO: Many of these values should be 0.  Should we zero all
         # entries below a certain tolerance?
