@@ -46,7 +46,7 @@ supported_elements = {"Argyris":                      Argyris,
                       "EnrichedElement":              EnrichedElement,
                       "OuterProductElement":          TensorFiniteElement,
                       "BrokenElement":                Discontinuized,
-                      "Trace":                        Trace}
+                      "TraceElement":                 Trace}
 
 # List of extra elements
 extra_elements = {"P0":              P0,
