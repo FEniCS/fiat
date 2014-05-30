@@ -27,6 +27,7 @@ from FIAT.bubble import Bubble
 from FIAT.tensor_finite_element import TensorFiniteElement
 from FIAT.enriched import EnrichedElement
 from FIAT.discontinuized import Discontinuized
+from FIAT.trace import Trace
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris":                      Argyris,
@@ -44,7 +45,8 @@ supported_elements = {"Argyris":                      Argyris,
                       "Raviart-Thomas":               RaviartThomas,
                       "EnrichedElement":              EnrichedElement,
                       "OuterProductElement":          TensorFiniteElement,
-                      "BrokenElement":                Discontinuized}
+                      "BrokenElement":                Discontinuized,
+                      "TraceElement":                 Trace}
 
 # List of extra elements
 extra_elements = {"P0":              P0,
