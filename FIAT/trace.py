@@ -28,13 +28,13 @@ class Trace(FiniteElement):
     dot product with the facet normal, in reference space."""
 
     def __init__(self, element):
-        # check for hdiv element (contravarient piola mapping)
+        # check for hdiv element (contravariant piola mapping)
         if not element.mapping()[0] == "contravariant piola":
             raise ValueError("Can only take trace of Hdiv element")
 
         # TPEs not supported yet
         if isinstance(element, TensorFiniteElement):
-            raise NotImplementedError("Trace of TPEs not supported yet")
+            raise NotImplementedError("Trace of TFEs not supported yet")
 
         # Otherwise, let's go...
         self._element = element
