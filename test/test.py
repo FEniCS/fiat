@@ -86,41 +86,20 @@ def test_generator():
         reference = pickle.load(open("reference.pickle", "r"))
     except IOError:
         print("Creating new reference values")
-        reference = _create_reference_data()
+        reference = {}
+        for test_case in test_cases:
+            family, dim, degree = test_case
+            reference[test_case] = _create_data(family, dim, degree)
         # Store the data for the future
         pickle.dump(reference, open("reference.pickle", "w"))
 
     for test_case in test_cases:
         family, dim, degree = test_case
-        yield _perform_test, family, dim, degree, reference
+        yield _perform_test, family, dim, degree, reference[test_case]
 
 
-def _create_reference_data():
+def _create_data(family, dim, degree):
     '''Create the reference data.
-    '''
-    values = {}
-    for test_case in test_cases:
-        family, dim, degree = test_case
-
-        # Get domain and element class
-        domain = ufc_simplex(dim)
-        ElementClass = supported_elements[family]
-
-        # Create element
-        element = ElementClass(domain, degree)
-
-        # Create quadrature points
-        quad_rule = make_quadrature(domain, num_points)
-        points = quad_rule.get_points()
-
-        # Tabulate at quadrature points
-        table = element.tabulate(max_derivative, points)
-        values[test_case] = table
-    return values
-
-
-def _perform_test(family, dim, degree, reference):
-    '''Test against reference data.
     '''
     # Get domain and element class
     domain = ufc_simplex(dim)
@@ -135,9 +114,15 @@ def _perform_test(family, dim, degree, reference):
 
     # Tabulate at quadrature points
     table = element.tabulate(max_derivative, points)
+    return table
+
+
+def _perform_test(family, dim, degree, reference_table):
+    '''Test against reference data.
+    '''
+    table = _create_data(family, dim, degree)
 
     # Check against reference
-    reference_table = reference[(family, dim, degree)]
     for dtuple in reference_table:
         assert dtuple in table
         assert table[dtuple].shape == reference_table[dtuple].shape
