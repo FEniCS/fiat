@@ -16,80 +16,90 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # First added:  2010-01-31
-# Last changed: 2012-10-01
+# Last changed: 2014-06-23
 
-import sys, pickle
+import nose
+
+import pickle
+import numpy
+
 from FIAT import supported_elements, make_quadrature, ufc_simplex
-from numpy import shape, max, abs
 
 # Combinations of (family, dim, degree) to test
-test_cases = (("Lagrange", 2, 1),
-              ("Lagrange", 2, 2),
-              ("Lagrange", 2, 3),
-              ("Lagrange", 3, 1),
-              ("Lagrange", 3, 2),
-              ("Lagrange", 3, 3),
-              ("Discontinuous Lagrange", 2, 0),
-              ("Discontinuous Lagrange", 2, 1),
-              ("Discontinuous Lagrange", 2, 2),
-              ("Discontinuous Lagrange", 3, 0),
-              ("Discontinuous Lagrange", 3, 1),
-              ("Discontinuous Lagrange", 3, 2),
-              ("Brezzi-Douglas-Marini", 2, 1),
-              ("Brezzi-Douglas-Marini", 2, 2),
-              ("Brezzi-Douglas-Marini", 2, 3),
-              ("Brezzi-Douglas-Marini", 3, 1),
-              ("Brezzi-Douglas-Marini", 3, 2),
-              ("Brezzi-Douglas-Marini", 3, 3),
-              ("Brezzi-Douglas-Fortin-Marini", 2, 2),
-              ("Raviart-Thomas", 2, 1),
-              ("Raviart-Thomas", 2, 2),
-              ("Raviart-Thomas", 2, 3),
-              ("Raviart-Thomas", 3, 1),
-              ("Raviart-Thomas", 3, 2),
-              ("Raviart-Thomas", 3, 3),
-              ("Discontinuous Raviart-Thomas", 2, 1),
-              ("Discontinuous Raviart-Thomas", 2, 2),
-              ("Discontinuous Raviart-Thomas", 2, 3),
-              ("Discontinuous Raviart-Thomas", 3, 1),
-              ("Discontinuous Raviart-Thomas", 3, 2),
-              ("Discontinuous Raviart-Thomas", 3, 3),
-              ("Nedelec 1st kind H(curl)", 2, 1),
-              ("Nedelec 1st kind H(curl)", 2, 2),
-              ("Nedelec 1st kind H(curl)", 2, 3),
-              ("Nedelec 1st kind H(curl)", 3, 1),
-              ("Nedelec 1st kind H(curl)", 3, 2),
-              ("Nedelec 1st kind H(curl)", 3, 3),
-              ("Nedelec 2nd kind H(curl)", 2, 1),
-              ("Nedelec 2nd kind H(curl)", 2, 2),
-              ("Nedelec 2nd kind H(curl)", 2, 3),
-              ("Nedelec 2nd kind H(curl)", 3, 1),
-              ("Nedelec 2nd kind H(curl)", 3, 2),
-              ("Nedelec 2nd kind H(curl)", 3, 3),
-              ("Crouzeix-Raviart", 2, 1),
-              ("Crouzeix-Raviart", 3, 1))
+test_cases = (
+    ("Lagrange", 2, 1),
+    ("Lagrange", 2, 2),
+    ("Lagrange", 2, 3),
+    ("Lagrange", 3, 1),
+    ("Lagrange", 3, 2),
+    ("Lagrange", 3, 3),
+    ("Discontinuous Lagrange", 2, 0),
+    ("Discontinuous Lagrange", 2, 1),
+    ("Discontinuous Lagrange", 2, 2),
+    ("Discontinuous Lagrange", 3, 0),
+    ("Discontinuous Lagrange", 3, 1),
+    ("Discontinuous Lagrange", 3, 2),
+    ("Brezzi-Douglas-Marini", 2, 1),
+    ("Brezzi-Douglas-Marini", 2, 2),
+    ("Brezzi-Douglas-Marini", 2, 3),
+    ("Brezzi-Douglas-Marini", 3, 1),
+    ("Brezzi-Douglas-Marini", 3, 2),
+    ("Brezzi-Douglas-Marini", 3, 3),
+    ("Brezzi-Douglas-Fortin-Marini", 2, 2),
+    ("Raviart-Thomas", 2, 1),
+    ("Raviart-Thomas", 2, 2),
+    ("Raviart-Thomas", 2, 3),
+    ("Raviart-Thomas", 3, 1),
+    ("Raviart-Thomas", 3, 2),
+    ("Raviart-Thomas", 3, 3),
+    ("Discontinuous Raviart-Thomas", 2, 1),
+    ("Discontinuous Raviart-Thomas", 2, 2),
+    ("Discontinuous Raviart-Thomas", 2, 3),
+    ("Discontinuous Raviart-Thomas", 3, 1),
+    ("Discontinuous Raviart-Thomas", 3, 2),
+    ("Discontinuous Raviart-Thomas", 3, 3),
+    ("Nedelec 1st kind H(curl)", 2, 1),
+    ("Nedelec 1st kind H(curl)", 2, 2),
+    ("Nedelec 1st kind H(curl)", 2, 3),
+    ("Nedelec 1st kind H(curl)", 3, 1),
+    ("Nedelec 1st kind H(curl)", 3, 2),
+    ("Nedelec 1st kind H(curl)", 3, 3),
+    ("Nedelec 2nd kind H(curl)", 2, 1),
+    ("Nedelec 2nd kind H(curl)", 2, 2),
+    ("Nedelec 2nd kind H(curl)", 2, 3),
+    ("Nedelec 2nd kind H(curl)", 3, 1),
+    ("Nedelec 2nd kind H(curl)", 3, 2),
+    ("Nedelec 2nd kind H(curl)", 3, 3),
+    ("Crouzeix-Raviart", 2, 1),
+    ("Crouzeix-Raviart", 3, 1)
+    )
 
 # Parameters
 num_points = 3
 max_derivative = 3
 tolerance = 1e-8
 
-def test():
-    "Regression test all elements."
 
+def test_generator():
     # Try reading reference values
     try:
         reference = pickle.load(open("reference.pickle", "r"))
-    except:
-        reference = None
+    except IOError:
+        print("Creating new reference values")
+        reference = _create_reference_data()
+        # Store the data for the future
+        pickle.dump(reference, open("reference.pickle", "w"))
 
-    # Iterate over test cases
+    for test_case in test_cases:
+        family, dim, degree = test_case
+        yield _perform_test, family, dim, degree, reference
+
+
+def _create_reference_data():
+    '''Create the reference data.
+    '''
     values = {}
     for test_case in test_cases:
-
-        print("Testing", test_case)
-
-        # Get family, dimension and degree
         family, dim, degree = test_case
 
         # Get domain and element class
@@ -106,32 +116,36 @@ def test():
         # Tabulate at quadrature points
         table = element.tabulate(max_derivative, points)
         values[test_case] = table
+    return values
 
-        # Check against reference
-        if reference is not None:
-            reference_table = reference[(family, dim, degree)]
-            for dtuple in reference_table:
-                if dtuple not in table:
-                    print("*** Missing dtuple in table for " + str(test_case))
-                    return 1
-                elif shape(table[dtuple]) != shape(reference_table[dtuple]):
-                    print("*** Wrong shape in table for " + str(test_case))
-                    return 1
-                else:
-                    diff = max(abs(table[dtuple] - reference_table[dtuple]))
-                    if diff > tolerance:
-                        print("*** Wrong values in table for %s, difference is %g" % (str(test_case), diff))
-                        return 1
 
-    # Write new values if reference is missing
-    if reference is None:
-        print("Storing new reference values")
-        pickle.dump(values, open("reference.pickle", "w"))
+def _perform_test(family, dim, degree, reference):
+    '''Test against reference data.
+    '''
+    # Get domain and element class
+    domain = ufc_simplex(dim)
+    ElementClass = supported_elements[family]
 
-    print()
-    print("Ran %d tests: OK" % len(test_cases))
+    # Create element
+    element = ElementClass(domain, degree)
 
-    return 0
+    # Create quadrature points
+    quad_rule = make_quadrature(domain, num_points)
+    points = quad_rule.get_points()
+
+    # Tabulate at quadrature points
+    table = element.tabulate(max_derivative, points)
+
+    # Check against reference
+    reference_table = reference[(family, dim, degree)]
+    for dtuple in reference_table:
+        assert dtuple in table
+        assert table[dtuple].shape == reference_table[dtuple].shape
+        diff = numpy.amax(abs(table[dtuple] - reference_table[dtuple]))
+        assert diff < tolerance
+
+    return
+
 
 if __name__ == "__main__":
-    sys.exit(test())
+    nose.main()
