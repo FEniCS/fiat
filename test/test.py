@@ -23,7 +23,8 @@ import nose
 import pickle
 import numpy
 
-from FIAT import supported_elements, make_quadrature, ufc_simplex
+from FIAT import supported_elements, make_quadrature, ufc_simplex, \
+    newdubiner
 
 # Combinations of (family, dim, degree) to test
 test_cases = (
@@ -80,12 +81,76 @@ max_derivative = 3
 tolerance = 1e-8
 
 
+def test_newdubiner():
+    # Try reading reference values
+    try:
+        reference = pickle.load(open("reference-newdubiner.pickle", "r"))
+    except IOError:
+        reference = _create_newdubiner_data()
+        # Store the data for the future
+        pickle.dump(reference, open("reference-newdubiner.pickle", "w"))
+
+    try:
+        reference_jet = \
+            pickle.load(open("reference-newdubiner-jet.pickle", "r"))
+    except IOError:
+        reference_jet = _create_newdubiner_jet_data()
+        # Store the data for the future
+        pickle.dump(
+            reference_jet,
+            open("reference-newdubiner-jet.pickle", "w")
+            )
+
+    _perform_newdubiner_test(reference, reference_jet)
+
+    return
+
+
+def _create_newdubiner_data():
+    from Scientific.Functions.Derivatives import DerivVar as DV
+    latticeK = 2
+    D = 3
+    pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
+    dpts = numpy.array([[DV(pt[i], i) for i in range(len(pt))]
+                       for pt in pts]
+                       )
+    return newdubiner.tabulate_tetrahedron(D, dpts, float)
+
+
+def _create_newdubiner_jet_data():
+    latticeK = 2
+    D = 3
+    n = 1
+    order = 2
+    pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
+    return newdubiner.tabulate_jet(D, n, pts, order, float)
+
+
+def _perform_newdubiner_test(reference_table, reference_table_jet):
+    '''Test against reference data.
+    '''
+    table = _create_newdubiner_data()
+    for data, reference_data in zip(table, reference_table):
+        for point, reference_point in zip(data, reference_data):
+            for k in range(2):
+                diff = numpy.array(point[k]) - numpy.array(reference_point[k])
+                assert numpy.amax(abs(diff)) < tolerance
+
+    table_jet = _create_newdubiner_jet_data()
+    for datum, reference_datum in zip(table_jet, reference_table_jet):
+        for entry, reference_entry in zip(datum, reference_datum):
+            for k in range(3):
+                diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
+                assert numpy.amax(abs(diff)) < tolerance
+
+    return
+
+
 def test_generator():
     # Try reading reference values
     try:
         reference = pickle.load(open("reference.pickle", "r"))
     except IOError:
-        print("Creating new reference values")
         reference = {}
         for test_case in test_cases:
             family, dim, degree = test_case
