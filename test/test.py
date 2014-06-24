@@ -184,14 +184,10 @@ def test_newdubiner():
 
 
 def _create_newdubiner_data():
-    from Scientific.Functions.Derivatives import DerivVar as DV
     latticeK = 2
     D = 3
     pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
-    dpts = numpy.array([[DV(pt[i], i) for i in range(len(pt))]
-                       for pt in pts]
-                       )
-    return newdubiner.tabulate_tetrahedron(D, dpts, float)
+    return newdubiner.tabulate_tetrahedron_derivatives(D, pts, float)
 
 
 def _create_newdubiner_jet_data():

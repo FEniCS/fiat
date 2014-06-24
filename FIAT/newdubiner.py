@@ -208,6 +208,14 @@ def tabulate_tetrahedron(n, pts, numtype):
     return results
 
 
+def tabulate_tetrahedron_derivatives(n, pts, numtype):
+    from Scientific.Functions.Derivatives import DerivVar as DV
+    dpts = numpy.array([[DV(pt[i], i) for i in range(len(pt))]
+                       for pt in pts]
+                       )
+    return tabulate_tetrahedron(n, dpts, numtype)
+
+
 def tabulate(D, n, pts, numtype):
     if D == 2:
         return tabulate_triangle(n, pts, numtype)
@@ -228,17 +236,12 @@ def tabulate_jet(D, n, pts, order, numtype):
 
 if __name__ == "__main__":
     import gmpy
-    from Scientific.Functions.Derivatives import DerivVar as DV
 
     latticeK = 2
     D = 3
 
     pts = make_tetrahedron_lattice(latticeK, gmpy.mpq)
 
-    dpts = numpy.array([[DV(pt[i], i) for i in range(len(pt))]
-                        for pt in pts
-                        ])
-
-    vals = tabulate_tetrahedron(D, dpts, gmpy.mpq)
+    vals = tabulate_tetrahedron_derivatives(D, pts, gmpy.mpq)
 
     print(vals)
