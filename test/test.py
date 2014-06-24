@@ -107,16 +107,13 @@ def test_expansions():
 
 
 def _create_expansions_data():
-    from Scientific.Functions.FirstDerivatives import DerivVar
-
     E = reference_element.DefaultTriangle()
     k = 3
     pts = E.make_lattice(k)
-    dpts = [[DerivVar(pt[j], j) for j in range(len(pt))] for pt in pts]
     Phis = expansions.get_expansion_set(E)
 
     phis = Phis.tabulate(k, pts)
-    dphis = Phis.tabulate(k, dpts)
+    dphis = Phis.tabulate_derivatives(k, pts)
 
     return phis, dphis
 
@@ -134,19 +131,29 @@ def _create_expansions_jet_data():
 def _perform_expansions_test(reference_table, reference_table_jet):
     '''Test against reference data.
     '''
-    table = _create_expansions_data()
-    for data, reference_data in zip(table, reference_table):
-        for point, reference_point in zip(data, reference_data):
-            for k in range(2):
-                diff = numpy.array(point[k]) - numpy.array(reference_point[k])
-                assert numpy.amax(abs(diff)) < tolerance
+    table_phi, table_dphi = _create_expansions_data()
+    reference_table_phi, reference_table_dphi = reference_table
 
-    table_jet = _create_expansions_jet_data()
-    for datum, reference_datum in zip(table_jet, reference_table_jet):
-        for entry, reference_entry in zip(datum, reference_datum):
-            for k in range(3):
-                diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
-                assert numpy.amax(abs(diff)) < tolerance
+    # Test raw point data
+    diff = numpy.array(table_phi) - numpy.array(reference_table_phi)
+    assert (abs(diff) < tolerance).all()
+
+    # Test derivative values
+    for entry, reference_entry in zip(table_dphi, reference_table_dphi):
+        for point, reference_point in zip(entry, reference_entry):
+            value, gradient = point[0], point[1]
+            reference_value, reference_gradient = \
+                reference_point[0], reference_point[1]
+            assert abs(value - reference_value) < tolerance
+            diff = numpy.array(gradient) - numpy.array(reference_gradient)
+            assert (abs(diff) < tolerance).all()
+
+    # Test jet data
+    data = _create_expansions_jet_data()
+    reference_data = reference_table_jet
+    for datum, reference_datum in zip(data, reference_data):
+        diff = numpy.array(datum) - numpy.array(reference_datum)
+        assert (abs(diff) < tolerance).all()
 
     return
 
@@ -200,18 +207,19 @@ def _perform_newdubiner_test(reference_table, reference_table_jet):
     '''Test against reference data.
     '''
     table = _create_newdubiner_data()
+
     for data, reference_data in zip(table, reference_table):
         for point, reference_point in zip(data, reference_data):
             for k in range(2):
                 diff = numpy.array(point[k]) - numpy.array(reference_point[k])
-                assert numpy.amax(abs(diff)) < tolerance
+                assert (abs(diff) < tolerance).all()
 
     table_jet = _create_newdubiner_jet_data()
     for datum, reference_datum in zip(table_jet, reference_table_jet):
         for entry, reference_entry in zip(datum, reference_datum):
             for k in range(3):
                 diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
-                assert numpy.amax(abs(diff)) < tolerance
+                assert (abs(diff) < tolerance).all()
 
     return
 
@@ -261,8 +269,8 @@ def _perform_test(family, dim, degree, reference_table):
     for dtuple in reference_table:
         assert dtuple in table
         assert table[dtuple].shape == reference_table[dtuple].shape
-        diff = numpy.amax(abs(table[dtuple] - reference_table[dtuple]))
-        assert diff < tolerance
+        diff = table[dtuple] - reference_table[dtuple]
+        assert (abs(diff) < tolerance).all()
 
     return
 

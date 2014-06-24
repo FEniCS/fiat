@@ -182,6 +182,11 @@ class TriangleExpansionSet:
         return results
         #return self.scale * results
 
+    def tabulate_derivatives(self, n, pts):
+        from Scientific.Functions.FirstDerivatives import DerivVar
+        dpts = [[DerivVar(pt[j], j) for j in range(len(pt))] for pt in pts]
+        return self.tabulate(n, dpts)
+
     def tabulate_jet(self, n, pts, order=1):
         dpts = [tuple([Derivatives.DerivVar(pt[i], i, order)
                        for i in range(len(pt))])
@@ -296,6 +301,11 @@ class TetrahedronExpansionSet:
 
         return results
 
+    def tabulate_derivatives(self, n, pts):
+        from Scientific.Functions.FirstDerivatives import DerivVar
+        dpts = [[DerivVar(pt[j], j) for j in range(len(pt))] for pt in pts]
+        return self.tabulate(n, dpts)
+
     def tabulate_jet(self, n, pts, order=1):
         dpts = [tuple([Derivatives.DerivVar(pt[i], i, order)
                        for i in range(len(pt))])
@@ -338,7 +348,6 @@ def polynomial_dimension(ref_el, degree):
 
 if __name__ == "__main__":
     from . import expansions
-    from Scientific.Functions.FirstDerivatives import DerivVar
 
     E = reference_element.DefaultTriangle()
 
@@ -346,12 +355,11 @@ if __name__ == "__main__":
 
     pts = E.make_lattice(k)
 
-    dpts = [[DerivVar(pt[j], j) for j in range(len(pt))] for pt in pts]
-
     Phis = expansions.get_expansion_set(E)
 
     phis = Phis.tabulate(k, pts)
-    dphis = Phis.tabulate(k, dpts)
+
+    dphis = Phis.tabulate_derivatives(k, pts)
 
 #    dphis_x = numpy.array([[d[1][0] for d in dphi] for dphi in dphis])
 #    dphis_y = numpy.array([[d[1][1] for d in dphi] for dphi in dphis])
