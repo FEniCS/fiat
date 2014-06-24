@@ -116,8 +116,16 @@ class TriangleExpansionSet:
     def tabulate(self, n, pts):
         if len(pts) == 0:
             return numpy.array([])
+        else:
+            return numpy.array(self._tabulate(n, numpy.array(pts).T))
 
-        ref_pts = [self.mapping(pt) for pt in pts]
+    def _tabulate(self, n, pts):
+        '''A version of tabulate() that also works for a single point.
+        '''
+        m1, m2 = self.A.shape
+        ref_pts = [sum(self.A[i][j] * pts[j] for j in range(m2)) + self.b[i]
+                   for i in range(m1)
+                   ]
 
         def idx(p, q):
             return (p+q)*(p+q+1)/2 + q
@@ -131,53 +139,44 @@ class TriangleExpansionSet:
                 / float((n+1)*(n+1+a+b)*(2*n+a+b))
             return an, bn, cn
 
-        pt_types = [type(p) for p in pts[0]]
-        ntype = type(0.0)
-        for pt in pt_types:
-            if not isinstance(pt, type(0.0)):
-                ntype = type(pt)
-                break
+        results = ((n+1)*(n+2)/2) * [None]
 
-        results = numpy.zeros(((n+1)*(n+2)/2, len(pts)), ntype)
-        apts = numpy.array(pts)
-
-        for ii in range(results.shape[1]):
-            results[0, ii] = 1.0 \
-                + apts[ii, 0] - apts[ii, 0] \
-                + apts[ii, 1] - apts[ii, 1]
+        results[0] = 1.0 \
+            + pts[0] - pts[0] \
+            + pts[1] - pts[1]
 
         if n == 0:
             return results
 
-        x = numpy.array([pt[0] for pt in ref_pts])
-        y = numpy.array([pt[1] for pt in ref_pts])
+        x = ref_pts[0]
+        y = ref_pts[1]
 
         f1 = (1.0+2*x+y)/2.0
         f2 = (1.0 - y) / 2.0
         f3 = f2**2
 
-        results[idx(1, 0), :] = f1
+        results[idx(1, 0)] = f1
 
         for p in range(1, n):
             a = (2.0*p+1)/(1.0+p)
             # b = p / (p+1.0)
-            results[idx(p+1, 0)] = a * f1 * results[idx(p, 0), :] \
-                - p/(1.0+p) * f3 * results[idx(p-1, 0), :]
+            results[idx(p+1, 0)] = a * f1 * results[idx(p, 0)] \
+                - p/(1.0+p) * f3 * results[idx(p-1, 0)]
 
         for p in range(n):
-            results[idx(p, 1), :] = 0.5 * (1+2.0*p+(3.0+2.0*p)*y) \
+            results[idx(p, 1)] = 0.5 * (1+2.0*p+(3.0+2.0*p)*y) \
                 * results[idx(p, 0)]
 
         for p in range(n-1):
             for q in range(1, n-p):
                 (a1, a2, a3) = jrc(2*p+1, 0, q)
-                results[idx(p, q+1), :] = \
+                results[idx(p, q+1)] = \
                     (a1 * y + a2) * results[idx(p, q)] \
                     - a3 * results[idx(p, q-1)]
 
         for p in range(n+1):
             for q in range(n-p+1):
-                results[idx(p, q), :] *= math.sqrt((p+0.5)*(p+q+1.0))
+                results[idx(p, q)] *= math.sqrt((p+0.5)*(p+q+1.0))
 
         return results
         #return self.scale * results
