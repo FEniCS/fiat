@@ -24,7 +24,7 @@ import pickle
 import numpy
 
 from FIAT import supported_elements, make_quadrature, ufc_simplex, \
-    newdubiner
+    newdubiner, expansions, reference_element
 
 # Combinations of (family, dim, degree) to test
 test_cases = (
@@ -79,6 +79,76 @@ test_cases = (
 num_points = 3
 max_derivative = 3
 tolerance = 1e-8
+
+
+def test_expansions():
+    # Try reading reference values
+    try:
+        reference = pickle.load(open("reference-expansions.pickle", "r"))
+    except IOError:
+        reference = _create_expansions_data()
+        # Store the data for the future
+        pickle.dump(reference, open("reference-expansions.pickle", "w"))
+
+    try:
+        reference_jet = \
+            pickle.load(open("reference-expansions-jet.pickle", "r"))
+    except IOError:
+        reference_jet = _create_expansions_jet_data()
+        # Store the data for the future
+        pickle.dump(
+            reference_jet,
+            open("reference-expansions-jet.pickle", "w")
+            )
+
+    _perform_expansions_test(reference, reference_jet)
+
+    return
+
+
+def _create_expansions_data():
+    from Scientific.Functions.FirstDerivatives import DerivVar
+
+    E = reference_element.DefaultTriangle()
+    k = 3
+    pts = E.make_lattice(k)
+    dpts = [[DerivVar(pt[j], j) for j in range(len(pt))] for pt in pts]
+    Phis = expansions.get_expansion_set(E)
+
+    phis = Phis.tabulate(k, pts)
+    dphis = Phis.tabulate(k, dpts)
+
+    return phis, dphis
+
+
+def _create_expansions_jet_data():
+    latticeK = 2
+    n = 1
+    order = 2
+    E = reference_element.DefaultTetrahedron()
+    pts = E.make_lattice(latticeK)
+    F = expansions.TetrahedronExpansionSet(E)
+    return F.tabulate_jet(n, pts, order)
+
+
+def _perform_expansions_test(reference_table, reference_table_jet):
+    '''Test against reference data.
+    '''
+    table = _create_expansions_data()
+    for data, reference_data in zip(table, reference_table):
+        for point, reference_point in zip(data, reference_data):
+            for k in range(2):
+                diff = numpy.array(point[k]) - numpy.array(reference_point[k])
+                assert numpy.amax(abs(diff)) < tolerance
+
+    table_jet = _create_expansions_jet_data()
+    for datum, reference_datum in zip(table_jet, reference_table_jet):
+        for entry, reference_entry in zip(datum, reference_datum):
+            for k in range(3):
+                diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
+                assert numpy.amax(abs(diff)) < tolerance
+
+    return
 
 
 def test_newdubiner():

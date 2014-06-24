@@ -180,7 +180,7 @@ class TriangleExpansionSet:
 
     def tabulate_jet( self , n , pts , order = 1 ):
         import sys
-        from Derivatives import DerivVar
+        from Scientific.Functions.Derivatives import DerivVar
         dpts = [ tuple( [ DerivVar( pt[i] , i , order ) \
                               for i in range( len( pt ) ) ] ) for pt in pts ]
         dbfs = self.tabulate( n , dpts )
@@ -291,7 +291,7 @@ class TetrahedronExpansionSet:
         return results
 
     def tabulate_jet( self , n , pts , order = 1 ):
-        from Derivatives import DerivVar
+        from Scientific.Functions.Derivatives import DerivVar
         dpts = [ tuple( [ DerivVar( pt[i] , i , order ) \
                               for i in range( len( pt ) ) ] ) for pt in pts ]
         dbfs = self.tabulate( n , dpts )
