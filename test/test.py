@@ -90,6 +90,26 @@ def test_expansions():
         # Store the data for the future
         pickle.dump(reference, open("reference-expansions.pickle", "w"))
 
+    table_phi, table_dphi = _create_expansions_data()
+    reference_table_phi, reference_table_dphi = reference
+
+    # Test raw point data
+    diff = numpy.array(table_phi) - numpy.array(reference_table_phi)
+    assert (abs(diff) < tolerance).all()
+
+    # Test derivative values
+    for entry, reference_entry in zip(table_dphi, reference_table_dphi):
+        for point, reference_point in zip(entry, reference_entry):
+            value, gradient = point[0], point[1]
+            reference_value, reference_gradient = \
+                reference_point[0], reference_point[1]
+            assert abs(value - reference_value) < tolerance
+            diff = numpy.array(gradient) - numpy.array(reference_gradient)
+            assert (abs(diff) < tolerance).all()
+    return
+
+
+def test_expansions_jet():
     try:
         reference_jet = \
             pickle.load(open("reference-expansions-jet.pickle", "r"))
@@ -101,7 +121,12 @@ def test_expansions():
             open("reference-expansions-jet.pickle", "w")
             )
 
-    _perform_expansions_test(reference, reference_jet)
+    # Test jet data
+    data = _create_expansions_jet_data()
+    reference_data = reference_jet
+    for datum, reference_datum in zip(data, reference_data):
+        diff = numpy.array(datum) - numpy.array(reference_datum)
+        assert (abs(diff) < tolerance).all()
 
     return
 
@@ -128,36 +153,6 @@ def _create_expansions_jet_data():
     return F.tabulate_jet(n, pts, order)
 
 
-def _perform_expansions_test(reference_table, reference_table_jet):
-    '''Test against reference data.
-    '''
-    table_phi, table_dphi = _create_expansions_data()
-    reference_table_phi, reference_table_dphi = reference_table
-
-    # Test raw point data
-    diff = numpy.array(table_phi) - numpy.array(reference_table_phi)
-    assert (abs(diff) < tolerance).all()
-
-    # Test derivative values
-    for entry, reference_entry in zip(table_dphi, reference_table_dphi):
-        for point, reference_point in zip(entry, reference_entry):
-            value, gradient = point[0], point[1]
-            reference_value, reference_gradient = \
-                reference_point[0], reference_point[1]
-            assert abs(value - reference_value) < tolerance
-            diff = numpy.array(gradient) - numpy.array(reference_gradient)
-            assert (abs(diff) < tolerance).all()
-
-    # Test jet data
-    data = _create_expansions_jet_data()
-    reference_data = reference_table_jet
-    for datum, reference_datum in zip(data, reference_data):
-        diff = numpy.array(datum) - numpy.array(reference_datum)
-        assert (abs(diff) < tolerance).all()
-
-    return
-
-
 def test_newdubiner():
     # Try reading reference values
     try:
@@ -167,6 +162,18 @@ def test_newdubiner():
         # Store the data for the future
         pickle.dump(reference, open("reference-newdubiner.pickle", "w"))
 
+    # Actually perform the test
+    table = _create_newdubiner_data()
+
+    for data, reference_data in zip(table, reference):
+        for point, reference_point in zip(data, reference_data):
+            for k in range(2):
+                diff = numpy.array(point[k]) - numpy.array(reference_point[k])
+                assert (abs(diff) < tolerance).all()
+    return
+
+
+def test_newdubiner_jet():
     try:
         reference_jet = \
             pickle.load(open("reference-newdubiner-jet.pickle", "r"))
@@ -178,7 +185,12 @@ def test_newdubiner():
             open("reference-newdubiner-jet.pickle", "w")
             )
 
-    _perform_newdubiner_test(reference, reference_jet)
+    table_jet = _create_newdubiner_jet_data()
+    for datum, reference_datum in zip(table_jet, reference_jet):
+        for entry, reference_entry in zip(datum, reference_datum):
+            for k in range(3):
+                diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
+                assert (abs(diff) < tolerance).all()
 
     return
 
@@ -197,27 +209,6 @@ def _create_newdubiner_jet_data():
     order = 2
     pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
     return newdubiner.tabulate_jet(D, n, pts, order, float)
-
-
-def _perform_newdubiner_test(reference_table, reference_table_jet):
-    '''Test against reference data.
-    '''
-    table = _create_newdubiner_data()
-
-    for data, reference_data in zip(table, reference_table):
-        for point, reference_point in zip(data, reference_data):
-            for k in range(2):
-                diff = numpy.array(point[k]) - numpy.array(reference_point[k])
-                assert (abs(diff) < tolerance).all()
-
-    table_jet = _create_newdubiner_jet_data()
-    for datum, reference_datum in zip(table_jet, reference_table_jet):
-        for entry, reference_entry in zip(datum, reference_datum):
-            for k in range(3):
-                diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
-                assert (abs(diff) < tolerance).all()
-
-    return
 
 
 def test_generator():
