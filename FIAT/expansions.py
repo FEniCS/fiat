@@ -21,6 +21,7 @@ to allow users to get coordinates that they want."""
 
 import numpy
 import math
+import sympy
 from . import reference_element
 from . import jacobi
 
@@ -182,9 +183,34 @@ class TriangleExpansionSet:
         #return self.scale * results
 
     def tabulate_derivatives(self, n, pts):
-        from Scientific.Functions.FirstDerivatives import DerivVar
-        dpts = [[DerivVar(pt[j], j) for j in range(len(pt))] for pt in pts]
-        return self.tabulate(n, dpts)
+        N = len(pts)
+        pts = numpy.array(pts)
+        # First get the actual values
+        values = self.tabulate(n, pts)
+        # Now get the gradients. That's more difficult.
+        # Tabulate symbolically
+        X = sympy.DeferredVector('x')
+        symbolic_tab = self._tabulate(n, X)
+        D = 2
+        # Symbolically compute the gradient
+        grad_results = numpy.empty((len(symbolic_tab), N, D))
+        for i, phi in enumerate(symbolic_tab):
+            phi_gradient = [sympy.diff(phi, X[j]) for j in range(D)]
+            # Evaluate the gradients numerically using lambda expressions
+            grad_lambda_tmp = sympy.lambdify(X, phi_gradient)
+            grad_lambda = [lambda X: grad_lambda_tmp(X)[0] + 0*X[0],
+                           lambda X: grad_lambda_tmp(X)[1] + 0*X[0]
+                           ]
+            # Evaluate the lambda expressions for pts
+            for k in range(D):
+                grad_results[i, :, k] = grad_lambda[k](pts.T)
+        # Finally put data and grad_results in the required data structure,
+        # i.e., an array of 2-tuples the first entry of which is the data
+        # value, the second the gradient.
+        data = [[(values[i][j], grad_results[i][j])
+                 for j in range(N)]
+                for i in range(N)]
+        return data
 
     def tabulate_jet(self, n, pts, order=1):
         dpts = [tuple([Derivatives.DerivVar(pt[i], i, order)
