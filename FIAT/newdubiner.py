@@ -141,27 +141,25 @@ def tabulate_triangle(n, pts, numtype):
 
 
 def tabulate_tetrahedron(n, pts, numtype):
+    return _tabulate_tetrahedron_single(n, numpy.array(pts).T, numtype)
+
+
+def _tabulate_tetrahedron_single(n, pts, numtype):
     def idx(p, q, r):
         return (p+q+r)*(p+q+r+1)*(p+q+r+2)/6 + (q+r)*(q+r+1)/2 + r
 
-    if numtype == float and type(pts[0][0]) == float:
-        tc = "d"
-    else:
-        tc = "O"
-    apts = numpy.array(pts)
-
-    results = numpy.zeros(((n+1)*(n+2)*(n+3)/6, len(pts)), tc)
-    results[0, :] = 1.0 \
-        + apts[:, 0] - apts[:, 0] \
-        + apts[:, 1] - apts[:, 1] \
-        + apts[:, 2] - apts[:, 2]
+    results = (n+1)*(n+2)*(n+3)/6 * [None]
+    results[0] = 1.0 \
+        + pts[0] - pts[0] \
+        + pts[1] - pts[1] \
+        + pts[2] - pts[2]
 
     if n == 0:
         return results
 
-    x = pts[:, 0]
-    y = pts[:, 1]
-    z = pts[:, 2]
+    x = pts[0]
+    y = pts[1]
+    z = pts[2]
 
     one = numtype(1)
     two = numtype(2)
@@ -209,11 +207,9 @@ def tabulate_tetrahedron(n, pts, numtype):
 
 
 def tabulate_tetrahedron_derivatives(n, pts, numtype):
-    from Scientific.Functions.Derivatives import DerivVar as DV
-    dpts = numpy.array([[DV(pt[i], i) for i in range(len(pt))]
-                       for pt in pts]
-                       )
-    return tabulate_tetrahedron(n, dpts, numtype)
+    D = 3
+    order = 1
+    return tabulate_jet(D, n, pts, order, numtype)
 
 
 def tabulate(D, n, pts, numtype):
@@ -229,9 +225,7 @@ def tabulate_jet(D, n, pts, order, numtype):
                         for pt in pts
                         ])
 
-    dbfs = tabulate(D, n, dpts, numtype)
-
-    return dbfs
+    return tabulate(D, n, dpts, numtype)
 
 
 if __name__ == "__main__":
