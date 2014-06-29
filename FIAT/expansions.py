@@ -208,8 +208,8 @@ class TriangleExpansionSet:
         # i.e., an array of 2-tuples the first entry of which is the data
         # value, the second the gradient.
         data = [[(values[i][j], grad_results[i][j])
-                 for j in range(N)]
-                for i in range(N)]
+                 for j in range(values.shape[1])]
+                for i in range(values.shape[0])]
         return data
 
     def tabulate_jet(self, n, pts, order=1):
@@ -247,8 +247,17 @@ class TetrahedronExpansionSet:
     def tabulate(self, n, pts):
         if len(pts) == 0:
             return numpy.array([])
+        else:
+            return numpy.array(self._tabulate(n, numpy.array(pts).T))
 
-        ref_pts = [self.mapping(pt) for pt in pts]
+    def _tabulate(self, n, pts):
+        '''A version of tabulate() that also works for a single point.
+        '''
+        print 'dasdas'
+        m1, m2 = self.A.shape
+        ref_pts = [sum(self.A[i][j] * pts[j] for j in range(m2)) + self.b[i]
+                   for i in range(m1)
+                   ]
 
         def idx(p, q, r):
             return (p+q+r)*(p+q+r+1)*(p+q+r+2)/6 + (q+r)*(q+r+1)/2 + r
@@ -262,20 +271,18 @@ class TetrahedronExpansionSet:
                 / float((n+1)*(n+1+a+b)*(2*n+a+b))
             return an, bn, cn
 
-        apts = numpy.array(pts)
-
-        results = numpy.zeros(((n+1)*(n+2)*(n+3)/6, len(pts)), type(pts[0][0]))
-        results[0, :] = 1.0 \
-            + apts[:, 0] - apts[:, 0] \
-            + apts[:, 1] - apts[:, 1] \
-            + apts[:, 2] - apts[:, 2]
+        results = ((n+1)*(n+2)*(n+3)/6) * [None]
+        results[0] = 1.0 \
+            + pts[0] - pts[0] \
+            + pts[1] - pts[1] \
+            + pts[2] - pts[2]
 
         if n == 0:
             return results
 
-        x = numpy.array([pt[0] for pt in ref_pts])
-        y = numpy.array([pt[1] for pt in ref_pts])
-        z = numpy.array([pt[2] for pt in ref_pts])
+        x = ref_pts[0]
+        y = ref_pts[1]
+        z = ref_pts[2]
 
         factor1 = 0.5 * (2.0 + 2.0*x + y + z)
         factor2 = (0.5*(y+z))**2
@@ -329,19 +336,93 @@ class TetrahedronExpansionSet:
     def tabulate_derivatives(self, n, pts):
         from Scientific.Functions.FirstDerivatives import DerivVar
         dpts = [[DerivVar(pt[j], j) for j in range(len(pt))] for pt in pts]
-        return self.tabulate(n, dpts)
+        data = self.tabulate(n, dpts)
+        return data
+
+    def _tabulate_dpts(self, n, order, pts):
+        X = sympy.DeferredVector('x')
+        D = 3
+
+        def form_derivative(F):
+            '''Forms the derivative recursively, i.e.,
+            F               -> [F_x, F_y, F_z],
+            [F_x, F_y, F_z] -> [[F_xx, F_xy, F_xz],
+                                [F_yx, F_yy, F_yz],
+                                [F_zx, F_zy, F_zz]]
+            and so forth.
+            '''
+            out = []
+            try:
+                out = [sympy.diff(F, X[j]) for j in range(D)]
+            except AttributeError:
+                # Intercept errors like
+                #  AttributeError: 'list' object has no attribute
+                #  'free_symbols'
+                for f in F:
+                    out.append(form_derivative(f))
+            return out
+
+        def numpy_lambdify(X, F):
+            '''Unfortunately, SymPy's own lambdify() doesn't work well with
+            NumPy in that simple functions like
+                lambda x: 1.0,
+            when evaluated with NumPy arrays, return just "1.0" instead of
+            an array of 1s with the same shape as x. This function does that.
+            '''
+            try:
+                lambda_x = [numpy_lambdify(X, f) for f in F]
+            except TypeError:  # 'function' object is not iterable
+                # SymPy's lambdify also works on functions that return arrays.
+                # However, use it componentwise here so we can add 0*x to each
+                # component individually. This is necessary to maintain shapes
+                # if evaluated with NumPy arrays.
+                lmbd_tmp = sympy.lambdify(X, F)
+                lambda_x = lambda x: lmbd_tmp(x) + 0*x[0]
+            return lambda_x
+
+        def evaluate_lambda(lmbd, x):
+            '''Properly evaluate lambda expressions recursively for iterables.
+            '''
+            try:
+                values = [evaluate_lambda(l, x) for l in lmbd]
+            except TypeError:  # 'function' object is not iterable
+                values = lmbd(x)
+            return values
+
+        # Tabulate symbolically
+        symbolic_tab = self._tabulate(n, X)
+        # Make sure that the entries of symbolic_tab are lists so we can
+        # append derivatives
+        symbolic_tab = [[phi] for phi in symbolic_tab]
+        #
+        data = (order+1) * [None]
+        for r in range(order+1):
+            shape = [len(symbolic_tab), len(pts)] + r * [D]
+            data[r] = numpy.empty(shape)
+            for i, phi in enumerate(symbolic_tab):
+                # Evaluate the function numerically using lambda expressions
+                deriv_lambda = numpy_lambdify(X, phi[r])
+                data[r][i] = \
+                    numpy.array(evaluate_lambda(deriv_lambda, pts.T)).T
+                # Symbolically compute the next derivative.
+                # This actually happens once too many here; never mind for
+                # now.
+                phi.append(form_derivative(phi[-1]))
+        # Finally put data in the required data structure, i.e., an array of
+        # k-tuples which contain the value, and the k-1 derivatives
+        # (gradient, Hessian, ...)
+        m = data[0].shape[0]
+        n = data[0].shape[1]
+        data2 = [[tuple([data[r][i][j] for r in range(order+1)])
+                  for j in range(n)]
+                 for i in range(m)]
+        return data2
 
     def tabulate_jet(self, n, pts, order=1):
-        dpts = [tuple([Derivatives.DerivVar(pt[i], i, order)
-                       for i in range(len(pt))])
-                for pt in pts
-                ]
-        dbfs = self.tabulate(n, dpts)
-        result = []
-        for d in range(order + 1):
-            result_d = [[foo[d] for foo in bar] for bar in dbfs]
-            result.append(numpy.array(result_d))
-
+        dbfs = self._tabulate_dpts(n, order, numpy.array(pts))
+        result = [[[foo[d] for foo in bar] for bar in dbfs]
+                  for d in range(order + 1)
+                  ]
         return result
 
 
