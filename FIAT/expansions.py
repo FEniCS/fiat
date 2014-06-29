@@ -245,34 +245,17 @@ class TriangleExpansionSet:
         #return self.scale * results
 
     def tabulate_derivatives(self, n, pts):
-        N = len(pts)
-        pts = numpy.array(pts)
-        # First get the actual values
-        values = self.tabulate(n, pts)
-        # Now get the gradients. That's more difficult.
-        # Tabulate symbolically
-        X = sympy.DeferredVector('x')
-        symbolic_tab = self._tabulate(n, X)
-        D = 2
-        # Symbolically compute the gradient
-        grad_results = numpy.empty((len(symbolic_tab), N, D))
-        for i, phi in enumerate(symbolic_tab):
-            phi_gradient = [sympy.diff(phi, X[j]) for j in range(D)]
-            # Evaluate the gradients numerically using lambda expressions
-            grad_lambda_tmp = sympy.lambdify(X, phi_gradient)
-            grad_lambda = [lambda X: grad_lambda_tmp(X)[0] + 0*X[0],
-                           lambda X: grad_lambda_tmp(X)[1] + 0*X[0]
-                           ]
-            # Evaluate the lambda expressions for pts
-            for k in range(D):
-                grad_results[i, :, k] = grad_lambda[k](pts.T)
-        # Finally put data and grad_results in the required data structure,
-        # i.e., an array of 2-tuples the first entry of which is the data
-        # value, the second the gradient.
-        data = [[(values[i][j], grad_results[i][j])
-                 for j in range(values.shape[1])]
-                for i in range(values.shape[0])]
-        return data
+        order = 1
+        data = _tabulate_dpts(self._tabulate, 2, n, order, numpy.array(pts))
+        # Put data in the required data structure, i.e.,
+        # k-tuples which contain the value, and the k-1 derivatives
+        # (gradient, Hessian, ...)
+        m = data[0].shape[0]
+        n = data[0].shape[1]
+        data2 = [[tuple([data[r][i][j] for r in range(order+1)])
+                  for j in range(n)]
+                 for i in range(m)]
+        return data2
 
     def tabulate_jet(self, n, pts, order=1):
         return _tabulate_dpts(self._tabulate, 2, n, order, numpy.array(pts))
