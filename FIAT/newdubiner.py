@@ -85,28 +85,27 @@ def make_lattice_dim(D, n, numtype):
 
 
 def tabulate_triangle(n, pts, numtype):
+    return _tabulate_triangle_single(n, numpy.array(pts).T, numtype)
+
+
+def _tabulate_triangle_single(n, pts, numtype):
     if len(pts) == 0:
         return numpy.array([], numtype)
 
     def idx(p, q):
         return (p+q)*(p+q+1)/2 + q
 
-    if numtype == float and type(pts[0][0]) == float:
-        results = numpy.zeros(((n+1)*(n+2)/2, len(pts)), "d")
-    else:
-        results = numpy.zeros(((n+1)*(n+2)/2, len(pts)), "O")
-    apts = numpy.array(pts)
+    results = (n+1)*(n+2)/2 * [None]
 
-    for ii in range(results.shape[1]):
-        results[0, ii] = numtype(1) \
-            + apts[ii, 0] - apts[ii, 0] \
-            + apts[ii, 1] - apts[ii, 1]
+    results[0] = numtype(1) \
+        + pts[0] - pts[0] \
+        + pts[1] - pts[1]
 
     if n == 0:
         return results
 
-    x = apts[:, 0]
-    y = apts[:, 1]
+    x = pts[0]
+    y = pts[1]
 
     one = numtype(1)
     two = numtype(2)
@@ -127,13 +126,13 @@ def tabulate_triangle(n, pts, numtype):
             - p/(one+p) * f3 * results[idx(p-1, 0), :]
 
     for p in range(n):
-        results[idx(p, 1), :] = (one + two*p+(three+two*p)*y) / two\
+        results[idx(p, 1)] = (one + two*p+(three+two*p)*y) / two \
             * results[idx(p, 0)]
 
     for p in range(n-1):
         for q in range(1, n-p):
             (a1, a2, a3) = jrc(2*p+1, 0, q, numtype)
-            results[idx(p, q+1), :] = \
+            results[idx(p, q+1)] = \
                 (a1 * y + a2) * results[idx(p, q)] \
                 - a3 * results[idx(p, q-1)]
 
@@ -213,18 +212,33 @@ def tabulate_tetrahedron_derivatives(n, pts, numtype):
 
 
 def tabulate(D, n, pts, numtype):
+    return _tabulate_single(D, n, numpy.array(pts).T, numtype)
+
+
+def _tabulate_single(D, n, pts, numtype):
     if D == 2:
-        return tabulate_triangle(n, pts, numtype)
+        return _tabulate_triangle_single(n, pts, numtype)
     elif D == 3:
-        return tabulate_tetrahedron(n, pts, numtype)
+        return _tabulate_tetrahedron_single(n, pts, numtype)
 
 
 def tabulate_jet(D, n, pts, order, numtype):
-    from Scientific.Functions.Derivatives import DerivVar as DV
-    dpts = numpy.array([[DV(pt[i], i, order) for i in range(len(pt))]
-                        for pt in pts
-                        ])
-    return tabulate(D, n, dpts, numtype)
+    from expansions import _tabulate_dpts
+
+    # Wrap the tabulator to allow for nondefault numtypes
+    def tabulator_wrap(n, X):
+        return _tabulate_single(D, n, X, numtype)
+
+    data1 = _tabulate_dpts(tabulator_wrap, D, n, order, pts)
+    # Put data in the required data structure, i.e.,
+    # k-tuples which contain the value, and the k-1 derivatives
+    # (gradient, Hessian, ...)
+    m = data1[0].shape[0]
+    n = data1[0].shape[1]
+    data2 = [[tuple([data1[r][i][j] for r in range(order+1)])
+              for j in range(n)]
+             for i in range(m)]
+    return data2
 
 
 if __name__ == "__main__":
