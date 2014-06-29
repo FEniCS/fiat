@@ -25,14 +25,76 @@ import sympy
 from . import reference_element
 from . import jacobi
 
-# Import AD modules from ScientificPython
-try:
-    import Scientific.Functions.Derivatives as Derivatives
-except:
-    raise Exception("""\
-Unable to import the Python Scientific module required by FIAT.
-Consider installing the package python-scientific.
-""")
+
+def _tabulate_dpts(tabulator, D, n, order, pts):
+    X = sympy.DeferredVector('x')
+
+    def form_derivative(F):
+        '''Forms the derivative recursively, i.e.,
+        F               -> [F_x, F_y, F_z],
+        [F_x, F_y, F_z] -> [[F_xx, F_xy, F_xz],
+                            [F_yx, F_yy, F_yz],
+                            [F_zx, F_zy, F_zz]]
+        and so forth.
+        '''
+        out = []
+        try:
+            out = [sympy.diff(F, X[j]) for j in range(D)]
+        except AttributeError:
+            # Intercept errors like
+            #  AttributeError: 'list' object has no attribute
+            #  'free_symbols'
+            for f in F:
+                out.append(form_derivative(f))
+        return out
+
+    def numpy_lambdify(X, F):
+        '''Unfortunately, SymPy's own lambdify() doesn't work well with
+        NumPy in that simple functions like
+            lambda x: 1.0,
+        when evaluated with NumPy arrays, return just "1.0" instead of
+        an array of 1s with the same shape as x. This function does that.
+        '''
+        try:
+            lambda_x = [numpy_lambdify(X, f) for f in F]
+        except TypeError:  # 'function' object is not iterable
+            # SymPy's lambdify also works on functions that return arrays.
+            # However, use it componentwise here so we can add 0*x to each
+            # component individually. This is necessary to maintain shapes
+            # if evaluated with NumPy arrays.
+            lmbd_tmp = sympy.lambdify(X, F)
+            lambda_x = lambda x: lmbd_tmp(x) + 0*x[0]
+        return lambda_x
+
+    def evaluate_lambda(lmbd, x):
+        '''Properly evaluate lambda expressions recursively for iterables.
+        '''
+        try:
+            values = [evaluate_lambda(l, x) for l in lmbd]
+        except TypeError:  # 'function' object is not iterable
+            values = lmbd(x)
+        return values
+
+    # Tabulate symbolically
+    symbolic_tab = tabulator(n, X)
+    # Make sure that the entries of symbolic_tab are lists so we can
+    # append derivatives
+    symbolic_tab = [[phi] for phi in symbolic_tab]
+    #
+    data = (order+1) * [None]
+    for r in range(order+1):
+        shape = [len(symbolic_tab), len(pts)] + r * [D]
+        data[r] = numpy.empty(shape)
+        for i, phi in enumerate(symbolic_tab):
+            # Evaluate the function numerically using lambda expressions
+            deriv_lambda = numpy_lambdify(X, phi[r])
+            data[r][i] = \
+                numpy.array(evaluate_lambda(deriv_lambda, pts.T)).T
+            # Symbolically compute the next derivative.
+            # This actually happens once too many here; never mind for
+            # now.
+            phi.append(form_derivative(phi[-1]))
+    return data
 
 
 def xi_triangle(eta):
@@ -213,17 +275,7 @@ class TriangleExpansionSet:
         return data
 
     def tabulate_jet(self, n, pts, order=1):
-        dpts = [tuple([Derivatives.DerivVar(pt[i], i, order)
-                       for i in range(len(pt))])
-                for pt in pts
-                ]
-        dbfs = self.tabulate(n, dpts)
-        result = []
-        for d in range(order + 1):
-            result_d = [[foo[d] for foo in bar] for bar in dbfs]
-            result.append(numpy.array(result_d))
-
-        return result
+        return _tabulate_dpts(self._tabulate, 2, n, order, numpy.array(pts))
 
 
 class TetrahedronExpansionSet:
@@ -339,79 +391,8 @@ class TetrahedronExpansionSet:
         data = self.tabulate(n, dpts)
         return data
 
-    def _tabulate_dpts(self, n, order, pts):
-        X = sympy.DeferredVector('x')
-        D = 3
-
-        def form_derivative(F):
-            '''Forms the derivative recursively, i.e.,
-            F               -> [F_x, F_y, F_z],
-            [F_x, F_y, F_z] -> [[F_xx, F_xy, F_xz],
-                                [F_yx, F_yy, F_yz],
-                                [F_zx, F_zy, F_zz]]
-            and so forth.
-            '''
-            out = []
-            try:
-                out = [sympy.diff(F, X[j]) for j in range(D)]
-            except AttributeError:
-                # Intercept errors like
-                #  AttributeError: 'list' object has no attribute
-                #  'free_symbols'
-                for f in F:
-                    out.append(form_derivative(f))
-            return out
-
-        def numpy_lambdify(X, F):
-            '''Unfortunately, SymPy's own lambdify() doesn't work well with
-            NumPy in that simple functions like
-                lambda x: 1.0,
-            when evaluated with NumPy arrays, return just "1.0" instead of
-            an array of 1s with the same shape as x. This function does that.
-            '''
-            try:
-                lambda_x = [numpy_lambdify(X, f) for f in F]
-            except TypeError:  # 'function' object is not iterable
-                # SymPy's lambdify also works on functions that return arrays.
-                # However, use it componentwise here so we can add 0*x to each
-                # component individually. This is necessary to maintain shapes
-                # if evaluated with NumPy arrays.
-                lmbd_tmp = sympy.lambdify(X, F)
-                lambda_x = lambda x: lmbd_tmp(x) + 0*x[0]
-            return lambda_x
-
-        def evaluate_lambda(lmbd, x):
-            '''Properly evaluate lambda expressions recursively for iterables.
-            '''
-            try:
-                values = [evaluate_lambda(l, x) for l in lmbd]
-            except TypeError:  # 'function' object is not iterable
-                values = lmbd(x)
-            return values
-
-        # Tabulate symbolically
-        symbolic_tab = self._tabulate(n, X)
-        # Make sure that the entries of symbolic_tab are lists so we can
-        # append derivatives
-        symbolic_tab = [[phi] for phi in symbolic_tab]
-        #
-        data = (order+1) * [None]
-        for r in range(order+1):
-            shape = [len(symbolic_tab), len(pts)] + r * [D]
-            data[r] = numpy.empty(shape)
-            for i, phi in enumerate(symbolic_tab):
-                # Evaluate the function numerically using lambda expressions
-                deriv_lambda = numpy_lambdify(X, phi[r])
-                data[r][i] = \
-                    numpy.array(evaluate_lambda(deriv_lambda, pts.T)).T
-                # Symbolically compute the next derivative.
-                # This actually happens once too many here; never mind for
-                # now.
-                phi.append(form_derivative(phi[-1]))
-        return data
-
     def tabulate_jet(self, n, pts, order=1):
-        return self._tabulate_dpts(n, order, numpy.array(pts))
+        return _tabulate_dpts(self._tabulate, 3, n, order, numpy.array(pts))
 
 
 def get_expansion_set(ref_el):
