@@ -224,7 +224,6 @@ def tabulate_jet(D, n, pts, order, numtype):
     dpts = numpy.array([[DV(pt[i], i, order) for i in range(len(pt))]
                         for pt in pts
                         ])
-
     return tabulate(D, n, dpts, numtype)
 
 

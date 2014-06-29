@@ -288,7 +288,6 @@ class TetrahedronExpansionSet:
     def _tabulate(self, n, pts):
         '''A version of tabulate() that also works for a single point.
         '''
-        print 'dasdas'
         m1, m2 = self.A.shape
         ref_pts = [sum(self.A[i][j] * pts[j] for j in range(m2)) + self.b[i]
                    for i in range(m1)
