@@ -408,22 +408,10 @@ class TetrahedronExpansionSet:
                 # This actually happens once too many here; never mind for
                 # now.
                 phi.append(form_derivative(phi[-1]))
-        # Finally put data in the required data structure, i.e., an array of
-        # k-tuples which contain the value, and the k-1 derivatives
-        # (gradient, Hessian, ...)
-        m = data[0].shape[0]
-        n = data[0].shape[1]
-        data2 = [[tuple([data[r][i][j] for r in range(order+1)])
-                  for j in range(n)]
-                 for i in range(m)]
-        return data2
+        return data
 
     def tabulate_jet(self, n, pts, order=1):
-        dbfs = self._tabulate_dpts(n, order, numpy.array(pts))
-        result = [[[foo[d] for foo in bar] for bar in dbfs]
-                  for d in range(order + 1)
-                  ]
-        return result
+        return self._tabulate_dpts(n, order, numpy.array(pts))
 
 
 def get_expansion_set(ref_el):
