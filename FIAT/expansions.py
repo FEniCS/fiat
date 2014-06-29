@@ -369,10 +369,18 @@ class TetrahedronExpansionSet:
         return results
 
     def tabulate_derivatives(self, n, pts):
-        from Scientific.Functions.FirstDerivatives import DerivVar
-        dpts = [[DerivVar(pt[j], j) for j in range(len(pt))] for pt in pts]
-        data = self.tabulate(n, dpts)
-        return data
+        order = 1
+        D = 3
+        data = _tabulate_dpts(self._tabulate, D, n, order, numpy.array(pts))
+        # Put data in the required data structure, i.e.,
+        # k-tuples which contain the value, and the k-1 derivatives
+        # (gradient, Hessian, ...)
+        m = data[0].shape[0]
+        n = data[0].shape[1]
+        data2 = [[tuple([data[r][i][j] for r in range(order+1)])
+                  for j in range(n)]
+                 for i in range(m)]
+        return data2
 
     def tabulate_jet(self, n, pts, order=1):
         return _tabulate_dpts(self._tabulate, 3, n, order, numpy.array(pts))
