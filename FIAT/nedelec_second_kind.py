@@ -90,7 +90,7 @@ class NedelecSecondKindDual(DualSet):
             ids[2] = face_ids
 
         # Varying degrees of freedom (possibly zero) per cell
-        (cell_dofs, cell_ids) = self._generate_cell_dofs(cell, degree,len(dofs))
+        (cell_dofs, cell_ids) = self._generate_cell_dofs(cell, degree, len(dofs))
         dofs.extend(cell_dofs)
         ids[d] = cell_ids
 
@@ -164,7 +164,7 @@ class NedelecSecondKindDual(DualSet):
             phis = numpy.ndarray((d, num_quad_points))
             for i in range(num_rts):
                 for q in range(num_quad_points):
-                    phi_i_q = scale*J*numpy.matrix(Phis[i, :, q]).transpose()
+                    phi_i_q = scale*J*numpy.matrix(Phis[i,:, q]).transpose()
                     for j in range(d):
                         phis[j, q] = phi_i_q[j]
 
@@ -200,7 +200,7 @@ class NedelecSecondKindDual(DualSet):
         phi_at_qs = phi.tabulate(qs)[(0,)*d]
 
         # Use (Frobenius) integral moments against RTs as dofs
-        dofs = [IntegralMoment(cell, Q, phi_at_qs[i, :])
+        dofs = [IntegralMoment(cell, Q, phi_at_qs[i,:])
                 for i in range(len(phi_at_qs))]
 
         # Associate these dofs with the interior
@@ -247,5 +247,5 @@ if __name__=="__main__":
         N2curl = NedelecSecondKind(T, k)
         Nfs = N2curl.get_nodal_basis()
         pts = T.make_lattice( 1 )
-        vals = Nfs.tabulate( pts , 1 )
+        vals = Nfs.tabulate( pts, 1 )
 

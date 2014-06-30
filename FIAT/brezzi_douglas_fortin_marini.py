@@ -4,7 +4,7 @@ from . import finite_element, quadrature, functional, \
 import numpy
 
 class BDFMDualSet( dual_set.DualSet ):
-    def __init__( self , ref_el , degree ):
+    def __init__( self, ref_el, degree ):
 
         # Initialize containers for map: mesh_entity -> dof number and
         # dual basis
@@ -19,10 +19,10 @@ class BDFMDualSet( dual_set.DualSet ):
         # codimension 1 facet normals.
         # note this will die for degree greater than 1.
         for i in range( len( t[sd-1] ) ):
-            pts_cur = ref_el.make_points( sd - 1 , i , sd + degree )
+            pts_cur = ref_el.make_points( sd - 1, i, sd + degree )
             for j in range( len( pts_cur ) ):
                 pt_cur = pts_cur[j]
-                f = functional.PointScaledNormalEvaluation( ref_el , i , \
+                f = functional.PointScaledNormalEvaluation( ref_el, i, \
                                                             pt_cur )
                 nodes.append( f )
 
@@ -31,11 +31,11 @@ class BDFMDualSet( dual_set.DualSet ):
         # count as internal nodes.
         tangent_count=0
         for i in range( len( t[sd-1] ) ):
-            pts_cur = ref_el.make_points( sd - 1 , i , sd + degree - 1 )
+            pts_cur = ref_el.make_points( sd - 1, i, sd + degree - 1 )
             tangent_count+=len( pts_cur )
             for j in range( len( pts_cur ) ):
                 pt_cur = pts_cur[j]
-                f = functional.PointEdgeTangentEvaluation( ref_el , i , \
+                f = functional.PointEdgeTangentEvaluation( ref_el, i, \
                                                              pt_cur )
                 nodes.append( f )
 
@@ -48,19 +48,19 @@ class BDFMDualSet( dual_set.DualSet ):
         cur = 0
 
         # set codimension 1 (edges 2d, faces 3d) dof
-        pts_facet_0 = ref_el.make_points( sd - 1 , 0 , sd + degree )
+        pts_facet_0 = ref_el.make_points( sd - 1, 0, sd + degree )
         pts_per_facet = len( pts_facet_0 )
 
         entity_ids[sd-1] = {}
         for i in range( len( t[sd-1] ) ):
-            entity_ids[sd-1][i] = list(range( cur , cur + pts_per_facet))
+            entity_ids[sd-1][i] = list(range( cur, cur + pts_per_facet))
             cur += pts_per_facet
 
         # internal nodes
-        entity_ids[sd] = {0: list(range(cur,cur+tangent_count))}
+        entity_ids[sd] = {0: list(range(cur, cur+tangent_count))}
         cur+=tangent_count
     
-        dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
+        dual_set.DualSet.__init__( self, nodes, ref_el, entity_ids )
 
 def BDFMSpace(ref_el, order):
     sd = ref_el.get_spatial_dimension()
@@ -73,29 +73,29 @@ def BDFMSpace(ref_el, order):
     # the linear polynomials.
     vec_poly_set = polynomial_set.ONPolynomialSet( ref_el, order, (sd,) )
     # Linears are the first three polynomials in each dimension.
-    vec_poly_set = vec_poly_set.take([0,1,2,6,7,8])
+    vec_poly_set = vec_poly_set.take([0, 1, 2, 6, 7, 8])
 
     # Scalar quadratic Lagrange element.
     lagrange_ele = lagrange.Lagrange(ref_el, order)
     # Select the dofs associated with the edges.
     edge_dofs_dict=lagrange_ele.dual.get_entity_ids()[sd-1]
-    edge_dofs=numpy.array([(edge,dof) for edge,dofs in edge_dofs_dict.items()
+    edge_dofs=numpy.array([(edge, dof) for edge, dofs in list(edge_dofs_dict.items())
                            for dof in dofs])
 
-    tangent_polys=lagrange_ele.poly_set.take(edge_dofs[:,1])
-    new_coeffs=numpy.zeros((tangent_polys.get_num_members(),sd,tangent_polys.coeffs.shape[-1]))
+    tangent_polys=lagrange_ele.poly_set.take(edge_dofs[:, 1])
+    new_coeffs=numpy.zeros((tangent_polys.get_num_members(), sd, tangent_polys.coeffs.shape[-1]))
     
     # Outer product of the tangent vectors with the quadratic edge polynomials.
-    for i,(edge, dof) in enumerate(edge_dofs):
+    for i, (edge, dof) in enumerate(edge_dofs):
         tangent=ref_el.compute_edge_tangent(edge)
 
-        new_coeffs[i,:,:]=numpy.outer(tangent,tangent_polys.coeffs[i,:])
+        new_coeffs[i,:,:]=numpy.outer(tangent, tangent_polys.coeffs[i,:])
     
-    bubble_set = polynomial_set.PolynomialSet( ref_el , \
+    bubble_set = polynomial_set.PolynomialSet( ref_el, \
                                                order, \
-                                               order , \
-                                               vec_poly_set.get_expansion_set() , \
-                                               new_coeffs , \
+                                               order, \
+                                               vec_poly_set.get_expansion_set(), \
+                                               new_coeffs, \
                                                vec_poly_set.get_dmats() )    
 
     element_set =  polynomial_set.polynomial_set_union_normalized( bubble_set, vec_poly_set )
