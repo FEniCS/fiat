@@ -82,6 +82,17 @@ tolerance = 1e-8
 
 
 def test_expansions():
+    def _create_expansions_data():
+        E = reference_element.DefaultTriangle()
+        k = 3
+        pts = E.make_lattice(k)
+        Phis = expansions.get_expansion_set(E)
+
+        phis = Phis.tabulate(k, pts)
+        dphis = Phis.tabulate_derivatives(k, pts)
+
+        return phis, dphis
+
     # Try reading reference values
     try:
         reference = pickle.load(open("reference-expansions.pickle", "r"))
@@ -110,6 +121,15 @@ def test_expansions():
 
 
 def test_expansions_jet():
+    def _create_expansions_jet_data():
+        latticeK = 2
+        n = 1
+        order = 2
+        E = reference_element.DefaultTetrahedron()
+        pts = E.make_lattice(latticeK)
+        F = expansions.TetrahedronExpansionSet(E)
+        return F.tabulate_jet(n, pts, order)
+
     try:
         reference_jet = \
             pickle.load(open("reference-expansions-jet.pickle", "r"))
@@ -131,29 +151,13 @@ def test_expansions_jet():
     return
 
 
-def _create_expansions_data():
-    E = reference_element.DefaultTriangle()
-    k = 3
-    pts = E.make_lattice(k)
-    Phis = expansions.get_expansion_set(E)
-
-    phis = Phis.tabulate(k, pts)
-    dphis = Phis.tabulate_derivatives(k, pts)
-
-    return phis, dphis
-
-
-def _create_expansions_jet_data():
-    latticeK = 2
-    n = 1
-    order = 2
-    E = reference_element.DefaultTetrahedron()
-    pts = E.make_lattice(latticeK)
-    F = expansions.TetrahedronExpansionSet(E)
-    return F.tabulate_jet(n, pts, order)
-
-
 def test_newdubiner():
+    def _create_newdubiner_data():
+        latticeK = 2
+        D = 3
+        pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
+        return newdubiner.tabulate_tetrahedron_derivatives(D, pts, float)
+
     # Try reading reference values
     try:
         reference = pickle.load(open("reference-newdubiner.pickle", "r"))
@@ -174,6 +178,14 @@ def test_newdubiner():
 
 
 def test_newdubiner_jet():
+    def _create_newdubiner_jet_data():
+        latticeK = 2
+        D = 3
+        n = 1
+        order = 2
+        pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
+        return newdubiner.tabulate_jet(D, n, pts, order, float)
+
     try:
         reference_jet = \
             pickle.load(open("reference-newdubiner-jet.pickle", "r"))
@@ -195,23 +207,34 @@ def test_newdubiner_jet():
     return
 
 
-def _create_newdubiner_data():
-    latticeK = 2
-    D = 3
-    pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
-    return newdubiner.tabulate_tetrahedron_derivatives(D, pts, float)
+def test_quadrature():
+    def _create_data(family, dim, degree):
+        '''Create the reference data.
+        '''
+        # Get domain and element class
+        domain = ufc_simplex(dim)
+        ElementClass = supported_elements[family]
+        # Create element
+        element = ElementClass(domain, degree)
+        # Create quadrature points
+        quad_rule = make_quadrature(domain, num_points)
+        points = quad_rule.get_points()
+        # Tabulate at quadrature points
+        table = element.tabulate(max_derivative, points)
+        return table
 
+    def _perform_test(family, dim, degree, reference_table):
+        '''Test against reference data.
+        '''
+        table = _create_data(family, dim, degree)
+        # Check against reference
+        for dtuple in reference_table:
+            assert dtuple in table
+            assert table[dtuple].shape == reference_table[dtuple].shape
+            diff = table[dtuple] - reference_table[dtuple]
+            assert (abs(diff) < tolerance).all()
+        return
 
-def _create_newdubiner_jet_data():
-    latticeK = 2
-    D = 3
-    n = 1
-    order = 2
-    pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
-    return newdubiner.tabulate_jet(D, n, pts, order, float)
-
-
-def test_generator():
     # Try reading reference values
     try:
         reference = pickle.load(open("reference.pickle", "r"))
@@ -226,40 +249,6 @@ def test_generator():
     for test_case in test_cases:
         family, dim, degree = test_case
         yield _perform_test, family, dim, degree, reference[test_case]
-
-
-def _create_data(family, dim, degree):
-    '''Create the reference data.
-    '''
-    # Get domain and element class
-    domain = ufc_simplex(dim)
-    ElementClass = supported_elements[family]
-
-    # Create element
-    element = ElementClass(domain, degree)
-
-    # Create quadrature points
-    quad_rule = make_quadrature(domain, num_points)
-    points = quad_rule.get_points()
-
-    # Tabulate at quadrature points
-    table = element.tabulate(max_derivative, points)
-    return table
-
-
-def _perform_test(family, dim, degree, reference_table):
-    '''Test against reference data.
-    '''
-    table = _create_data(family, dim, degree)
-
-    # Check against reference
-    for dtuple in reference_table:
-        assert dtuple in table
-        assert table[dtuple].shape == reference_table[dtuple].shape
-        diff = table[dtuple] - reference_table[dtuple]
-        assert (abs(diff) < tolerance).all()
-
-    return
 
 
 if __name__ == "__main__":
