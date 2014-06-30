@@ -24,10 +24,34 @@ import pickle
 import numpy
 
 from FIAT import supported_elements, make_quadrature, ufc_simplex, \
-    newdubiner, expansions, reference_element
+    newdubiner, expansions, reference_element, polynomial_set
 
 # Parameters
 tolerance = 1e-8
+
+
+def test_polynomials():
+    def create_data():
+        ps = polynomial_set.ONPolynomialSet(
+            ref_el=reference_element.DefaultTetrahedron(),
+            degree=3
+            )
+        return ps.dmats
+
+    # Try reading reference values
+    filename = "reference-polynomials.pickle"
+    try:
+        reference = pickle.load(open(filename, "r"))
+    except IOError:
+        reference = create_data()
+        # Store the data for the future
+        pickle.dump(reference, open(filename, "w"))
+
+    dmats = create_data()
+
+    for dmat, reference_dmat in zip(dmats, reference):
+        assert (abs(dmat - reference_dmat) < tolerance).all()
+    return
 
 
 def test_expansions():
@@ -41,12 +65,13 @@ def test_expansions():
         return phis, dphis
 
     # Try reading reference values
+    filename = "reference-expansions.pickle"
     try:
-        reference = pickle.load(open("reference-expansions.pickle", "r"))
+        reference = pickle.load(open(filename, "r"))
     except IOError:
         reference = create_data()
         # Store the data for the future
-        pickle.dump(reference, open("reference-expansions.pickle", "w"))
+        pickle.dump(reference, open(filename, "w"))
 
     table_phi, table_dphi = create_data()
     reference_table_phi, reference_table_dphi = reference
@@ -77,16 +102,13 @@ def test_expansions_jet():
         F = expansions.TetrahedronExpansionSet(E)
         return F.tabulate_jet(n, pts, order)
 
+    filename = "reference-expansions-jet.pickle"
     try:
-        reference_jet = \
-            pickle.load(open("reference-expansions-jet.pickle", "r"))
+        reference_jet = pickle.load(open(filename, "r"))
     except IOError:
         reference_jet = create_data()
         # Store the data for the future
-        pickle.dump(
-            reference_jet,
-            open("reference-expansions-jet.pickle", "w")
-            )
+        pickle.dump(reference_jet, open(filename, "w"))
 
     # Test jet data
     data = create_data()
@@ -106,12 +128,13 @@ def test_newdubiner():
         return newdubiner.tabulate_tetrahedron_derivatives(D, pts, float)
 
     # Try reading reference values
+    filename = "reference-newdubiner.pickle"
     try:
-        reference = pickle.load(open("reference-newdubiner.pickle", "r"))
+        reference = pickle.load(open(filename, "r"))
     except IOError:
         reference = create_data()
         # Store the data for the future
-        pickle.dump(reference, open("reference-newdubiner.pickle", "w"))
+        pickle.dump(reference, open(filename, "w"))
 
     # Actually perform the test
     table = create_data()
@@ -133,16 +156,13 @@ def test_newdubiner_jet():
         pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
         return newdubiner.tabulate_jet(D, n, pts, order, float)
 
+    filename = "reference-newdubiner-jet.pickle"
     try:
-        reference_jet = \
-            pickle.load(open("reference-newdubiner-jet.pickle", "r"))
+        reference_jet = pickle.load(open(filename, "r"))
     except IOError:
         reference_jet = create_data()
         # Store the data for the future
-        pickle.dump(
-            reference_jet,
-            open("reference-newdubiner-jet.pickle", "w")
-            )
+        pickle.dump(reference_jet, open(filename, "w"))
 
     table_jet = create_data()
     for datum, reference_datum in zip(table_jet, reference_jet):
@@ -234,15 +254,16 @@ def test_quadrature():
         return
 
     # Try reading reference values
+    filename = "reference.pickle"
     try:
-        reference = pickle.load(open("reference.pickle", "r"))
+        reference = pickle.load(open(filename, "r"))
     except IOError:
         reference = {}
         for test_case in test_cases:
             family, dim, degree = test_case
             reference[test_case] = create_data(family, dim, degree)
         # Store the data for the future
-        pickle.dump(reference, open("reference.pickle", "w"))
+        pickle.dump(reference, open(filename, "w"))
 
     for test_case in test_cases:
         family, dim, degree = test_case
