@@ -228,7 +228,6 @@ class TriangleExpansionSet:
 
         for p in range(n):
             results[idx(p, 1)] = 0.5 * (1+2.0*p+(3.0+2.0*p)*y) \
-                * results[idx(p, 0)]
 
         for p in range(n-1):
             for q in range(1, n-p):
@@ -356,9 +355,8 @@ class TetrahedronExpansionSet:
                 for r in range(1, n-p-q):
                     ar, br, cr = jrc(2*p+2*q+2, 0, r)
                     results[idx(p, q, r+1)] = \
-                        (ar * z + br) * results[idx(p, q, r)] \
-                        - cr * results[idx(p, q, r-1)]
-
+                                (ar * z + br) * results[idx(p, q, r) ] \
+                                - cr * results[idx(p, q, r-1) ]
         for p in range(n+1):
             for q in range(n-p+1):
                 for r in range(n-p-q+1):
@@ -385,7 +383,7 @@ class TetrahedronExpansionSet:
         return _tabulate_dpts(self._tabulate, 3, n, order, numpy.array(pts))
 
 
-def get_expansion_set(ref_el):
+def get_expansion_set( ref_el ):
     """Returns an ExpansionSet instance appopriate for the given
     reference element."""
     if ref_el.get_shape() == reference_element.LINE:
@@ -421,11 +419,8 @@ if __name__ == "__main__":
     pts = E.make_lattice(k)
 
     Phis = expansions.get_expansion_set(E)
-
-    phis = Phis.tabulate(k, pts)
-
+    
     dphis = Phis.tabulate_derivatives(k, pts)
-
 #    dphis_x = numpy.array([[d[1][0] for d in dphi] for dphi in dphis])
 #    dphis_y = numpy.array([[d[1][1] for d in dphi] for dphi in dphis])
 #    dphis_z = numpy.array([[d[1][2] for d in dphi] for dphi in dphis])

@@ -44,33 +44,33 @@ class FiniteElement:
         if len( shp ) > 2:
             num_cols = numpy.prod( shp[1:] )
 
-            A = numpy.reshape( dualmat , (dualmat.shape[0],num_cols) )
-            B = numpy.reshape( old_coeffs , (old_coeffs.shape[0],num_cols ) )
+            A = numpy.reshape( dualmat, (dualmat.shape[0], num_cols) )
+            B = numpy.reshape( old_coeffs, (old_coeffs.shape[0], num_cols ) )
         else:
             A = dualmat
             B = old_coeffs
 
-        V = numpy.dot( A , numpy.transpose( B ) )
+        V = numpy.dot( A, numpy.transpose( B ) )
         self.V=V
-        (u,s,vt) = numpy.linalg.svd( V )
+        (u, s, vt) = numpy.linalg.svd( V )
 
         #print s
         #V = numpy.dot( dualmat , numpy.transpose( old_coeffs ) )
 
         Vinv = numpy.linalg.inv( V )
 
-        new_coeffs_flat = numpy.dot( numpy.transpose( Vinv ) , B)
+        new_coeffs_flat = numpy.dot( numpy.transpose( Vinv ), B)
 
         new_shp = tuple( [ new_coeffs_flat.shape[0] ] \
                           + list( shp[1:] ) )
-        new_coeffs = numpy.reshape( new_coeffs_flat , \
+        new_coeffs = numpy.reshape( new_coeffs_flat, \
                                     new_shp )
 
-        self.poly_set = PolynomialSet( self.ref_el , \
-                                       poly_set.get_degree() , \
-                                       poly_set.get_embedded_degree() , \
-                                       poly_set.get_expansion_set() , \
-                                       new_coeffs , \
+        self.poly_set = PolynomialSet( self.ref_el, \
+                                       poly_set.get_degree(), \
+                                       poly_set.get_embedded_degree(), \
+                                       poly_set.get_expansion_set(), \
+                                       new_coeffs, \
                                        poly_set.get_dmats() )
 
         return

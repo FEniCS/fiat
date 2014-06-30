@@ -25,11 +25,11 @@
 import reference_element, dual_set, numpy, functional, polynomial_set, finite_element
 
 class P0Dual( dual_set.DualSet ):
-    def __init__( self , ref_el ):
+    def __init__( self, ref_el ):
         entity_ids = {}
         nodes = []
         vs = numpy.array( ref_el.get_vertices() )
-        bary=tuple( numpy.average( vs , 0 ) )
+        bary=tuple( numpy.average( vs, 0 ) )
         
         nodes = [ functional.PointEvaluation( ref_el, bary ) ]
         entity_ids = { }
@@ -42,13 +42,13 @@ class P0Dual( dual_set.DualSet ):
 
         entity_ids[sd] = { 0 : [ 0 ] }
         
-        dual_set.DualSet.__init__( self , nodes , ref_el , entity_ids )
+        dual_set.DualSet.__init__( self, nodes, ref_el, entity_ids )
 
 class P0( finite_element.FiniteElement ):
-    def __init__( self , ref_el ):
-        poly_set = polynomial_set.ONPolynomialSet( ref_el , 0 )
+    def __init__( self, ref_el ):
+        poly_set = polynomial_set.ONPolynomialSet( ref_el, 0 )
         dual = P0Dual( ref_el )
-        finite_element.FiniteElement.__init__( self , poly_set , dual , 0 )
+        finite_element.FiniteElement.__init__( self, poly_set, dual, 0 )
 
 if __name__ == "__main__":
     T = reference_element.UFCTriangle()

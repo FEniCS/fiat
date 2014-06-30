@@ -20,11 +20,11 @@
 #
 # Last changed: 2010-01-28
 
-from . import finite_element, polynomial_set, dual_set , functional
+from . import finite_element, polynomial_set, dual_set, functional
 
 def _initialize_entity_ids(topology):
     entity_ids = {}
-    for (i, entity) in topology.items():
+    for (i, entity) in list(topology.items()):
         entity_ids[i] = {}
         for j in entity:
             entity_ids[i][j] = []

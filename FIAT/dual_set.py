@@ -18,7 +18,7 @@
 import numpy
 
 class DualSet:
-    def __init__( self , nodes , ref_el , entity_ids ):
+    def __init__( self, nodes, ref_el, entity_ids ):
         self.nodes = nodes
         self.ref_el = ref_el
         self.entity_ids = entity_ids
@@ -33,7 +33,7 @@ class DualSet:
     def get_reference_element( self ):
         return self.ref_el
 
-    def to_riesz( self , poly_set ):
+    def to_riesz( self, poly_set ):
 
         tshape = self.nodes[0].target_shape
         num_nodes = len( self.nodes )
@@ -42,7 +42,7 @@ class DualSet:
 
         riesz_shape = tuple( [ num_nodes ] + list( tshape ) + [ num_exp ] )
 
-        self.mat = numpy.zeros( riesz_shape , "d" )
+        self.mat = numpy.zeros( riesz_shape, "d" )
 
         for i in range( len( self.nodes ) ):
             self.mat[i][:] = self.nodes[i].to_riesz( poly_set )

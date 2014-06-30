@@ -22,7 +22,6 @@
 # - type information
 
 import numpy
-
 from functools import reduce
 
 
