@@ -21,7 +21,7 @@ from . import expansions, polynomial_set, quadrature, reference_element, dual_se
     quadrature, finite_element, functional
 import numpy
 from functools import reduce
-from raviart_thomas import RTSpace
+from .raviart_thomas import RTSpace
 
 class DRTDualSet( dual_set.DualSet ):
     """Dual basis for Raviart-Thomas elements consisting of point
