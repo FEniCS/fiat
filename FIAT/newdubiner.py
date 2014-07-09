@@ -93,9 +93,9 @@ def _tabulate_triangle_single(n, pts, numtype):
         return numpy.array([], numtype)
 
     def idx(p, q):
-        return (p+q)*(p+q+1)/2 + q
+        return (p+q)*(p+q+1)//2 + q
 
-    results = (n+1)*(n+2)/2 * [None]
+    results = (n+1)*(n+2)//2 * [None]
 
     results[0] = numtype(1) \
         + pts[0] - pts[0] \
@@ -145,9 +145,9 @@ def tabulate_tetrahedron(n, pts, numtype):
 
 def _tabulate_tetrahedron_single(n, pts, numtype):
     def idx(p, q, r):
-        return (p+q+r)*(p+q+r+1)*(p+q+r+2)/6 + (q+r)*(q+r+1)/2 + r
+        return (p+q+r)*(p+q+r+1)*(p+q+r+2)//6 + (q+r)*(q+r+1)//2 + r
 
-    results = (n+1)*(n+2)*(n+3)/6 * [None]
+    results = (n+1)*(n+2)*(n+3)//6 * [None]
     results[0] = 1.0 \
         + pts[0] - pts[0] \
         + pts[1] - pts[1] \
@@ -223,7 +223,7 @@ def _tabulate_single(D, n, pts, numtype):
 
 
 def tabulate_jet(D, n, pts, order, numtype):
-    from expansions import _tabulate_dpts
+    from .expansions import _tabulate_dpts
 
     # Wrap the tabulator to allow for nondefault numtypes
     def tabulator_wrap(n, X):

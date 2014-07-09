@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import polynomial_set, expansions, quadrature, numpy, dual_set, \
+from . import polynomial_set, expansions, quadrature, dual_set, \
        finite_element, functional
 from functools import reduce
+import numpy
 
 def NedelecSpace2D( ref_el, k ):
     """Constructs a basis for the 2d H(curl) space of the first kind

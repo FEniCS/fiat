@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import finite_element, polynomial_set, dual_set, functional, numpy
+from . import finite_element, polynomial_set, dual_set, functional 
+import numpy
 
 class ArgyrisDualSet( dual_set.DualSet ):
     def __init__( self, ref_el, degree ):

@@ -18,7 +18,6 @@
 """Principal orthogonal expansion functions as defined by Karniadakis
 and Sherwin.  These are parametrized over a reference element so as
 to allow users to get coordinates that they want."""
-
 import numpy
 import math
 import sympy
@@ -191,7 +190,7 @@ class TriangleExpansionSet:
                    ]
 
         def idx(p, q):
-            return (p+q)*(p+q+1)/2 + q
+            return (p+q)*(p+q+1)//2 + q
 
         def jrc(a, b, n):
             an = float((2*n+1+a+b)*(2*n+2+a+b)) \
@@ -202,7 +201,7 @@ class TriangleExpansionSet:
                 / float((n+1)*(n+1+a+b)*(2*n+a+b))
             return an, bn, cn
 
-        results = ((n+1)*(n+2)/2) * [None]
+        results = ((n+1)*(n+2)//2) * [None]
 
         results[0] = 1.0 \
             + pts[0] - pts[0] \
@@ -293,7 +292,7 @@ class TetrahedronExpansionSet:
                    ]
 
         def idx(p, q, r):
-            return (p+q+r)*(p+q+r+1)*(p+q+r+2)/6 + (q+r)*(q+r+1)/2 + r
+            return (p+q+r)*(p+q+r+1)*(p+q+r+2)//6 + (q+r)*(q+r+1)//2 + r
 
         def jrc(a, b, n):
             an = float((2*n+1+a+b)*(2*n+2+a+b)) \
@@ -304,7 +303,7 @@ class TetrahedronExpansionSet:
                 / float((n+1)*(n+1+a+b)*(2*n+a+b))
             return an, bn, cn
 
-        results = ((n+1)*(n+2)*(n+3)/6) * [None]
+        results = ((n+1)*(n+2)*(n+3)//6) * [None]
         results[0] = 1.0 \
             + pts[0] - pts[0] \
             + pts[1] - pts[1] \

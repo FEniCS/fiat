@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import morley, reference_element, numpy
+from . import morley, reference_element
+import numpy
 
 # Let's set up the reference triangle and another one
 Khat = reference_element.UFCTriangle()

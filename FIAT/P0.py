@@ -22,7 +22,8 @@
 #
 # Last changed: 2005-05-16
 
-import reference_element, dual_set, numpy, functional, polynomial_set, finite_element
+from . import reference_element, dual_set, functional, polynomial_set, finite_element
+import numpy
 
 class P0Dual( dual_set.DualSet ):
     def __init__( self, ref_el ):
