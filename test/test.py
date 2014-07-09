@@ -19,8 +19,8 @@
 # Last changed: 2014-06-30
 
 import nose
-
-import pickle
+import sys
+import json
 import numpy
 
 from FIAT import supported_elements, make_quadrature, ufc_simplex, \
@@ -28,6 +28,23 @@ from FIAT import supported_elements, make_quadrature, ufc_simplex, \
 
 # Parameters
 tolerance = 1e-8
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, numpy.ndarray):
+            data = obj.tolist()
+            return dict(__ndarray__=data,
+                        dtype=str(obj.dtype),
+                        shape=obj.shape)
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder(self, obj)
+
+
+def json_numpy_obj_hook(dct):
+    if isinstance(dct, dict) and '__ndarray__' in dct:
+        return numpy.asarray(dct['__ndarray__']).reshape(dct['shape'])
+    return dct
 
 
 def test_polynomials():
@@ -39,13 +56,13 @@ def test_polynomials():
         return ps.dmats
 
     # Try reading reference values
-    filename = "reference-polynomials.pickle"
+    filename = "reference-polynomials.json"
     try:
-        reference = pickle.load(open(filename, "r"))
+        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
         reference = create_data()
         # Store the data for the future
-        pickle.dump(reference, open(filename, "w"))
+        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
 
     dmats = create_data()
 
@@ -65,13 +82,13 @@ def test_expansions():
         return phis, dphis
 
     # Try reading reference values
-    filename = "reference-expansions.pickle"
+    filename = "reference-expansions.json"
     try:
-        reference = pickle.load(open(filename, "r"))
+        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
         reference = create_data()
-        # Store the data for the future
-        pickle.dump(reference, open(filename, "w"))
+        # Convert reference to list of int
+        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
 
     table_phi, table_dphi = create_data()
     reference_table_phi, reference_table_dphi = reference
@@ -102,13 +119,13 @@ def test_expansions_jet():
         F = expansions.TetrahedronExpansionSet(E)
         return F.tabulate_jet(n, pts, order)
 
-    filename = "reference-expansions-jet.pickle"
+    filename = "reference-expansions-jet.json"
     try:
-        reference_jet = pickle.load(open(filename, "r"))
+        reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
         reference_jet = create_data()
         # Store the data for the future
-        pickle.dump(reference_jet, open(filename, "w"))
+        json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
 
     # Test jet data
     data = create_data()
@@ -128,13 +145,13 @@ def test_newdubiner():
         return newdubiner.tabulate_tetrahedron_derivatives(D, pts, float)
 
     # Try reading reference values
-    filename = "reference-newdubiner.pickle"
+    filename = "reference-newdubiner.json"
     try:
-        reference = pickle.load(open(filename, "r"))
+        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
         reference = create_data()
-        # Store the data for the future
-        pickle.dump(reference, open(filename, "w"))
+        # Convert reference to list of int
+        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
 
     # Actually perform the test
     table = create_data()
@@ -156,13 +173,13 @@ def test_newdubiner_jet():
         pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
         return newdubiner.tabulate_jet(D, n, pts, order, float)
 
-    filename = "reference-newdubiner-jet.pickle"
+    filename = "reference-newdubiner-jet.json"
     try:
-        reference_jet = pickle.load(open(filename, "r"))
+        reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
         reference_jet = create_data()
         # Store the data for the future
-        pickle.dump(reference_jet, open(filename, "w"))
+        json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
 
     table_jet = create_data()
     for datum, reference_datum in zip(table_jet, reference_jet):
@@ -232,7 +249,7 @@ def test_quadrature():
         # Get domain and element class
         domain = ufc_simplex(dim)
         ElementClass = supported_elements[family]
-        # Create element
+        # Create element|
         element = ElementClass(domain, degree)
         # Create quadrature points
         quad_rule = make_quadrature(domain, num_points)
@@ -254,16 +271,16 @@ def test_quadrature():
         return
 
     # Try reading reference values
-    filename = "reference.pickle"
+    filename = "reference.json"
     try:
-        reference = pickle.load(open(filename, "r"))
+        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
         reference = {}
         for test_case in test_cases:
             family, dim, degree = test_case
             reference[test_case] = create_data(family, dim, degree)
         # Store the data for the future
-        pickle.dump(reference, open(filename, "w"))
+        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
 
     for test_case in test_cases:
         family, dim, degree = test_case
