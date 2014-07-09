@@ -258,7 +258,6 @@ class PointNormalDerivative(Functional):
             alpha = [0]*sd
             alpha[i] = 1
             alphas.append(alpha)
-
         dpt_dict = {pt: [(n[i], alphas[i], tuple()) for i in range(sd)]}
 
         Functional.__init__(self, ref_el, tuple(), {},
