@@ -151,7 +151,7 @@ class LineExpansionSet:
         tetrahedron expansions."""
         ref_pts = [self.mapping(pt) for pt in pts]
         psitilde_as_derivs = jacobi.eval_jacobi_deriv_batch(0, 0, n, ref_pts)
-
+        raise ValueError(psitilde_as_derivs.shape, n+1, len(pts[0]))
         results = numpy.zeros((n+1, len(pts[0])), "d")
         for k in range(0, n + 1):
             results[k, :] = psitilde_as_derivs[k, :] * numpy.sqrt(k + 0.5)
@@ -174,7 +174,7 @@ class TriangleExpansionSet:
 #        self.scale = numpy.sqrt(numpy.linalg.det(self.A))
 
     def get_num_members(self, n):
-        return (n+1)*(n+2)/2
+        return (n+1)*(n+2)//2
 
     def tabulate(self, n, pts):
         if len(pts) == 0:
@@ -277,7 +277,7 @@ class TetrahedronExpansionSet:
         return
 
     def get_num_members(self, n):
-        return (n+1)*(n+2)*(n+3)/6
+        return (n+1)*(n+2)*(n+3)//6
 
     def tabulate(self, n, pts):
         if len(pts) == 0:
