@@ -32,6 +32,7 @@ tolerance = 1e-8
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
+        # If numpy array, convert it to a list and store it in a dict.
         if isinstance(obj, numpy.ndarray):
             data = obj.tolist()
             return dict(__ndarray__=data,
@@ -42,6 +43,7 @@ class NumpyEncoder(json.JSONEncoder):
 
 
 def json_numpy_obj_hook(dct):
+    # If dict and have '__ndarray__' as a key, convert it back to ndarray.
     if isinstance(dct, dict) and '__ndarray__' in dct:
         return numpy.asarray(dct['__ndarray__']).reshape(dct['shape'])
     return dct
@@ -264,27 +266,29 @@ def test_quadrature():
         table = create_data(family, dim, degree)
         # Check against reference
         for dtuple in reference_table:
-            assert dtuple in table
-            assert table[dtuple].shape == reference_table[dtuple].shape
-            diff = table[dtuple] - reference_table[dtuple]
+            assert eval(dtuple) in table
+            assert table[eval(dtuple)].shape == reference_table[dtuple].shape
+            diff = table[eval(dtuple)] - reference_table[dtuple]
             assert (abs(diff) < tolerance).all()
         return
 
     # Try reading reference values
     filename = "reference.json"
+
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
         reference = {}
         for test_case in test_cases:
             family, dim, degree = test_case
-            reference[test_case] = create_data(family, dim, degree)
+            ref = dict([(str(k), v) for k, v in create_data(family, dim, degree).items()])
+            reference[str(test_case)] = ref
         # Store the data for the future
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
 
     for test_case in test_cases:
         family, dim, degree = test_case
-        yield _perform_test, family, dim, degree, reference[test_case]
+        yield _perform_test, family, dim, degree, reference[str(test_case)]
 
 
 if __name__ == "__main__":

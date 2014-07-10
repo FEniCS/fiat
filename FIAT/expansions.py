@@ -18,6 +18,7 @@
 """Principal orthogonal expansion functions as defined by Karniadakis
 and Sherwin.  These are parametrized over a reference element so as
 to allow users to get coordinates that they want."""
+
 import numpy
 import math
 import sympy
@@ -227,6 +228,7 @@ class TriangleExpansionSet:
 
         for p in range(n):
             results[idx(p, 1)] = 0.5 * (1+2.0*p+(3.0+2.0*p)*y) \
+                * results[idx(p, 0)]
 
         for p in range(n-1):
             for q in range(1, n-p):
@@ -356,6 +358,7 @@ class TetrahedronExpansionSet:
                     results[idx(p, q, r+1)] = \
                                 (ar * z + br) * results[idx(p, q, r) ] \
                                 - cr * results[idx(p, q, r-1) ]
+
         for p in range(n+1):
             for q in range(n-p+1):
                 for r in range(n-p-q+1):
@@ -401,9 +404,9 @@ def polynomial_dimension(ref_el, degree):
     if ref_el.get_shape() == reference_element.LINE:
         return max(0, degree + 1)
     elif ref_el.get_shape() == reference_element.TRIANGLE:
-        return max((degree+1)*(degree+2)/2, 0)
+        return max((degree+1)*(degree+2)//2, 0)
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
-        return max(0, (degree+1)*(degree+2)*(degree+3)/6)
+        return max(0, (degree+1)*(degree+2)*(degree+3)//6)
     else:
         raise Exception("Unknown reference element type.")
 
@@ -418,8 +421,11 @@ if __name__ == "__main__":
     pts = E.make_lattice(k)
 
     Phis = expansions.get_expansion_set(E)
-    
+
+    phis = Phis.tabulate(k, pts)    
+
     dphis = Phis.tabulate_derivatives(k, pts)
+
 #    dphis_x = numpy.array([[d[1][0] for d in dphi] for dphi in dphis])
 #    dphis_y = numpy.array([[d[1][1] for d in dphi] for dphi in dphis])
 #    dphis_z = numpy.array([[d[1][2] for d in dphi] for dphi in dphis])
