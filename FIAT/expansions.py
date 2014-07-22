@@ -149,9 +149,9 @@ class LineExpansionSet:
         A[i,j] = D phi_i(pts[j]).  The tuple is returned for
         compatibility with the interfaces of the triangle and
         tetrahedron expansions."""
-        ref_pts = [self.mapping(pt) for pt in pts]
+        ref_pts = numpy.array([self.mapping(pt) for pt in pts])
         psitilde_as_derivs = jacobi.eval_jacobi_deriv_batch(0, 0, n, ref_pts)
-        raise ValueError(psitilde_as_derivs.shape, n+1, len(pts[0]))
+        
         results = numpy.zeros((n+1, len(pts[0])), "d")
         for k in range(0, n + 1):
             results[k, :] = psitilde_as_derivs[k, :] * numpy.sqrt(k + 0.5)
@@ -254,7 +254,7 @@ class TriangleExpansionSet:
         n = data[0].shape[1]
         data2 = [[tuple([data[r][i][j] for r in range(order+1)])
                   for j in range(n)]
-                 for i in range(m)]
+                 for i in range(m)]        
         return data2
 
     def tabulate_jet(self, n, pts, order=1):
