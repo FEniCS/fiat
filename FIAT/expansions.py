@@ -152,7 +152,7 @@ class LineExpansionSet:
         ref_pts = numpy.array([self.mapping(pt) for pt in pts])
         psitilde_as_derivs = jacobi.eval_jacobi_deriv_batch(0, 0, n, ref_pts)
         
-        results = numpy.zeros((n+1, len(pts[0])), "d")
+        results = numpy.zeros((n+1, len(pts)), "d")
         for k in range(0, n + 1):
             results[k, :] = psitilde_as_derivs[k, :] * numpy.sqrt(k + 0.5)
 
