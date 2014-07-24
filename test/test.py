@@ -72,6 +72,29 @@ def test_polynomials():
         assert (abs(dmat - reference_dmat) < tolerance).all()
     return
 
+def test_polynomials_1D():
+    def create_data():
+        ps = polynomial_set.ONPolynomialSet(
+            ref_el=reference_element.DefaultLine(),
+            degree=3
+            )
+        return ps.dmats
+
+    # Try reading reference values
+    filename = "reference-polynomials.json"
+    try:
+        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
+    except IOError:
+        reference = create_data()
+        # Store the data for the future
+        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
+
+    dmats = create_data()
+
+    for dmat, reference_dmat in zip(dmats, reference):
+        assert (abs(dmat - reference_dmat) < tolerance).all()
+    return
+
 
 def test_expansions():
     def create_data():
