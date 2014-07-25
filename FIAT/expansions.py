@@ -156,8 +156,17 @@ class LineExpansionSet:
         for k in range(0, n + 1):
             results[k, :] = psitilde_as_derivs[k, :] * numpy.sqrt(k + 0.5)
 
-        return (results,)
+        vals = self.tabulate(n, pts)
+        deriv_vals = (results,)
 
+        # Create the ordinary data structure.
+        dv = []
+        for i in range(vals.shape[0]):
+            dv.append([])
+            for j in range(vals.shape[1]):
+                dv[-1].append((vals[i][j], [deriv_vals[0][i][j]]))
+
+        return dv
 
 class TriangleExpansionSet:
     """Evaluates the orthonormal Dubiner basis on a triangular
