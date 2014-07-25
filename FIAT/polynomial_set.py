@@ -198,8 +198,14 @@ class ONPolynomialSet(PolynomialSet):
             v = numpy.transpose(expansion_set.tabulate(degree, pts))
             vinv = numpy.linalg.inv(v)
 
-            dv = expansion_set.tabulate_derivatives(degree, pts)
-
+            vals = expansion_set.tabulate(degree, pts)
+            deriv_vals = expansion_set.tabulate_derivatives(degree, pts)
+            # Create the ordinary data structure.
+            dv = []
+            for i in range(vals.shape[0]):
+                dv.append([])
+                for j in range(vals.shape[1]):
+                    dv[-1].append((vals[i][j], [deriv_vals[0][i][j]]))
             dtildes = [[[a[1][i] for a in dvrow] for dvrow in dv]
                        for i in range(sd)
                        ]
