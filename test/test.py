@@ -81,7 +81,7 @@ def test_polynomials_1D():
         return ps.dmats
 
     # Try reading reference values
-    filename = "reference-polynomials.json"
+    filename = "reference-polynomials_1D.json"
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
