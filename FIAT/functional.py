@@ -23,6 +23,7 @@
 
 import numpy
 from functools import reduce
+from collections import OrderedDict
 
 
 def index_iterator(shp):
@@ -190,9 +191,8 @@ class PointEvaluation(Functional):
         return
 
     def tostr(self):
-        import string
         x = list(map(str, list(self.pt_dict.keys())[0]))
-        return "u(%s)" % (string.join(x, ","),)
+        return "u(%s)" % (','.join(x),)
 
 
 class ComponentPointEvaluation(Functional):
@@ -209,9 +209,8 @@ class ComponentPointEvaluation(Functional):
                             "ComponentPointEval")
 
     def tostr(self):
-        import string
         x = list(map(str, list(self.pt_dict.keys())[0]))
-        return "(u[%d](%s)" % (self.comp, string.join(x, ","))
+        return "(u[%d](%s)" % (self.comp, ','.join(x))
 
 
 class PointDerivative(Functional):
@@ -307,7 +306,7 @@ class IntegralMoment (Functional):
               The shape ??? (Optional)
         """
         qpts, qwts = Q.get_points(), Q.get_weights()
-        pt_dict = {}
+        pt_dict = OrderedDict()
         self.comp = comp
         for i in range(len(qpts)):
             pt_cur = tuple(qpts[i])
@@ -383,9 +382,8 @@ class PointEdgeTangentEvaluation(Functional):
                             )
 
     def tostr(self):
-        import string
         x = list(map(str, list(self.pt_dict.keys())[0]))
-        return "(u.t)(%s)" % (string.join(x, ","),)
+        return "(u.t)(%s)" % (','.join(x),)
 
     def to_riesz(self, poly_set):
         # should be singleton
@@ -409,9 +407,8 @@ class PointFaceTangentEvaluation(Functional):
                             )
 
     def tostr(self):
-        import string
         x = list(map(str, list(self.pt_dict.keys())[0]))
-        return "(u.t%d)(%s)" % (self.tno, string.join(x, ","),)
+        return "(u.t%d)(%s)" % (self.tno, ','.join(x),)
 
     def to_riesz(self, poly_set):
         xs = list(self.pt_dict.keys())
@@ -435,9 +432,8 @@ class PointScaledNormalEvaluation(Functional):
         return
 
     def tostr(self):
-        import string
         x = list(map(str, list(self.pt_dict.keys())[0]))
-        return "(u.n)(%s)" % (string.join(x, ","),)
+        return "(u.n)(%s)" % (','.join(x),)
 
     def to_riesz(self, poly_set):
         xs = list(self.pt_dict.keys())
