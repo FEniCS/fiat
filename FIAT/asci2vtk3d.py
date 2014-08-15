@@ -31,7 +31,7 @@ else:
     sys.exit(0)
 
 
-fin = open( filename , "r" )
+fin = open( filename, "r" )
 
 coords = [ ]
 
@@ -45,7 +45,7 @@ n = len( coords )
 print("%s points" % (str(n),))
 
 
-fout = open( output , "w" )
+fout = open( output, "w" )
 fout.write("""# vtk DataFile Version 2.0
 points
 ASCII
@@ -53,9 +53,9 @@ DATASET UNSTRUCTURED_GRID
 POINTS %s float\n""" % (str(n),))
 
 for c in coords:
-    fout.write("%s %s %s\n" % (c[0],c[1],c[2]))
+    fout.write("%s %s %s\n" % (c[0], c[1], c[2]))
 
-fout.write("CELLS %s %s\n" % (n,2*n))
+fout.write("CELLS %s %s\n" % (n, 2*n))
 for i in range( n ):
     fout.write("1 %s\n" % (i,))
 
