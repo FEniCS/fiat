@@ -648,6 +648,8 @@ def ufc_cell( cell ):
     if celltype == "OuterProductCell":
         # cell is a UFL cell
         return two_product_cell(ufc_cell(cell._A), ufc_cell(cell._B))
+    elif celltype == "quadrilateral":
+        return two_product_cell(ufc_simplex(1), ufc_simplex(1))
     elif celltype == "interval":
         return ufc_simplex(1)
     elif celltype == "triangle":
