@@ -166,6 +166,20 @@ class TensorProductQuadratureRule(QuadratureRule):
     """Returns the quadrature rule for a TensorProduct cell, by
     combining the quadrature rules of the two components"""
     def __init__( self , ref_el , m ):
+        # Firedrake issue #372 (duplicate: #420)
+        #
+        # This is added here to handle the constant times dx
+        # integral on tensor product elements (e.g. extruded mesh).
+        # For example,
+        #
+        #   assemble(1.0 * dx)
+        #
+        if isinstance(m, int):
+            if m == 1:
+                m = (1, 1)
+            else:
+                raise RuntimeError("Tuple expected as number of points on tensor product element")
+
         # Get quadrature rules of subcomponents
         quadA = make_quadrature( ref_el.A, m[0] )
         quadB = make_quadrature( ref_el.B, m[1] )
