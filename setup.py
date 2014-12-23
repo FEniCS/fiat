@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+import sys
+
+if sys.version_info < (2, 7):
+    print("Python 2.7 or higher required, please upgrade.")
+    sys.exit(1)
 
 setup(name="FIAT",
       version="1.4.0+",
