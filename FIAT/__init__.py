@@ -28,6 +28,8 @@ from FIAT.tensor_finite_element import TensorFiniteElement
 from FIAT.enriched import EnrichedElement
 from FIAT.discontinuized import Discontinuized
 from FIAT.trace import Trace
+from FIAT.facet import Facetize
+from FIAT.interior import Interiorize
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris":                      Argyris,
@@ -46,7 +48,9 @@ supported_elements = {"Argyris":                      Argyris,
                       "EnrichedElement":              EnrichedElement,
                       "OuterProductElement":          TensorFiniteElement,
                       "BrokenElement":                Discontinuized,
-                      "TraceElement":                 Trace}
+                      "TraceElement":                 Trace,
+                      "FacetElement":                 Facetize,
+                      "InteriorElement":              Interiorize}
 
 # List of extra elements
 extra_elements = {"P0":              P0,
