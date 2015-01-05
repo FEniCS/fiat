@@ -18,7 +18,7 @@
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
 
-class TraceSpace(object):
+class TraceElement(object):
     def __init__(self, cell, k):
 
         # Store input cell and polynomial degree (k)
@@ -98,14 +98,20 @@ class TraceSpace(object):
         pass
 
     # These functions are only needed for evaluatebasis and
-    # evaluatebasisderivatives, disable those, and you should be in
+    # evaluatebasisderivatives, disable those, and we should be in
     # business.
     def get_num_members(self, arg):
-        raise Exception, "Not implemented: shouldn't be implemented."
+        msg = "Not implemented: shouldn't be implemented."
+        raise Exception(msg)
 
     def dmats(self):
-        raise Exception, """Not implemented: don't know how to implement, but that's ok."""
+        msg = "Not implemented."
+        raise Exception(msg)
+
+    def __str__(self):
+        return "TraceElement(%s, %s)" % (self.cell, self.k)
 
 if __name__ == "__main__":
     T = ufc_simplex(2)
-    element = TraceSpace(T, 1)
+    element = TraceElement(T, 1)
+    print element
