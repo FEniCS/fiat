@@ -27,7 +27,7 @@ class Facetize(FiniteElement):
         self._element = element
         self.order = 0  # can't (in general) represent constant function
         self.ref_el = element.get_reference_element()
-        self.formdegree = 0  # (usually) fully continuous
+        self.formdegree = None  # please don't use these elements in a product
         self._mapping = element.mapping()[0]
         
         # make entity dof list of new element.
