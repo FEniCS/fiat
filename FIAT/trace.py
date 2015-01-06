@@ -15,18 +15,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+import numpy
+
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
+from FIAT.functional import PointEvaluation
 
 class TraceElement(object):
     def __init__(self, cell, k):
+
+        # Only support 2D first
+        tdim = cell.get_spatial_dimension()
+        assert tdim == 2, "Only trace elements on triangles supported for now"
 
         # Store input cell and polynomial degree (k)
         self.cell = cell
         self.k = k
 
         # Create DG_k space on the facet(s) of the cell
-        tdim = self.cell.get_spatial_dimension()
         self.facet = ufc_simplex(tdim - 1)
         self.DG = DiscontinuousLagrange(self.facet, k)
 
@@ -67,25 +73,40 @@ class TraceElement(object):
 
     def dual_basis(self):
 
-        # I think this is supposed to be a list, each element of the
-        # list corresponds to a representation of a degree of freedom
-        # as a linear combination
+        # First create the points
+        points = []
 
-        # For each facet, map DG_k on reference facet to this facet,
-        # add node as PointEvaluation on this point. Something like
-        # this:
+        # For each facet, map the subcomplex DG_k dofs from the lower
+        # dimensional reference element onto the facet and add to list
+        # of points
 
-        #nodes = [functional.PointEvaluation( self.cell , x )
-        #             for x in points ]
+        # FIXME: Generalise to nD
+        def map_from_reference_facet(point, vertices):
+            pt = vertices[0] + point[0]*(vertices[1] - vertices[0])
+            print "pt = ", pt
+            return tuple(pt)
 
-        nodes = []
+        DG_k_dual_basis = self.DG.dual_basis()
+        t_dim = self.cell.get_spatial_dimension()
+        facets2indices = self.cell.get_topology()[t_dim - 1]
+        for (facet, indices) in facets2indices.iteritems():
+            vertices = self.cell.get_vertices_of_subcomplex(indices)
+            vertices = numpy.array(vertices)
+            for dof in DG_k_dual_basis:
+                # PointEvaluation only carries one point
+                point = dof.get_point_dict().keys()[0]
+                pt = map_from_reference_facet(point, vertices)
+                points.append(pt)
+
+        # One degree of freedom per point:
+        nodes = [PointEvaluation(self.cell, x) for x in points]
+
         return nodes
 
     def tabulate(self, order, points):
 
-        # Standard derivatives don't make sense (cf manifolds
-        # work). Maybe derivatives are not needed?
-        assert (order == 0),  "Don't know how to do derivatives"
+        # Standard derivatives don't make sense
+        assert (order == 0), "Don't know how to do derivatives"
 
         # Check that points are on edge
 
@@ -94,8 +115,8 @@ class TraceElement(object):
         # Map point to "reference facet" (edge -> interval etc)
 
         # Call self.DG.tabulate(order, new_points)
-
-        pass
+        # FIXME:
+        return self.DG.tabulate(order, [(0.0,) for i in points])
 
     # These functions are only needed for evaluatebasis and
     # evaluatebasisderivatives, disable those, and we should be in
@@ -112,6 +133,17 @@ class TraceElement(object):
         return "TraceElement(%s, %s)" % (self.cell, self.k)
 
 if __name__ == "__main__":
+
+    print "-"*80
     T = ufc_simplex(2)
     element = TraceElement(T, 1)
-    print element
+    print element.entity_ids
+    print element.dual_basis()
+    pts = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
+    print element.tabulate(0, pts)
+
+    #print "-"*80
+    #T = ufc_simplex(3)
+    #element = TraceElement(T, 1)
+    #print element
+    #print element.dual_basis()
