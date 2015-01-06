@@ -14,6 +14,7 @@ from FIAT.argyris import QuinticArgyris
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
 from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
+from FIAT.trace import DiscontinuousLagrangeTrace
 from FIAT.discontinuous_raviart_thomas import DiscontinuousRaviartThomas
 from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
@@ -30,6 +31,7 @@ supported_elements = {"Argyris":                      Argyris,
                       "Brezzi-Douglas-Fortin-Marini": BrezziDouglasFortinMarini,
                       "Crouzeix-Raviart":             CrouzeixRaviart,
                       "Discontinuous Lagrange":       DiscontinuousLagrange,
+                      "Discontinuous Lagrange Trace": DiscontinuousLagrangeTrace,
                       "Discontinuous Raviart-Thomas": DiscontinuousRaviartThomas,
                       "Hermite":                      CubicHermite,
                       "Lagrange":                     Lagrange,

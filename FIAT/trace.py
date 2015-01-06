@@ -21,7 +21,7 @@ from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
 from FIAT.functional import PointEvaluation
 
-class TraceElement(object):
+class DiscontinuousLagrangeTrace(object):
     def __init__(self, cell, k):
 
         # Only support 2D first
@@ -69,7 +69,7 @@ class TraceElement(object):
         return self.entity_ids
 
     def mapping(self):
-        return ["affine" for i in self.space_dimension()]
+        return ["affine" for i in range(self.space_dimension())]
 
     def dual_basis(self):
 
@@ -121,6 +121,12 @@ class TraceElement(object):
     # These functions are only needed for evaluatebasis and
     # evaluatebasisderivatives, disable those, and we should be in
     # business.
+    def get_coeffs(self):
+        """Return the expansion coefficients for the basis of the
+        finite element."""
+        msg = "Not implemented: shouldn't be implemented."
+        raise Exception(msg)
+
     def get_num_members(self, arg):
         msg = "Not implemented: shouldn't be implemented."
         raise Exception(msg)
@@ -130,13 +136,13 @@ class TraceElement(object):
         raise Exception(msg)
 
     def __str__(self):
-        return "TraceElement(%s, %s)" % (self.cell, self.k)
+        return "DiscontinuousLagrangeTrace(%s, %s)" % (self.cell, self.k)
 
 if __name__ == "__main__":
 
     print "-"*80
     T = ufc_simplex(2)
-    element = TraceElement(T, 1)
+    element = DiscontinuousLagrangeTrace(T, 1)
     print element.entity_ids
     print element.dual_basis()
     pts = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
@@ -144,6 +150,6 @@ if __name__ == "__main__":
 
     #print "-"*80
     #T = ufc_simplex(3)
-    #element = TraceElement(T, 1)
+    #element = DiscontinuousLagrangeTrace(T, 1)
     #print element
     #print element.dual_basis()
