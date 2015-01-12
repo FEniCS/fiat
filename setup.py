@@ -8,7 +8,7 @@ if sys.version_info < (2, 7):
     sys.exit(1)
 
 setup(name="FIAT", \
-      version="1.4.0+", \
+      version="1.5.0", \
       description="FInite element Automatic Tabulator", \
       author="Robert C. Kirby", \
       author_email="robert.c.kirby@gmail.com", \
