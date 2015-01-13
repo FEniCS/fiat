@@ -1,5 +1,7 @@
+1.5.0 [2014-01-12]
  - Require Python 2.7
  - Python 3 support
+ - Remove ScientificPython dependency and add dependency on SymPy
 1.4.0 [2014-06-02]
  - Support discontinuous/broken Raviart-Thomas
 1.3.0 [2014-01-07]
