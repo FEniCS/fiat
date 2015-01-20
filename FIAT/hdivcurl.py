@@ -69,8 +69,13 @@ def Hdiv(element):
                 # with something discontinuous.
                 # look for the (continuous) 0-form, and put the value there
                 if self.A.get_formdegree() == 0:
-                    # first element, so (x, 0, ...)
-                    temp[:, 0, :] = temp_old[:, :]
+                    # first element, so (-x, 0, ...)
+                    # Sign flip to ensure that a positive value of the node
+                    # means a vector field having a direction "to the left"
+                    # relative to direction in which the nodes are placed on an
+                    # edge in case of higher-order schemes.
+                    # This is required for unstructured quadrilateral meshes.
+                    temp[:, 0, :] = -temp_old[:, :]
                 elif self.B.get_formdegree() == 0:
                     # second element, so (..., 0, x)
                     temp[:, -1, :] = temp_old[:, :]
@@ -186,9 +191,13 @@ def Hcurl(element):
                 # a bunch of 0-forms (continuous).
                 # look for the 1-form, and put the value in the other place
                 if self.A.get_formdegree() == 1:
-                    # first element, so (-x, 0, ...)
-                    # sign change s.t. cov is 90deg c.clockwise from contra
-                    temp[:, 0, :] = -temp_old[:, :]
+                    # first element, so (x, 0, ...)
+                    # No sign flip here, nor at the other branch, to ensure that
+                    # a positive value of the node means a vector field having
+                    # the same direction as the direction in which the nodes are
+                    # placed on an edge in case of higher-order schemes.
+                    # This is required for unstructured quadrilateral meshes.
+                    temp[:, 0, :] = temp_old[:, :]
                 elif self.B.get_formdegree() == 1:
                     # second element, so (..., 0, x)
                     temp[:, -1, :] = temp_old[:, :]
