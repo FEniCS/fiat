@@ -35,6 +35,7 @@ import numpy
 LINE = 1
 TRIANGLE = 2
 TETRAHEDRON = 3
+QUADRILATERAL = 11
 TENSORPRODUCT = 99
 
 def linalg_subspace_intersection( A, B ):
@@ -541,6 +542,24 @@ class UFCTetrahedron( ReferenceElement ):
         return UFCTriangle()
 
 
+class FiredrakeQuadrilateral( ReferenceElement ):
+    """This is the reference quadrilateral with vertices
+    (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
+    def __init__( self ):
+        verts = ((0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0))
+        edges = { 0: (0, 1), 1: (2, 3), 2: (0, 2), 3: (1, 3) }
+        faces = { 0: (0, 1, 2, 3) }
+        topology = { 0: { 0: (0,), 1: (1,), 2: (2,), 3: (3,) },
+                     1: edges, 2: faces }
+        ReferenceElement.__init__(self, QUADRILATERAL, verts, topology)
+
+        self.A = UFCInterval()
+        self.B = UFCInterval()
+
+    def __eq__(self, other):
+        return isinstance(other, FiredrakeQuadrilateral)
+
+
 class two_product_cell( ReferenceElement ):
     """A cell that is the product of FIAT cells A and B"""
     def __init__( self, A, B ):
@@ -649,7 +668,7 @@ def ufc_cell( cell ):
         # cell is a UFL cell
         return two_product_cell(ufc_cell(cell._A), ufc_cell(cell._B))
     elif celltype == "quadrilateral":
-        return two_product_cell(ufc_simplex(1), ufc_simplex(1))
+        return FiredrakeQuadrilateral()
     elif celltype == "interval":
         return ufc_simplex(1)
     elif celltype == "triangle":

@@ -233,6 +233,8 @@ def make_quadrature( ref_el, m ):
         return CollapsedQuadratureTriangleRule( ref_el, m )
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule( ref_el, m )
+    elif ref_el.get_shape() == reference_element.QUADRILATERAL:
+        return TensorProductQuadratureRule( ref_el, (m, m) )
     elif ref_el.get_shape() == reference_element.TENSORPRODUCT:
         return TensorProductQuadratureRule( ref_el, m )
 
