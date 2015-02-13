@@ -559,6 +559,24 @@ class FiredrakeQuadrilateral( ReferenceElement ):
     def __eq__(self, other):
         return isinstance(other, FiredrakeQuadrilateral)
 
+    def get_facet_element( self ):
+        return UFCInterval()
+
+    def get_facet_transform(self, facet_i):
+        """Return a function f such that for a point with facet coordinates
+        x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
+        """
+        if facet_i == 0:
+            return lambda p: numpy.array([0.0, p])
+        elif facet_i == 1:
+            return lambda p: numpy.array([1.0, p])
+        elif facet_i == 2:
+            return lambda p: numpy.array([p, 0.0])
+        elif facet_i == 3:
+            return lambda p: numpy.array([p, 1.0])
+        else:
+            raise RuntimeError("Illegal quadrilateral facet number.")
+
 
 class two_product_cell( ReferenceElement ):
     """A cell that is the product of FIAT cells A and B"""
