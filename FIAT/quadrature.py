@@ -166,13 +166,19 @@ class TensorProductQuadratureRule(QuadratureRule):
     """Returns the quadrature rule for a TensorProduct cell, by
     combining the quadrature rules of the two components"""
     def __init__( self , ref_el , m ):
-        # We get a single integer here, when doing:
-        #  a) Constant * dx on an extruded or quadrilateral mesh.
-        #  b) Cell integral on a quadrilateral mesh.
+        # Firedrake issue #372 (duplicate: #420)
         #
-        # Also see: Firedrake issue #372 (duplicate: #420)
+        # This is added here to handle the constant times dx
+        # integral on tensor product elements (e.g. extruded mesh).
+        # For example,
+        #
+        #   assemble(1.0 * dx)
+        #
         if isinstance(m, int):
-            m = (m, m)
+            if m == 1:
+                m = (1, 1)
+            else:
+                raise RuntimeError("Tuple expected as number of points on tensor product element")
 
         # Get quadrature rules of subcomponents
         quadA = make_quadrature( ref_el.A, m[0] )
@@ -233,6 +239,8 @@ def make_quadrature( ref_el, m ):
         return CollapsedQuadratureTriangleRule( ref_el, m )
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule( ref_el, m )
+    elif ref_el.get_shape() == reference_element.QUADRILATERAL:
+        return TensorProductQuadratureRule( ref_el, (m, m) )
     elif ref_el.get_shape() == reference_element.TENSORPRODUCT:
         return TensorProductQuadratureRule( ref_el, m )
 
