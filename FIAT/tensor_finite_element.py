@@ -339,9 +339,10 @@ class FlattenedElement(FiniteElement):
         # save tensor-like element
         self._element = tfe
 
-        self.ref_el = tfe.get_reference_element()
-        if isinstance(self.ref_el, two_product_cell):
-            self.ref_el = self.ref_el.A
+        if isinstance(tfe.get_reference_element(), two_product_cell):
+            self.ref_el = tfe.get_reference_element().A
+        else:
+            raise TypeError("Cannot flatten non-product cell.")
 
         # set up entity_ids
         # Return the flattened (w.r.t. 2nd component) map
