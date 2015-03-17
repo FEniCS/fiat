@@ -21,7 +21,50 @@ from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
 from FIAT.functional import PointEvaluation
 
+def barycentric_coordinates(points, vertices, tolerance=1.e-6):
+    xs = [v[0] for v in vertices]
+    ys = [v[1] for v in vertices]
+
+    detT = (ys[1] - ys[2])*(xs[0] - xs[2]) + (xs[2] - xs[1])*(ys[0] - ys[2])
+
+    unique_edge = set()
+    coords = []
+    for (x, y) in points:
+        lam = [((ys[1] - ys[2])*(x - xs[2]) + (xs[2] - xs[1])*(y - ys[2]))/detT,
+               ((ys[2] - ys[1])*(x - xs[2]) + (xs[0] - xs[2])*(y - ys[2]))/detT,
+               0.0]
+        lam[2] = 1.0 - lam[0] - lam[1]
+        coords.append(lam)
+        on_edge = set([i for (i, l) in enumerate(lam) if abs(l) < tolerance ])
+        if not unique_edge:
+            unique_edge = on_edge
+        unique_edge = unique_edge & on_edge
+
+    assert len(unique_edge) == 1, "Unable to identify unique edge"
+    return (coords, unique_edge.pop())
+
+# FIXME: Generalise to nD
+def map_from_reference_facet(point, vertices):
+    """
+    Input:
+
+    vertices: the vertices defining the physical facet
+    point: the reference point to be mapped to the facet
+    """
+    pt = vertices[0] + point[0]*(vertices[1] - vertices[0])
+    return tuple(pt)
+
+# FIXME: Generalise to nD
+def map_to_reference_facet(points, vertices):
+    """
+    """
+    x0 = vertices[0][0]
+    x1 = vertices[1][0]
+    s = [((x - x0)/(x1 - x0),) for (x, y) in points]
+    return s
+
 class DiscontinuousLagrangeTrace(object):
+    ""
     def __init__(self, cell, k):
 
         # Only support 2D first
@@ -62,7 +105,7 @@ class DiscontinuousLagrangeTrace(object):
 
     def space_dimension(self):
         """The space dimension of the trace space corresponds to the
-        DG space on each facet."""
+        DG space dimesion on each facet times the number of facets."""
         return self.DG.space_dimension()*self.num_facets
 
     def entity_dofs(self):
@@ -79,16 +122,11 @@ class DiscontinuousLagrangeTrace(object):
         # For each facet, map the subcomplex DG_k dofs from the lower
         # dimensional reference element onto the facet and add to list
         # of points
-
-        # FIXME: Generalise to nD
-        def map_from_reference_facet(point, vertices):
-            pt = vertices[0] + point[0]*(vertices[1] - vertices[0])
-            print "pt = ", pt
-            return tuple(pt)
-
         DG_k_dual_basis = self.DG.dual_basis()
         t_dim = self.cell.get_spatial_dimension()
         facets2indices = self.cell.get_topology()[t_dim - 1]
+
+        # Iterate over the facets and add points on each facet
         for (facet, indices) in facets2indices.iteritems():
             vertices = self.cell.get_vertices_of_subcomplex(indices)
             vertices = numpy.array(vertices)
@@ -100,7 +138,6 @@ class DiscontinuousLagrangeTrace(object):
 
         # One degree of freedom per point:
         nodes = [PointEvaluation(self.cell, x) for x in points]
-
         return nodes
 
     def tabulate(self, order, points):
@@ -108,15 +145,18 @@ class DiscontinuousLagrangeTrace(object):
         # Standard derivatives don't make sense
         assert (order == 0), "Don't know how to do derivatives"
 
-        # Check that points are on edge
-
-        # Identify which edge
+        # Identify which edge (if any) these points are on:
+        vertices = self.cell.vertices
+        (coords, unique_edge) = barycentric_coordinates(points, vertices)
 
         # Map point to "reference facet" (edge -> interval etc)
+        facet2indices = self.cell.get_topology()[2 - 1][unique_edge]
+        vertices = self.cell.get_vertices_of_subcomplex(facet2indices)
+        new_points = map_to_reference_facet(points, vertices)
 
         # Call self.DG.tabulate(order, new_points)
-        # FIXME:
-        return self.DG.tabulate(order, [(0.0,) for i in points])
+        values = self.DG.tabulate(order, new_points)
+        return values
 
     # These functions are only needed for evaluatebasis and
     # evaluatebasisderivatives, disable those, and we should be in
@@ -143,9 +183,7 @@ if __name__ == "__main__":
     print "-"*80
     T = ufc_simplex(2)
     element = DiscontinuousLagrangeTrace(T, 1)
-    print element.entity_ids
-    print element.dual_basis()
-    pts = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
+    pts = [(0.1, .0), (1.0, 0.0)]
     print element.tabulate(0, pts)
 
     #print "-"*80
