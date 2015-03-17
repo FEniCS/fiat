@@ -208,74 +208,6 @@ class TensorFiniteElement(FiniteElement):
         for the finite element."""
         raise NotImplementedError("get_nodal_basis not implemented")
 
-    def flattened_element(self):
-        """Return a reduced-functionality element with B's entity dofs squashed
-        down onto A's. Assumes the second element is an interval."""
-
-        class FlattenedElement(FiniteElement):
-
-            def __init__(self, TFE):
-                # set up simple things
-                A = TFE.A
-                B = TFE.B
-                self.polydegree = max(A.degree(), B.degree())
-                self.fsdim = A.space_dimension() * B.space_dimension()
-
-                # set up reference element
-                self.ref_el = A.get_reference_element()
-
-                # set up entity_ids
-                # Return the flattened (w.r.t. 2nd component) map of
-                # topological entities to degrees of freedom. Assumes product
-                # is something crossed with an interval"""
-                TFEdofs = TFE.entity_dofs()
-                self.entity_ids = {}
-
-                for dimA, dimB in TFEdofs:
-                    # dimB = 0 or 1.  only look at the 1s, then grab the data from 0s
-                    if dimB == 0:
-                        continue
-                    self.entity_ids[dimA] = {}
-                    for ent in TFEdofs[(dimA, dimB)]:
-                        # this line is fairly magic.
-                        # it works because an interval has two points.
-                        # we pick up the dofs from the bottom point,
-                        # then the dofs from the interior of the interval,
-                        # then finally the dofs from the top point
-                        self.entity_ids[dimA][ent] = \
-                            TFEdofs[(dimA, 0)][2*ent] + TFEdofs[(dimA, 1)][ent] + TFEdofs[(dimA, 0)][2*ent+1]
-
-            def degree(self):
-                """Return the degree of the (embedding) polynomial space."""
-                return self.polydegree
-
-            def entity_dofs(self):
-                """Return the map of topological entities to degrees of
-                freedom for the finite element."""
-                return self.entity_ids
-
-            def space_dimension(self):
-                """Return the dimension of the finite element space."""
-                return self.fsdim
-
-        return FlattenedElement(self)
-
-    def get_lower_mask(self):
-        """Return a list of dof indices corresponding to the lower
-        face of a TFE, assuming B is an interval"""
-        temp = self.entity_closure_dofs().keys()
-        temp.sort()
-        # temp[-2] is e.g. (2, 0) for wedges; ((1, 1), 0) for cubes
-        # temp[-1] is of course (2, 1) or ((1, 1), 1)
-        return self.entity_closure_dofs()[temp[-2]][0]
-
-    def get_upper_mask(self):
-        """Return a list of dof indices corresponding to the upper
-        face of a TFE, assuming B is an interval"""
-        temp = self.entity_closure_dofs().keys()
-        temp.sort()
-        return self.entity_closure_dofs()[temp[-2]][1]
-
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
         finite element."""
@@ -393,6 +325,57 @@ class TensorFiniteElement(FiniteElement):
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented")
+
+
+class FlattenedElement(FiniteElement):
+    """Class for flattening tensor-like finite elements."""
+
+    def __init__(self, tfe):
+        """Initialises flattened element from tensor-like element.
+
+        :arg tfe: tensor-like finite element to flatten
+        """
+
+        # save tensor-like element
+        self._element = tfe
+
+        self.ref_el = tfe.get_reference_element()
+        if isinstance(self.ref_el, two_product_cell):
+            self.ref_el = self.ref_el.A
+
+        # set up entity_ids
+        # Return the flattened (w.r.t. 2nd component) map
+        # of topological entities to degrees of freedom.
+        # Assumes product is something crossed with an interval
+        dofs = tfe.entity_dofs()
+        self.entity_ids = {}
+
+        for dimA, dimB in dofs:
+            # dimB = 0 or 1.  only look at the 1s, then grab the data from 0s
+            if dimB == 0:
+                continue
+            self.entity_ids[dimA] = {}
+            for ent in dofs[(dimA, dimB)]:
+                # this line is fairly magic.
+                # it works because an interval has two points.
+                # we pick up the dofs from the bottom point,
+                # then the dofs from the interior of the interval,
+                # then finally the dofs from the top point
+                self.entity_ids[dimA][ent] = \
+                  dofs[(dimA, 0)][2*ent] + dofs[(dimA, 1)][ent] + dofs[(dimA, 0)][2*ent+1]
+
+    def degree(self):
+        """Return the degree of the (embedding) polynomial space."""
+        return self._element.degree()
+
+    def entity_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom for the finite element."""
+        return self.entity_ids
+
+    def space_dimension(self):
+        """Return the dimension of the finite element space."""
+        return self._element.space_dimension()
 
 if __name__ == "__main__":
     from . import reference_element
