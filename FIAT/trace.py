@@ -71,41 +71,40 @@ def map_from_reference_facet(point, vertices):
     # Compute barycentric coordinates of point relative to reference facet:
     reference_simplex = ufc_simplex(len(vertices)-1)
     reference_vertices = reference_simplex.get_vertices()
-    coords = barycentric_coordinates([point,], reference_vertices)
+    coords = barycentric_coordinates([point,], reference_vertices)[0]
 
     # Evaluate physical coordinate of point using barycentric coordinates
-    point = sum(vertices[j]*coords[0][j] for j in range(len(coords[0])))
+    point = sum(vertices[j]*coords[j] for j in range(len(coords)))
 
     return tuple(point)
 
-# FIXME: Generalise to nD
-def map_to_reference_facet(points, vertices, tolerance=epsilon):
+def map_to_reference_facet(points, vertices, facet):
     """Given a set of points in n D and a set of vertices describing a
     facet of a simplex in n D (where the given points lie on this
     facet) map the points to the reference simplex of dimension (n-1).
-
-    In 1D, we have that
-
-      (x, y) = (x0, y0) + s * (x1 - x0, y1 - y0)
-
-    So, we should have that (if x1 != x0 and/or y1!=y0)
-
-      s = (x - x0)/(x1 - x0)
-      s = (y - y0)/(y1 - y0)
-
     """
-    print("vertices = ", vertices)
-    print("points = ", points)
 
-    # Short-hand for increased readability
-    (x0, y0) = (vertices[0][0], vertices[0][1])
-    (x1, y1) = (vertices[1][0], vertices[1][1])
+    # Compute barycentric coordinates of points with respect to
+    # the full physical simplex
+    all_coords = barycentric_coordinates(points, vertices)
 
-    if abs(x1 - x0) > tolerance:
-        s = [((x - x0)/(x1 - x0),) for (x, y) in points]
-    else:
-        s = [((y - y0)/(y1 - y0),) for (x, y) in points]
-    return s
+    # Extract vertices of reference facet simplex
+    reference_facet_simplex = ufc_simplex(len(vertices)-2)
+    ref_vertices = reference_facet_simplex.get_vertices()
+
+    reference_points = []
+    for (i, coords) in enumerate(all_coords):
+        # Extract correct subset of barycentric coordinates since we
+        # know which facet we are on
+        new_coords = [coords[j] for j in range(len(coords)) if (j != facet)]
+
+        # Evaluate reference coordinate of point using revised
+        # barycentric coordinates
+        reference_pt = sum(numpy.asarray(ref_vertices[j])*new_coords[j]
+                           for j in range(len(new_coords)))
+
+        reference_points += [reference_pt]
+    return reference_points
 
 class DiscontinuousLagrangeTrace(object):
     ""
@@ -194,10 +193,7 @@ class DiscontinuousLagrangeTrace(object):
         unique_facet = extract_unique_facet(coordinates)
 
         # Map point to "reference facet" (facet -> interval etc)
-        tdim = self.cell.get_spatial_dimension()
-        facet2indices = self.cell.get_topology()[tdim - 1][unique_facet]
-        vertices = self.cell.get_vertices_of_subcomplex(facet2indices)
-        new_points = map_to_reference_facet(points, vertices)
+        new_points = map_to_reference_facet(points, vertices, unique_facet)
 
         # Call self.DG.tabulate(order, new_points)
         values = self.DG.tabulate(order, new_points)
@@ -225,14 +221,14 @@ class DiscontinuousLagrangeTrace(object):
 
 if __name__ == "__main__":
 
+    print("\n2D ----------------")
     T = ufc_simplex(2)
     element = DiscontinuousLagrangeTrace(T, 1)
     pts = [(0.1, 0.0), (1.0, 0.0)]
     print("values = ", element.tabulate(0, pts))
-    #print(element.dual_basis())
 
     print("\n3D ----------------")
     T = ufc_simplex(3)
     element = DiscontinuousLagrangeTrace(T, 1)
-    pts = [(0.0, 0.1, 0.0), (0.0, 0.0, 0.1)]
+    pts = [(0.1, 0.0, 0.0), (0.0, 1.0, 0.0)]
     print(element.tabulate(0, pts))
