@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import numpy
 
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
@@ -35,8 +37,7 @@ def determine_unique_edge(coordinates, tolerance=epsilon):
     unique_edge = edges[0]
     for e in edges:
         unique_edge = unique_edge & e
-    print(unique_edge)
-    assert len(unique_edge) == 1, "Unable to identify unique edge"
+    assert len(unique_edge) == 1, "Unable to identify unique edge "
     return unique_edge.pop()
 
 def barycentric_coordinates(points, vertices):
@@ -212,7 +213,7 @@ if __name__ == "__main__":
     print("-"*80)
     T = ufc_simplex(2)
     element = DiscontinuousLagrangeTrace(T, 1)
-    pts = [(1.0, 0.0), (0.0, 0.0)]
+    pts = [(0.1, .0), (1.0, 0.0)]
     print(element.tabulate(0, pts))
 
     #print("-"*80)
