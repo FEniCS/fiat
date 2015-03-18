@@ -21,13 +21,33 @@ from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
 from FIAT.functional import PointEvaluation
 
-def barycentric_coordinates(points, vertices, tolerance=1.e-6):
+epsilon=1.e-8
+
+def determine_unique_edge(coordinates, tolerance=epsilon):
+    """Determine whether a set of point, given by their barycentric
+    coordinates, are all on one of the facets.
+    """
+    edges = []
+    for c in coordinates:
+        on_edge = set([i for (i, l) in enumerate(c) if abs(l) < tolerance])
+        edges += [on_edge]
+
+    unique_edge = edges[0]
+    for e in edges:
+        unique_edge = unique_edge & e
+    print(unique_edge)
+    assert len(unique_edge) == 1, "Unable to identify unique edge"
+    return unique_edge.pop()
+
+def barycentric_coordinates(points, vertices):
+    """Compute barycentric coordinates for a set of points ('points'),
+    relative to a simplex defined by a set of vertices ('vertices').
+    """
+
     xs = [v[0] for v in vertices]
     ys = [v[1] for v in vertices]
-
     detT = (ys[1] - ys[2])*(xs[0] - xs[2]) + (xs[2] - xs[1])*(ys[0] - ys[2])
 
-    unique_edge = set()
     coords = []
     for (x, y) in points:
         lam = [((ys[1] - ys[2])*(x - xs[2]) + (xs[2] - xs[1])*(y - ys[2]))/detT,
@@ -35,13 +55,8 @@ def barycentric_coordinates(points, vertices, tolerance=1.e-6):
                0.0]
         lam[2] = 1.0 - lam[0] - lam[1]
         coords.append(lam)
-        on_edge = set([i for (i, l) in enumerate(lam) if abs(l) < tolerance ])
-        if not unique_edge:
-            unique_edge = on_edge
-        unique_edge = unique_edge & on_edge
 
-    assert len(unique_edge) == 1, "Unable to identify unique edge"
-    return (coords, unique_edge.pop())
+    return coords
 
 # FIXME: Generalise to nD
 def map_from_reference_facet(point, vertices):
@@ -55,12 +70,25 @@ def map_from_reference_facet(point, vertices):
     return tuple(pt)
 
 # FIXME: Generalise to nD
-def map_to_reference_facet(points, vertices):
+def map_to_reference_facet(points, vertices, tolerance=epsilon):
     """
+    In 1D, we have that
+
+      (x, y) = (x0, y0) + s * (x1 - x0, y1 - y0)
+
+    So, we should have that (if x1 != x0 and/or y1!=y0)
+
+      s = (x - x0)/(x1 - x0)
+      s = (y - y0)/(y1 - y0)
     """
-    x0 = vertices[0][0]
-    x1 = vertices[1][0]
-    s = [((x - x0)/(x1 - x0),) for (x, y) in points]
+    # Short-hand for increased readability
+    (x0, y0) = (vertices[0][0], vertices[0][1])
+    (x1, y1) = (vertices[1][0], vertices[1][1])
+
+    if abs(x1 - x0) > tolerance:
+        s = [((x - x0)/(x1 - x0),) for (x, y) in points]
+    else:
+        s = [((y - y0)/(y1 - y0),) for (x, y) in points]
     return s
 
 class DiscontinuousLagrangeTrace(object):
@@ -147,7 +175,8 @@ class DiscontinuousLagrangeTrace(object):
 
         # Identify which edge (if any) these points are on:
         vertices = self.cell.vertices
-        (coords, unique_edge) = barycentric_coordinates(points, vertices)
+        coordinates = barycentric_coordinates(points, vertices)
+        unique_edge = determine_unique_edge(coordinates)
 
         # Map point to "reference facet" (edge -> interval etc)
         facet2indices = self.cell.get_topology()[2 - 1][unique_edge]
@@ -180,14 +209,14 @@ class DiscontinuousLagrangeTrace(object):
 
 if __name__ == "__main__":
 
-    print "-"*80
+    print("-"*80)
     T = ufc_simplex(2)
     element = DiscontinuousLagrangeTrace(T, 1)
-    pts = [(0.1, .0), (1.0, 0.0)]
-    print element.tabulate(0, pts)
+    pts = [(1.0, 0.0), (0.0, 0.0)]
+    print(element.tabulate(0, pts))
 
-    #print "-"*80
+    #print("-"*80)
     #T = ufc_simplex(3)
     #element = DiscontinuousLagrangeTrace(T, 1)
-    #print element
-    #print element.dual_basis()
+    #print(element)
+    #print(element.dual_basis())
