@@ -23,56 +23,67 @@ from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
 from FIAT.functional import PointEvaluation
 
-epsilon=1.e-8
+# Tolerance for geometry identifications
+epsilon = 1.e-8
 
-def determine_unique_edge(coordinates, tolerance=epsilon):
-    """Determine whether a set of point, given by their barycentric
-    coordinates, are all on one of the facets.
-    """
-    edges = []
+def extract_unique_facet(coordinates, tolerance=epsilon):
+    """Determine whether a set of points, each point described by its
+    barycentric coordinates ('coordinates'), are all on one of the
+    facets and return this facet."""
+    facets = []
     for c in coordinates:
-        on_edge = set([i for (i, l) in enumerate(c) if abs(l) < tolerance])
-        edges += [on_edge]
+        on_facet = set([i for (i, l) in enumerate(c) if abs(l) < tolerance])
+        facets += [on_facet]
 
-    unique_edge = edges[0]
-    for e in edges:
-        unique_edge = unique_edge & e
-    assert len(unique_edge) == 1, "Unable to identify unique edge "
-    return unique_edge.pop()
+    unique_facet = facets[0]
+    for e in facets:
+        unique_facet = unique_facet & e
+    assert len(unique_facet) == 1, "Unable to identify unique facet "
+    return unique_facet.pop()
 
 def barycentric_coordinates(points, vertices):
     """Compute barycentric coordinates for a set of points ('points'),
     relative to a simplex defined by a set of vertices ('vertices').
     """
 
-    xs = [v[0] for v in vertices]
-    ys = [v[1] for v in vertices]
-    detT = (ys[1] - ys[2])*(xs[0] - xs[2]) + (xs[2] - xs[1])*(ys[0] - ys[2])
+    # Form map matrix
+    last = numpy.asarray(vertices[-1])
+    T = numpy.matrix([numpy.array(v) - last for v in vertices[:-1]]).T
+    detT = numpy.linalg.det(T)
+    invT = numpy.linalg.inv(T)
 
+    # Compute barycentric coordinates for all points
     coords = []
-    for (x, y) in points:
-        lam = [((ys[1] - ys[2])*(x - xs[2]) + (xs[2] - xs[1])*(y - ys[2]))/detT,
-               ((ys[2] - ys[1])*(x - xs[2]) + (xs[0] - xs[2])*(y - ys[2]))/detT,
-               0.0]
-        lam[2] = 1.0 - lam[0] - lam[1]
+    for p in points:
+        y = numpy.asarray(p) - last
+        lam = invT.dot(y)
+        lam = [lam[(0, i)] for i in range(len(y))]
+        lam += [1.0 - sum(lam)]
         coords.append(lam)
-
     return coords
 
-# FIXME: Generalise to nD
 def map_from_reference_facet(point, vertices):
     """
     Input:
-
-    vertices: the vertices defining the physical facet
-    point: the reference point to be mapped to the facet
+      vertices: the vertices defining the physical facet
+      point: the reference point to be mapped to the facet
     """
-    pt = vertices[0] + point[0]*(vertices[1] - vertices[0])
-    return tuple(pt)
+    # Compute barycentric coordinates of point relative to reference facet:
+    reference_simplex = ufc_simplex(len(vertices)-1)
+    reference_vertices = reference_simplex.get_vertices()
+    coords = barycentric_coordinates([point,], reference_vertices)
+
+    # Evaluate physical coordinate of point using barycentric coordinates
+    point = sum(vertices[j]*coords[0][j] for j in range(len(coords[0])))
+
+    return tuple(point)
 
 # FIXME: Generalise to nD
 def map_to_reference_facet(points, vertices, tolerance=epsilon):
-    """
+    """Given a set of points in n D and a set of vertices describing a
+    facet of a simplex in n D (where the given points lie on this
+    facet) map the points to the reference simplex of dimension (n-1).
+
     In 1D, we have that
 
       (x, y) = (x0, y0) + s * (x1 - x0, y1 - y0)
@@ -81,7 +92,11 @@ def map_to_reference_facet(points, vertices, tolerance=epsilon):
 
       s = (x - x0)/(x1 - x0)
       s = (y - y0)/(y1 - y0)
+
     """
+    print("vertices = ", vertices)
+    print("points = ", points)
+
     # Short-hand for increased readability
     (x0, y0) = (vertices[0][0], vertices[0][1])
     (x1, y1) = (vertices[1][0], vertices[1][1])
@@ -96,9 +111,8 @@ class DiscontinuousLagrangeTrace(object):
     ""
     def __init__(self, cell, k):
 
-        # Only support 2D first
         tdim = cell.get_spatial_dimension()
-        assert tdim == 2, "Only trace elements on triangles supported for now"
+        assert (tdim == 2 or tdim == 3)
 
         # Store input cell and polynomial degree (k)
         self.cell = cell
@@ -162,7 +176,7 @@ class DiscontinuousLagrangeTrace(object):
             for dof in DG_k_dual_basis:
                 # PointEvaluation only carries one point
                 point = dof.get_point_dict().keys()[0]
-                pt = map_from_reference_facet(point, vertices)
+                pt = map_from_reference_facet([point,], vertices)
                 points.append(pt)
 
         # One degree of freedom per point:
@@ -174,13 +188,14 @@ class DiscontinuousLagrangeTrace(object):
         # Standard derivatives don't make sense
         assert (order == 0), "Don't know how to do derivatives"
 
-        # Identify which edge (if any) these points are on:
+        # Identify which facet (if any) these points are on:
         vertices = self.cell.vertices
         coordinates = barycentric_coordinates(points, vertices)
-        unique_edge = determine_unique_edge(coordinates)
+        unique_facet = extract_unique_facet(coordinates)
 
-        # Map point to "reference facet" (edge -> interval etc)
-        facet2indices = self.cell.get_topology()[2 - 1][unique_edge]
+        # Map point to "reference facet" (facet -> interval etc)
+        tdim = self.cell.get_spatial_dimension()
+        facet2indices = self.cell.get_topology()[tdim - 1][unique_facet]
         vertices = self.cell.get_vertices_of_subcomplex(facet2indices)
         new_points = map_to_reference_facet(points, vertices)
 
@@ -210,14 +225,14 @@ class DiscontinuousLagrangeTrace(object):
 
 if __name__ == "__main__":
 
-    print("-"*80)
     T = ufc_simplex(2)
     element = DiscontinuousLagrangeTrace(T, 1)
-    pts = [(0.1, .0), (1.0, 0.0)]
-    print(element.tabulate(0, pts))
-
-    #print("-"*80)
-    #T = ufc_simplex(3)
-    #element = DiscontinuousLagrangeTrace(T, 1)
-    #print(element)
+    pts = [(0.1, 0.0), (1.0, 0.0)]
+    print("values = ", element.tabulate(0, pts))
     #print(element.dual_basis())
+
+    print("\n3D ----------------")
+    T = ufc_simplex(3)
+    element = DiscontinuousLagrangeTrace(T, 1)
+    pts = [(0.0, 0.1, 0.0), (0.0, 0.0, 0.1)]
+    print(element.tabulate(0, pts))
