@@ -21,7 +21,7 @@ from FIAT.P0 import P0
 from FIAT.raviart_thomas import RaviartThomas
 from FIAT.crouzeix_raviart import CrouzeixRaviart
 from FIAT.bubble import Bubble
-from FIAT.tensor_finite_element import TensorFiniteElement, FlattenedElement
+from FIAT.tensor_finite_element import TensorFiniteElement
 from FIAT.enriched import EnrichedElement
 from FIAT.discontinuized import Discontinuized
 from FIAT.trace import Trace
