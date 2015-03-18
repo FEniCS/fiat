@@ -154,7 +154,7 @@ class Trace(FiniteElement):
             from .polynomial_set import mis
             tempdict = {(0,)*dim: temp}
             for i in range(order):
-                alphas = mis(self.fsdim, i+1)
+                alphas = mis(dim, i+1)
                 for alpha in alphas:
                     tempdict[alpha] = np.zeros((self.fsdim, len(points)))
                     tempdict[alpha][:] = np.NAN
