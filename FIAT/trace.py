@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import numpy
 
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
@@ -180,14 +182,14 @@ class DiscontinuousLagrangeTrace(object):
 
 if __name__ == "__main__":
 
-    print "-"*80
+    print("-"*80)
     T = ufc_simplex(2)
     element = DiscontinuousLagrangeTrace(T, 1)
     pts = [(0.1, .0), (1.0, 0.0)]
-    print element.tabulate(0, pts)
+    print(element.tabulate(0, pts))
 
-    #print "-"*80
+    #print("-"*80)
     #T = ufc_simplex(3)
     #element = DiscontinuousLagrangeTrace(T, 1)
-    #print element
-    #print element.dual_basis()
+    #print(element)
+    #print(element.dual_basis())
