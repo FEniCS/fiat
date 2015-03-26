@@ -56,7 +56,7 @@ def barycentric_coordinates(points, vertices):
     coords = []
     for p in points:
         y = numpy.asarray(p) - last
-        lam = invT.dot(y)
+        lam = invT.dot(y.T)
         lam = [lam[(0, i)] for i in range(len(y))]
         lam += [1.0 - sum(lam)]
         coords.append(lam)
