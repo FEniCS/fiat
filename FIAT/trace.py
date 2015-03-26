@@ -183,6 +183,8 @@ class DiscontinuousLagrangeTrace(object):
         return nodes
 
     def tabulate(self, order, points):
+        """Return tabulated values of derivatives up to given order of
+        basis functions at given points."""
 
         # Standard derivatives don't make sense
         assert (order == 0), "Don't know how to do derivatives"
@@ -195,9 +197,25 @@ class DiscontinuousLagrangeTrace(object):
         # Map point to "reference facet" (facet -> interval etc)
         new_points = map_to_reference_facet(points, vertices, unique_facet)
 
-        # Call self.DG.tabulate(order, new_points)
-        values = self.DG.tabulate(order, new_points)
-        return values
+        # Call self.DG.tabulate(order, new_points) to compute the
+        # values of the points for the degrees of freedom on this facet
+        non_zeros = self.DG.tabulate(order, new_points).values()[0]
+        m = non_zeros.shape[0]
+
+        # All other basis functions evaluate to zero, so create an
+        # array of the right size and plug in the non-zero values in
+        # just the right place
+        sdim = self.space_dimension()
+        dg_dim = self.DG.space_dimension()
+
+        values = numpy.zeros(shape=(sdim, len(points)))
+        values[dg_dim*unique_facet:dg_dim*unique_facet+m, :] = non_zeros
+
+        # Return expected dictionary
+        tdim = self.cell.get_spatial_dimension()
+        key = tuple(0 for i in range(tdim))
+
+        return {key: values}
 
     # These functions are only needed for evaluatebasis and
     # evaluatebasisderivatives, disable those, and we should be in
@@ -224,11 +242,11 @@ if __name__ == "__main__":
     print("\n2D ----------------")
     T = ufc_simplex(2)
     element = DiscontinuousLagrangeTrace(T, 1)
-    pts = [(0.1, 0.0), (1.0, 0.0)]
+    pts = [(0.0, 1.0), (1.0, 0.0)]
     print("values = ", element.tabulate(0, pts))
 
     print("\n3D ----------------")
     T = ufc_simplex(3)
     element = DiscontinuousLagrangeTrace(T, 1)
     pts = [(0.1, 0.0, 0.0), (0.0, 1.0, 0.0)]
-    print(element.tabulate(0, pts))
+    print("values = ", element.tabulate(0, pts))
