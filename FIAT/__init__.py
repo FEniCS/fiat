@@ -2,10 +2,7 @@
 evaluating arbitrary order Lagrange and many other elements.
 Simplices in one, two, and three dimensions are supported."""
 
-__version__ = "1.4.0+"
-
-# Version number
-FIAT_VERSION = __version__
+__version__ = "1.6.0dev"
 
 # Import finite element classes
 from FIAT.finite_element import FiniteElement
