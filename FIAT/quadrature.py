@@ -18,7 +18,7 @@
 # Modified by Marie E. Rognes (meg@simula.no), 2012
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2015
 
-from . import reference_element, expansions, jacobi
+from . import reference_element, expansions, jacobi, orthopoly
 import math
 import numpy
 from .factorial import factorial
@@ -68,41 +68,23 @@ class GaussJacobiQuadratureLineRule(QuadratureRule):
         QuadratureRule.__init__(self, ref_el, xs, ws)
 
 
-class GaussLabottoLineQuadratureRule(QuadratureRule):
+class GaussLobattoLineQuadratureRule(QuadratureRule):
     """Implement the Gauss-Lobatto quadrature rules on the interval using
-    the formulae at http://mathworld.wolfram.com/LobattoQuadrature.html
-    This facilitates implementing spectral elements.
+    Greg von Winckel's implementation. This facilitates implementing
+    spectral elements.
 
-    The quadrature rule uses m points for a degree of precision of 2m-3."""
+    The quadrature rule uses m points for a degree of precision of 2m-3.
+    """
     def __init__(self, ref_el, m):
         if m < 2:
             raise ValueError(
                 "Gauss-Labotto quadrature invalid for fewer than 2 points")
 
-        xs_ref = numpy.zeros(m)
-        ws_ref = numpy.zeros(m)
+        verts = ref_el.get_vertices()
 
-        # Special case the endpoints.
-        xs_ref[numpy.array((0, 1))] = -1., 1
-        ws_ref[numpy.array((0, 1))] = 2./(m*(m - 1))
-
-        if m > 2:
-            l = legendre(m-2) # Note this is wrong!
-            xs_ref[1:-1] = l.weights[:, 0]
-            ws_ref[1:-1] = l.weights[:, 1]
-
-        # Note that the correctness of the implementation depends on
-        # the vertices of DefaultLine being [(-1), (1)] because this
-        # is what scipy.special.legendre assumes.
-        Ref1 = reference_element.DefaultLine()
-        A, b = reference_element.make_affine_mapping(Ref1.get_vertices(),
-                                                     ref_el.get_vertices())
-
-        mapping = lambda x: numpy.dot(A, x) + b
-        scale = numpy.linalg.det(A)
-
-        xs = tuple([tuple(mapping(x_ref)[0]) for x_ref in xs_ref])
-        ws = tuple([scale * w for w in ws_ref])
+        # Calculate the recursion coefficients.
+        alpha, beta = orthopoly.rec_jacobi(m, 0, 0)
+        xs, ws = orthopoly.lobatto(alpha, beta, verts[0][0], verts[1][0])
 
         QuadratureRule.__init__(self, ref_el, xs, ws)
 
