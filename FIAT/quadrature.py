@@ -83,11 +83,11 @@ class GaussLabottoLineQuadratureRule(QuadratureRule):
         ws_ref = numpy.zeros(m)
 
         # Special case the endpoints.
-        xs_ref[(0, 1)] = -1., 1
-        ws_ref[(0, 1)] = 2./(m*(m - 1))
+        xs_ref[numpy.array((0, 1))] = -1., 1
+        ws_ref[numpy.array((0, 1))] = 2./(m*(m - 1))
 
         if m > 2:
-            l = legendre(m-1)
+            l = legendre(m-2) # Note this is wrong!
             xs_ref[1:-1] = l.weights[:, 0]
             ws_ref[1:-1] = l.weights[:, 1]
 
