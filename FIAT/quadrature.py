@@ -68,7 +68,7 @@ class GaussJacobiQuadratureLineRule(QuadratureRule):
         QuadratureRule.__init__(self, ref_el, xs, ws)
 
 
-class GaussLobattoLineQuadratureRule(QuadratureRule):
+class GaussLobattoQuadratureLineRule(QuadratureRule):
     """Implement the Gauss-Lobatto quadrature rules on the interval using
     Greg von Winckel's implementation. This facilitates implementing
     spectral elements.
@@ -80,11 +80,23 @@ class GaussLobattoLineQuadratureRule(QuadratureRule):
             raise ValueError(
                 "Gauss-Labotto quadrature invalid for fewer than 2 points")
 
-        verts = ref_el.get_vertices()
+        Ref1 = reference_element.DefaultLine()
+        verts = Ref1.get_vertices()
 
         # Calculate the recursion coefficients.
         alpha, beta = orthopoly.rec_jacobi(m, 0, 0)
-        xs, ws = orthopoly.lobatto(alpha, beta, verts[0][0], verts[1][0])
+        xs_ref, ws_ref = orthopoly.lobatto(alpha, beta, verts[0][0], verts[1][0])
+
+        A, b = reference_element.make_affine_mapping( Ref1.get_vertices(), \
+                                                     ref_el.get_vertices() )
+
+        mapping = lambda x: numpy.dot( A, x ) + b
+
+        scale = numpy.linalg.det( A )
+
+        xs = tuple( [ tuple( mapping( x_ref )[0] ) for x_ref in xs_ref ] )
+        ws = tuple( [ scale * w for w in ws_ref ] )
+
 
         QuadratureRule.__init__(self, ref_el, xs, ws)
 
