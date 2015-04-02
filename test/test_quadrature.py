@@ -23,17 +23,21 @@ import numpy
 
 
 @pytest.fixture
-def cell():
+def interval():
     return FIAT.reference_element.UFCInterval()
 
 
-@pytest.mark.parametrize(("points"), range(2, 10))
-def test_gauss_lobatto_quadrature(cell, points):
+@pytest.mark.parametrize(("points, degree"), ((p, d)
+                                              for p in range(2, 10)
+                                              for d in range(2*p - 2)))
+def test_gauss_lobatto_quadrature(interval, points, degree):
+    """Check that the quadrature rules correctly integrate all the right
+    polynomial degrees."""
 
-    q = FIAT.quadrature.GaussLobattoQuadratureLineRule(cell, points)
+    q = FIAT.quadrature.GaussLobattoQuadratureLineRule(interval, points)
 
-    for i in range(2*points - 2):
-        assert numpy.round(q.integrate(lambda x: x[0]**i) - 1./(i+1), 14) == 0.
+    assert numpy.round(q.integrate(lambda x: x[0]**degree) - 1./(degree+1), 14) == 0.
+
 
 if __name__ == '__main__':
     import os
