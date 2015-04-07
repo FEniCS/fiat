@@ -29,7 +29,9 @@ epsilon = 1.e-8
 def extract_unique_facet(coordinates, tolerance=epsilon):
     """Determine whether a set of points, each point described by its
     barycentric coordinates ('coordinates'), are all on one of the
-    facets and return this facet."""
+    facets and return this facet and whether search has been
+    successful.
+    """
     facets = []
     for c in coordinates:
         on_facet = set([i for (i, l) in enumerate(c) if abs(l) < tolerance])
@@ -38,8 +40,13 @@ def extract_unique_facet(coordinates, tolerance=epsilon):
     unique_facet = facets[0]
     for e in facets:
         unique_facet = unique_facet & e
-    assert len(unique_facet) == 1, "Unable to identify unique facet "
-    return unique_facet.pop()
+
+    # Handle coordinates not on facets somewhat gracefully
+    if (len(unique_facet) != 1):
+        return (None, False)
+
+    # If we have a unique facet, return it and success
+    return (unique_facet.pop(), True)
 
 def barycentric_coordinates(points, vertices):
     """Compute barycentric coordinates for a set of points ('points'),
@@ -192,24 +199,26 @@ class DiscontinuousLagrangeTrace(object):
         # Identify which facet (if any) these points are on:
         vertices = self.cell.vertices
         coordinates = barycentric_coordinates(points, vertices)
-        unique_facet = extract_unique_facet(coordinates)
-
-        # Map point to "reference facet" (facet -> interval etc)
-        new_points = map_to_reference_facet(points, vertices, unique_facet)
-
-        # Call self.DG.tabulate(order, new_points) to compute the
-        # values of the points for the degrees of freedom on this facet
-        non_zeros = self.DG.tabulate(order, new_points).values()[0]
-        m = non_zeros.shape[0]
+        (unique_facet, success) = extract_unique_facet(coordinates)
 
         # All other basis functions evaluate to zero, so create an
-        # array of the right size and plug in the non-zero values in
-        # just the right place
+        # array of the right size
         sdim = self.space_dimension()
-        dg_dim = self.DG.space_dimension()
-
         values = numpy.zeros(shape=(sdim, len(points)))
-        values[dg_dim*unique_facet:dg_dim*unique_facet+m, :] = non_zeros
+
+        # ... and plug in the non-zero values in just the right place
+        # if we found a unique facet
+        if success:
+
+            # Map point to "reference facet" (facet -> interval etc)
+            new_points = map_to_reference_facet(points, vertices, unique_facet)
+
+            # Call self.DG.tabulate(order, new_points) to compute the
+            # values of the points for the degrees of freedom on this facet
+            non_zeros = self.DG.tabulate(order, new_points).values()[0]
+            m = non_zeros.shape[0]
+            dg_dim = self.DG.space_dimension()
+            values[dg_dim*unique_facet:dg_dim*unique_facet+m, :] = non_zeros
 
         # Return expected dictionary
         tdim = self.cell.get_spatial_dimension()
