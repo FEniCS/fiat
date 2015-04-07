@@ -129,7 +129,7 @@ class DiscontinuousLagrangeTrace(object):
         # later.
         self.entity_ids = {}
         topology = cell.get_topology()
-        for dim, entities in topology.iteritems():
+        for dim, entities in topology.items():
             self.entity_ids[dim] = {}
             for entity in entities:
                 self.entity_ids[dim][entity] = {}
@@ -169,7 +169,7 @@ class DiscontinuousLagrangeTrace(object):
         facets2indices = self.cell.get_topology()[t_dim - 1]
 
         # Iterate over the facets and add points on each facet
-        for (facet, indices) in facets2indices.iteritems():
+        for (facet, indices) in facets2indices.items():
             vertices = self.cell.get_vertices_of_subcomplex(indices)
             vertices = numpy.array(vertices)
             for dof in DG_k_dual_basis:
