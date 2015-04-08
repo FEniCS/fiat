@@ -181,7 +181,7 @@ class DiscontinuousLagrangeTrace(object):
             vertices = numpy.array(vertices)
             for dof in DG_k_dual_basis:
                 # PointEvaluation only carries one point
-                point = dof.get_point_dict().keys()[0]
+                point = list(dof.get_point_dict().keys())[0]
                 pt = map_from_reference_facet([point,], vertices)
                 points.append(pt)
 
