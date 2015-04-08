@@ -215,7 +215,7 @@ class DiscontinuousLagrangeTrace(object):
 
             # Call self.DG.tabulate(order, new_points) to compute the
             # values of the points for the degrees of freedom on this facet
-            non_zeros = self.DG.tabulate(order, new_points).values()[0]
+            non_zeros = list(self.DG.tabulate(order, new_points).values())[0]
             m = non_zeros.shape[0]
             dg_dim = self.DG.space_dimension()
             values[dg_dim*unique_facet:dg_dim*unique_facet+m, :] = non_zeros
