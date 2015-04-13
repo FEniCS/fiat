@@ -59,9 +59,6 @@ class FiniteElement:
         self.V=V
         (u, s, vt) = numpy.linalg.svd( V )
 
-        #print s
-        #V = numpy.dot( dualmat , numpy.transpose( old_coeffs ) )
-
         Vinv = numpy.linalg.inv( V )
 
         new_coeffs_flat = numpy.dot( numpy.transpose( Vinv ), B)

@@ -1,3 +1,4 @@
+ - Support DG on facets through the element "Discontinuous Lagrange Trace"
 1.5.0 [2014-01-12]
  - Require Python 2.7
  - Python 3 support
