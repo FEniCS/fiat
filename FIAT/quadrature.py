@@ -87,16 +87,15 @@ class GaussLobattoQuadratureLineRule(QuadratureRule):
         alpha, beta = orthopoly.rec_jacobi(m, 0, 0)
         xs_ref, ws_ref = orthopoly.lobatto(alpha, beta, verts[0][0], verts[1][0])
 
-        A, b = reference_element.make_affine_mapping( Ref1.get_vertices(), \
-                                                     ref_el.get_vertices() )
+        A, b = reference_element.make_affine_mapping(Ref1.get_vertices(),
+                                                     ref_el.get_vertices())
 
-        mapping = lambda x: numpy.dot( A, x ) + b
+        mapping = lambda x: numpy.dot(A, x) + b
 
-        scale = numpy.linalg.det( A )
+        scale = numpy.linalg.det(A)
 
-        xs = tuple( [ tuple( mapping( x_ref )[0] ) for x_ref in xs_ref ] )
-        ws = tuple( [ scale * w for w in ws_ref ] )
-
+        xs = tuple([tuple(mapping(x_ref)[0]) for x_ref in xs_ref])
+        ws = tuple([scale * w for w in ws_ref])
 
         QuadratureRule.__init__(self, ref_el, xs, ws)
 
