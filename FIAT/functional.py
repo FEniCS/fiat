@@ -440,6 +440,29 @@ class PointScaledNormalEvaluation(Functional):
         phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
         return numpy.outer(self.n, phis)
 
+class PointwiseInnerProductEvaluation(Functional):
+    """
+    This is a functional on symmetric 2-tensor fields. Let u be such a
+    field, p be a point, and v,w be vectors. This implements the evaluation
+    v^T u(p) w.
+
+    Clearly v^iu_{ij}w^j = u_{ij}v^iw^j. Thus the value can be computed
+    from the Frobenius inner product of u with wv^T. This gives the 
+    correct weights.
+    """
+    def __init__(self, ref_el, v, w, p):
+        sd = ref_el.get_spatial_dimension()
+
+        wvT = numpy.outer(w, v)
+        
+        pt_dict = {p: [(wvT[i][j], (i, j, )) for [i, j] in
+                        index_iterator((sd, sd))]}
+
+        shp = (sd, sd, )
+        Functional.__init__(self, ref_el, shp,
+                            pt_dict, {}, "PointwiseInnerProductEval"
+                            )
+        return
 
 def moments_against_set(ref_el, U, Q):
     # check that U and Q are both over ref_el

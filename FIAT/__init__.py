@@ -21,6 +21,7 @@ from FIAT.nedelec_second_kind import NedelecSecondKind
 from FIAT.P0 import P0
 from FIAT.raviart_thomas import RaviartThomas
 from FIAT.crouzeix_raviart import CrouzeixRaviart
+from FIAT.regge import Regge
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris":                      Argyris,
@@ -35,7 +36,8 @@ supported_elements = {"Argyris":                      Argyris,
                       "Morley":                       Morley,
                       "Nedelec 1st kind H(curl)":     Nedelec,
                       "Nedelec 2nd kind H(curl)":     NedelecSecondKind,
-                      "Raviart-Thomas":               RaviartThomas}
+                      "Raviart-Thomas":               RaviartThomas,
+                      "Regge":                        Regge}
 
 # List of extra elements
 extra_elements = {"P0":              P0,
