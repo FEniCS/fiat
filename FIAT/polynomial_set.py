@@ -267,6 +267,61 @@ def polynomial_set_union_normalized(A, B):
                          A.get_expansion_set(),
                          coeffs, A.get_dmats())
 
+class ONSymTensorPolynomialSet(PolynomialSet):
+    """
+    Constructs an orthonormal basis for symmetric-tensor-valued
+    polynomials on a reference element.
+    """
+    def __init__(self, ref_el, degree, size = None):
+
+        sd = ref_el.get_spatial_dimension()
+        if size == None:
+            size = sd
+
+        shape = (size, size)
+        num_exp_functions = expansions.polynomial_dimension(ref_el, degree)
+        num_components = size * (size + 1) // 2
+        num_members = num_components * num_exp_functions
+        embedded_degree = degree
+        expansion_set = expansions.get_expansion_set(ref_el)
+
+        # set up coefficients for symmetric tensors
+        coeffs_shape = tuple([num_members]
+                             + list(shape)
+                             + [num_exp_functions])
+        coeffs = numpy.zeros(coeffs_shape, "d")
+        cur_bf = 0
+        for [i, j] in index_iterator(shape):
+            n = expansions.polynomial_dimension(ref_el, embedded_degree)
+            if i == j:
+                for exp_bf in range(n):
+                    cur_idx = tuple([cur_bf] + [i, j] + [exp_bf])
+                    coeffs[cur_idx] = 1.0
+                    cur_bf += 1
+            elif i < j:
+                for exp_bf in range(n):
+                    cur_idx = tuple([cur_bf] + [i, j] + [exp_bf])
+                    coeffs[cur_idx] = 1.0
+                    cur_idx = tuple([cur_bf] + [j, i] + [exp_bf])
+                    coeffs[cur_idx] = 1.0
+                    cur_bf += 1
+                
+        # construct dmats. this is the same as ONPolynomialSet.
+        pts = ref_el.make_points(sd, 0, degree + sd + 1)
+        v = numpy.transpose(expansion_set.tabulate(degree, pts))
+        vinv = numpy.linalg.inv(v)
+        dv = expansion_set.tabulate_derivatives(degree, pts)
+        dtildes = [[[a[1][i] for a in dvrow] for dvrow in dv]
+                   for i in range(sd)]
+        dmats = [numpy.dot(vinv, numpy.transpose(dtilde))
+                 for dtilde in dtildes]
+        PolynomialSet.__init__(self, ref_el,
+                               degree, embedded_degree,
+                               expansion_set, coeffs, dmats
+                               )
+
+
+
 if __name__ == "__main__":
     from . import reference_element
 
