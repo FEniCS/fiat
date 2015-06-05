@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
 import re
 import sys
+
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 if sys.version_info < (2, 7):
     print("Python 2.7 or higher required, please upgrade.")
@@ -18,4 +22,5 @@ setup(name="FIAT",
       author_email="robert.c.kirby@gmail.com",
       url="http://www.math.ttu.edu/~kirby",
       license="LGPL v3 or later",
-      packages=['FIAT'])
+      packages=["FIAT"],
+      install_requires=["sympy"])
