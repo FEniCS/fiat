@@ -20,7 +20,8 @@
 
 import numpy
 from .polynomial_set import PolynomialSet
-from .quadrature import make_facet_quadrature
+from .quadrature import make_quadrature
+from .reference_element import two_product_cell, LINE
 
 class FiniteElement:
     """Class implementing Ciarlet's abstraction of a finite element
@@ -116,19 +117,49 @@ class FiniteElement:
     def facet_support_dofs(self):
         """Return the map of facet id to the degrees of freedom for which the
         corresponding basis functions take non-zero values."""
-        if hasattr(self, "_facet_support_dofs"):
-            return self._facet_support_dofs
-
-        q = make_facet_quadrature(self.ref_el, max(2*self.degree(), 1))
-
-        dim = self.ref_el.get_spatial_dimension()
-
-        self._facet_support_dofs = {}
-
-        for f in self.entity_dofs()[dim-1].keys():
-            self._facet_support_dofs[f] = quadrature_support_dofs(self, q.get_points(f), q.get_weights())
+        if not hasattr(self, "_facet_support_dofs"):
+            assert not isinstance(self.ref_el, two_product_cell)
+            q = make_quadrature(self.ref_el.get_facet_element(), max(2*self.degree(), 1))
+            ft = lambda f: self.ref_el.get_facet_transform(f)
+            dim = self.ref_el.get_spatial_dimension()
+            fs = self.entity_dofs()[dim-1].keys()
+            self._facet_support_dofs = _facet_support_dofs(self, q, ft, fs)
 
         return self._facet_support_dofs
+
+    def horiz_facet_support_dofs(self):
+        """Return the map of facet id to the degrees of freedom for which the
+        corresponding basis functions take non-zero values."""
+        if not hasattr(self, "_horiz_facet_support_dofs"):
+            assert isinstance(self.ref_el, two_product_cell)
+            q = make_quadrature(self.ref_el.A, max(2*self.degree(), 1))
+            ft = lambda f: self.ref_el.get_horiz_facet_transform(f)
+            dim = self.ref_el.A.get_spatial_dimension()
+            fs = self.entity_dofs()[(dim, 0)].keys()
+            self._horiz_facet_support_dofs = _facet_support_dofs(self, q, ft, fs)
+
+        return self._horiz_facet_support_dofs
+
+    def vert_facet_support_dofs(self):
+        """Return the map of facet id to the degrees of freedom for which the
+        corresponding basis functions take non-zero values."""
+        if not hasattr(self, "_vert_facet_support_dofs"):
+            assert isinstance(self.ref_el, two_product_cell)
+            deg = max(2*self.degree(), 1)
+            if self.ref_el.A.get_shape() != LINE:
+                vfacet_el = two_product_cell(self.ref_el.A.get_facet_element(),
+                                             self.ref_el.B)
+                q = make_quadrature(vfacet_el, (deg, deg))
+            else:
+                # Cell is extruded interval, vertical facet is extruded point,
+                # but we cannot integrate on points.
+                q = make_quadrature(self.ref_el.B, deg)
+            ft = lambda f: self.ref_el.get_vert_facet_transform(f)
+            dim = self.ref_el.A.get_spatial_dimension()
+            fs = self.entity_dofs()[(dim - 1, 1)].keys()
+            self._vert_facet_support_dofs = _facet_support_dofs(self, q, ft, fs)
+
+        return self._vert_facet_support_dofs
 
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
@@ -172,19 +203,34 @@ class FiniteElement:
         return self.get_nodal_basis().get_expansion_set().get_num_members(arg)
 
 
-def quadrature_support_dofs(elem, points, weights):
+def _facet_support_dofs(elem, quad, facet_transform, facets):
+    """Generic facet support dofs constructor.
+
+    :arg elem: FIAT finite element
+    :arg quad: Quadrature rule on the facet
+    :arg facet_transform: A function mapping a facet number onto a function
+    which maps coordinates on the facet onto coordinates on the cell.
+    :arg facets: Facet numbers to loop over.
+    """
     eps = 1.e-8  # Is this a safe value?
 
+    weights = quad.get_weights()
     dim = elem.ref_el.get_spatial_dimension()
 
-    # Integrate the square of the basis functions on the facet.
-    vals = numpy.double(elem.tabulate(0, points)[(0,) * dim])
-    # Ints contains the square of the basis functions
-    # integrated over the facet.
-    if elem.value_shape():
-        # Vector-valued functions.
-        ints = numpy.dot(numpy.einsum("...ij,...ij->...j", vals, vals), weights)
-    else:
-        ints = numpy.dot(vals**2, weights)
+    result = {}
+    for f in facets:
+        points = map(facet_transform(f), quad.get_points())
 
-    return [dof for dof, i in enumerate(ints) if i > eps]
+        # Integrate the square of the basis functions on the facet.
+        vals = numpy.double(elem.tabulate(0, points)[(0,) * dim])
+        # Ints contains the square of the basis functions
+        # integrated over the facet.
+        if elem.value_shape():
+            # Vector-valued functions.
+            ints = numpy.dot(numpy.einsum("...ij,...ij->...j", vals, vals), weights)
+        else:
+            ints = numpy.dot(vals**2, weights)
+
+        result[f] = [dof for dof, i in enumerate(ints) if i > eps]
+
+    return result
