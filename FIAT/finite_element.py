@@ -125,22 +125,8 @@ class FiniteElement:
 
         self._facet_support_dofs = {}
 
-        eps = 1.e-8  # Is this a safe value?
-
         for f in self.entity_dofs()[dim-1].keys():
-            # Integrate the square of the basis functions on the facet.
-            vals = numpy.double(self.tabulate(0, q.get_points(f))[(0,) * dim])
-            # Ints contains the square of the basis functions
-            # integrated over the facet.
-            if self.value_shape():
-                # Vector-valued functions.
-                ints = numpy.dot(numpy.einsum("...ij,...ij->...j", vals, vals),
-                                 q.get_weights())
-            else:
-                ints = numpy.dot(vals**2, q.get_weights())
-
-            self._facet_support_dofs[f] \
-                = [dof for dof, i in enumerate(ints) if i > eps]
+            self._facet_support_dofs[f] = quadrature_support_dofs(self, q.get_points(f), q.get_weights())
 
         return self._facet_support_dofs
 
@@ -184,3 +170,21 @@ class FiniteElement:
     def get_num_members(self, arg):
         "Return number of members of the expansion set."
         return self.get_nodal_basis().get_expansion_set().get_num_members(arg)
+
+
+def quadrature_support_dofs(elem, points, weights):
+    eps = 1.e-8  # Is this a safe value?
+
+    dim = elem.ref_el.get_spatial_dimension()
+
+    # Integrate the square of the basis functions on the facet.
+    vals = numpy.double(elem.tabulate(0, points)[(0,) * dim])
+    # Ints contains the square of the basis functions
+    # integrated over the facet.
+    if elem.value_shape():
+        # Vector-valued functions.
+        ints = numpy.dot(numpy.einsum("...ij,...ij->...j", vals, vals), weights)
+    else:
+        ints = numpy.dot(vals**2, weights)
+
+    return [dof for dof, i in enumerate(ints) if i > eps]
