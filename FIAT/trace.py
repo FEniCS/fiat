@@ -22,6 +22,7 @@ import numpy
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
 from FIAT.functional import PointEvaluation
+from FIAT.polynomial_set import mis
 
 # Tolerance for geometry identifications
 epsilon = 1.e-8
@@ -193,8 +194,15 @@ class DiscontinuousLagrangeTrace(object):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
 
-        # Standard derivatives don't make sense
-        assert (order == 0), "Don't know how to do derivatives"
+        # Standard derivatives don't make sense, but return zero
+        # because mixed elements compute all derivatives at once
+        if (order > 0):
+            values = {}
+            sdim = self.space_dimension()
+            alphas = mis(self.cell.get_spatial_dimension(), order)
+            for alpha in alphas:
+                values[alpha] = numpy.zeros(shape=(sdim, len(points)))
+            return values
 
         # Identify which facet (if any) these points are on:
         vertices = self.cell.vertices
