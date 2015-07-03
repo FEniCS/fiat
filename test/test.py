@@ -22,6 +22,7 @@ import nose
 import sys
 import json
 import numpy
+import warnings
 
 from FIAT import supported_elements, make_quadrature, ufc_simplex, \
     newdubiner, expansions, reference_element, polynomial_set
@@ -62,6 +63,8 @@ def test_polynomials():
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
+        warnings.warn('Reference file "%s" could not be loaded!' % filename,
+                      RuntimeWarning)
         reference = create_data()
         # Store the data for the future
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
@@ -85,6 +88,8 @@ def test_polynomials_1D():
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
+        warnings.warn('Reference file "%s" could not be loaded!' % filename,
+                      RuntimeWarning)
         reference = create_data()
         # Store the data for the future
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
@@ -111,6 +116,8 @@ def test_expansions():
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
+        warnings.warn('Reference file "%s" could not be loaded!' % filename,
+                      RuntimeWarning)
         reference = create_data()
         # Convert reference to list of int
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
@@ -148,6 +155,8 @@ def test_expansions_jet():
     try:
         reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
+        warnings.warn('Reference file "%s" could not be loaded!' % filename,
+                      RuntimeWarning)
         reference_jet = create_data()
         # Store the data for the future
         json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
@@ -174,6 +183,8 @@ def test_newdubiner():
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
+        warnings.warn('Reference file "%s" could not be loaded!' % filename,
+                      RuntimeWarning)
         reference = create_data()
         # Convert reference to list of int
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
@@ -202,6 +213,8 @@ def test_newdubiner_jet():
     try:
         reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
+        warnings.warn('Reference file "%s" could not be loaded!' % filename,
+                      RuntimeWarning)
         reference_jet = create_data()
         # Store the data for the future
         json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
@@ -307,6 +320,8 @@ def test_quadrature():
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
+        warnings.warn('Reference file "%s" could not be loaded!' % filename,
+                      RuntimeWarning)
         reference = {}
         for test_case in test_cases:
             family, dim, degree = test_case
@@ -321,4 +336,15 @@ def test_quadrature():
 
 
 if __name__ == "__main__":
-    nose.main()
+    with warnings.catch_warnings(record=True) as warns:
+        result = nose.run()
+
+    # Handle failed test
+    if not result:
+        exit(1)
+
+    # Handle missing references
+    for w in warns:
+        warnings.showwarning(w.message, w.category, w.filename,
+                             w.lineno, w.line)
+    exit(len(warns))
