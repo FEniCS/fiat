@@ -19,7 +19,6 @@
 # Last changed: 2014-06-30
 
 import nose
-import sys
 import json
 import numpy
 import warnings
@@ -337,7 +336,7 @@ def test_quadrature():
 
 if __name__ == "__main__":
     with warnings.catch_warnings(record=True) as warns:
-        result = nose.run()
+        result = nose.run(defaultTest='regression')
 
     # Handle failed test
     if not result:
