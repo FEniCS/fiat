@@ -63,7 +63,6 @@ class FiniteElement(object):
 
         V = numpy.dot(A, numpy.transpose(B))
         self.V = V
-        (u, s, vt) = numpy.linalg.svd(V)
 
         Vinv = numpy.linalg.inv(V)
 
