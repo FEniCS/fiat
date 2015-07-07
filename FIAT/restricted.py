@@ -47,7 +47,11 @@ class RestrictedElement(FiniteElement):
         self._element = element
         self._indices = indices
 
+        # Fetch reference element
         ref_el = element.get_reference_element()
+
+        # Restrict primal set
+        poly_set = element.get_nodal_basis().take(indices)
 
         # Restrict dual set
         dof_counter = 0
@@ -66,8 +70,17 @@ class RestrictedElement(FiniteElement):
                     nodes.append(nodes_old[dof])
         assert dof_counter == len(indices)
         dual = DualSet(nodes, ref_el, entity_ids)
+
+        # Restrict mapping
+        mapping_old = element.mapping()
+        self._mapping = [mapping_old[dof] for dof in indices]
+
+        # Store what reused by FiniteElement implementation
         self.ref_el = ref_el
+        self.poly_set = poly_set
         self.dual = dual
+        self.formdegree = element.get_formdegree()
+        self.order = 0
 
     def get_reference_element(self):
         return self.ref_el
@@ -82,8 +95,7 @@ class RestrictedElement(FiniteElement):
         return self._element.degree()
 
     def mapping(self):
-        mappings = self._element.mapping()
-        return [mappings[i] for i in self._indices]
+        return self._mapping
 
     def tabulate(self, order, points):
         result = self._element.tabulate(order, points)
