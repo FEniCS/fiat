@@ -22,7 +22,6 @@ from . import reference_element, expansions, jacobi
 import math
 import numpy
 from .factorial import factorial
-from .reference_element import LINE, TRIANGLE, TETRAHEDRON, QUADRILATERAL
 
 class QuadratureRule( object ):
     """General class that models integration over a reference element
@@ -190,36 +189,6 @@ class TensorProductQuadratureRule(QuadratureRule):
         QuadratureRule.__init__( self , ref_el , pts , wts )
 
 
-class FacetQuadratureRule(QuadratureRule):
-    """A class which wraps quadrature rules to provide quadrature on the
-    facets of an element. The quadrature points returned are in the
-    local coordinates of the cell, not the facet.
-    """
-    def __init__(self, ref_el, m):
-
-        assert ref_el.shape in (LINE, TRIANGLE, TETRAHEDRON, QUADRILATERAL)
-
-        self.ref_el = ref_el
-        self.quad = make_quadrature(ref_el.get_facet_element(), m)
-
-    def get_points(self, facet):
-
-        t = self.ref_el.get_facet_transform(facet)
-
-        return [t(point) for point in self.quad.get_points()]
-
-    def get_weights(self):
-
-        if self.ref_el.shape == LINE:
-            return [1.]
-        else:
-            return self.quad.get_weights()
-
-    def integrate( self, f, facet):
-        return sum( [ w * f(x) for (x, w) in zip(self.get_points(facet), 
-                                                 self.get_weights()) ] )
-
-
 def make_quadrature( ref_el, m ):
     """Returns the collapsed quadrature rule using m points per
     direction on the given reference element. In the tensor product
@@ -243,17 +212,6 @@ def make_quadrature( ref_el, m ):
         return TensorProductQuadratureRule( ref_el, (m, m) )
     elif ref_el.get_shape() == reference_element.TENSORPRODUCT:
         return TensorProductQuadratureRule( ref_el, m )
-
-
-def make_facet_quadrature( ref_el, m ):
-    """Return the collapsed quadrature rule using m points per
-    direction on the facets of the given reference element."""
-    
-    if ref_el.shape in (LINE, TRIANGLE, TETRAHEDRON, QUADRILATERAL):
-        return FacetQuadratureRule( ref_el, m )
-    else:
-        # Still need to do tensor product case.
-        raise NotImplementedError
 
 
 # rule to get Gauss-Jacobi points

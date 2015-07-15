@@ -322,7 +322,7 @@ class ReferenceElement:
             f_el = self.get_facet_element()
         except NotImplementedError:
             # Special case for 1D elements.
-            x_c = self.get_vertices_of_subcomplex( t[0][facet_i] )
+            x_c = self.get_vertices_of_subcomplex(t[0][facet_i])[0]
 
             return lambda x: x_c
 
@@ -605,10 +605,17 @@ class two_product_cell( ReferenceElement ):
         ReferenceElement.__init__( self , TENSORPRODUCT , verts , topology )
 
     def __eq__(self, other):
-        if (self.A == other.A) and (self.B == other.B):
-            return True
-        else:
-            return False
+        return self.A == other.A and self.B == other.B
+
+    def get_horiz_facet_transform(self, facet_i):
+        assert isinstance(self.B, UFCInterval)
+        assert facet_i in (0, 1)
+        return lambda p: numpy.hstack([p, float(facet_i)])
+
+    def get_vert_facet_transform(self, facet_i):
+        assert isinstance(self.B, UFCInterval)
+        vf = self.A.get_facet_transform(facet_i)
+        return lambda p: numpy.hstack([vf(p[:-1]), p[-1]])
 
 
 def make_affine_mapping( xs, ys ):
