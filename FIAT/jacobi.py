@@ -104,7 +104,7 @@ def eval_jacobi_deriv_batch(a, b, n, xs):
     else:
         results[1:,:] = eval_jacobi_batch(a+1, b+1, n-1, xs)
     for j in range(1, n+1):
-        results[j,:] *= (a+b+j+1)
+        results[j,:] *= 0.5*(a+b+j+1)
     return results
 
 
