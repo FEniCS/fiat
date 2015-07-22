@@ -63,7 +63,7 @@ def Hdiv(element):
             temp_old = old_result[alpha]
 
             if self._oldmapping == "affine":
-                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[1]))
+                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[1]), dtype=temp_old.dtype)
                 # both constituents affine, i.e., they were 0 forms or n-forms.
                 # to sum to n-1, we must have "0-form on an interval" crossed
                 # with something discontinuous.
@@ -83,7 +83,7 @@ def Hdiv(element):
                     raise Exception("Hdiv affine/affine form degrees broke")
 
             elif self._oldmapping == "contravariant piola":
-                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]))
+                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]), dtype=temp_old.dtype)
                 Asd = self.A.get_reference_element().get_spatial_dimension()
                 # one component is affine, one is contravariant piola
                 # the affine one must be an n-form, hence discontinuous
@@ -98,7 +98,7 @@ def Hdiv(element):
                     raise ValueError("Hdiv contravariant piola couldn't find an existing ConPi subelement")
 
             elif self._oldmapping == "covariant piola":
-                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]))
+                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]), dtype=temp_old.dtype)
                 # one component is affine, one is covariant piola
                 # the affine one must be an n-form, hence discontinuous
                 # this component/these components get zeroed out
@@ -185,7 +185,7 @@ def Hcurl(element):
             temp_old = old_result[alpha]
 
             if self._oldmapping == "affine":
-                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[1]))
+                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[1]), dtype=temp_old.dtype)
                 # both constituents affine, i.e., they were 0 forms or n-forms.
                 # to sum to 1, we must have "1-form on an interval" crossed with
                 # a bunch of 0-forms (continuous).
@@ -205,7 +205,7 @@ def Hcurl(element):
                     raise Exception("Hcurl affine/affine form degrees broke")
 
             elif self._oldmapping == "covariant piola":
-                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]))
+                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]), dtype=temp_old.dtype)
                 Asd = self.A.get_reference_element().get_spatial_dimension()
                 # one component is affine, one is covariant piola
                 # the affine one must be an 0-form, hence continuous
@@ -220,7 +220,7 @@ def Hcurl(element):
                     raise ValueError("Hdiv contravariant piola couldn't find an existing ConPi subelement")
 
             elif self._oldmapping == "contravariant piola":
-                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]))
+                temp = numpy.zeros((temp_old.shape[0], sd, temp_old.shape[2]), dtype=temp_old.dtype)
                 # one component is affine, one is contravariant piola
                 # the affine one must be an 0-form, hence continuous
                 # this component/these components get zeroed out
