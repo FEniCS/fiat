@@ -24,6 +24,7 @@
 import numpy
 from functools import reduce
 from collections import OrderedDict
+import sympy
 
 
 def index_iterator(shp):
@@ -228,9 +229,10 @@ class PointDerivative(Functional):
 
     def to_riesz(self, poly_set):
         x = list(self.deriv_dict.keys())[0]
-        dx = tuple([Derivatives.DerivVar(x[i], i, self.order)
-                    for i in range(len(x))
-                    ])
+        if len(x) != 1:
+            raise NotImplementedError
+        X = sympy.DeferredVector('x')
+        dx = numpy.asarray([X[i] for i in range(len(x))])
 
         es = poly_set.get_expansion_set()
         ed = poly_set.get_embedded_degree()
@@ -243,7 +245,8 @@ class PointDerivative(Functional):
                 idx.append(i)
         idx = tuple(idx)
 
-        return numpy.array([numpy.array(b[self.order])[idx] for b in bfs])
+        return numpy.asarray([sympy.lambdify(X, sympy.diff(b, dx[0], self.order))(x)
+                              for b in bfs])
 
 
 class PointNormalDerivative(Functional):
