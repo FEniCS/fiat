@@ -32,9 +32,9 @@ class DiscontinuousTaylorDualSet( dual_set.DualSet ):
         entity_ids = {}
         nodes = []
 
-        nodes.append( functional.PointEvaluation( ref_el, (0.,)))
+        nodes.append( functional.PointEvaluation( ref_el, (0.5,)))
         for k in range(1,degree+1):
-            nodes.append( functional.PointDerivative( ref_el, (0.,), [k] ))
+            nodes.append( functional.PointDerivative( ref_el, (0.5,), [k] ))
         
         entity_ids[0] = {}
         entity_ids[1] = {}
@@ -47,81 +47,10 @@ class DiscontinuousTaylorDualSet( dual_set.DualSet ):
 class HigherOrderDiscontinuousTaylor( finite_element.FiniteElement ):
     """The discontinuous Taylor finite element. Use a Taylor basis for DG."""
     def __init__( self , ref_el , degree ):
-        #this probably isn't used
         poly_set = polynomial_set.ONPolynomialSet( ref_el, degree )
-
-        #set up dual space
-        self.dual = DiscontinuousTaylorDualSet( ref_el, degree )
-
-        #set up some other numbers
-        self.formdegree = ref_el.get_spatial_dimension() # n-form
-        self.polydegree = degree
-        self.order = degree+1
-        self.ref_el = ref_el
-        self._mapping = "affine"
-
-    def degree(self):
-        """Return the degree of the (embedding) polynomial space."""
-        return self.polydegree
-
-    def get_nodal_basis(self):
-        """Return the nodal basis, encoded as a PolynomialSet object,
-        for the finite element."""
-        raise NotImplementedError("get_nodal_basis not implemented")
-
-    def get_coeffs(self):
-        """Return the expansion coefficients for the basis of the
-        finite element."""
-        raise NotImplementedError("get_coeffs not implemented")
-    
-    def space_dimension(self):
-        """Return the dimension of the finite element space."""
-        # number of dofs just multiplies
-        return self.formdegree
-
-    def tabulate(self, order, points):
-        """Return tabulated values of derivatives up to given order of
-        basis functions at given points."""
-
-        points = numpy.array(points)
-        result = {}
-        
-        #Tabulate the 0th derivatives
-        vals0 = numpy.zeros((self.polydegree+1,len(points)))
-        
-        for p in range(self.polydegree+1):
-            vals0[p,:] = (points-0.5)**p/numpy.math.factorial(p)
-
-        result[0] = vals0
-
-        vals = vals0.copy()
-        #Tabulate the higher derivatives
-        for k in range(1,order+1):
-            vals[:] = 0.
-            for p in range(self.polydegree+1):
-                if(p-k>=0):
-                    vals[p,:] = vals0[p-k,:]
-                else:
-                    vals[p,:] = 0.
-            result[k] = vals
-
-        return result
-
-    def value_shape(self):
-        """Return the value shape of the finite element functions."""
-        return (0,)
-
-    def dmats(self):
-        """Return dmats: expansion coefficients for basis function
-        derivatives."""
-        raise NotImplementedError("dmats not implemented")
-
-    def get_num_members(self, arg):
-        """Return number of members of the expansion set."""
-        raise NotImplementedError("get_num_members not implemented")
-
-#ufl/ufl/finiteelement/elementlist.py
-
+        dual = DiscontinuousTaylorDualSet( ref_el, degree )
+        formdegree = ref_el.get_spatial_dimension() # n-form
+        finite_element.FiniteElement.__init__( self, poly_set, dual, degree, formdegree )
 
 def DiscontinuousTaylor( ref_el, degree ):
     if degree == 0:
@@ -131,13 +60,12 @@ def DiscontinuousTaylor( ref_el, degree ):
 
 if __name__=="__main__":
 
-    print("\n1D ----------------")
     T = ufc_simplex(1)
     element = DiscontinuousTaylor(T, 1)
-    pts = [(0.0), (0.5), (1.0)]
+    pts = [(0.0,), (0.5,), (1.0,)]
     a = element.tabulate(1, pts)
-    assert(numpy.abs(a[0]-numpy.array([[ 1. ,  1. ,  1. ],
+    assert(numpy.abs(a[0,]-numpy.array([[ 1. ,  1. ,  1. ],
        [-0.5,  0. ,  0.5]])).max()<1.0e-10)
-    assert(numpy.abs(a[1]-numpy.array([[ 0. ,  0. ,  0. ],
+    assert(numpy.abs(a[1,]-numpy.array([[ 0. ,  0. ,  0. ],
        [1.0,  1.0 ,  1.0]])).max()<1.0e-10)
 
