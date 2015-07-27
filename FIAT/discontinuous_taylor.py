@@ -34,7 +34,7 @@ class DiscontinuousTaylorDualSet( dual_set.DualSet ):
 
         nodes.append( functional.PointEvaluation( ref_el, (0.5,)))
         for k in range(1,degree+1):
-            nodes.append( functional.PointDerivative( ref_el, (0.5,), [k] ))
+            nodes.append( functional.PointDerivative( ref_el, (0.,), [k] ))
         
         entity_ids[0] = {}
         entity_ids[1] = {}
@@ -62,8 +62,9 @@ if __name__=="__main__":
 
     T = ufc_simplex(1)
     element = DiscontinuousTaylor(T, 1)
-    pts = [(0.0,), (0.5,), (1.0,)]
+    pts = [(-1.0,), (0.0,), (1.0,)]
     a = element.tabulate(1, pts)
+    print a
     assert(numpy.abs(a[0,]-numpy.array([[ 1. ,  1. ,  1. ],
        [-0.5,  0. ,  0.5]])).max()<1.0e-10)
     assert(numpy.abs(a[1,]-numpy.array([[ 0. ,  0. ,  0. ],
