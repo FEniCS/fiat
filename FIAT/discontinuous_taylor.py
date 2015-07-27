@@ -135,5 +135,9 @@ if __name__=="__main__":
     T = ufc_simplex(1)
     element = DiscontinuousTaylor(T, 1)
     pts = [(0.0), (0.5), (1.0)]
-    print("values = ", element.tabulate(0, pts))
-    print("values = ", element.tabulate(1, pts))
+    a = element.tabulate(1, pts)
+    assert(numpy.abs(a[0]-numpy.array([[ 1. ,  1. ,  1. ],
+       [-0.5,  0. ,  0.5]])).max()<1.0e-10)
+    assert(numpy.abs(a[1]-numpy.array([[ 0. ,  0. ,  0. ],
+       [1.0,  1.0 ,  1.0]])).max()<1.0e-10)
+
