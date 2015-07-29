@@ -32,9 +32,11 @@ class DiscontinuousTaylorDualSet( dual_set.DualSet ):
         entity_ids = {}
         nodes = []
 
-        nodes.append( functional.PointEvaluation( ref_el, (0.5,)))
+        vertices = ref_el.get_vertices()
+        midpoint = (vertices[1][0] + vertices[0][0]) / 2.0
+        nodes.append( functional.PointEvaluation( ref_el, (midpoint,)))
         for k in range(1,degree+1):
-            nodes.append( functional.PointDerivative( ref_el, (0.5,), [k] ))
+            nodes.append( functional.PointDerivative( ref_el, (midpoint,), [k] ))
         
         entity_ids[0] = {}
         entity_ids[1] = {}
