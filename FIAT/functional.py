@@ -327,7 +327,12 @@ class IntegralMoment (Functional):
         bfs = es.tabulate(ed, pts)
         wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
         result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-        result[self.comp, :] = numpy.dot(bfs, wts)
+        
+        if(len(self.comp)==0):
+            result[:] = numpy.dot(bfs, wts)
+        else:
+            result[self.comp, :] = numpy.dot(bfs, wts)
+
         return result
 
 
