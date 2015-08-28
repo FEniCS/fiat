@@ -19,7 +19,7 @@ from finite_element import FiniteElement
 from dual_set import DualSet
 
 
-class Discontinuized(FiniteElement):
+class DiscontinuousElement(FiniteElement):
     """A copy of an existing element where all dofs are associated with the cell"""
 
     def __init__(self, element):

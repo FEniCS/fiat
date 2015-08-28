@@ -19,7 +19,7 @@ from finite_element import FiniteElement
 from dual_set import DualSet
 
 
-class Interiorize(FiniteElement):
+class InteriorElement(FiniteElement):
     """An element produced from an existing element by only keeping degrees of
     freedom associated with the cell"""
 
