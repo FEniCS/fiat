@@ -22,7 +22,7 @@ from . import dual_set
 from . import TensorFiniteElement
 
 
-class Trace(FiniteElement):
+class HDivTrace(FiniteElement):
     """Class implementing the trace of hdiv elements -- a restriction
     which is non-zero only on cell facets.  The value taken is the
     dot product with the facet normal, in reference space."""

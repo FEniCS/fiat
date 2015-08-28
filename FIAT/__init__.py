@@ -26,10 +26,10 @@ from FIAT.regge import Regge
 from FIAT.bubble import Bubble
 from FIAT.tensor_finite_element import TensorFiniteElement
 from FIAT.enriched import EnrichedElement
-from FIAT.discontinuized import Discontinuized
-from FIAT.trace_hdiv import Trace
-from FIAT.facet import Facetize
-from FIAT.interior import Interiorize
+from FIAT.discontinuous import DiscontinuousElement
+from FIAT.trace_hdiv import HDivTrace
+from FIAT.facet import FacetElement
+from FIAT.interior import InteriorElement
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris":                      Argyris,
@@ -50,10 +50,10 @@ supported_elements = {"Argyris":                      Argyris,
                       "Regge":                        Regge,
                       "EnrichedElement":              EnrichedElement,
                       "OuterProductElement":          TensorFiniteElement,
-                      "BrokenElement":                Discontinuized,
-                      "TraceElement":                 Trace,
-                      "FacetElement":                 Facetize,
-                      "InteriorElement":              Interiorize}
+                      "BrokenElement":                DiscontinuousElement,
+                      "TraceElement":                 HDivTrace,
+                      "FacetElement":                 FacetElement,
+                      "InteriorElement":              InteriorElement}
 
 # List of extra elements
 extra_elements = {"P0":              P0,
