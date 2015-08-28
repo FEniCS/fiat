@@ -353,6 +353,8 @@ class ReferenceElement:
 
         return lambda x: offset + C.dot(x)
 
+
+class UFCReferenceElement(ReferenceElement):
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
@@ -375,7 +377,7 @@ class DefaultLine( ReferenceElement ):
         raise NotImplementedError()
 
 
-class UFCInterval( ReferenceElement ):
+class UFCInterval(UFCReferenceElement):
     """This is the reference interval with vertices (0.0,) and (1.0,)."""
     def __init__( self ):
         verts = ( (0.0,), (1.0,) )
@@ -411,7 +413,7 @@ class DefaultTriangle( ReferenceElement ):
         return DefaultInterval()
 
 
-class UFCTriangle( ReferenceElement ):
+class UFCTriangle(UFCReferenceElement):
     """This is the reference triangle with vertices (0.0,0.0),
     (1.0,0.0), and (0.0,1.0)."""
     def __init__( self ):
@@ -511,7 +513,7 @@ class IntrepidTetrahedron( ReferenceElement ):
         return IntrepidTriangle()
 
 
-class UFCTetrahedron( ReferenceElement ):
+class UFCTetrahedron(UFCReferenceElement):
     """This is the reference tetrahedron with vertices (0,0,0),
     (1,0,0),(0,1,0), and (0,0,1)."""
     def __init__( self ):
