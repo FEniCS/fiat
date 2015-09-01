@@ -354,6 +354,16 @@ class ReferenceElement:
         return lambda x: offset + C.dot(x)
 
 
+class UFCReferenceElement(ReferenceElement):
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        result = (sum(point) - epsilon <= 1)
+        for c in point:
+            result &= (c + epsilon >= 0)
+        return result
+
+
 class DefaultLine( ReferenceElement ):
     """This is the reference line with vertices (-1.0,) and (1.0,)."""
     def __init__( self ):
@@ -367,7 +377,7 @@ class DefaultLine( ReferenceElement ):
         raise NotImplementedError()
 
 
-class UFCInterval( ReferenceElement ):
+class UFCInterval(UFCReferenceElement):
     """This is the reference interval with vertices (0.0,) and (1.0,)."""
     def __init__( self ):
         verts = ( (0.0,), (1.0,) )
@@ -403,7 +413,7 @@ class DefaultTriangle( ReferenceElement ):
         return DefaultInterval()
 
 
-class UFCTriangle( ReferenceElement ):
+class UFCTriangle(UFCReferenceElement):
     """This is the reference triangle with vertices (0.0,0.0),
     (1.0,0.0), and (0.0,1.0)."""
     def __init__( self ):
@@ -503,7 +513,7 @@ class IntrepidTetrahedron( ReferenceElement ):
         return IntrepidTriangle()
 
 
-class UFCTetrahedron( ReferenceElement ):
+class UFCTetrahedron(UFCReferenceElement):
     """This is the reference tetrahedron with vertices (0,0,0),
     (1,0,0),(0,1,0), and (0,0,1)."""
     def __init__( self ):
@@ -577,6 +587,15 @@ class FiredrakeQuadrilateral( ReferenceElement ):
         else:
             raise RuntimeError("Illegal quadrilateral facet number.")
 
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        result = True
+        for c in point:
+            result &= (c + epsilon >= 0)
+            result &= (c - epsilon <= 1)
+        return result
+
 
 class two_product_cell( ReferenceElement ):
     """A cell that is the product of FIAT cells A and B"""
@@ -616,6 +635,14 @@ class two_product_cell( ReferenceElement ):
         assert isinstance(self.B, UFCInterval)
         vf = self.A.get_facet_transform(facet_i)
         return lambda p: numpy.hstack([vf(p[:-1]), p[-1]])
+
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        dim_A = self.A.get_spatial_dimension()
+        dim_B = self.B.get_spatial_dimension()
+        assert len(point) == dim_A + dim_B
+        return self.A.contains_point(point[:dim_A]) & self.B.contains_point(point[dim_A:])
 
 
 def make_affine_mapping( xs, ys ):
