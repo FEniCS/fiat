@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from FIAT import finite_element, polynomial_set, dual_set, functional, P0
+from FIAT import finite_element, polynomial_set, dual_set, functional, P0, quadrature
 from FIAT.reference_element import ufc_simplex
 import numpy
 
@@ -32,9 +32,13 @@ class DiscontinuousTaylorDualSet( dual_set.DualSet ):
         entity_ids = {}
         nodes = []
 
+        Q = quadrature.make_quadrature( ref_el, 2 * (degree + 1) )
+
+        f_at_qpts = numpy.ones( len(Q.wts) )
+        nodes.append( functional.IntegralMoment (ref_el, Q, f_at_qpts) )
+
         vertices = ref_el.get_vertices()
         midpoint = (vertices[1][0] + vertices[0][0]) / 2.0
-        nodes.append( functional.PointEvaluation( ref_el, (midpoint,)))
         for k in range(1,degree+1):
             nodes.append( functional.PointDerivative( ref_el, (midpoint,), [k] ))
         
