@@ -91,6 +91,14 @@ class TensorFiniteElement(FiniteElement):
                         # these by calling get_point_dict(), and
                         # use the concatenation to make a new PointEval
                         nodes.append(functional.PointEvaluation(self.ref_el, Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]))
+                    elif isinstance(Bnode, functional.IntegralMoment):
+                            # dummy functional for product with integral moments
+                        nodes.append(functional.Functional(None, None, None, {},
+ "Undefined"))
+                    elif isinstance(Bnode, functional.PointDerivative):
+                            # dummy functional for product with point derivative
+                        nodes.append(functional.Functional(None, None, None, {},
+ "Undefined"))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
