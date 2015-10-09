@@ -1,4 +1,4 @@
-# Copyright (C) 2010 Anders Logg
+# Copyright (C) 2010 Anders Logg, 2015 Jan Blechta
 #
 # This file is part of FIAT.
 #
@@ -18,16 +18,17 @@
 # First added:  2010-01-31
 # Last changed: 2014-06-30
 
-import nose
-import json
-import numpy
-import warnings
+from __future__ import print_function
+import nose, json, numpy, warnings, os, sys
 
 from FIAT import supported_elements, make_quadrature, ufc_simplex, \
     newdubiner, expansions, reference_element, polynomial_set
 
 # Parameters
 tolerance = 1e-8
+
+# Directory with reference data
+prefix = 'fiat-reference-data'
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -58,7 +59,7 @@ def test_polynomials():
         return ps.dmats
 
     # Try reading reference values
-    filename = "reference-polynomials.json"
+    filename = os.path.join(prefix, "reference-polynomials.json")
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
@@ -83,7 +84,7 @@ def test_polynomials_1D():
         return ps.dmats
 
     # Try reading reference values
-    filename = "reference-polynomials_1D.json"
+    filename = os.path.join(prefix, "reference-polynomials_1D.json")
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
@@ -111,7 +112,7 @@ def test_expansions():
         return phis, dphis
 
     # Try reading reference values
-    filename = "reference-expansions.json"
+    filename = os.path.join(prefix, "reference-expansions.json")
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
@@ -150,7 +151,7 @@ def test_expansions_jet():
         F = expansions.TetrahedronExpansionSet(E)
         return F.tabulate_jet(n, pts, order)
 
-    filename = "reference-expansions-jet.json"
+    filename = os.path.join(prefix, "reference-expansions-jet.json")
     try:
         reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
@@ -178,7 +179,7 @@ def test_newdubiner():
         return newdubiner.tabulate_tetrahedron_derivatives(D, pts, float)
 
     # Try reading reference values
-    filename = "reference-newdubiner.json"
+    filename = os.path.join(prefix, "reference-newdubiner.json")
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
@@ -208,7 +209,7 @@ def test_newdubiner_jet():
         pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
         return newdubiner.tabulate_jet(D, n, pts, order, float)
 
-    filename = "reference-newdubiner-jet.json"
+    filename = os.path.join(prefix, "reference-newdubiner-jet.json")
     try:
         reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
@@ -314,7 +315,7 @@ def test_quadrature():
         return
 
     # Try reading reference values
-    filename = "reference.json"
+    filename = os.path.join(prefix, "reference.json")
 
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
@@ -334,16 +335,33 @@ def test_quadrature():
         yield _perform_test, family, dim, degree, reference[str(test_case)]
 
 
-if __name__ == "__main__":
+def main(args):
+    # Download reference data
+    skip_download = "--skip-download" in args
+    if skip_download:
+        print("Skipping reference data download")
+        args.remove("--skip-download")
+    else:
+        failure = os.system("./scripts/download")
+        if failure:
+            print("Download reference data failed")
+        else:
+            print("Download reference data ok")
+
+    # Run the test
     with warnings.catch_warnings(record=True) as warns:
         result = nose.run()
 
     # Handle failed test
     if not result:
-        exit(1)
+        return 1
 
     # Handle missing references
     for w in warns:
         warnings.showwarning(w.message, w.category, w.filename,
                              w.lineno, w.line)
-    exit(len(warns))
+    return len(warns)
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
