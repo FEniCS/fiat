@@ -341,10 +341,13 @@ def main(args):
     if skip_download:
         print("Skipping reference data download")
         args.remove("--skip-download")
+        if not os.path.exists(prefix):
+            os.makedirs(prefix)
     else:
         failure = os.system("./scripts/download")
         if failure:
             print("Download reference data failed")
+            return 1
         else:
             print("Download reference data ok")
 
@@ -360,7 +363,11 @@ def main(args):
     for w in warns:
         warnings.showwarning(w.message, w.category, w.filename,
                              w.lineno, w.line)
-    return len(warns)
+    if len(warns) > 0:
+        print("References missing. New references stored into '%s'" % prefix)
+        return 1
+
+    return 0
 
 
 if __name__ == "__main__":
