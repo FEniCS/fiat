@@ -63,4 +63,4 @@ def test_basis_derivatives_scaling():
 
 
 if __name__ == "__main__":
-    nose.main(defaultTest='unit')
+    nose.main()

@@ -278,10 +278,10 @@ def test_quadrature():
         ("Nedelec 2nd kind H(curl)", 3, 3),
         ("Crouzeix-Raviart", 2, 1),
         ("Crouzeix-Raviart", 3, 1),
-        ("Regge", 2, 0),        
+        ("Regge", 2, 0),
         ("Regge", 2, 1),
         ("Regge", 2, 2),
-        ("Regge", 3, 0),        
+        ("Regge", 3, 0),
         ("Regge", 3, 1),
         ("Regge", 3, 2)
         )
@@ -336,7 +336,7 @@ def test_quadrature():
 
 if __name__ == "__main__":
     with warnings.catch_warnings(record=True) as warns:
-        result = nose.run(defaultTest='regression')
+        result = nose.run()
 
     # Handle failed test
     if not result:

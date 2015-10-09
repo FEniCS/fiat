@@ -1,22 +1,48 @@
-import nose, warnings
+"""Run all tests, including unit tests and regression tests"""
 
-ret = 0
+# Copyright (C) 2007 Anders Logg
+#
+# This file is part of fiat.
+#
+# fiat is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# fiat is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with fiat. If not, see <http://www.gnu.org/licenses/>.
+#
+# First added:  2007-06-09
+# Last changed: 2014-05-15
 
-# Run regression tests
-with warnings.catch_warnings(record=True) as warns:
-    result = nose.run(defaultTest='regression')
+import os, sys
 
-    # Handle failed test
-    ret += int(not result)
+# Name of log file
+pwd = os.path.dirname(os.path.abspath(__file__))
+logfile = os.path.join(pwd, "test.log")
+os.system("rm -f %s" % logfile)
 
-    # Handle missing references
-    for w in warns:
-        warnings.showwarning(w.message, w.category, w.filename,
-                             w.lineno, w.line)
-    ret += len(warns)
+# Tests to run
+tests = ["unit", "regression"]
 
-# Run unit tests
-result = nose.run(defaultTest='unit')
-ret += int(not result)
+# Run tests
+failed = []
+for test in tests:
+    print("Running tests: %s" % test)
+    print("----------------------------------------------------------------------")
+    os.chdir(os.path.join(pwd, test))
+    #failure = os.system("python test.py | tee -a %s" % logfile)
+    failure = os.system("python test.py")
+    if failure:
+        print("Test FAILED")
+        failed.append(test)
+    print("")
 
-exit(ret)
+#print("To view the test log, use the following command: less -R test.log")
+
+sys.exit(len(failed))
