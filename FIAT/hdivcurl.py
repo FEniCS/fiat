@@ -107,7 +107,7 @@ def Hdiv(element):
                     Asd = self.A.get_reference_element().get_spatial_dimension()
                     if not Asd == 2:
                         raise ValueError("Must be 2d shape to automatically convert covariant to contravariant")
-                    temp_perp = numpy.zeros(temp_old.shape)
+                    temp_perp = numpy.zeros(temp_old.shape, dtype=temp_old.dtype)
                     # first element, so (x2, -x1, 0, ...)
                     temp_perp[:, 0, :] = temp_old[:, 1, :]
                     temp_perp[:, 1, :] = -temp_old[:, 0, :]
@@ -116,7 +116,7 @@ def Hdiv(element):
                     Bsd = self.B.get_reference_element().get_spatial_dimension()
                     if not Bsd == 2:
                         raise ValueError("Must be 2d shape to automatically convert covariant to contravariant")
-                    temp_perp = numpy.zeros(temp_old.shape)
+                    temp_perp = numpy.zeros(temp_old.shape, dtype=temp_old.dtype)
                     # second element, so (..., 0, x2, -x1)
                     temp_perp[:, 0, :] = temp_old[:, 1, :]
                     temp_perp[:, 1, :] = -temp_old[:, 0, :]
@@ -229,7 +229,7 @@ def Hcurl(element):
                     Asd = self.A.get_reference_element().get_spatial_dimension()
                     if not Asd == 2:
                         raise ValueError("Must be 2d shape to automatically convert contravariant to covariant")
-                    temp_perp = numpy.zeros(temp_old.shape)
+                    temp_perp = numpy.zeros(temp_old.shape, dtype=temp_old.dtype)
                     # first element, so (-x2, x1, 0, ...)
                     temp_perp[:, 0, :] = -temp_old[:, 1, :]
                     temp_perp[:, 1, :] = temp_old[:, 0, :]
@@ -238,7 +238,7 @@ def Hcurl(element):
                     Bsd = self.B.get_reference_element().get_spatial_dimension()
                     if not Bsd == 2:
                         raise ValueError("Must be 2d shape to automatically convert contravariant to covariant")
-                    temp_perp = numpy.zeros(temp_old.shape)
+                    temp_perp = numpy.zeros(temp_old.shape, dtype=temp_old.dtype)
                     # second element, so (..., 0, -x2, x1)
                     temp_perp[:, 0, :] = -temp_old[:, 1, :]
                     temp_perp[:, 1, :] = temp_old[:, 0, :]
