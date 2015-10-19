@@ -32,8 +32,8 @@ def test_basis_derivatives_scaling():
                          1 : edges }
             ReferenceElement.__init__( self, LINE, verts, topology )
 
+    random.seed(42)
     for i in range(26):
-        random.seed(42)
         a = 1000.0*(random.random() - 0.5)
         b = 1000.0*(random.random() - 0.5)
         a, b = min(a, b), max(a, b)
