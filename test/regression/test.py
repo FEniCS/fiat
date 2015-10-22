@@ -240,12 +240,18 @@ def test_quadrature():
     max_derivative = 3
     # Combinations of (family, dim, degree) to test
     test_cases = (
+        ("Lagrange", 1, 1),
+        ("Lagrange", 1, 2),
+        ("Lagrange", 1, 3),
         ("Lagrange", 2, 1),
         ("Lagrange", 2, 2),
         ("Lagrange", 2, 3),
         ("Lagrange", 3, 1),
         ("Lagrange", 3, 2),
         ("Lagrange", 3, 3),
+        ("Discontinuous Lagrange", 1, 0),
+        ("Discontinuous Lagrange", 1, 1),
+        ("Discontinuous Lagrange", 1, 2),
         ("Discontinuous Lagrange", 2, 0),
         ("Discontinuous Lagrange", 2, 1),
         ("Discontinuous Lagrange", 2, 2),
@@ -283,6 +289,7 @@ def test_quadrature():
         ("Nedelec 2nd kind H(curl)", 3, 1),
         ("Nedelec 2nd kind H(curl)", 3, 2),
         ("Nedelec 2nd kind H(curl)", 3, 3),
+        ("Crouzeix-Raviart", 1, 1),
         ("Crouzeix-Raviart", 2, 1),
         ("Crouzeix-Raviart", 3, 1),
         ("Regge", 2, 0),
