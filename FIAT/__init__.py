@@ -28,8 +28,7 @@ from FIAT.tensor_finite_element import TensorFiniteElement
 from FIAT.enriched import EnrichedElement
 from FIAT.discontinuous import DiscontinuousElement
 from FIAT.trace_hdiv import HDivTrace
-from FIAT.facet import FacetElement
-from FIAT.interior import InteriorElement
+from FIAT.restricted import RestrictedElement
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris":                      Argyris,
@@ -51,9 +50,7 @@ supported_elements = {"Argyris":                      Argyris,
                       "EnrichedElement":              EnrichedElement,
                       "OuterProductElement":          TensorFiniteElement,
                       "BrokenElement":                DiscontinuousElement,
-                      "TraceElement":                 HDivTrace,
-                      "FacetElement":                 FacetElement,
-                      "InteriorElement":              InteriorElement}
+                      "TraceElement":                 HDivTrace}
 
 # List of extra elements
 extra_elements = {"P0":              P0,
