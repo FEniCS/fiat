@@ -63,7 +63,8 @@ def test_polynomials():
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
-        warnings.warn('Reference file "%s" could not be loaded!' % filename,
+        warnings.warn('Reference file "%s" could not be loaded! '
+                      'Creating a new reference file!' % filename,
                       RuntimeWarning)
         reference = create_data()
         # Store the data for the future
@@ -88,7 +89,8 @@ def test_polynomials_1D():
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
-        warnings.warn('Reference file "%s" could not be loaded!' % filename,
+        warnings.warn('Reference file "%s" could not be loaded! '
+                      'Creating a new reference file!' % filename,
                       RuntimeWarning)
         reference = create_data()
         # Store the data for the future
@@ -116,8 +118,9 @@ def test_expansions():
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
-        warnings.warn('Reference file "%s" could not be loaded!' % filename,
-                      RuntimeWarning)
+        warnings.warn('Reference file "%s" could not be loaded! '
+                      'Creating a new reference file!' % filename,
+                       RuntimeWarning)
         reference = create_data()
         # Convert reference to list of int
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
@@ -155,8 +158,9 @@ def test_expansions_jet():
     try:
         reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
-        warnings.warn('Reference file "%s" could not be loaded!' % filename,
-                      RuntimeWarning)
+        warnings.warn('Reference file "%s" could not be loaded! '
+                      'Creating a new reference file!' % filename,
+                       RuntimeWarning)
         reference_jet = create_data()
         # Store the data for the future
         json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
@@ -183,8 +187,9 @@ def test_newdubiner():
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
-        warnings.warn('Reference file "%s" could not be loaded!' % filename,
-                      RuntimeWarning)
+        warnings.warn('Reference file "%s" could not be loaded! '
+                      'Creating a new reference file!' % filename,
+                       RuntimeWarning)
         reference = create_data()
         # Convert reference to list of int
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
@@ -213,8 +218,9 @@ def test_newdubiner_jet():
     try:
         reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
-        warnings.warn('Reference file "%s" could not be loaded!' % filename,
-                      RuntimeWarning)
+        warnings.warn('Reference file "%s" could not be loaded! '
+                      'Creating a new reference file!' % filename,
+                       RuntimeWarning)
         reference_jet = create_data()
         # Store the data for the future
         json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
@@ -234,12 +240,18 @@ def test_quadrature():
     max_derivative = 3
     # Combinations of (family, dim, degree) to test
     test_cases = (
+        ("Lagrange", 1, 1),
+        ("Lagrange", 1, 2),
+        ("Lagrange", 1, 3),
         ("Lagrange", 2, 1),
         ("Lagrange", 2, 2),
         ("Lagrange", 2, 3),
         ("Lagrange", 3, 1),
         ("Lagrange", 3, 2),
         ("Lagrange", 3, 3),
+        ("Discontinuous Lagrange", 1, 0),
+        ("Discontinuous Lagrange", 1, 1),
+        ("Discontinuous Lagrange", 1, 2),
         ("Discontinuous Lagrange", 2, 0),
         ("Discontinuous Lagrange", 2, 1),
         ("Discontinuous Lagrange", 2, 2),
@@ -277,6 +289,7 @@ def test_quadrature():
         ("Nedelec 2nd kind H(curl)", 3, 1),
         ("Nedelec 2nd kind H(curl)", 3, 2),
         ("Nedelec 2nd kind H(curl)", 3, 3),
+        ("Crouzeix-Raviart", 1, 1),
         ("Crouzeix-Raviart", 2, 1),
         ("Crouzeix-Raviart", 3, 1),
         ("Regge", 2, 0),
@@ -293,7 +306,7 @@ def test_quadrature():
         # Get domain and element class
         domain = ufc_simplex(dim)
         ElementClass = supported_elements[family]
-        # Create element|
+        # Create element
         element = ElementClass(domain, degree)
         # Create quadrature points
         quad_rule = make_quadrature(domain, num_points)
@@ -314,14 +327,26 @@ def test_quadrature():
             assert (abs(diff) < tolerance).all()
         return
 
-    # Try reading reference values
     filename = os.path.join(prefix, "reference.json")
 
+    # Try comparing against references
     try:
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded!' % filename,
-                      RuntimeWarning)
+        for test_case in test_cases:
+            family, dim, degree = test_case
+            yield _perform_test, family, dim, degree, reference[str(test_case)]
+
+    # Update references if missing
+    except (IOError, KeyError) as e:
+        if isinstance(e, IOError):
+            warnings.warn('Reference file "%s" could not be loaded! '
+                          'Creating a new reference file!' % filename,
+                          RuntimeWarning)
+        else:
+            assert isinstance(e, KeyError) and len(e.args) == 1
+            warnings.warn('Reference file "%s" does not contain reference "%s"! '
+                          'Creating a new reference file!'
+                          % (filename, e.args[0]), RuntimeWarning)
         reference = {}
         for test_case in test_cases:
             family, dim, degree = test_case
@@ -330,9 +355,6 @@ def test_quadrature():
         # Store the data for the future
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
 
-    for test_case in test_cases:
-        family, dim, degree = test_case
-        yield _perform_test, family, dim, degree, reference[str(test_case)]
 
 
 def main(args):
