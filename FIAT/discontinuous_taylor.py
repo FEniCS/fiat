@@ -60,7 +60,7 @@ class HigherOrderDiscontinuousTaylor( finite_element.FiniteElement ):
 
 def DiscontinuousTaylor( ref_el, degree ):
     if degree == 0:
-        return P0( ref_el )
+        return P0.P0( ref_el )
     else:
         return HigherOrderDiscontinuousTaylor( ref_el, degree )
 
