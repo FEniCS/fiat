@@ -300,7 +300,13 @@ def test_quadrature():
         ("Regge", 2, 2),
         ("Regge", 3, 0),
         ("Regge", 3, 1),
-        ("Regge", 3, 2)
+        ("Regge", 3, 2),
+        ("Bubble", 2, 3),
+        ("Bubble", 2, 4),
+        ("Bubble", 2, 5),
+        ("Bubble", 3, 4),
+        ("Bubble", 3, 5),
+        ("Bubble", 3, 6)
         )
 
     def create_data(family, dim, degree):
