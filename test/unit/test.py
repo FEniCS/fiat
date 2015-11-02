@@ -62,5 +62,80 @@ def test_basis_derivatives_scaling():
             nose.tools.assert_almost_equal(tab[(2,)][1][p], 0.0)
 
 
+def test_TFE_1Dx1D_scalar():
+    from FIAT.reference_element import UFCInterval
+    from FIAT.lagrange import Lagrange
+    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
+    from FIAT.tensor_finite_element import TensorFiniteElement
+
+    T = UFCInterval()
+    P1_DG = DiscontinuousLagrange(T, 1)
+    P2 = Lagrange(T, 2)
+
+    elt = TensorFiniteElement(P1_DG, P2)
+    assert elt.value_shape() == ()  # nosify
+    tab = elt.tabulate(1, [(0.1, 0.2)])
+    tabA = A.tabulate(1, [(0.1,)])
+    tabB = B.tabulate(1, [(0.2,)])
+    for (dc, da, db) in [[(0, 0), (0,), (0,)], [(1, 0), (1,), (0,)], [(0, 1), (0,), (1,)]]:
+        nose.tools.assert_almost_equal(tab[dc][0][0], tabA[da][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][1][0], tabA[da][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][2][0], tabA[da][0][0]*tabB[db][2][0])
+        nose.tools.assert_almost_equal(tab[dc][3][0], tabA[da][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][4][0], tabA[da][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][5][0], tabA[da][1][0]*tabB[db][2][0])
+
+
+def test_TFE_1Dx1D_vector():
+    from FIAT.reference_element import UFCInterval
+    from FIAT.lagrange import Lagrange
+    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
+    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.hdivcurl import Hdiv, Hcurl
+
+    T = UFCInterval()
+    P1_DG = DiscontinuousLagrange(T, 1)
+    P2 = Lagrange(T, 2)
+
+    elt = TensorFiniteElement(P1_DG, P2)
+    hdiv_elt = hdiv(elt)
+    hcurl_elt = Hcurl(elt)
+    assert hdiv_elt.value_shape() == (1,)  # nosify
+    assert hcurl_elt.value_shape() == (1,)  # nosify
+
+    tabA = A.tabulate(1, [(0.1,)])
+    tabB = B.tabulate(1, [(0.2,)])
+
+    hdiv_tab = hdiv_elt.tabulate(1, [(0.1, 0.2)])
+    for (dc, da, db) in [[(0, 0), (0,), (0,)], [(1, 0), (1,), (0,)], [(0, 1), (0,), (1,)]]:
+        nose.tools.assert_almost_equal(hdiv_tab[dc][0][0][0], 0.0)
+        nose.tools.assert_almost_equal(hdiv_tab[dc][1][0][0], 0.0)
+        nose.tools.assert_almost_equal(hdiv_tab[dc][2][0][0], 0.0)
+        nose.tools.assert_almost_equal(hdiv_tab[dc][3][0][0], 0.0)
+        nose.tools.assert_almost_equal(hdiv_tab[dc][4][0][0], 0.0)
+        nose.tools.assert_almost_equal(hdiv_tab[dc][5][0][0], 0.0)
+        nose.tools.assert_almost_equal(hdiv_tab[dc][0][1][0], tabA[da][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(hdiv_tab[dc][1][1][0], tabA[da][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(hdiv_tab[dc][2][1][0], tabA[da][0][0]*tabB[db][2][0])
+        nose.tools.assert_almost_equal(hdiv_tab[dc][3][1][0], tabA[da][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(hdiv_tab[dc][4][1][0], tabA[da][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(hdiv_tab[dc][5][1][0], tabA[da][1][0]*tabB[db][2][0])
+
+    hcurl_tab = hcurl_elt.tabulate(1, [(0.1, 0.2)])
+    for (dc, da, db) in [[(0, 0), (0,), (0,)], [(1, 0), (1,), (0,)], [(0, 1), (0,), (1,)]]:
+        nose.tools.assert_almost_equal(hcurl_tab[dc][0][0][0], tabA[da][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(hcurl_tab[dc][1][0][0], tabA[da][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(hcurl_tab[dc][2][0][0], tabA[da][0][0]*tabB[db][2][0])
+        nose.tools.assert_almost_equal(hcurl_tab[dc][3][0][0], tabA[da][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(hcurl_tab[dc][4][0][0], tabA[da][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(hcurl_tab[dc][5][0][0], tabA[da][1][0]*tabB[db][2][0])
+        nose.tools.assert_almost_equal(hcurl_tab[dc][0][1][0], 0.0)
+        nose.tools.assert_almost_equal(hcurl_tab[dc][1][1][0], 0.0)
+        nose.tools.assert_almost_equal(hcurl_tab[dc][2][1][0], 0.0)
+        nose.tools.assert_almost_equal(hcurl_tab[dc][3][1][0], 0.0)
+        nose.tools.assert_almost_equal(hcurl_tab[dc][4][1][0], 0.0)
+        nose.tools.assert_almost_equal(hcurl_tab[dc][5][1][0], 0.0)
+
+
 if __name__ == "__main__":
     nose.main()
