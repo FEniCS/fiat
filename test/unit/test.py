@@ -73,7 +73,7 @@ def test_TFE_1Dx1D_scalar():
     P2 = Lagrange(T, 2)
 
     elt = TensorFiniteElement(P1_DG, P2)
-    assert elt.value_shape() == ()  # nosify
+    nose.tools.eq_(elt.value_shape(), ())
     tab = elt.tabulate(1, [(0.1, 0.2)])
     tabA = P1_DG.tabulate(1, [(0.1,)])
     tabB = P2.tabulate(1, [(0.2,)])
@@ -100,8 +100,8 @@ def test_TFE_1Dx1D_vector():
     elt = TensorFiniteElement(P1_DG, P2)
     hdiv_elt = Hdiv(elt)
     hcurl_elt = Hcurl(elt)
-    assert hdiv_elt.value_shape() == (2,)  # nosify
-    assert hcurl_elt.value_shape() == (2,)  # nosify
+    nose.tools.eq_(hdiv_elt.value_shape(), (2,))
+    nose.tools.eq_(hcurl_elt.value_shape(), (2,))
 
     tabA = P1_DG.tabulate(1, [(0.1,)])
     tabB = P2.tabulate(1, [(0.2,)])
