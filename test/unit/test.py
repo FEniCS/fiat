@@ -75,8 +75,8 @@ def test_TFE_1Dx1D_scalar():
     elt = TensorFiniteElement(P1_DG, P2)
     assert elt.value_shape() == ()  # nosify
     tab = elt.tabulate(1, [(0.1, 0.2)])
-    tabA = A.tabulate(1, [(0.1,)])
-    tabB = B.tabulate(1, [(0.2,)])
+    tabA = P1_DG.tabulate(1, [(0.1,)])
+    tabB = P2.tabulate(1, [(0.2,)])
     for (dc, da, db) in [[(0, 0), (0,), (0,)], [(1, 0), (1,), (0,)], [(0, 1), (0,), (1,)]]:
         nose.tools.assert_almost_equal(tab[dc][0][0], tabA[da][0][0]*tabB[db][0][0])
         nose.tools.assert_almost_equal(tab[dc][1][0], tabA[da][0][0]*tabB[db][1][0])
@@ -98,13 +98,13 @@ def test_TFE_1Dx1D_vector():
     P2 = Lagrange(T, 2)
 
     elt = TensorFiniteElement(P1_DG, P2)
-    hdiv_elt = hdiv(elt)
+    hdiv_elt = Hdiv(elt)
     hcurl_elt = Hcurl(elt)
-    assert hdiv_elt.value_shape() == (1,)  # nosify
-    assert hcurl_elt.value_shape() == (1,)  # nosify
+    assert hdiv_elt.value_shape() == (2,)  # nosify
+    assert hcurl_elt.value_shape() == (2,)  # nosify
 
-    tabA = A.tabulate(1, [(0.1,)])
-    tabB = B.tabulate(1, [(0.2,)])
+    tabA = P1_DG.tabulate(1, [(0.1,)])
+    tabB = P2.tabulate(1, [(0.2,)])
 
     hdiv_tab = hdiv_elt.tabulate(1, [(0.1, 0.2)])
     for (dc, da, db) in [[(0, 0), (0,), (0,)], [(1, 0), (1,), (0,)], [(0, 1), (0,), (1,)]]:
