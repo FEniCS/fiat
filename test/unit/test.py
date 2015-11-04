@@ -250,5 +250,81 @@ def test_TFE_2Dx1D_scalar_hcurl():
         nose.tools.assert_almost_equal(tab[dc][5][2][0], tabA[da][2][0]*tabB[db][1][0])
 
 
+def test_TFE_2Dx1D_vector_triangle_hdiv():
+    from FIAT.reference_element import UFCTriangle, UFCInterval
+    from FIAT.raviart_thomas import RaviartThomas
+    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
+    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.hdivcurl import Hdiv
+
+    S = UFCTriangle()
+    T = UFCInterval()
+    RT1 = RaviartThomas(S, 1)
+    P1_DG = DiscontinuousLagrange(T, 1)
+
+    elt = Hdiv(TensorFiniteElement(RT1, P1_DG))
+    nose.tools.eq_(elt.value_shape(), (3,))
+    tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
+    tabA = RT1.tabulate(1, [(0.1, 0.2)])
+    tabB = P1_DG.tabulate(1, [(0.3,)])
+    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+        nose.tools.assert_almost_equal(tab[dc][0][0][0], tabA[da][0][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][1][0][0], tabA[da][0][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][2][0][0], tabA[da][1][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][3][0][0], tabA[da][1][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][4][0][0], tabA[da][2][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][5][0][0], tabA[da][2][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][0][1][0], tabA[da][0][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][1][1][0], tabA[da][0][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][2][1][0], tabA[da][1][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][3][1][0], tabA[da][1][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][4][1][0], tabA[da][2][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][5][1][0], tabA[da][2][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][0][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][1][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][2][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][3][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][4][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][5][2][0], 0.0)
+
+
+def test_TFE_2Dx1D_vector_triangle_hcurl():
+    from FIAT.reference_element import UFCTriangle, UFCInterval
+    from FIAT.nedelec import Nedelec
+    from FIAT.lagrange import Lagrange
+    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.hdivcurl import Hcurl
+
+    S = UFCTriangle()
+    T = UFCInterval()
+    Ned1 = Nedelec(S, 1)
+    P1 = Lagrange(T, 1)
+
+    elt = Hcurl(TensorFiniteElement(Ned1, P1))
+    nose.tools.eq_(elt.value_shape(), (3,))
+    tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
+    tabA = Ned1.tabulate(1, [(0.1, 0.2)])
+    tabB = P1.tabulate(1, [(0.3,)])
+    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+        nose.tools.assert_almost_equal(tab[dc][0][0][0], tabA[da][0][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][1][0][0], tabA[da][0][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][2][0][0], tabA[da][1][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][3][0][0], tabA[da][1][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][4][0][0], tabA[da][2][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][5][0][0], tabA[da][2][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][0][1][0], tabA[da][0][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][1][1][0], tabA[da][0][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][2][1][0], tabA[da][1][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][3][1][0], tabA[da][1][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][4][1][0], tabA[da][2][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][5][1][0], tabA[da][2][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][0][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][1][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][2][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][3][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][4][2][0], 0.0)
+        nose.tools.assert_almost_equal(tab[dc][5][2][0], 0.0)
+
+
 if __name__ == "__main__":
     nose.main()
