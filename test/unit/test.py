@@ -137,5 +137,30 @@ def test_TFE_1Dx1D_vector():
         nose.tools.assert_almost_equal(hcurl_tab[dc][5][1][0], 0.0)
 
 
+def test_TFE_2Dx1D_scalar():
+    from FIAT.reference_element import UFCTriangle, UFCInterval
+    from FIAT.lagrange import Lagrange
+    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
+    from FIAT.tensor_finite_element import TensorFiniteElement
+
+    S = UFCTriangle()
+    T = UFCInterval()
+    P1_DG = DiscontinuousLagrange(S, 1)
+    P2 = Lagrange(T, 2)
+
+    elt = TensorFiniteElement(P1_DG, P2)
+    nose.tools.eq_(elt.value_shape(), ())
+    tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
+    tabA = P1_DG.tabulate(1, [(0.1, 0.2)])
+    tabB = P2.tabulate(1, [(0.3,)])
+    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+        nose.tools.assert_almost_equal(tab[dc][0][0], tabA[da][0][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][1][0], tabA[da][0][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][2][0], tabA[da][0][0]*tabB[db][2][0])
+        nose.tools.assert_almost_equal(tab[dc][3][0], tabA[da][1][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][4][0], tabA[da][1][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][5][0], tabA[da][1][0]*tabB[db][2][0])
+
+
 if __name__ == "__main__":
     nose.main()
