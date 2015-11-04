@@ -48,7 +48,7 @@ supported_elements = {"Argyris":                      Argyris,
                       "Raviart-Thomas":               RaviartThomas,
                       "Regge":                        Regge,
                       "EnrichedElement":              EnrichedElement,
-                      "OuterProductElement":          TensorFiniteElement,
+                      "TensorProductElement":          TensorFiniteElement,
                       "BrokenElement":                DiscontinuousElement,
                       "TraceElement":                 HDivTrace}
 

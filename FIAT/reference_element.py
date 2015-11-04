@@ -716,7 +716,7 @@ def ufc_cell( cell ):
     else:
         celltype = cell.cellname()
 
-    if celltype == "OuterProductCell":
+    if celltype == "TensorProductCell":
         # cell is a UFL cell
         return two_product_cell(ufc_cell(cell._A), ufc_cell(cell._B))
     elif celltype == "quadrilateral":
