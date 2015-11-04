@@ -137,7 +137,7 @@ def test_TFE_1Dx1D_vector():
         nose.tools.assert_almost_equal(hcurl_tab[dc][5][1][0], 0.0)
 
 
-def test_TFE_2Dx1D_scalar():
+def test_TFE_2Dx1D_scalar_triangle():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
@@ -165,7 +165,7 @@ def test_TFE_2Dx1D_scalar():
         nose.tools.assert_almost_equal(tab[dc][8][0], tabA[da][2][0]*tabB[db][2][0])
 
 
-def test_TFE_2Dx1D_scalar_hdiv():
+def test_TFE_2Dx1D_scalar_triangle_hdiv():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
@@ -212,7 +212,7 @@ def test_TFE_2Dx1D_scalar_hdiv():
         nose.tools.assert_almost_equal(tab[dc][8][2][0], tabA[da][2][0]*tabB[db][2][0])
 
 
-def test_TFE_2Dx1D_scalar_hcurl():
+def test_TFE_2Dx1D_scalar_triangle_hcurl():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
