@@ -1,0 +1,7 @@
+Changes in FIAT 1.6.0
+=====================
+
+FIAT 1.6.0 was released on 2015-07-28
+
+- Support DG on facets through the element ``Discontinuous Lagrange
+  Trace``
