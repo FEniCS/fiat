@@ -160,6 +160,9 @@ def test_TFE_2Dx1D_scalar():
         nose.tools.assert_almost_equal(tab[dc][3][0], tabA[da][1][0]*tabB[db][0][0])
         nose.tools.assert_almost_equal(tab[dc][4][0], tabA[da][1][0]*tabB[db][1][0])
         nose.tools.assert_almost_equal(tab[dc][5][0], tabA[da][1][0]*tabB[db][2][0])
+        nose.tools.assert_almost_equal(tab[dc][6][0], tabA[da][2][0]*tabB[db][0][0])
+        nose.tools.assert_almost_equal(tab[dc][7][0], tabA[da][2][0]*tabB[db][1][0])
+        nose.tools.assert_almost_equal(tab[dc][8][0], tabA[da][2][0]*tabB[db][2][0])
 
 
 if __name__ == "__main__":
