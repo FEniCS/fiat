@@ -77,7 +77,8 @@ def test_TFE_1Dx1D_scalar():
     tab = elt.tabulate(1, [(0.1, 0.2)])
     tabA = P1_DG.tabulate(1, [(0.1,)])
     tabB = P2.tabulate(1, [(0.2,)])
-    for (dc, da, db) in [[(0, 0), (0,), (0,)], [(1, 0), (1,), (0,)], [(0, 1), (0,), (1,)]]:
+    for da, db in [[(0,), (0,)], [(1,), (0,)], [(0,), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(tab[dc][0][0], tabA[da][0][0]*tabB[db][0][0])
         nose.tools.assert_almost_equal(tab[dc][1][0], tabA[da][0][0]*tabB[db][1][0])
         nose.tools.assert_almost_equal(tab[dc][2][0], tabA[da][0][0]*tabB[db][2][0])
@@ -107,7 +108,8 @@ def test_TFE_1Dx1D_vector():
     tabB = P2.tabulate(1, [(0.2,)])
 
     hdiv_tab = hdiv_elt.tabulate(1, [(0.1, 0.2)])
-    for (dc, da, db) in [[(0, 0), (0,), (0,)], [(1, 0), (1,), (0,)], [(0, 1), (0,), (1,)]]:
+    for da, db in [[(0,), (0,)], [(1,), (0,)], [(0,), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(hdiv_tab[dc][0][0][0], 0.0)
         nose.tools.assert_almost_equal(hdiv_tab[dc][1][0][0], 0.0)
         nose.tools.assert_almost_equal(hdiv_tab[dc][2][0][0], 0.0)
@@ -122,7 +124,8 @@ def test_TFE_1Dx1D_vector():
         nose.tools.assert_almost_equal(hdiv_tab[dc][5][1][0], tabA[da][1][0]*tabB[db][2][0])
 
     hcurl_tab = hcurl_elt.tabulate(1, [(0.1, 0.2)])
-    for (dc, da, db) in [[(0, 0), (0,), (0,)], [(1, 0), (1,), (0,)], [(0, 1), (0,), (1,)]]:
+    for da, db in [[(0,), (0,)], [(1,), (0,)], [(0,), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(hcurl_tab[dc][0][0][0], tabA[da][0][0]*tabB[db][0][0])
         nose.tools.assert_almost_equal(hcurl_tab[dc][1][0][0], tabA[da][0][0]*tabB[db][1][0])
         nose.tools.assert_almost_equal(hcurl_tab[dc][2][0][0], tabA[da][0][0]*tabB[db][2][0])
@@ -153,7 +156,8 @@ def test_TFE_2Dx1D_scalar_triangle():
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = P1_DG.tabulate(1, [(0.1, 0.2)])
     tabB = P2.tabulate(1, [(0.3,)])
-    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+    for da, db in [[(0, 0), (0,)], [(1, 0), (0,)], [(0, 1), (0,)], [(0, 0), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(tab[dc][0][0], tabA[da][0][0]*tabB[db][0][0])
         nose.tools.assert_almost_equal(tab[dc][1][0], tabA[da][0][0]*tabB[db][1][0])
         nose.tools.assert_almost_equal(tab[dc][2][0], tabA[da][0][0]*tabB[db][2][0])
@@ -181,7 +185,8 @@ def test_TFE_2Dx1D_scalar_quad():
     tA = P1.tabulate(1, [(0.1,)])
     tB = P1_DG.tabulate(1, [(0.2,)])
     tC = P1.tabulate(1, [(0.3,)])
-    for (dd, da, db, dc) in [[(0, 0, 0), (0,), (0,), (0,)], [(1, 0, 0), (1,), (0,), (0,)], [(0, 1, 0), (0,), (1,), (0,)], [(0, 0, 1), (0,), (0,), (1,)]]:
+    for da, db, dc in [[(0,), (0,), (0,)], [(1,), (0,), (0,)], [(0,), (1,), (0,)], [(0,), (0,), (1,)]]:
+        dd = da + db + dc
         nose.tools.assert_almost_equal(tab[dd][0][0], tA[da][0][0]*tB[db][0][0]*tC[dc][0][0])
         nose.tools.assert_almost_equal(tab[dd][1][0], tA[da][0][0]*tB[db][0][0]*tC[dc][1][0])
         nose.tools.assert_almost_equal(tab[dd][2][0], tA[da][0][0]*tB[db][1][0]*tC[dc][0][0])
@@ -209,7 +214,8 @@ def test_TFE_2Dx1D_scalar_triangle_hdiv():
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = P1_DG.tabulate(1, [(0.1, 0.2)])
     tabB = P2.tabulate(1, [(0.3,)])
-    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+    for da, db in [[(0, 0), (0,)], [(1, 0), (0,)], [(0, 1), (0,)], [(0, 0), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(tab[dc][0][0][0], 0.0)
         nose.tools.assert_almost_equal(tab[dc][1][0][0], 0.0)
         nose.tools.assert_almost_equal(tab[dc][2][0][0], 0.0)
@@ -256,7 +262,8 @@ def test_TFE_2Dx1D_scalar_triangle_hcurl():
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = P1.tabulate(1, [(0.1, 0.2)])
     tabB = P1_DG.tabulate(1, [(0.3,)])
-    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+    for da, db in [[(0, 0), (0,)], [(1, 0), (0,)], [(0, 1), (0,)], [(0, 0), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(tab[dc][0][0][0], 0.0)
         nose.tools.assert_almost_equal(tab[dc][1][0][0], 0.0)
         nose.tools.assert_almost_equal(tab[dc][2][0][0], 0.0)
@@ -294,7 +301,8 @@ def test_TFE_2Dx1D_vector_triangle_hdiv():
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = RT1.tabulate(1, [(0.1, 0.2)])
     tabB = P1_DG.tabulate(1, [(0.3,)])
-    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+    for da, db in [[(0, 0), (0,)], [(1, 0), (0,)], [(0, 1), (0,)], [(0, 0), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(tab[dc][0][0][0], tabA[da][0][0][0]*tabB[db][0][0])
         nose.tools.assert_almost_equal(tab[dc][1][0][0], tabA[da][0][0][0]*tabB[db][1][0])
         nose.tools.assert_almost_equal(tab[dc][2][0][0], tabA[da][1][0][0]*tabB[db][0][0])
@@ -332,7 +340,8 @@ def test_TFE_2Dx1D_vector_triangle_hcurl():
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = Ned1.tabulate(1, [(0.1, 0.2)])
     tabB = P1.tabulate(1, [(0.3,)])
-    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+    for da, db in [[(0, 0), (0,)], [(1, 0), (0,)], [(0, 1), (0,)], [(0, 0), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(tab[dc][0][0][0], tabA[da][0][0][0]*tabB[db][0][0])
         nose.tools.assert_almost_equal(tab[dc][1][0][0], tabA[da][0][0][0]*tabB[db][1][0])
         nose.tools.assert_almost_equal(tab[dc][2][0][0], tabA[da][1][0][0]*tabB[db][0][0])
@@ -370,7 +379,8 @@ def test_TFE_2Dx1D_vector_triangle_hdiv_rotate():
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = Ned1.tabulate(1, [(0.1, 0.2)])
     tabB = P1_DG.tabulate(1, [(0.3,)])
-    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+    for da, db in [[(0, 0), (0,)], [(1, 0), (0,)], [(0, 1), (0,)], [(0, 0), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(tab[dc][0][0][0], tabA[da][0][1][0]*tabB[db][0][0])
         nose.tools.assert_almost_equal(tab[dc][1][0][0], tabA[da][0][1][0]*tabB[db][1][0])
         nose.tools.assert_almost_equal(tab[dc][2][0][0], tabA[da][1][1][0]*tabB[db][0][0])
@@ -408,7 +418,8 @@ def test_TFE_2Dx1D_vector_triangle_hcurl_rotate():
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = RT1.tabulate(1, [(0.1, 0.2)])
     tabB = P1.tabulate(1, [(0.3,)])
-    for (dc, da, db) in [[(0, 0, 0), (0, 0), (0,)], [(1, 0, 0), (1, 0), (0,)], [(0, 1, 0), (0, 1), (0,)], [(0, 0, 1), (0, 0), (1,)]]:
+    for da, db in [[(0, 0), (0,)], [(1, 0), (0,)], [(0, 1), (0,)], [(0, 0), (1,)]]:
+        dc = da + db
         nose.tools.assert_almost_equal(tab[dc][0][0][0], -tabA[da][0][1][0]*tabB[db][0][0])
         nose.tools.assert_almost_equal(tab[dc][1][0][0], -tabA[da][0][1][0]*tabB[db][1][0])
         nose.tools.assert_almost_equal(tab[dc][2][0][0], -tabA[da][1][1][0]*tabB[db][0][0])
