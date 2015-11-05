@@ -25,37 +25,39 @@ from .functional import index_iterator
 from .reference_element import UFCTriangle, UFCTetrahedron
 
 class ReggeDual(DualSet):
+    """TODO: Document class
+
     """
-    """
+
     def __init__ (self, cell, degree):
         (dofs, ids) = self.generate_degrees_of_freedom(cell, degree)
         DualSet.__init__(self, dofs, cell, ids)
 
     def generate_degrees_of_freedom(self, cell, degree):
-        """ 
-        Suppose f is a k-face of the reference n-cell. Let t1,...,tk be a
-        basis for the tangent space of f as n-vectors. Given a symmetric
-        2-tensor field u on Rn. One set of dofs for Regge(r) on f is
-        the moment of each of the (k+1)k/2 scalar functions 
-          [u(t1,t1),u(t1,t2),...,u(t1,tk), 
-           u(t2,t2), u(t2,t3),...,..., u(tk,tk)] 
-        aginst scalar polynomials of degrees (r-k+1). Here this is
-        implemented as pointwise evaluations of those scalar functions.
+        """Suppose f is a k-face of the reference n-cell. Let t1,...,tk be a
+        basis for the tangent space of f as n-vectors. Given a
+        symmetric 2-tensor field u on Rn. One set of dofs for Regge(r)
+        on f is the moment of each of the (k+1)k/2 scalar functions
+        [u(t1,t1),u(t1,t2),...,u(t1,tk), u(t2,t2), u(t2,t3),...,...,
+        u(tk,tk)] aginst scalar polynomials of degrees (r-k+1). Here
+        this is implemented as pointwise evaluations of those scalar
+        functions.
 
-        Below is an implementation for dimension 2--3. In dimension 1, 
-        Regge(r)=DG(r). It is awkward in the current FEniCS interface to
-        implement the element uniformly for all dimensions due to its edge,
-        facet=trig, cell style.
+        Below is an implementation for dimension 2--3. In dimension 1,
+        Regge(r)=DG(r). It is awkward in the current FEniCS interface
+        to implement the element uniformly for all dimensions due to
+        its edge, facet=trig, cell style.
+
         """
-        
+
         dofs = []
         ids = {}
-        
+
         top = cell.get_topology()
         d = cell.get_spatial_dimension()
         if (d < 2) or (d > 3):
             raise("Regge elements only implemented for dimension 2--3.")
-        
+
         # No vertex dof
         ids[0] = dict(list(zip(list(range(d+1)), ([] for i in range(d+1)))))
         # edge dofs
@@ -78,7 +80,7 @@ class ReggeDual(DualSet):
         dofs = []
         ids = {}
         for s in range(len(cell.get_topology()[1])):
-            # Points to evaluate the inner product            
+            # Points to evaluate the inner product
             pts = cell.make_points(1, s, degree + 2)
             # Evalute squared length of the tagent vector along an edge
             t = cell.compute_edge_tangent(s)
@@ -121,7 +123,7 @@ class ReggeDual(DualSet):
         d = cell.get_spatial_dimension()
         if (d == 2 and degree == 0) or (d == 3 and degree <= 1):
             return ([], {0: []})
-        # Compute dofs. There is only one cell. So no need to loop here~ 
+        # Compute dofs. There is only one cell. So no need to loop here~
         # Points to evaluate the inner product
         pts = cell.make_points(d, 0, degree + 2)
         # Let {e1,..,ek} be the Euclidean basis. We evaluate inner products
@@ -138,11 +140,11 @@ class ReggeDual(DualSet):
         return (dofs, ids)
 
 class Regge(FiniteElement):
-    """
-    The Regge elements on triangles and tetrahedra: the polynomial space
-    described by the full polynomials of degree k with degrees of freedom
-    to ensure its pullback as a metric to each interior facet and edge is
-    single-valued.
+    """The Regge elements on triangles and tetrahedra: the polynomial
+    space described by the full polynomials of degree k with degrees
+    of freedom to ensure its pullback as a metric to each interior
+    facet and edge is single-valued.
+
     """
 
     def __init__(self, cell, degree):
@@ -209,9 +211,10 @@ if __name__=="__main__":
         R = Regge(T, k)
         print(R.entity_dofs())
         print("")
+
     for k in range(0, 3):
         print("Degree {} in 3D:".format(k))
         T = UFCTetrahedron()
         R = Regge(T, k)
-        print(R.entity_dofs())        
+        print(R.entity_dofs())
         print("")

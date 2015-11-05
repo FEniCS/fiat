@@ -33,6 +33,7 @@ from .functional import index_iterator
 
 def mis(m, n):
     """returns all m-tuples of nonnegative integers that sum up to n."""
+
     if m == 1:
         return [(n,)]
     elif n == 0:
@@ -40,8 +41,7 @@ def mis(m, n):
     else:
         return [tuple([n - i] + list(foo))
                 for i in range(n + 1)
-                for foo in mis(m - 1, i)
-                ]
+                for foo in mis(m - 1, i)]
 
 
 # We order coeffs by C_{i,j,k}
@@ -54,16 +54,20 @@ def mis(m, n):
 class PolynomialSet:
     """Implements a set of polynomials as linear combinations of an
     expansion set over a reference element.
-    ref_el: the reference element
-    degree: an order labeling the space
-    embedded degree: the degree of polynomial expansion basis that
-         must be used to evaluate this space
-    coeffs: A numpy array containing the coefficients of the expansion
-         basis for each member of the set.  Coeffs is ordered by
-         coeffs[i,j,k] where i is the label of the member, k is
-         the label of the expansion function, and j is a (possibly
-         empty) tuple giving the index for a vector- or tensor-valued
-         function.
+
+    :param ref_el: the reference element
+
+    :param degree: an order labeling the space
+
+    :param embedded_degree: the degree of polynomial expansion basis \
+that must be used to evaluate this space
+
+    :param coeffs: A numpy array containing the coefficients of the \
+expansion basis for each member of the set.  Coeffs is ordered by \
+coeffs[i,j,k] where i is the label of the member, k is the label \
+of the expansion function, and j is a (possibly empty) tuple \
+giving the index for a vector- ortensor-valued function.
+
     """
     def __init__(self, ref_el, degree, embedded_degree,
                  expansion_set, coeffs, dmats
@@ -117,8 +121,10 @@ class PolynomialSet:
         return self.ref_el
 
     def get_shape(self):
-        """Returns the shape of phi(x), where () corresponds to
-        scalar (2,) a vector of length 2, etc"""
+        """Returns the shape of phi(x), where () corresponds to scalar (2,) a
+        vector of length 2, etc
+
+        """
         return self.coeffs.shape[1:-1]
 
     def take(self, items):
@@ -152,9 +158,11 @@ class PolynomialSet:
 
 
 class ONPolynomialSet(PolynomialSet):
-    """Constructs an orthonormal basis out of expansion set by having
-    an identity matrix of coefficients.  Can be used to specify ON
-    bases  for vector- and tensor-valued sets as well."""
+    """Constructs an orthonormal basis out of expansion set by having an
+    identity matrix of coefficients.  Can be used to specify ON bases
+    for vector- and tensor-valued sets as well.
+
+    """
     def __init__(self, ref_el, degree, shape=tuple()):
 
         if shape == tuple():
@@ -198,7 +206,7 @@ class ONPolynomialSet(PolynomialSet):
             v = numpy.transpose(expansion_set.tabulate(degree, pts))
             vinv = numpy.linalg.inv(v)
 
-            
+
             dv = expansion_set.tabulate_derivatives(degree, pts)
             dtildes = [[[a[1][i] for a in dvrow] for dvrow in dv]
                        for i in range(sd)
@@ -215,9 +223,11 @@ class ONPolynomialSet(PolynomialSet):
 
 
 def project(f, U, Q):
-    """Computes the expansion coefficients of f in terms of the
-    members of a polynomial set U.  Numerical integration is performed
-    by quadrature rule Q."""
+    """Computes the expansion coefficients of f in terms of the members of
+    a polynomial set U.  Numerical integration is performed by
+    quadrature rule Q.
+
+    """
     pts = Q.get_points()
     wts = Q.get_weights()
     f_at_qps = [f(x) for x in pts]
@@ -242,7 +252,9 @@ def polynomial_set_union_normalized(A, B):
     """Given polynomial sets A and B, constructs a new polynomial set
     whose span is the same as that of span(A) union span(B).  It may
     not contain any of the same members of the set, as we construct a
-    span via SVD."""
+    span via SVD.
+
+    """
     new_coeffs = numpy.array(list(A.coeffs) + list(B.coeffs))
     func_shape = new_coeffs.shape[1:]
     if len(func_shape) == 1:
@@ -268,9 +280,9 @@ def polynomial_set_union_normalized(A, B):
                          coeffs, A.get_dmats())
 
 class ONSymTensorPolynomialSet(PolynomialSet):
-    """
-    Constructs an orthonormal basis for symmetric-tensor-valued
+    """Constructs an orthonormal basis for symmetric-tensor-valued
     polynomials on a reference element.
+
     """
     def __init__(self, ref_el, degree, size = None):
 
@@ -305,7 +317,7 @@ class ONSymTensorPolynomialSet(PolynomialSet):
                     cur_idx = tuple([cur_bf] + [j, i] + [exp_bf])
                     coeffs[cur_idx] = 1.0
                     cur_bf += 1
-                
+
         # construct dmats. this is the same as ONPolynomialSet.
         pts = ref_el.make_points(sd, 0, degree + sd + 1)
         v = numpy.transpose(expansion_set.tabulate(degree, pts))
@@ -317,8 +329,7 @@ class ONSymTensorPolynomialSet(PolynomialSet):
                  for dtilde in dtildes]
         PolynomialSet.__init__(self, ref_el,
                                degree, embedded_degree,
-                               expansion_set, coeffs, dmats
-                               )
+                               expansion_set, coeffs, dmats)
 
 
 
@@ -336,6 +347,3 @@ if __name__ == "__main__":
     for alpha in sorted(jet):
         print(alpha)
         print(jet[alpha])
-
-
-#    print U.get_shape()
