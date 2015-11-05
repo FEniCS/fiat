@@ -20,6 +20,22 @@ FIAT.argyris module
     :undoc-members:
     :show-inheritance:
 
+FIAT.asci2vtk2d module
+----------------------
+
+.. automodule:: FIAT.asci2vtk2d
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+FIAT.asci2vtk3d module
+----------------------
+
+.. automodule:: FIAT.asci2vtk3d
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 FIAT.brezzi_douglas_fortin_marini module
 ----------------------------------------
 
