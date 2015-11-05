@@ -17,35 +17,37 @@
 
 from . import argyris, reference_element
 
-degree = 5
-lattice_size = 10 * degree
+if __name__ == '__main__':
 
-T = reference_element.DefaultTriangle()
+    degree = 5
+    lattice_size = 10 * degree
 
-U = argyris.QuinticArgyris(T)
-pts = T.make_lattice( lattice_size )
+    T = reference_element.DefaultTriangle()
 
-bfvals = U.get_nodal_basis().tabulate_new( pts )
-u0 = bfvals[0]
-fout = open("arg0.dat", "w")
-for i in range(len(pts)):
-    fout.write("%s %s %s\n" % (pts[i][0], pts[i][1], u0[i]))
-fout.close()
+    U = argyris.QuinticArgyris(T)
+    pts = T.make_lattice( lattice_size )
 
-u1 = bfvals[1]
-fout = open("arg1.dat", "w")
-for i in range(len(pts)):
-    fout.write("%s %s %s\n" % (pts[i][0], pts[i][1], u1[i]))
-fout.close()
+    bfvals = U.get_nodal_basis().tabulate_new( pts )
+    u0 = bfvals[0]
+    fout = open("arg0.dat", "w")
+    for i in range(len(pts)):
+        fout.write("%s %s %s\n" % (pts[i][0], pts[i][1], u0[i]))
+    fout.close()
 
-u2 = bfvals[3]
-fout = open("arg2.dat", "w")
-for i in range(len(pts)):
-    fout.write("%s %s %s\n" % (pts[i][0], pts[i][1], u2[i]))
-fout.close()
+    u1 = bfvals[1]
+    fout = open("arg1.dat", "w")
+    for i in range(len(pts)):
+        fout.write("%s %s %s\n" % (pts[i][0], pts[i][1], u1[i]))
+    fout.close()
 
-u3 = bfvals[18]
-fout = open("arg3.dat", "w")
-for i in range(len(pts)):
-    fout.write("%s %s %s\n" % (pts[i][0], pts[i][1], u3[i]))
-fout.close()
+    u2 = bfvals[3]
+    fout = open("arg2.dat", "w")
+    for i in range(len(pts)):
+        fout.write("%s %s %s\n" % (pts[i][0], pts[i][1], u2[i]))
+    fout.close()
+
+    u3 = bfvals[18]
+    fout = open("arg3.dat", "w")
+    for i in range(len(pts)):
+        fout.write("%s %s %s\n" % (pts[i][0], pts[i][1], u3[i]))
+    fout.close()
