@@ -17,9 +17,10 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 import numpy
-from .finite_element import FiniteElement
-from .reference_element import two_product_cell
+from .finite_element import FiniteElement, _facet_support_dofs
+from .reference_element import two_product_cell, LINE
 from .polynomial_set import mis
+from .quadrature import make_quadrature
 from . import dual_set
 from . import functional
 
@@ -333,6 +334,48 @@ class TensorFiniteElement(FiniteElement):
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented")
+
+
+def horiz_facet_support_dofs(elem):
+    """Return the map of facet id to the degrees of freedom for which the
+    corresponding basis functions take non-zero values."""
+    if not hasattr(elem, "_horiz_facet_support_dofs"):
+        # Extruded cells only
+        assert isinstance(elem.ref_el, two_product_cell)
+
+        q = make_quadrature(elem.ref_el.A, max(2*elem.degree(), 1))
+        ft = lambda f: elem.ref_el.get_horiz_facet_transform(f)
+        dim = elem.ref_el.A.get_spatial_dimension()
+        facets = elem.entity_dofs()[(dim, 0)].keys()
+        elem._horiz_facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
+
+    return elem._horiz_facet_support_dofs
+
+
+def vert_facet_support_dofs(elem):
+    """Return the map of facet id to the degrees of freedom for which the
+    corresponding basis functions take non-zero values."""
+    if not hasattr(elem, "_vert_facet_support_dofs"):
+        # Extruded cells only
+        assert isinstance(elem.ref_el, two_product_cell)
+
+        deg = max(2*elem.degree(), 1)
+        if elem.ref_el.A.get_shape() == LINE:
+            # Cell is extruded interval, vertical facet is extruded point,
+            # but we cannot integrate on point reference cells,
+            # thus we need special treatment here.
+            q = make_quadrature(elem.ref_el.B, deg)
+        else:
+            vfacet_el = two_product_cell(elem.ref_el.A.get_facet_element(),
+                                         elem.ref_el.B)
+            q = make_quadrature(vfacet_el, (deg, deg))
+        ft = lambda f: elem.ref_el.get_vert_facet_transform(f)
+        dim = elem.ref_el.A.get_spatial_dimension()
+        facets = elem.entity_dofs()[(dim - 1, 1)].keys()
+        elem._vert_facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
+
+    return elem._vert_facet_support_dofs
+
 
 if __name__ == "__main__":
     from . import reference_element
