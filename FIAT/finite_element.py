@@ -114,60 +114,6 @@ class FiniteElement:
         freedom on the closure of those entities for the finite element."""
         return self.dual.get_entity_closure_ids()
 
-    def facet_support_dofs(self):
-        """Return the map of facet id to the degrees of freedom for which the
-        corresponding basis functions take non-zero values."""
-        if not hasattr(self, "_facet_support_dofs"):
-            # Non-extruded cells only
-            assert not isinstance(self.ref_el, two_product_cell)
-
-            q = make_quadrature(self.ref_el.get_facet_element(), max(2*self.degree(), 1))
-            ft = lambda f: self.ref_el.get_facet_transform(f)
-            dim = self.ref_el.get_spatial_dimension()
-            facets = self.entity_dofs()[dim-1].keys()
-            self._facet_support_dofs = _facet_support_dofs(self, q, ft, facets)
-
-        return self._facet_support_dofs
-
-    def horiz_facet_support_dofs(self):
-        """Return the map of facet id to the degrees of freedom for which the
-        corresponding basis functions take non-zero values."""
-        if not hasattr(self, "_horiz_facet_support_dofs"):
-            # Extruded cells only
-            assert isinstance(self.ref_el, two_product_cell)
-
-            q = make_quadrature(self.ref_el.A, max(2*self.degree(), 1))
-            ft = lambda f: self.ref_el.get_horiz_facet_transform(f)
-            dim = self.ref_el.A.get_spatial_dimension()
-            facets = self.entity_dofs()[(dim, 0)].keys()
-            self._horiz_facet_support_dofs = _facet_support_dofs(self, q, ft, facets)
-
-        return self._horiz_facet_support_dofs
-
-    def vert_facet_support_dofs(self):
-        """Return the map of facet id to the degrees of freedom for which the
-        corresponding basis functions take non-zero values."""
-        if not hasattr(self, "_vert_facet_support_dofs"):
-            # Extruded cells only
-            assert isinstance(self.ref_el, two_product_cell)
-
-            deg = max(2*self.degree(), 1)
-            if self.ref_el.A.get_shape() == LINE:
-                # Cell is extruded interval, vertical facet is extruded point,
-                # but we cannot integrate on point reference cells,
-                # thus we need special treatment here.
-                q = make_quadrature(self.ref_el.B, deg)
-            else:
-                vfacet_el = two_product_cell(self.ref_el.A.get_facet_element(),
-                                             self.ref_el.B)
-                q = make_quadrature(vfacet_el, (deg, deg))
-            ft = lambda f: self.ref_el.get_vert_facet_transform(f)
-            dim = self.ref_el.A.get_spatial_dimension()
-            facets = self.entity_dofs()[(dim - 1, 1)].keys()
-            self._vert_facet_support_dofs = _facet_support_dofs(self, q, ft, facets)
-
-        return self._vert_facet_support_dofs
-
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
         finite element."""
@@ -241,3 +187,19 @@ def _facet_support_dofs(elem, quad, facet_transform, facets):
         result[f] = [dof for dof, i in enumerate(ints) if i > eps]
 
     return result
+
+
+def facet_support_dofs(elem):
+    """Return the map of facet id to the degrees of freedom for which the
+    corresponding basis functions take non-zero values."""
+    if not hasattr(elem, "_facet_support_dofs"):
+        # Non-extruded cells only
+        assert not isinstance(elem.ref_el, two_product_cell)
+
+        q = make_quadrature(elem.ref_el.get_facet_element(), max(2*elem.degree(), 1))
+        ft = lambda f: elem.ref_el.get_facet_transform(f)
+        dim = elem.ref_el.get_spatial_dimension()
+        facets = elem.entity_dofs()[dim-1].keys()
+        elem._facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
+
+    return elem._facet_support_dofs
