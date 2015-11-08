@@ -18,7 +18,7 @@
 
 import numpy
 from .finite_element import FiniteElement, _facet_support_dofs
-from .reference_element import two_product_cell, LINE
+from .reference_element import TensorProductCell, LINE
 from .polynomial_set import mis
 from .quadrature import make_quadrature
 from . import dual_set
@@ -42,7 +42,7 @@ class TensorFiniteElement(FiniteElement):
             self.formdegree = A.get_formdegree() + B.get_formdegree()
 
         # set up reference element
-        self.ref_el = two_product_cell(A.get_reference_element(), B.get_reference_element())
+        self.ref_el = TensorProductCell(A.get_reference_element(), B.get_reference_element())
 
         if A.mapping()[0] != "affine" and B.mapping()[0] == "affine":
             self._mapping = A.mapping()[0]
@@ -341,7 +341,7 @@ def horiz_facet_support_dofs(elem):
     corresponding basis functions take non-zero values."""
     if not hasattr(elem, "_horiz_facet_support_dofs"):
         # Extruded cells only
-        assert isinstance(elem.ref_el, two_product_cell)
+        assert isinstance(elem.ref_el, TensorProductCell)
 
         q = make_quadrature(elem.ref_el.A, max(2*elem.degree(), 1))
         ft = lambda f: elem.ref_el.get_horiz_facet_transform(f)
@@ -357,7 +357,7 @@ def vert_facet_support_dofs(elem):
     corresponding basis functions take non-zero values."""
     if not hasattr(elem, "_vert_facet_support_dofs"):
         # Extruded cells only
-        assert isinstance(elem.ref_el, two_product_cell)
+        assert isinstance(elem.ref_el, TensorProductCell)
 
         deg = max(2*elem.degree(), 1)
         if elem.ref_el.A.get_shape() == LINE:
@@ -366,7 +366,7 @@ def vert_facet_support_dofs(elem):
             # thus we need special treatment here.
             q = make_quadrature(elem.ref_el.B, deg)
         else:
-            vfacet_el = two_product_cell(elem.ref_el.A.get_facet_element(),
+            vfacet_el = TensorProductCell(elem.ref_el.A.get_facet_element(),
                                          elem.ref_el.B)
             q = make_quadrature(vfacet_el, (deg, deg))
         ft = lambda f: elem.ref_el.get_vert_facet_transform(f)
