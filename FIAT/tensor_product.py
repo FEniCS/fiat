@@ -25,7 +25,7 @@ from . import dual_set
 from . import functional
 
 
-class TensorFiniteElement(FiniteElement):
+class TensorProductElement(FiniteElement):
     """Class implementing a finite element that is the tensor product
     of two existing finite elements."""
 
@@ -385,5 +385,5 @@ if __name__ == "__main__":
     T = reference_element.UFCInterval()
     W = raviart_thomas.RaviartThomas(S, 1)
     X = lagrange.Lagrange(T, 3)
-    Y = TensorFiniteElement(W, X)
-    Z = TensorFiniteElement(Y, X)
+    Y = TensorProductElement(W, X)
+    Z = TensorProductElement(Y, X)

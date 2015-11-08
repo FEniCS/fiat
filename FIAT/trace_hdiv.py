@@ -19,7 +19,7 @@ import numpy as np
 from .finite_element import FiniteElement
 from . import functional
 from . import dual_set
-from . import TensorFiniteElement
+from . import TensorProductElement
 
 
 class HDivTrace(FiniteElement):
@@ -33,7 +33,7 @@ class HDivTrace(FiniteElement):
             raise ValueError("Can only take trace of Hdiv element")
 
         # TPEs not supported yet
-        if isinstance(element, TensorFiniteElement):
+        if isinstance(element, TensorProductElement):
             raise NotImplementedError("Trace of TFEs not supported yet")
 
         # Otherwise, let's go...

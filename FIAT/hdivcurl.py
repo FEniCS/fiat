@@ -17,12 +17,12 @@
 
 import numpy
 import types
-from .tensor_product import TensorFiniteElement
+from .tensor_product import TensorProductElement
 from . import functional
 
 
 def Hdiv(element):
-    if not isinstance(element, TensorFiniteElement):
+    if not isinstance(element, TensorProductElement):
         raise NotImplementedError
 
     if element.A.get_formdegree() is None or element.B.get_formdegree() is None:
@@ -31,7 +31,7 @@ def Hdiv(element):
     if not (formdegree == element.get_reference_element().get_spatial_dimension() - 1):
         raise ValueError("Tried to use Hdiv on a non-(n-1)-form element")
 
-    newelement = TensorFiniteElement(element.A, element.B)  # make a copy to return
+    newelement = TensorProductElement(element.A, element.B)  # make a copy to return
 
     # redefine value_shape()
     def value_shape(self):
@@ -144,7 +144,7 @@ def Hdiv(element):
 
 
 def Hcurl(element):
-    if not isinstance(element, TensorFiniteElement):
+    if not isinstance(element, TensorProductElement):
         raise NotImplementedError
 
     if element.A.get_formdegree() is None or element.B.get_formdegree() is None:
@@ -153,7 +153,7 @@ def Hcurl(element):
     if not (formdegree == 1):
         raise ValueError("Tried to use Hcurl on a non-1-form element")
 
-    newelement = TensorFiniteElement(element.A, element.B)  # make a copy to return
+    newelement = TensorProductElement(element.A, element.B)  # make a copy to return
 
     # redefine value_shape()
     def value_shape(self):
