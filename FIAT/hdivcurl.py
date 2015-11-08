@@ -17,7 +17,7 @@
 
 import numpy
 import types
-from .tensor_finite_element import TensorFiniteElement
+from .tensor_product import TensorFiniteElement
 from . import functional
 
 

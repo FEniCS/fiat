@@ -24,7 +24,7 @@ from FIAT.raviart_thomas import RaviartThomas
 from FIAT.crouzeix_raviart import CrouzeixRaviart
 from FIAT.regge import Regge
 from FIAT.bubble import Bubble
-from FIAT.tensor_finite_element import TensorFiniteElement
+from FIAT.tensor_product import TensorFiniteElement
 from FIAT.enriched import EnrichedElement
 from FIAT.discontinuous import DiscontinuousElement
 from FIAT.trace_hdiv import HDivTrace

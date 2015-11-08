@@ -18,7 +18,7 @@
 
 import numpy
 from .finite_element import FiniteElement
-from .tensor_finite_element import TensorFiniteElement
+from .tensor_product import TensorFiniteElement
 from . import dual_set
 from copy import copy
 
