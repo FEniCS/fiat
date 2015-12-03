@@ -642,7 +642,7 @@ class two_product_cell( ReferenceElement ):
         dim_A = self.A.get_spatial_dimension()
         dim_B = self.B.get_spatial_dimension()
         assert len(point) == dim_A + dim_B
-        return self.A.contains_point(point[:dim_A]) & self.B.contains_point(point[dim_A:])
+        return self.A.contains_point(point[:dim_A], epsilon=epsilon) & self.B.contains_point(point[dim_A:], epsilon=epsilon)
 
 
 def make_affine_mapping( xs, ys ):
