@@ -65,7 +65,11 @@ class RestrictedElement(FiniteElement):
                     nodes.append(nodes_old[dof])
         assert dof_counter == len(indices)
         dual = DualSet(nodes, ref_el, entity_ids)
+        self.ref_el = ref_el
         self.dual = dual
+
+    def get_reference_element(self):
+        return self.ref_el
 
     def space_dimension(self):
         return len(self._indices)
