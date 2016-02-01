@@ -577,13 +577,13 @@ class FiredrakeQuadrilateral( ReferenceElement ):
         x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
         """
         if facet_i == 0:
-            return lambda p: numpy.array([0.0, p])
+            return lambda p: numpy.array([0.0, float(p)])
         elif facet_i == 1:
-            return lambda p: numpy.array([1.0, p])
+            return lambda p: numpy.array([1.0, float(p)])
         elif facet_i == 2:
-            return lambda p: numpy.array([p, 0.0])
+            return lambda p: numpy.array([float(p), 0.0])
         elif facet_i == 3:
-            return lambda p: numpy.array([p, 1.0])
+            return lambda p: numpy.array([float(p), 1.0])
         else:
             raise RuntimeError("Illegal quadrilateral facet number.")
 
