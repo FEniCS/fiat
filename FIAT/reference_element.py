@@ -716,9 +716,9 @@ def ufc_cell( cell ):
     else:
         celltype = cell.cellname()
 
-    if celltype == "TensorProductCell":
-        # cell is a UFL cell
-        return TensorProductCell(ufc_cell(cell._A), ufc_cell(cell._B))
+    if " * " in celltype:
+        # Tensor product cell
+        return TensorProductCell(*map(ufc_cell, celltype.split(" * ")))
     elif celltype == "quadrilateral":
         return FiredrakeQuadrilateral()
     elif celltype == "interval":
