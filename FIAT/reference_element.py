@@ -597,7 +597,7 @@ class FiredrakeQuadrilateral( ReferenceElement ):
         return result
 
 
-class two_product_cell( ReferenceElement ):
+class TensorProductCell( ReferenceElement ):
     """A cell that is the product of FIAT cells A and B"""
     def __init__( self, A, B ):
         self.A = A
@@ -716,9 +716,9 @@ def ufc_cell( cell ):
     else:
         celltype = cell.cellname()
 
-    if celltype == "OuterProductCell":
-        # cell is a UFL cell
-        return two_product_cell(ufc_cell(cell._A), ufc_cell(cell._B))
+    if " * " in celltype:
+        # Tensor product cell
+        return TensorProductCell(*map(ufc_cell, celltype.split(" * ")))
     elif celltype == "quadrilateral":
         return FiredrakeQuadrilateral()
     elif celltype == "interval":

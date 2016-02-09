@@ -21,7 +21,7 @@
 import numpy
 from .polynomial_set import PolynomialSet
 from .quadrature import make_quadrature
-from .reference_element import two_product_cell, LINE
+from .reference_element import TensorProductCell, LINE
 
 class FiniteElement:
     """Class implementing Ciarlet's abstraction of a finite element
@@ -194,7 +194,7 @@ def facet_support_dofs(elem):
     corresponding basis functions take non-zero values."""
     if not hasattr(elem, "_facet_support_dofs"):
         # Non-extruded cells only
-        assert not isinstance(elem.ref_el, two_product_cell)
+        assert not isinstance(elem.ref_el, TensorProductCell)
 
         q = make_quadrature(elem.ref_el.get_facet_element(), max(2*elem.degree(), 1))
         ft = lambda f: elem.ref_el.get_facet_transform(f)
