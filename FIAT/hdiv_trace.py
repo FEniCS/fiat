@@ -18,7 +18,6 @@
 import numpy as np
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
-from . import finite_element
 
 
 class TraceHDiv(object):
@@ -55,7 +54,7 @@ class TraceHDiv(object):
             self.entity_ids[top_dim] = {}
 
             for entity in entities:
-                self.entity_ids[top_dim][entity] = {}
+                self.entity_ids[top_dim][entity] = []
 
         # For each facet, we have nf = dim(facet) number of dofs
         # In this case, the facet is a DCLagrange element
@@ -78,29 +77,32 @@ class TraceHDiv(object):
         """Return the entity dictionary."""
         return self.entity_ids()
 
-    def tabulate(self, order, points):
+    def tabulate(self, order, points, entity):
         """Return tabulated values basis functions at given points."""
 
         # Derivatives on facets don't make sense, so we raise error:
         if (order > 0):
-            raise ValueError("Only function evals, no derivatives!")
+            raise ValueError("Only function evals. Not sure about derivatives yet.")
+
+        # Check if we're actually on a facet
+        facet_dim = self.cell.get_spatial_dimension()-1
+	if entity[0] != facet_dim:
+	    raise ValueError("Not on facet!")
 
         # Initialize basis function values at nodes to be 0 since
         # all basis functions are 0 except for specific phi on a facet
-        space_dim = self.space_dimension()
-        phiVals = np.zeros((space_dim, len(points)))
-
-        entity = self.entity_ids
+        phiVals = np.zeros((self.space_dimension(), len(points)))
 
         # Call modified tabulate and pass entity information along.
-        # Return type is a dictionary!
-        facet_dim = self.DCLagrange.space_dimension()
-        nf = facet_dim
+        nf = self.DCLagrange.space_dimension()
 
-        for facet_id in range(self.num_facets):
-            nonzeroVals = list(self.DCLagrange.tabulate(order, points, \
-                               entity[facet_dim][facet_id]))[0]
+	nonzeroVals = self.DCLagrange.tabulate(order, points).values()[0]
 
-            phiVals[:,nf*facet_id:nf*(facet_id+1),] = nonzeroVals
+        facet_id = entity[1]
 
-        return {phiVals}
+        phiVals[nf*facet_id:nf*(facet_id+1), :] = nonzeroVals
+
+        key = tuple(0 for i in range(facet_dim+1))
+
+        #return {(0,) * facet_dim + 1: phiVals}
+        return {key: phiVals}
