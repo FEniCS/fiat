@@ -44,17 +44,17 @@ class TraceHDiv(object):
         self.num_facets = spaceDim + 1
 
         # Construct entity ids (assigning top. dim. and initializing as empty)
-        self.entity_ids = {}
+        self.entity_dofs = {}
 
         # Looping over dictionary of cell topology to construct the empty
         # dictionary for entity ids of the trace element
         topology = cell.get_topology()
 
         for top_dim, entities in topology.items():
-            self.entity_ids[top_dim] = {}
+            self.entity_dofs[top_dim] = {}
 
             for entity in entities:
-                self.entity_ids[top_dim][entity] = []
+                self.entity_dofs[top_dim][entity] = []
 
         # For each facet, we have nf = dim(facet) number of dofs
         # In this case, the facet is a DCLagrange element
@@ -62,25 +62,25 @@ class TraceHDiv(object):
 
         # Filling in entity ids
         for f in range(self.num_facets):
-            self.entity_ids[spaceDim-1][f] = range(f*nf, (f+1)*nf)
+            self.entity_dofs[spaceDim-1][f] = range(f*nf, (f+1)*nf)
 
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polyDegree
 
-    def space_dimension(self):
+    def trace_space_dimension(self):
         "Return the dimension of the trace finite element space."
         return self.DCLagrange.space_dimension()*self.num_facets
 
-    def entity_ids(self):
+    def entity_dofs(self):
         """Return the entity dictionary."""
-        return self.entity_ids()
+        return self.entity_dofs()
 
     def tabulate(self, order, points, entity):
         """Return tabulated values basis functions at given points."""
 
-        # Derivatives on facets don't make sense, so we raise error:
+        # No derivatives on facets, so we raise error:
         if (order > 0):
             raise ValueError("Only function evals. Not sure about derivatives yet.")
 
@@ -91,11 +91,10 @@ class TraceHDiv(object):
 
         # Initialize basis function values at nodes to be 0 since
         # all basis functions are 0 except for specific phi on a facet
-        phiVals = np.zeros((self.space_dimension(), len(points)))
-
-        # Call modified tabulate and pass entity information along.
+        phiVals = np.zeros((self.trace_space_dimension(), len(points)))
         nf = self.DCLagrange.space_dimension()
 
+	# Tabulate basis function values on specific facet
 	nonzeroVals = self.DCLagrange.tabulate(order, points).values()[0]
 
         facet_id = entity[1]
@@ -104,5 +103,4 @@ class TraceHDiv(object):
 
         key = tuple(0 for i in range(facet_dim+1))
 
-        #return {(0,) * facet_dim + 1: phiVals}
         return {key: phiVals}
