@@ -67,13 +67,13 @@ def test_TFE_1Dx1D_scalar():
     from FIAT.reference_element import UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
 
     T = UFCInterval()
     P1_DG = DiscontinuousLagrange(T, 1)
     P2 = Lagrange(T, 2)
 
-    elt = TensorFiniteElement(P1_DG, P2)
+    elt = TensorProductElement(P1_DG, P2)
     assert_equal(elt.value_shape(), ())
     tab = elt.tabulate(1, [(0.1, 0.2)])
     tabA = P1_DG.tabulate(1, [(0.1,)])
@@ -92,14 +92,14 @@ def test_TFE_1Dx1D_vector():
     from FIAT.reference_element import UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.hdivcurl import Hdiv, Hcurl
 
     T = UFCInterval()
     P1_DG = DiscontinuousLagrange(T, 1)
     P2 = Lagrange(T, 2)
 
-    elt = TensorFiniteElement(P1_DG, P2)
+    elt = TensorProductElement(P1_DG, P2)
     hdiv_elt = Hdiv(elt)
     hcurl_elt = Hcurl(elt)
     assert_equal(hdiv_elt.value_shape(), (2,))
@@ -145,14 +145,14 @@ def test_TFE_2Dx1D_scalar_triangle():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
 
     S = UFCTriangle()
     T = UFCInterval()
     P1_DG = DiscontinuousLagrange(S, 1)
     P2 = Lagrange(T, 2)
 
-    elt = TensorFiniteElement(P1_DG, P2)
+    elt = TensorProductElement(P1_DG, P2)
     assert_equal(elt.value_shape(), ())
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = P1_DG.tabulate(1, [(0.1, 0.2)])
@@ -174,13 +174,13 @@ def test_TFE_2Dx1D_scalar_quad():
     from FIAT.reference_element import UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
 
     T = UFCInterval()
     P1 = Lagrange(T, 1)
     P1_DG = DiscontinuousLagrange(T, 1)
 
-    elt = TensorFiniteElement(TensorFiniteElement(P1, P1_DG), P1)
+    elt = TensorProductElement(TensorProductElement(P1, P1_DG), P1)
     assert_equal(elt.value_shape(), ())
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tA = P1.tabulate(1, [(0.1,)])
@@ -202,7 +202,7 @@ def test_TFE_2Dx1D_scalar_triangle_hdiv():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.hdivcurl import Hdiv
 
     S = UFCTriangle()
@@ -210,7 +210,7 @@ def test_TFE_2Dx1D_scalar_triangle_hdiv():
     P1_DG = DiscontinuousLagrange(S, 1)
     P2 = Lagrange(T, 2)
 
-    elt = Hdiv(TensorFiniteElement(P1_DG, P2))
+    elt = Hdiv(TensorProductElement(P1_DG, P2))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = P1_DG.tabulate(1, [(0.1, 0.2)])
@@ -250,7 +250,7 @@ def test_TFE_2Dx1D_scalar_triangle_hcurl():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.hdivcurl import Hcurl
 
     S = UFCTriangle()
@@ -258,7 +258,7 @@ def test_TFE_2Dx1D_scalar_triangle_hcurl():
     P1 = Lagrange(S, 1)
     P1_DG = DiscontinuousLagrange(T, 1)
 
-    elt = Hcurl(TensorFiniteElement(P1, P1_DG))
+    elt = Hcurl(TensorProductElement(P1, P1_DG))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = P1.tabulate(1, [(0.1, 0.2)])
@@ -289,14 +289,14 @@ def test_TFE_2Dx1D_scalar_quad_hdiv():
     from FIAT.reference_element import UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.hdivcurl import Hdiv
 
     T = UFCInterval()
     P1 = Lagrange(T, 1)
     P1_DG = DiscontinuousLagrange(T, 1)
 
-    elt = Hdiv(TensorFiniteElement(TensorFiniteElement(P1_DG, P1_DG), P1))
+    elt = Hdiv(TensorProductElement(TensorProductElement(P1_DG, P1_DG), P1))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tA = P1_DG.tabulate(1, [(0.1,)])
@@ -334,14 +334,14 @@ def test_TFE_2Dx1D_scalar_quad_hcurl():
     from FIAT.reference_element import UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.hdivcurl import Hcurl
 
     T = UFCInterval()
     P1 = Lagrange(T, 1)
     P1_DG = DiscontinuousLagrange(T, 1)
 
-    elt = Hcurl(TensorFiniteElement(TensorFiniteElement(P1, P1), P1_DG))
+    elt = Hcurl(TensorProductElement(TensorProductElement(P1, P1), P1_DG))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tA = P1.tabulate(1, [(0.1,)])
@@ -379,7 +379,7 @@ def test_TFE_2Dx1D_vector_triangle_hdiv():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.raviart_thomas import RaviartThomas
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.hdivcurl import Hdiv
 
     S = UFCTriangle()
@@ -387,7 +387,7 @@ def test_TFE_2Dx1D_vector_triangle_hdiv():
     RT1 = RaviartThomas(S, 1)
     P1_DG = DiscontinuousLagrange(T, 1)
 
-    elt = Hdiv(TensorFiniteElement(RT1, P1_DG))
+    elt = Hdiv(TensorProductElement(RT1, P1_DG))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = RT1.tabulate(1, [(0.1, 0.2)])
@@ -418,7 +418,7 @@ def test_TFE_2Dx1D_vector_triangle_hcurl():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.nedelec import Nedelec
     from FIAT.lagrange import Lagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.hdivcurl import Hcurl
 
     S = UFCTriangle()
@@ -426,7 +426,7 @@ def test_TFE_2Dx1D_vector_triangle_hcurl():
     Ned1 = Nedelec(S, 1)
     P1 = Lagrange(T, 1)
 
-    elt = Hcurl(TensorFiniteElement(Ned1, P1))
+    elt = Hcurl(TensorProductElement(Ned1, P1))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = Ned1.tabulate(1, [(0.1, 0.2)])
@@ -457,7 +457,7 @@ def test_TFE_2Dx1D_vector_triangle_hdiv_rotate():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.nedelec import Nedelec
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.hdivcurl import Hdiv
 
     S = UFCTriangle()
@@ -465,7 +465,7 @@ def test_TFE_2Dx1D_vector_triangle_hdiv_rotate():
     Ned1 = Nedelec(S, 1)
     P1_DG = DiscontinuousLagrange(T, 1)
 
-    elt = Hdiv(TensorFiniteElement(Ned1, P1_DG))
+    elt = Hdiv(TensorProductElement(Ned1, P1_DG))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = Ned1.tabulate(1, [(0.1, 0.2)])
@@ -496,7 +496,7 @@ def test_TFE_2Dx1D_vector_triangle_hcurl_rotate():
     from FIAT.reference_element import UFCTriangle, UFCInterval
     from FIAT.raviart_thomas import RaviartThomas
     from FIAT.lagrange import Lagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.hdivcurl import Hcurl
 
     S = UFCTriangle()
@@ -504,7 +504,7 @@ def test_TFE_2Dx1D_vector_triangle_hcurl_rotate():
     RT1 = RaviartThomas(S, 1)
     P1 = Lagrange(T, 1)
 
-    elt = Hcurl(TensorFiniteElement(RT1, P1))
+    elt = Hcurl(TensorProductElement(RT1, P1))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tabA = RT1.tabulate(1, [(0.1, 0.2)])
@@ -535,7 +535,7 @@ def test_TFE_2Dx1D_vector_quad_hdiv():
     from FIAT.reference_element import UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.enriched import EnrichedElement
     from FIAT.hdivcurl import Hdiv
 
@@ -544,10 +544,10 @@ def test_TFE_2Dx1D_vector_quad_hdiv():
     P0 = DiscontinuousLagrange(T, 0)
     P1_DG = DiscontinuousLagrange(T, 1)
 
-    P1P0 = Hdiv(TensorFiniteElement(P1, P0))
-    P0P1 = Hdiv(TensorFiniteElement(P0, P1))
+    P1P0 = Hdiv(TensorProductElement(P1, P0))
+    P0P1 = Hdiv(TensorProductElement(P0, P1))
     horiz_elt = EnrichedElement(P1P0, P0P1)
-    elt = Hdiv(TensorFiniteElement(horiz_elt, P1_DG))
+    elt = Hdiv(TensorProductElement(horiz_elt, P1_DG))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tA = P1.tabulate(1, [(0.1,)])
@@ -587,7 +587,7 @@ def test_TFE_2Dx1D_vector_quad_hcurl():
     from FIAT.reference_element import UFCInterval
     from FIAT.lagrange import Lagrange
     from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_finite_element import TensorFiniteElement
+    from FIAT.tensor_product import TensorProductElement
     from FIAT.enriched import EnrichedElement
     from FIAT.hdivcurl import Hcurl
 
@@ -595,10 +595,10 @@ def test_TFE_2Dx1D_vector_quad_hcurl():
     P1 = Lagrange(T, 1)
     P0 = DiscontinuousLagrange(T, 0)
 
-    P1P0 = Hcurl(TensorFiniteElement(P1, P0))
-    P0P1 = Hcurl(TensorFiniteElement(P0, P1))
+    P1P0 = Hcurl(TensorProductElement(P1, P0))
+    P0P1 = Hcurl(TensorProductElement(P0, P1))
     horiz_elt = EnrichedElement(P1P0, P0P1)
-    elt = Hcurl(TensorFiniteElement(horiz_elt, P1))
+    elt = Hcurl(TensorProductElement(horiz_elt, P1))
     assert_equal(elt.value_shape(), (3,))
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
     tA = P1.tabulate(1, [(0.1,)])
