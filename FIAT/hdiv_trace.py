@@ -28,9 +28,9 @@ class TraceHDiv(object):
 
         spaceDim = cell.get_spatial_dimension()
 
-        # Check to make sure spacial dim is sensible for trace
+        # Check to make sure spatial dim is sensible for trace
         if spaceDim == 1:
-            raise ValueError("Hell")
+            raise ValueError("Spatial dimension not suitable for generating the trace.")
 
         # Otherwise, initialize some neat stuff and proceed
         self.cell = cell
@@ -84,8 +84,8 @@ class TraceHDiv(object):
         if (order > 0):
             raise ValueError("Only function evals. Not sure about derivatives yet.")
 
-        # Check if we're actually on a facet
-        facet_dim = self.cell.get_spatial_dimension()-1
+        facet_dim = self.cell.get_spatial_dimension()-1)
+
 	if entity[0] != facet_dim:
 	    raise ValueError("Not on facet!")
 
@@ -96,6 +96,22 @@ class TraceHDiv(object):
 
 	# Tabulate basis function values on specific facet
 	nonzeroVals = self.DCLagrange.tabulate(order, points).values()[0]
+
+        if entity[0] == facet_dim:
+            try:
+                # Initialize basis function values at nodes to be 0 since
+                # all basis functions are 0 except for specific phi on a facet
+                phiVals = np.zeros((self.trace_space_dimension(), len(points)))
+                nf = self.DCLagrange.space_dimension()
+
+	        # Tabulate basis function values on specific facet
+	        nonzeroVals = self.DCLagrange.tabulate(order, points).values()[0]
+
+	    except Exception:
+	        print "Attempting to tabulate on the interior of a facet element."
+	        raise
+        else:
+            raise ValueError("Not tabulating directly on facet.")
 
         facet_id = entity[1]
 
