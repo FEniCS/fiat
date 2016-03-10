@@ -267,8 +267,20 @@ class TensorProductElement(FiniteElement):
         # Note that for entities other than cells, the following
         # tabulations are already appropriately zero-padded so no
         # additional zero padding is required.
-        Atab = self.A.tabulate(order, pointsA, entityA)
-        Btab = self.B.tabulate(order, pointsB, entityB)
+        try:
+            Atab = self.A.tabulate(order, pointsA, entityA)
+        except TraceError as e:
+            if self.ref_el.get_spatial_dimension() == entityA[0] + entityB[0]:
+                raise
+            Atab = e.zeros
+
+        try:
+            Btab = self.B.tabulate(order, pointsB, entityB)
+        except TraceError as e:
+            if self.ref_el.get_spatial_dimension() == entityA[0] + entityB[0]:
+                raise
+            Btab = e.zeros
+
         npoints = len(points)
 
         # allow 2 scalar-valued FE spaces, or 1 scalar-valued,

@@ -18,11 +18,19 @@
 import numpy as np
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
+from FIAT import FiniteElement
 
 
-class TraceHDiv(object):
-    """Class implementing the trace of hdiv elements (assumed on a simplex)
-       -- Currently a work in progress."""
+class TraceError(Exception):
+    """Exception caused by tabulating a trace element on its interior."""
+    def __init__(self, msg, zeros):
+
+	super(TraceError, self).__init__(msg)
+	self.zeros = zeros
+
+
+class TraceHDiv(FiniteElement):
+    """Class implementing the trace of hdiv elements."""
 
     def __init__(self, cell, polyDegree):
 
@@ -44,17 +52,17 @@ class TraceHDiv(object):
         self.num_facets = spaceDim + 1
 
         # Construct entity ids (assigning top. dim. and initializing as empty)
-        self.entity_dofs = {}
+        self._entity_dofs = {}
 
         # Looping over dictionary of cell topology to construct the empty
         # dictionary for entity ids of the trace element
         topology = cell.get_topology()
 
         for top_dim, entities in topology.items():
-            self.entity_dofs[top_dim] = {}
+            self._entity_dofs[top_dim] = {}
 
             for entity in entities:
-                self.entity_dofs[top_dim][entity] = []
+                self._entity_dofs[top_dim][entity] = []
 
         # For each facet, we have nf = dim(facet) number of dofs
         # In this case, the facet is a DCLagrange element
@@ -62,61 +70,44 @@ class TraceHDiv(object):
 
         # Filling in entity ids
         for f in range(self.num_facets):
-            self.entity_dofs[spaceDim-1][f] = range(f*nf, (f+1)*nf)
+            self._entity_dofs[spaceDim-1][f] = range(f*nf, (f+1)*nf)
 
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polyDegree
 
-    def trace_space_dimension(self):
+    def space_dimension(self):
         "Return the dimension of the trace finite element space."
         return self.DCLagrange.space_dimension()*self.num_facets
 
     def entity_dofs(self):
         """Return the entity dictionary."""
-        return self.entity_dofs()
+        return self._entity_dofs
 
     def tabulate(self, order, points, entity):
         """Return tabulated values basis functions at given points."""
 
-        # No derivatives on facets, so we raise error:
+        # No derivatives
         if (order > 0):
-            raise ValueError("Only function evals. Not sure about derivatives yet.")
+            raise ValueError("Only allowed for function evaluations - No derivatives.")
 
-        facet_dim = self.cell.get_spatial_dimension()-1)
-
-	if entity[0] != facet_dim:
-	    raise ValueError("Not on facet!")
-
-        # Initialize basis function values at nodes to be 0 since
-        # all basis functions are 0 except for specific phi on a facet
-        phiVals = np.zeros((self.trace_space_dimension(), len(points)))
-        nf = self.DCLagrange.space_dimension()
-
-	# Tabulate basis function values on specific facet
-	nonzeroVals = self.DCLagrange.tabulate(order, points).values()[0]
-
-        if entity[0] == facet_dim:
-            try:
-                # Initialize basis function values at nodes to be 0 since
-                # all basis functions are 0 except for specific phi on a facet
-                phiVals = np.zeros((self.trace_space_dimension(), len(points)))
-                nf = self.DCLagrange.space_dimension()
-
-	        # Tabulate basis function values on specific facet
-	        nonzeroVals = self.DCLagrange.tabulate(order, points).values()[0]
-
-	    except Exception:
-	        print "Attempting to tabulate on the interior of a facet element."
-	        raise
-        else:
-            raise ValueError("Not tabulating directly on facet.")
-
-        facet_id = entity[1]
-
-        phiVals[nf*facet_id:nf*(facet_id+1), :] = nonzeroVals
+        facet_dim = self.cell.get_spatial_dimension()-1
+        phiVals = np.zeros((self.space_dimension(), len(points)))
 
         key = tuple(0 for i in range(facet_dim+1))
 
-        return {key: phiVals}
+        if entity[0] == facet_dim:
+            # Initialize basis function values at nodes to be 0 since
+            # all basis functions are 0 except for specific phi on a facet
+            nf = self.DCLagrange.space_dimension()
+            facet_id = entity[1]
+
+	    # Tabulate basis function values on specific facet
+	    nonzeroVals = self.DCLagrange.tabulate(order, points).values()[0]
+            phiVals[nf*facet_id:nf*(facet_id+1), :] = nonzeroVals
+
+            return {key: phiVals}
+        else:
+            zeros = {key: phiVals}
+            raise TraceError("Trace elements can only be tabulated on facets.", zeros)

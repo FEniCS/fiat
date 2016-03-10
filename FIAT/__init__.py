@@ -29,7 +29,7 @@ from FIAT.bubble import Bubble
 from FIAT.tensor_product import TensorProductElement
 from FIAT.enriched import EnrichedElement
 from FIAT.discontinuous import DiscontinuousElement
-from FIAT.trace_hdiv import HDivTrace
+from FIAT.hdiv_trace import TraceHDiv
 from FIAT.restricted import RestrictedElement  # noqa
 from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson
 
@@ -40,6 +40,9 @@ from FIAT.reference_element import ufc_cell, ufc_simplex  # noqa
 from FIAT.hdivcurl import Hdiv, Hcurl  # noqa
 
 __version__ = "2016.2.0.dev0"
+
+from FIAT.hdiv_trace import TraceHDiv
+from FIAT.restricted import RestrictedElement
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris": Argyris,
@@ -63,7 +66,7 @@ supported_elements = {"Argyris": Argyris,
                       "EnrichedElement": EnrichedElement,
                       "TensorProductElement": TensorProductElement,
                       "BrokenElement": DiscontinuousElement,
-                      "TraceElement": HDivTrace,
+                      "TraceElement": TraceHDiv,
                       "Hellan-Herrmann-Johnson": HellanHerrmannJohnson}
 
 # List of extra elements
