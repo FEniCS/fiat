@@ -18,19 +18,16 @@
 
 from FIAT import finite_element, polynomial_set, dual_set, functional, P0, quadrature
 from FIAT.reference_element import ufc_simplex
+from FIAT.polynomial_set import mis
 import numpy
 
 
 class DiscontinuousTaylorDualSet(dual_set.DualSet):
     """The dual basis for Taylor elements.  This class works for
     intervals.  Nodes are function and derivative evaluation
-    at the midpoint. This is the discontinuous version where
-    all nodes are topologically associated with the cell itself"""
+    at the midpoint."""
 
     def __init__(self, ref_el, degree):
-
-        assert ref_el.get_spatial_dimension() == 1
-
         entity_ids = {}
         nodes = []
 
@@ -42,7 +39,9 @@ class DiscontinuousTaylorDualSet(dual_set.DualSet):
         vertices = ref_el.get_vertices()
         midpoint = (vertices[1][0] + vertices[0][0]) / 2.0
         for k in range(1, degree + 1):
-            nodes.append(functional.PointDerivative(ref_el, (midpoint,), [k]))
+            # Loop over all multi-indices of degree k.
+            for alpha in mis(ref_el.get_spatial_dimension(), k):
+                nodes.append(functional.PointDerivative(ref_el, (midpoint,), alpha))
 
         entity_ids[0] = {}
         entity_ids[1] = {}
