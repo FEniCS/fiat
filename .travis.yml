@@ -15,7 +15,6 @@ before_install:
   - pip install -r requirements.txt
   - pip install nose
   - pip install nose-parameterized
-  - pip install --upgrade numpy
 
 install:
   - python setup.py install
