@@ -38,7 +38,7 @@ class DiscontinuousTaylorDualSet(dual_set.DualSet):
         nodes.append(functional.IntegralMoment(ref_el, Q, f_at_qpts))
 
         vertices = ref_el.get_vertices()
-        midpoint = tuple(sum(numpy.array(vertices)) / dim)
+        midpoint = tuple(sum(numpy.array(vertices)) / len(vertices))
         for k in range(1, degree + 1):
             # Loop over all multi-indices of degree k.
             for alpha in mis(dim, k):
