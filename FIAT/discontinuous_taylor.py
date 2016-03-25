@@ -70,7 +70,7 @@ if __name__=="__main__":
     element = DiscontinuousTaylor(T, 1)
     pts = [(0.0,), (0.5,), (1.0,)]
     a = element.tabulate(1, pts)
-    print a
+
     assert(numpy.abs(a[0,]-numpy.array([[ 1. ,  1. ,  1. ],
        [-0.5,  0. ,  0.5]])).max()<1.0e-10)
     assert(numpy.abs(a[1,]-numpy.array([[ 0. ,  0. ,  0. ],
