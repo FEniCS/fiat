@@ -67,6 +67,18 @@ class Functional(object):
         else:
             self.max_deriv_order = 0
 
+    def evaluate(self, f):
+        """Obsolete and broken functional evaluation.
+
+        To evaluate the functional, call it on the target function:
+
+          functional(function)
+        """
+        raise AttributeError("To evaluate the functional just call it on a function.")
+
+    def __call__(self, fn):
+        raise NotImplementedError("Evaluation is not yet implemented for %s" % type(self))
+
     def get_point_dict(self):
         """Returns the functional information, which is a dictionary
         mapping each point in the support of the functional to a list
@@ -110,29 +122,8 @@ class Functional(object):
                 for (w, c) in wc_list:
                     result[c][i] += w * bfs[i, j]
 
-        def pt_to_dpt(pt, dorder):
-            assert len(pt) == 0  # code was broken anyway othewise
-            return ()
-
-        # loop over deriv points
-        dpt_dict = self.deriv_dict
-        mdo = self.max_deriv_order
-
-        dpts = list(dpt_dict.keys())
-        dpts_dv = [pt_to_dpt(pt, mdo) for pt in dpts]
-
-        dbfs = es.tabulate(ed, dpts_dv)
-
-        for j in range(len(dpts)):
-            dpt_cur = dpts[j]
-            for i in range(dbfs.shape[0]):
-                for (w, a, c) in dpt_dict[dpt_cur]:
-                    dval_cur = dbfs[i, j][sum(a)]
-                    for k in range(len(a)):
-                        for l in range(a[k]):
-                            dval_cur = dval_cur[k]
-
-                    result[c][i] += w * dval_cur
+        if self.deriv_dict:
+            raise NotImplementedError("Generic to_riesz implementation does not support derivatives")
 
         return result
 
