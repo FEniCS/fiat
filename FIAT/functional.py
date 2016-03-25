@@ -141,7 +141,7 @@ class PointEvaluation(Functional):
 
     def __call__(self, fn):
         """Evaluate the functional on the function fn."""
-        return fn(self.pt_dict.keys()[0])
+        return fn(tuple(self.pt_dict.keys())[0])
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -262,7 +262,7 @@ class IntegralMoment(Functional):
         """Evaluate the functional on the function fn."""
         pts = list(self.pt_dict.keys())
         wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
-        result = numpy.dot(map(fn, pts), wts)
+        result = numpy.dot([fn(p) for p in pts], wts)
 
         if self.comp:
             result = result[self.comp]
