@@ -15,12 +15,11 @@ before_script:
   - echo -e "Host bitbucket.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 
 before_install:
-  - pip install -r requirements.txt
   - pip install nose
   - pip install nose-parameterized
 
 install:
-  - python setup.py install
+  - pip install .
 
 script:
   - nosetests test/

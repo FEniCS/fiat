@@ -23,4 +23,4 @@ setup(name="FIAT",
       url="http://fenicsproject.org",
       license="LGPL v3 or later",
       packages=["FIAT"],
-      install_requires=["numpy", "sympy"])
+      install_requires=["numpy", "sympy", "six"])
