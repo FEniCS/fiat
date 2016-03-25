@@ -17,6 +17,7 @@
 
 from .finite_element import FiniteElement
 from . import Lagrange, dual_set
+from six import iteritems
 
 
 class Bubble(FiniteElement):
@@ -32,7 +33,7 @@ class Bubble(FiniteElement):
         self.first_node_index = min(cell_entity_dofs)
         entity_ids = {}
         # Build empty entity ids
-        for dim, entities in self._element.entity_dofs().iteritems():
+        for dim, entities in iteritems(self._element.entity_dofs()):
             entity_ids[dim] = dict((entity, []) for entity in entities)
         # keep the IDs, starting from 'index'
         entity_ids[cell_dim][0] = [e - self.first_node_index for e in cell_entity_dofs]

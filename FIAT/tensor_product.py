@@ -25,6 +25,14 @@ from . import dual_set
 from . import functional
 
 
+def _first_point(node):
+    return tuple(node.get_point_dict().keys())[0]
+
+
+def _first_point_pair(node):
+    return tuple(node.get_point_dict().items())[0]
+
+
 class TensorProductElement(FiniteElement):
     """Class implementing a finite element that is the tensor product
     of two existing finite elements."""
@@ -91,7 +99,7 @@ class TensorProductElement(FiniteElement):
                         # the key of a one-item dictionary. we retrieve
                         # these by calling get_point_dict(), and
                         # use the concatenation to make a new PointEval
-                        nodes.append(functional.PointEvaluation(self.ref_el, Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]))
+                        nodes.append(functional.PointEvaluation(self.ref_el, _first_point(Anode) + _first_point(Bnode)))
                     elif isinstance(Bnode, functional.IntegralMoment):
                         # dummy functional for product with integral moments
                         nodes.append(functional.Functional(None, None, None,
@@ -110,7 +118,7 @@ class TensorProductElement(FiniteElement):
                         # this could be wrong if the second shape
                         # has spatial dimension >1, since we are not
                         # explicitly scaling by facet size
-                        if len(Bnode.get_point_dict().keys()[0]) > 1:
+                        if len(_first_point(Bnode)) > 1:
                         # TODO: support this case one day
                             raise NotImplementedError("PointScaledNormalEval x PointEval is not yet supported if the second shape has dimension > 1")
                         # We cannot make a new functional.PSNEval in
@@ -131,7 +139,8 @@ class TensorProductElement(FiniteElement):
 
                         # The following line is only valid when the second
                         # shape has spatial dimension 1 (enforced above)
-                        pt_dict = {Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]: Anode.get_point_dict().values()[0] + [(0.0, (len(Anode.get_point_dict().keys()[0]),))]}
+                        Apoint, Avalue = _first_point_pair(Anode)
+                        pt_dict = {Apoint + _first_point(Bnode): Avalue + [(0.0, (len(Apoint),))]}
 
                         # The following line should be used in the
                         # general case
@@ -148,10 +157,12 @@ class TensorProductElement(FiniteElement):
                     if isinstance(Bnode, functional.PointEvaluation):
                         # case: PointEdgeTangentEval x PointEval
                         # this is very similar to the case above, so comments omitted
-                        if len(Bnode.get_point_dict().keys()[0]) > 1:
+                        if len(_first_point(Bnode)) > 1:
                             raise NotImplementedError("PointEdgeTangentEval x PointEval is not yet supported if the second shape has dimension > 1")
                         sd = self.ref_el.get_spatial_dimension()
-                        pt_dict = {Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]: Anode.get_point_dict().values()[0] + [(0.0, (len(Anode.get_point_dict().keys()[0]),))]}
+                        Apoint, Avalue = _first_point_pair(Anode)
+                        pt_dict = {Apoint + _first_point(Bnode): Avalue + [(0.0, (len(Apoint),))]}
+
                         # THE FOLLOWING IS PROBABLY CORRECT BUT UNTESTED
                         shp = (sd,)
                         nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "PointEdgeTangent"))
@@ -165,7 +176,7 @@ class TensorProductElement(FiniteElement):
                         # the CptPointEval functional requires the component
                         # and the coordinates. very similar to PE x PE case.
                         sd = self.ref_el.get_spatial_dimension()
-                        nodes.append(functional.ComponentPointEvaluation(self.ref_el, Anode.comp, (sd,), Anode.get_point_dict().keys()[0] + Bnode.get_point_dict().keys()[0]))
+                        nodes.append(functional.ComponentPointEvaluation(self.ref_el, Anode.comp, (sd,), _first_point(Anode) + _first_point(Bnode)))
                     else:
                         raise NotImplementedError("unsupported functional type")
 
@@ -177,7 +188,7 @@ class TensorProductElement(FiniteElement):
                         pt_dict = {}
                         pt_old = Anode.get_point_dict()
                         for pt in pt_old:
-                            pt_dict[pt+Bnode.get_point_dict().keys()[0]] = pt_old[pt] + [(0.0, sd-1)]
+                            pt_dict[pt+_first_point(Bnode)] = pt_old[pt] + [(0.0, sd-1)]
                         # THE FOLLOWING IS PROBABLY CORRECT BUT UNTESTED
                         shp = (sd,)
                         nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment"))
@@ -192,7 +203,7 @@ class TensorProductElement(FiniteElement):
                         pt_dict = {}
                         pt_old = Anode.get_point_dict()
                         for pt in pt_old:
-                            pt_dict[pt+Bnode.get_point_dict().keys()[0]] = pt_old[pt]
+                            pt_dict[pt+_first_point(Bnode)] = pt_old[pt]
                         # THE FOLLOWING IS PROBABLY CORRECT BUT UNTESTED
                         shp = (sd,)
                         nodes.append(functional.Functional(self.ref_el, shp, pt_dict, {}, "IntegralMoment"))
