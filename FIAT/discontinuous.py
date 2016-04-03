@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from finite_element import FiniteElement
-from dual_set import DualSet
+from .finite_element import FiniteElement
+from .dual_set import DualSet
 
 
 class DiscontinuousElement(FiniteElement):

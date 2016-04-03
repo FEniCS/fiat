@@ -29,7 +29,7 @@ and orderings of entities have a single point of entry.
 
 Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
-
+from six import iteritems
 import numpy
 
 LINE = 1
@@ -103,15 +103,15 @@ class ReferenceElement:
         # Given the topology, work out for each entity in the cell,
         # which other entities it contains.
         self.sub_entities = {}
-        for dim, entities in topology.iteritems():
+        for dim, entities in iteritems(topology):
             self.sub_entities[dim] = {}
 
-            for e, v in entities.iteritems():
+            for e, v in iteritems(entities):
                 vertices = frozenset(v)
                 sub_entities = []
 
-                for dim_, entities_ in topology.iteritems():
-                    for e_, vertices_ in entities_.iteritems():
+                for dim_, entities_ in iteritems(topology):
+                    for e_, vertices_ in iteritems(entities_):
                         if vertices.issuperset(vertices_):
                             sub_entities.append((dim_,e_))
 

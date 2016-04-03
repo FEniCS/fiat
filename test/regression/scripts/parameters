@@ -1,6 +1,6 @@
 #OUTPUT_DIR="output"
-DATA_REPO_GIT="git@bitbucket.org:fenics-project/fiat-reference-data.git"
-DATA_REPO_HTTPS="https://bitbucket.org/fenics-project/fiat-reference-data.git"
+DATA_REPO_GIT="git@github.com:firedrakeproject/fiat-reference-data.git"
+DATA_REPO_HTTPS="https://github.com/firedrakeproject/fiat-reference-data.git"
 DATA_DIR="fiat-reference-data"
 DATA_ID_FILE="fiat-reference-data-id"
 OUTPUT_DIR="$DATA_DIR"

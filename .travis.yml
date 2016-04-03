@@ -1,0 +1,25 @@
+notifications:
+  irc:
+    channels: "chat.freenode.net#firedrake"
+    skip_join: true
+    on_success: change
+    on_failure: always
+    template: "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message} | %{build_url}"
+
+language: python
+python:
+  - "2.7"
+  - "3.4"
+
+before_script:
+  - echo -e "Host bitbucket.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+
+before_install:
+  - pip install nose
+  - pip install nose-parameterized
+
+install:
+  - pip install .
+
+script:
+  - nosetests test/

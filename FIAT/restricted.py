@@ -19,8 +19,7 @@
 
 import numpy
 import six
-import ufl
-from ufl.utils.sorting import sorted_by_key
+from six import iteritems
 from .dual_set import DualSet
 from .finite_element import FiniteElement
 
@@ -41,7 +40,7 @@ class RestrictedElement(FiniteElement):
             raise RuntimeError("variable 'indices' was a string; did you forget to use a keyword?")
 
         if len(indices) == 0:
-            error("No point in creating empty RestrictedElement.")
+            raise ValueError("No point in creating empty RestrictedElement.")
 
         self._element = element
         self._indices = indices
@@ -58,7 +57,7 @@ class RestrictedElement(FiniteElement):
             for entity, dofs in six.iteritems(entities):
                 entity_ids[d][entity] = []
                 for dof in dofs:
-                    if not dof in indices:
+                    if dof not in indices:
                         continue
                     entity_ids[d][entity].append(dof_counter)
                     dof_counter += 1
@@ -92,6 +91,14 @@ class RestrictedElement(FiniteElement):
         return extracted
 
 
+def sorted_by_key(mapping):
+    "Sort dict items by key, allowing different key types."
+    # Python3 doesn't allow comparing builtins of different type, therefore the typename trick here
+    def _key(x):
+        return (type(x[0]).__name__, x[0])
+    return sorted(iteritems(mapping), key=_key)
+
+
 def _get_indices(element, restriction_domain):
     "Restriction domain can be 'interior', 'vertex', 'edge', 'face' or 'facet'"
 
@@ -106,7 +113,7 @@ def _get_indices(element, restriction_domain):
         dim = 1
     elif restriction_domain == "face":
         dim = 2
-    elif restriction_domain ==  "facet":
+    elif restriction_domain == "facet":
         dim = element.get_reference_element().get_spatial_dimension() - 1
     else:
         raise RuntimeError("Invalid restriction domain")
