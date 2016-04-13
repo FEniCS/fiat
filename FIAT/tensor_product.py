@@ -25,7 +25,7 @@ from FIAT.reference_element import TensorProductCell
 from FIAT.polynomial_set import mis
 from FIAT import dual_set
 from FIAT import functional
-
+from FIAT.hdiv_trace import TraceError
 
 def _first_point(node):
     return tuple(node.get_point_dict().keys())[0]
@@ -35,7 +35,7 @@ def _first_point_pair(node):
     return tuple(node.get_point_dict().items())[0]
 
 
-class TensorProductElement(FiniteElement):
+class TensorProductElement(CiarletElement):
     """Class implementing a finite element that is the tensor product
     of two existing finite elements."""
 

@@ -104,7 +104,7 @@ def BDFMSpace(ref_el, order):
     return element_set
 
 
-class BrezziDouglasFortinMarini(finite_element.FiniteElement):
+class BrezziDouglasFortinMarini(finite_element.CiarletElement):
     """The BDFM element"""
 
     def __init__(self, ref_el, degree):
@@ -115,5 +115,25 @@ class BrezziDouglasFortinMarini(finite_element.FiniteElement):
         poly_set = BDFMSpace(ref_el, degree)
         dual = BDFMDualSet(ref_el, degree - 1)
         formdegree = ref_el.get_spatial_dimension() - 1
+<<<<<<< HEAD
         super(BrezziDouglasFortinMarini, self).__init__(poly_set, dual, degree, formdegree,
                                                         mapping="contravariant piola")
+||||||| merged common ancestors
+        super(BrezziDouglasFortinMarini, self).__init__(poly_set, dual, degree, formdegree,
+                                                        mapping="contravariant piola")
+
+
+if __name__ == "__main__":
+    T = reference_element.UFCTriangle()
+
+    BDFM = BrezziDouglasFortinMarini(T, 2)
+=======
+        finite_element.CiarletElement.__init__(self, poly_set, dual, degree, formdegree,
+                                               mapping="contravariant piola")
+
+
+if __name__ == "__main__":
+    T = reference_element.UFCTriangle()
+
+    BDFM = BrezziDouglasFortinMarini(T, 2)
+>>>>>>> Adding in CiarletElement inheritance where appropriate. Still needs further debugging.

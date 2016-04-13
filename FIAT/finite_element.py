@@ -19,6 +19,7 @@
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 # Modified by Thomas H. Gibson (t.gibson15@imperial.ac.uk), 2016
 
+
 from __future__ import absolute_import, print_function, division
 
 import numpy
@@ -29,10 +30,81 @@ from FIAT.quadrature_schemes import create_quadrature
 
 
 class FiniteElement(object):
-    """Class implementing Ciarlet's abstraction of a finite element
-    being a domain, function space, and set of nodes."""
+    """Class implementing a basic abstraction of a finite element
+       ... ... ...
+       elements such as Tensor Product Elements, Enriched Elements,
+       and Trace Elements will branch off from this class."""
+    def __init__(self, ref_el, order, formdegree=None, mapping="affine"):
 
-    def __init__(self, poly_set, dual, order, formdegree=None, mapping="affine"):
+        self.order = order
+        self.formdegree = formdegree
+        self.mapping = mapping
+
+        self.ref_el = ref_el
+
+    def degree(self):
+        "Return the degree of the (embedding) polynomial space."
+        raise NotImplementedError()
+
+    def get_order(self):
+        "Return the order of the element (may be different from the degree)"
+        return self.order
+
+    def entity_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom for the finite element."""
+        raise NotImplementedError()
+
+    def entity_closure_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom on the closure of those entities for the finite element."""
+        raise NotImplementedError()
+
+    def get_reference_element(self):
+        "Return the reference element for the finite element."
+        return self.ref_el
+
+    def get_nodal_basis(self):
+        """Return the nodal basis, encoded as a PolynomialSet object,
+        for the finite element."""
+        raise NotImplementedError()
+
+    def get_coeffs(self):
+        """Return the expansion coefficients for the basis of the
+        finite element."""
+        raise NotImplementedError()
+
+    def get_formdegree(self):
+        """Return the degree of the associated form (FEEC)"""
+        return self.formdegree
+
+    def mapping(self):
+        """Return a list of appropriate mappings from the reference
+        element to a physical element for each basis function of the
+        finite element."""
+        raise NotImplementedError()
+
+    def space_dimension(self):
+        "Return the dimension of the finite element space."
+        raise NotImplementedError()
+
+    def tabulate(self, order, points, entity=None):
+        """Return tabulated values of derivatives up to given order of
+        basis functions at given points.
+
+        Modified for trace element tabulation - passing information
+        about the entity of a particular facet element."""
+        raise NotImplementedError()
+
+    def value_shape(self):
+        "Return the value shape of the finite element functions."
+        raise NotImplementedError()
+
+
+class CiarletElement(FiniteElement):
+    """Class implementing Ciarlet's abstraction of a finite element
+    from its dual."""
+    def __init__(self , poly_set , dual , order, formdegree=None, mapping="affine"):
         # first, compare ref_el of poly_set and dual
         # need to overload equality
         # if poly_set.get_reference_element() != dual.get_reference_element:

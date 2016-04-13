@@ -49,7 +49,7 @@ class LagrangeDualSet(dual_set.DualSet):
         super(LagrangeDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class Lagrange(finite_element.FiniteElement):
+class Lagrange(finite_element.CiarletElement):
     """The Lagrange finite element.  It is what it is."""
 
     def __init__(self, ref_el, degree):
@@ -57,3 +57,23 @@ class Lagrange(finite_element.FiniteElement):
         dual = LagrangeDualSet(ref_el, degree)
         formdegree = 0  # 0-form
         super(Lagrange, self).__init__(poly_set, dual, degree, formdegree)
+
+
+if __name__ == "__main__":
+    from . import reference_element
+    # UFC triangle and points
+    T = reference_element.UFCTriangle()
+    pts = T.make_lattice(1)
+    # pts = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
+
+    # FIAT triangle and points
+    # T = reference_element.DefaultTriangle()
+    # pts = [(-1.0, -1.0), (1.0, -1.0), (-1.0, 1.0)]
+
+    L = Lagrange(T, 1)
+    Ufs = L.get_nodal_basis()
+    print(pts)
+    for foo, bar in list(Ufs.tabulate(pts, 1).items()):
+        print(foo)
+        print(bar)
+        print()

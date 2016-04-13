@@ -140,7 +140,7 @@ class RTDualSet(dual_set.DualSet):
         super(RTDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class RaviartThomas(finite_element.FiniteElement):
+class RaviartThomas(finite_element.CiarletElement):
     """The Raviart-Thomas finite element"""
 
     def __init__(self, ref_el, q):
@@ -151,3 +151,22 @@ class RaviartThomas(finite_element.FiniteElement):
         formdegree = ref_el.get_spatial_dimension() - 1  # (n-1)-form
         super(RaviartThomas, self).__init__(poly_set, dual, degree, formdegree,
                                             mapping="contravariant piola")
+
+
+if __name__ == "__main__":
+    T = reference_element.UFCTriangle()
+    sd = T.get_spatial_dimension()
+
+    for k in range(6):
+        RT = RaviartThomas(T, k)
+
+    # RTfs = RT.get_nodal_basis()
+
+    # pts = T.make_lattice(1)
+    # print pts
+
+    # zero_index = tuple([0 for i in range(sd)])
+
+    # RTvals = RTfs.tabulate(pts)[zero_index]
+
+    # print RTvals

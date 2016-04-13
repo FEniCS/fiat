@@ -20,12 +20,14 @@
 from __future__ import absolute_import, print_function, division
 
 import numpy
-from FIAT.finite_element import FiniteElement
-from FIAT import dual_set
+
+from .finite_element import CiarletElement
+from .tensor_product import TensorProductElement
+from . import dual_set
 from copy import copy
 
 
-class EnrichedElement(FiniteElement):
+class EnrichedElement(CiarletElement):
     """Class implementing a finite element that combined the degrees of freedom
     of two existing finite elements."""
 

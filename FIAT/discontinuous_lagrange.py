@@ -52,14 +52,13 @@ class DiscontinuousLagrangeDualSet(dual_set.DualSet):
         super(DiscontinuousLagrangeDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class HigherOrderDiscontinuousLagrange(finite_element.FiniteElement):
+class HigherOrderDiscontinuousLagrange(finite_element.CiarletElement):
     """The discontinuous Lagrange finite element.  It is what it is."""
-
-    def __init__(self, ref_el, degree):
-        poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
-        dual = DiscontinuousLagrangeDualSet(ref_el, degree)
-        formdegree = ref_el.get_spatial_dimension()  # n-form
-        super(HigherOrderDiscontinuousLagrange, self).__init__(poly_set, dual, degree, formdegree)
+    def __init__( self , ref_el , degree ):
+        poly_set = polynomial_set.ONPolynomialSet( ref_el, degree )
+        dual = DiscontinuousLagrangeDualSet( ref_el, degree )
+        formdegree = ref_el.get_spatial_dimension() # n-form
+        finite_element.CiarletElement.__init__(self, poly_set, dual, degree, formdegree)
 
 
 def DiscontinuousLagrange(ref_el, degree):
