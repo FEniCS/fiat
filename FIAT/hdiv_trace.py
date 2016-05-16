@@ -19,41 +19,43 @@ import numpy as np
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.reference_element import ufc_simplex
 from FIAT import FiniteElement
+from FIAT.polynomial_set import mis
 
 
 class TraceError(Exception):
+    """Exception caused by tabulating a trace element on the interior of a cell,
+    or the gradient of a trace element."""
 
-    """Exception caused by tabulating a trace element on the interior of a cell."""
-
-    def __init__(self, msg, zeros):
+    def __init__(self, msg, values, keys):
 
         super(TraceError, self).__init__(msg)
-        self.zeros = zeros
+        self.msg = msg
+        self.zeros = values
+        self.D = keys
 
 
 class TraceHDiv(FiniteElement):
+    """Class implementing the trace of hdiv elements on general simplices."""
 
-    """Class implementing the trace of hdiv elements."""
+    def __init__(self, cell, degree):
 
-    def __init__(self, cell, polyDegree):
-
-        spaceDim = cell.get_spatial_dimension()
+        sd = cell.get_spatial_dimension()
 
         # Check to make sure spatial dim is sensible for trace
-        if spaceDim == 1:
+        if sd == 1:
             raise ValueError(
                 "Spatial dimension not suitable for generating the trace.")
 
-        # Otherwise, initialize some neat stuff and proceed
+        # Otherwise, initialize some stuff and proceed
         self.cell = cell
-        self.polyDegree = polyDegree
+        self.degree = degree
 
-        # Constructing facet as a DC Lagrange element
-        self.facet = ufc_simplex(spaceDim - 1)
-        self.DCLagrange = DiscontinuousLagrange(self.facet, polyDegree)
+        # Constructing facet as a DG Lagrange element
+        self.facet = ufc_simplex(sd - 1)
+        self.trace = DiscontinuousLagrange(self.facet, degree)
 
         # Number of facets on simplex-type element
-        self.num_facets = spaceDim + 1
+        self.num_facets = sd + 1
 
         # Construct entity ids (assigning top. dim. and initializing as empty)
         self._entity_dofs = {}
@@ -69,36 +71,41 @@ class TraceHDiv(FiniteElement):
                 self._entity_dofs[top_dim][entity] = []
 
         # For each facet, we have nf = dim(facet) number of dofs
-        # In this case, the facet is a DCLagrange element
-        nf = self.DCLagrange.space_dimension()
+        nf = self.trace.space_dimension()
 
         # Filling in entity ids
         for f in range(self.num_facets):
-            self._entity_dofs[spaceDim - 1][f] = range(f * nf, (f + 1) * nf)
-
-# Compute the nodes on the closure of facet.
-#        self._entity_closure_dofs = {}
-#        for dim, entities in cell.sub_entities.iteritems():
-#            self._entity_closure_dofs[dim] = {}
-#
-#            for e, sub_entities in entities.iteritems():
-#                ids = []
-#
-#                for d, se in sub_entities:
-#                    ids += self._entity_dofs[d][se]
-#                self._entity_closure_dofs[d][e] = ids
+            self._entity_dofs[sd - 1][f] = range(f * nf, (f + 1) * nf)
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
-        return self.polyDegree
+        return self.degree
+
+    def order(self):
+        """Return the order of the trace element."""
+        return self.degree
+
+    def get_formdegree(self):
+        """Returns the form degree of the facet element (FEEC)"""
+        return self.trace.get_formdegree()
+
+    def dual_basis(self):
+        """Returns the dual basis corresponding to a single facet element.
+        Note: that this is not the dual set of the trace element."""
+        return self.trace.dual_basis()
+
+    def mapping(self):
+        """Returns the mapping from the reference
+        element to a trace element."""
+        return self.trace.mapping()
 
     def space_dimension(self):
         "Return the dimension of the trace finite element space."
-        return self.DCLagrange.space_dimension() * self.num_facets
+        return self.trace.space_dimension() * self.num_facets
 
     def get_reference_element(self):
-        "Return the reference element for the trace element."
-        return self.facet
+        "Return the reference element where the traces are defined on."
+        return self.cell
 
     def entity_dofs(self):
         """Return the entity dictionary."""
@@ -113,32 +120,35 @@ class TraceHDiv(FiniteElement):
         """Return tabulated values basis functions at given points."""
 
         facet_dim = self.cell.get_spatial_dimension() - 1
-        phiVals = np.zeros((self.space_dimension(), len(points)))
+        sdim = self.space_dimension()
 
-        key = tuple(0 for i in range(facet_dim + 1))
+        # Initializing dictionary with zeros
+        phivals = {}
+        for i in range(order + 1):
+            alphas = mis(self.cell.get_spatial_dimension(), i)
+            for alpha in alphas:
+                phivals[alpha] = np.zeros(shape=(sdim, len(points)))
+        key = phivals.keys()
 
-        # No derivatives
-        if (order > 0):
-            zeros = {key: phiVals}
-            raise TraceError(
-                "Only allowed for function evaluations - No derivatives.", zeros)
-
+        # If doing cell-wise tabulation, raise TraceError and return zeros
         if (entity is None) or entity[0] != facet_dim:
-            zeros = {key: phiVals}
-            raise TraceError(
-                "Trace elements can only be tabulated on facets.",
-                zeros)
-        else:
-            # Initialize basis function values at nodes to be 0 since
-            # all basis functions are 0 except for specific phi on a facet
-            nf = self.DCLagrange.space_dimension()
-            facet_id = entity[1]
+            raise TraceError("Trace elements can only be tabulated on facet entities.",
+                             phivals, key)
 
-            # Tabulate basis function values on specific facet
-            nonzeroVals = self.DCLagrange.tabulate(order, points).values()[0]
-            phiVals[nf * facet_id:nf * (facet_id + 1), :] = nonzeroVals
-            return {key: phiVals}
+        # Retrieve function evaluations (order = 0 case)
+        nf = self.trace.space_dimension()
+        facet_id = entity[1]
+        nonzerovals = self.trace.tabulate(0, points).values()[0]
+        phivals[key[-1]][nf*facet_id:nf*(facet_id + 1), :] = nonzerovals
+
+        # If asking for gradient evaluations, raise TraceError
+        # but return functon evaluations, and zeros for the gradient.
+        if order > 0:
+            raise TraceError("No gradient evaluations on trace elements.",
+                             phivals, key)
+
+        return phivals
 
     def value_shape(self):
         """Return the value shape of the finite element functions."""
-        return self.DCLagrange.value_shape()
+        return self.trace.value_shape()

@@ -5,7 +5,7 @@ Simplices in one, two, and three dimensions are supported."""
 from __future__ import absolute_import, print_function, division
 
 # Import finite element classes
-from FIAT.finite_element import FiniteElement  # noqa
+from FIAT.finite_element import FiniteElement, CiarletElement  # noqa
 from FIAT.argyris import Argyris
 from FIAT.argyris import QuinticArgyris
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
@@ -40,9 +40,6 @@ from FIAT.reference_element import ufc_cell, ufc_simplex  # noqa
 from FIAT.hdivcurl import Hdiv, Hcurl  # noqa
 
 __version__ = "2016.2.0.dev0"
-
-from FIAT.hdiv_trace import TraceHDiv
-from FIAT.restricted import RestrictedElement
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris": Argyris,

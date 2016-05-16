@@ -151,22 +151,3 @@ class RaviartThomas(finite_element.CiarletElement):
         formdegree = ref_el.get_spatial_dimension() - 1  # (n-1)-form
         super(RaviartThomas, self).__init__(poly_set, dual, degree, formdegree,
                                             mapping="contravariant piola")
-
-
-if __name__ == "__main__":
-    T = reference_element.UFCTriangle()
-    sd = T.get_spatial_dimension()
-
-    for k in range(6):
-        RT = RaviartThomas(T, k)
-
-    # RTfs = RT.get_nodal_basis()
-
-    # pts = T.make_lattice(1)
-    # print pts
-
-    # zero_index = tuple([0 for i in range(sd)])
-
-    # RTvals = RTfs.tabulate(pts)[zero_index]
-
-    # print RTvals

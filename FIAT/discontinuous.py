@@ -17,8 +17,8 @@
 
 from __future__ import absolute_import, print_function, division
 
-from .finite_element import FiniteElement
-from .dual_set import DualSet
+from FIAT.finite_element import CiarletElement
+from FIAT.dual_set import DualSet
 
 
 class DiscontinuousElement(CiarletElement):

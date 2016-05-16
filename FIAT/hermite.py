@@ -72,8 +72,8 @@ class CubicHermiteDualSet(dual_set.DualSet):
         super(CubicHermiteDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class CubicHermite(finite_element.FiniteElement):
-    """The Lagrange finite element.  It is what it is."""
+class CubicHermite(finite_element.CiarletElement):
+    """The cubic Hermite finite element.  It is what it is."""
 
     def __init__(self, ref_el):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 3)

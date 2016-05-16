@@ -83,7 +83,7 @@ class BDMDualSet(dual_set.DualSet):
         super(BDMDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class BrezziDouglasMarini( finite_element.CiarletElement ):
+class BrezziDouglasMarini(finite_element.CiarletElement):
     """The BDM element"""
 
     def __init__(self, ref_el, degree):
@@ -97,12 +97,3 @@ class BrezziDouglasMarini( finite_element.CiarletElement ):
         formdegree = sd - 1  # (n-1)-form
         super(BrezziDouglasMarini, self).__init__(poly_set, dual, degree, formdegree,
                                                   mapping="contravariant piola")
-
-
-if __name__ == "__main__":
-    T = reference_element.UFCTetrahedron()
-
-    for k in range(1, 3):
-        print(k)
-        BDM = BrezziDouglasMarini(T, k)
-        print()

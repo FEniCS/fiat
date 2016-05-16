@@ -23,8 +23,8 @@ import numpy
 import six
 from six import string_types
 from six import iteritems
-from .dual_set import DualSet
-from .finite_element import CiarletElement
+from FIAT.dual_set import DualSet
+from FIAT.finite_element import CiarletElement
 
 
 class RestrictedElement(CiarletElement):

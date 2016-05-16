@@ -27,6 +27,7 @@ from FIAT import dual_set
 from FIAT import functional
 from FIAT.hdiv_trace import TraceError
 
+
 def _first_point(node):
     return tuple(node.get_point_dict().keys())[0]
 

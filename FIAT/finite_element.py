@@ -30,10 +30,10 @@ from FIAT.quadrature_schemes import create_quadrature
 
 
 class FiniteElement(object):
-    """Class implementing a basic abstraction of a finite element
-       ... ... ...
-       elements such as Tensor Product Elements, Enriched Elements,
-       and Trace Elements will branch off from this class."""
+    """Class implementing a basic abstraction template for special
+    types of finite elements, like traces. Most special methods will
+    need to be implemented by the special element in its module."""
+
     def __init__(self, ref_el, order, formdegree=None, mapping="affine"):
 
         self.order = order
@@ -103,8 +103,9 @@ class FiniteElement(object):
 
 class CiarletElement(FiniteElement):
     """Class implementing Ciarlet's abstraction of a finite element
-    from its dual."""
-    def __init__(self , poly_set , dual , order, formdegree=None, mapping="affine"):
+    being a domain, function space, and set of nodes."""
+
+    def __init__(self, poly_set, dual, order, formdegree=None, mapping="affine"):
         # first, compare ref_el of poly_set and dual
         # need to overload equality
         # if poly_set.get_reference_element() != dual.get_reference_element:
@@ -273,7 +274,7 @@ def entity_support_dofs(elem, entity_dim):
         points = list(map(entity_transform, quad.get_points()))
 
         # Integrate the square of the basis functions on the facet.
-        vals = numpy.double(elem.tabulate(0, points)[(0,) * dim])
+        vals = numpy.double(elem.tabulate(0, points, None)[(0,) * dim])
         # Ints contains the square of the basis functions
         # integrated over the facet.
         if elem.value_shape():

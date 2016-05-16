@@ -17,8 +17,8 @@
 
 from __future__ import absolute_import, print_function, division
 
-from .finite_element import CiarletElement
-from . import Lagrange, dual_set
+from FIAT.finite_element import CiarletElement
+from FIAT import Lagrange, dual_set
 from six import iteritems
 
 

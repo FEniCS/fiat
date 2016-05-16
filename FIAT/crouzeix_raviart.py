@@ -62,7 +62,7 @@ class CrouzeixRaviartDualSet(dual_set.DualSet):
         super(CrouzeixRaviartDualSet, self).__init__(nodes, cell, entity_ids)
 
 
-class CrouzeixRaviart(finite_element.FiniteElement):
+class CrouzeixRaviart(finite_element.CiarletElement):
     """The Crouzeix-Raviart finite element:
 
     K:                 Triangle/Tetrahedron

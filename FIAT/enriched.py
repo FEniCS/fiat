@@ -20,14 +20,12 @@
 from __future__ import absolute_import, print_function, division
 
 import numpy
-
-from .finite_element import CiarletElement
-from .tensor_product import TensorProductElement
-from . import dual_set
+from FIAT.finite_element import FiniteElement
+from FIAT import dual_set
 from copy import copy
 
 
-class EnrichedElement(CiarletElement):
+class EnrichedElement(FiniteElement):
     """Class implementing a finite element that combined the degrees of freedom
     of two existing finite elements."""
 
@@ -69,6 +67,7 @@ class EnrichedElement(CiarletElement):
         # the entities of the constituent elements
         Adofs = A.entity_dofs()
         Bdofs = B.entity_dofs()
+
         offset = A.space_dimension()  # number of entities belonging to A
         entity_ids = {}
 
@@ -86,6 +85,31 @@ class EnrichedElement(CiarletElement):
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
+
+    def dual_basis(self):
+        """Return the dual basis (list of functionals) for the finite
+        element."""
+        return self.dual.get_nodes()
+
+    def entity_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom for the enriched element."""
+        return self.dual.get_entity_ids()
+
+    def entity_closure_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom on the closure of those entities for the finite element."""
+        return self.dual.get_entity_closure_ids()
+
+    def get_dual_set(self):
+        "Return the dual for the finite element."
+        return self.dual
+
+    def mapping(self):
+        """Return a list of appropriate mappings from the reference
+        element to a physical element for each basis function of the
+        finite element."""
+        return self.A.mapping() + self.B.mapping()
 
     def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
