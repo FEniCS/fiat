@@ -86,20 +86,19 @@ def lattice_iter(start, finish, depth):
                 yield [ii] + jj
 
 
-class ReferenceElement(object):
-    """Abstract class for a reference element simplex.  Provides
-    accessors for geometry (vertex coordinates) as well as topology
-    (orderings of vertices that make up edges, facecs, etc."""
+class Cell(object):
+    """Abstract class for a reference cell.  Provides accessors for
+    geometry (vertex coordinates) as well as topology (orderings of
+    vertices that make up edges, facecs, etc."""
 
     def __init__(self, shape, vertices, topology):
-        """The constructor takes a shape code,
-        the physical vertices expressed as a list of tuples
-        of numbers, and the topology of a simplex.
-        The topology is stored as a dictionary of dictionaries
-        t[i][j] where i is the spatial dimension and j is the
-        index of the facet of that dimension.  The result is
-        a list of the vertices comprising the facet.
-        """
+        """The constructor takes a shape code, the physical vertices expressed
+        as a list of tuples of numbers, and the topology of a cell.
+
+        The topology is stored as a dictionary of dictionaries t[i][j]
+        where i is the dimension and j is the index of the facet of
+        that dimension.  The result is a list of the vertices
+        comprising the facet."""
         self.shape = shape
         self.vertices = vertices
         self.topology = topology
@@ -121,24 +120,27 @@ class ReferenceElement(object):
 
                 self.sub_entities[dim][e] = sorted(sub_entities)
 
-    def __hash__(self):
-        """Since ReferenceElements are singleton classes, we can use the type."""
-
-        return hash(type(self))
+    def _key(self):
+        """Hashable object key data (excluding type)."""
+        # Default: only type matters
+        return None
 
     def __eq__(self, other):
-        """Since ReferenceElements are singleton classes, we can use the class
-        itself for equality."""
+        return type(self) == type(other) and self._key() == other._key()
 
-        return type(self) == type(other)
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((type(self), self._key()))
 
     def get_shape(self):
         """Returns the code for the element's shape."""
         return self.shape
 
     def get_vertices(self):
-        """Returns an iterable of the element's vertices, each stored
-        as a tuple."""
+        """Returns an iterable of the element's vertices, each stored as a
+        tuple."""
         return self.vertices
 
     def get_spatial_dimension(self):
@@ -147,15 +149,19 @@ class ReferenceElement(object):
 
     def get_topology(self):
         """Returns a dictionary encoding the topology of the element.
-        The dictionary's keys are the spatial dimensions (0,1,...)
-        and each value is a dictionary mapping
-        """
+
+        The dictionary's keys are the spatial dimensions (0, 1, ...)
+        and each value is a dictionary mapping."""
         return self.topology
 
     def get_vertices_of_subcomplex(self, t):
-        """Returns the tuple of vertex coordinates associated with the
-        labels contained in the iterable t."""
+        """Returns the tuple of vertex coordinates associated with the labels
+        contained in the iterable t."""
         return tuple([self.vertices[ti] for ti in t])
+
+
+class Simplex(Cell):
+    """Abstract class for a reference simplex."""
 
     def compute_normal(self, facet_i):
         """Returns the unit normal vector to facet i of codimension 1."""
@@ -372,7 +378,12 @@ class ReferenceElement(object):
         return lambda x: offset + C.dot(x)
 
 
-class UFCReferenceElement(ReferenceElement):
+# Backwards compatible name
+ReferenceElement = Simplex
+
+
+class UFCSimplex(Simplex):
+
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
@@ -382,7 +393,7 @@ class UFCReferenceElement(ReferenceElement):
         return result
 
 
-class DefaultLine(ReferenceElement):
+class DefaultLine(Simplex):
     """This is the reference line with vertices (-1.0,) and (1.0,)."""
 
     def __init__(self):
@@ -396,7 +407,7 @@ class DefaultLine(ReferenceElement):
         raise NotImplementedError()
 
 
-class UFCInterval(UFCReferenceElement):
+class UFCInterval(UFCSimplex):
     """This is the reference interval with vertices (0.0,) and (1.0,)."""
 
     def __init__(self):
@@ -406,17 +417,11 @@ class UFCInterval(UFCReferenceElement):
                     1: edges}
         super(UFCInterval, self).__init__(LINE, verts, topology)
 
-    def __eq__(self, other):
-        if isinstance(other, UFCInterval):
-            return True
-        else:
-            return False
-
     def get_facet_element(self):
         raise NotImplementedError()
 
 
-class DefaultTriangle(ReferenceElement):
+class DefaultTriangle(Simplex):
     """This is the reference triangle with vertices (-1.0,-1.0),
     (1.0,-1.0), and (-1.0,1.0)."""
 
@@ -434,7 +439,7 @@ class DefaultTriangle(ReferenceElement):
         return DefaultLine()
 
 
-class UFCTriangle(UFCReferenceElement):
+class UFCTriangle(UFCSimplex):
     """This is the reference triangle with vertices (0.0,0.0),
     (1.0,0.0), and (0.0,1.0)."""
 
@@ -452,17 +457,11 @@ class UFCTriangle(UFCReferenceElement):
         n = numpy.array((t[1], -t[0]))
         return n / numpy.linalg.norm(n)
 
-    def __eq__(self, other):
-        if isinstance(other, UFCTriangle):
-            return True
-        else:
-            return False
-
     def get_facet_element(self):
         return UFCInterval()
 
 
-class IntrepidTriangle(ReferenceElement):
+class IntrepidTriangle(Simplex):
     """This is the Intrepid triangle with vertices (0,0),(1,0),(0,1)"""
 
     def __init__(self):
@@ -481,7 +480,7 @@ class IntrepidTriangle(ReferenceElement):
         return UFCInterval()
 
 
-class DefaultTetrahedron(ReferenceElement):
+class DefaultTetrahedron(Simplex):
     """This is the reference tetrahedron with vertices (-1,-1,-1),
     (1,-1,-1),(-1,1,-1), and (-1,-1,1)."""
 
@@ -510,7 +509,7 @@ class DefaultTetrahedron(ReferenceElement):
         return DefaultTriangle()
 
 
-class IntrepidTetrahedron(ReferenceElement):
+class IntrepidTetrahedron(Simplex):
     """This is the reference tetrahedron with vertices (0,0,0),
     (1,0,0),(0,1,0), and (0,0,1) used in the Intrepid project."""
 
@@ -538,7 +537,7 @@ class IntrepidTetrahedron(ReferenceElement):
         return IntrepidTriangle()
 
 
-class UFCTetrahedron(UFCReferenceElement):
+class UFCTetrahedron(UFCSimplex):
     """This is the reference tetrahedron with vertices (0,0,0),
     (1,0,0),(0,1,0), and (0,0,1)."""
 
@@ -568,17 +567,11 @@ class UFCTetrahedron(UFCReferenceElement):
         n = numpy.cross(t[0], t[1])
         return -2.0 * n / numpy.linalg.norm(n)
 
-    def __eq__(self, other):
-        if isinstance(other, UFCTetrahedron):
-            return True
-        else:
-            return False
-
     def get_facet_element(self):
         return UFCTriangle()
 
 
-class FiredrakeQuadrilateral(ReferenceElement):
+class FiredrakeQuadrilateral(Cell):
     """This is the reference quadrilateral with vertices
     (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
 
@@ -592,9 +585,6 @@ class FiredrakeQuadrilateral(ReferenceElement):
 
         self.A = UFCInterval()
         self.B = UFCInterval()
-
-    def __eq__(self, other):
-        return isinstance(other, FiredrakeQuadrilateral)
 
     def get_facet_element(self):
         return UFCInterval()
@@ -624,7 +614,7 @@ class FiredrakeQuadrilateral(ReferenceElement):
         return result
 
 
-class TensorProductCell(ReferenceElement):
+class TensorProductCell(Cell):
     """A cell that is the product of FIAT cells A and B"""
 
     def __init__(self, A, B):
@@ -652,8 +642,8 @@ class TensorProductCell(ReferenceElement):
 
         super(TensorProductCell, self).__init__(TENSORPRODUCT, verts, topology)
 
-    def __eq__(self, other):
-        return self.A == other.A and self.B == other.B
+    def _key(self):
+        return (self.A, self.B)
 
     def get_horiz_facet_transform(self, facet_i):
         assert isinstance(self.B, UFCInterval)
