@@ -1,4 +1,4 @@
-2016.2.0 [2016-06-23]
+2016.2.0 [201x-xx-xx]
  - Enable Travis CI on GitHub
  - Add Firedrake quadrilateral cell
  - Add tensor product cell
@@ -12,6 +12,7 @@
  - Add enriched element, i.e. sum of elements (e.g. for building Mini)
  - Finding non-vanishing DoFs on a facets
  - Add tensor product quadrature rule
+ - Make regression tests working again after few years
 2016.1.0 [2016-06-23]
  - Minor fixes
 1.6.0 [2015-07-28]
