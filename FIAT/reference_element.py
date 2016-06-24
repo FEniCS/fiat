@@ -14,7 +14,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
-
+#
+# Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
+ 
 """
 Abstract class and particular implementations of finite element
 reference simplex geometry/topology.
@@ -27,12 +29,14 @@ and orderings of entities have a single point of entry.
 
 Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
-
+from six import iteritems
 import numpy
 
 LINE = 1
 TRIANGLE = 2
 TETRAHEDRON = 3
+QUADRILATERAL = 11
+TENSORPRODUCT = 99
 
 def linalg_subspace_intersection( A, B ):
     """Computes the intersection of the subspaces spanned by the
@@ -95,11 +99,29 @@ class ReferenceElement:
         self.shape = shape
         self.vertices = vertices
         self.topology = topology
+
+        # Given the topology, work out for each entity in the cell,
+        # which other entities it contains.
+        self.sub_entities = {}
+        for dim, entities in iteritems(topology):
+            self.sub_entities[dim] = {}
+
+            for e, v in iteritems(entities):
+                vertices = frozenset(v)
+                sub_entities = []
+
+                for dim_, entities_ in iteritems(topology):
+                    for e_, vertices_ in iteritems(entities_):
+                        if vertices.issuperset(vertices_):
+                            sub_entities.append((dim_,e_))
+
+                self.sub_entities[dim][e] = sorted(sub_entities)
+
     def get_shape( self ):
         """Returns the code for the element's shape."""
         return self.shape
     def get_vertices( self ):
-        """Returns an iteratble of the element's vertices, each stored
+        """Returns an iterable of the element's vertices, each stored
         as a tuple."""
         return self.vertices
     def get_spatial_dimension( self ):
@@ -290,6 +312,58 @@ class ReferenceElement:
 
         return self.compute_normal( facet_i ) * v
 
+    def get_facet_transform( self , facet_i):
+        """Return a function f such that for a point with facet coordinates
+        x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
+        """
+        t = self.get_topology()
+
+        try:
+            f_el = self.get_facet_element()
+        except NotImplementedError:
+            # Special case for 1D elements.
+            x_c = self.get_vertices_of_subcomplex(t[0][facet_i])[0]
+
+            return lambda x: x_c
+
+        sd_c = self.get_spatial_dimension()
+        sd_f = f_el.get_spatial_dimension()
+        
+        # Facet vertices in facet space.
+        v_f = numpy.array(f_el.get_vertices())
+
+        A = numpy.zeros([ sd_f, sd_f ])
+
+        for i in range(A.shape[0]):
+            A[i, :] = (v_f[i+1] - v_f[0])
+            A[i, :] /= A[i,:].dot(A[i,:])
+
+        # Facet vertices in cell space.
+        v_c = numpy.array(
+            self.get_vertices_of_subcomplex( t[sd_c - 1][facet_i] ))
+
+        B = numpy.zeros([ sd_c, sd_f ])
+
+        for j in range(B.shape[1]):
+            B[:, j] = (v_c[j+1] - v_c[0])
+
+        C = B.dot(A)
+
+        offset = v_c[0] - C.dot(v_f[0])
+
+        return lambda x: offset + C.dot(x)
+
+
+class UFCReferenceElement(ReferenceElement):
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        result = (sum(point) - epsilon <= 1)
+        for c in point:
+            result &= (c + epsilon >= 0)
+        return result
+
+
 class DefaultLine( ReferenceElement ):
     """This is the reference line with vertices (-1.0,) and (1.0,)."""
     def __init__( self ):
@@ -299,7 +373,11 @@ class DefaultLine( ReferenceElement ):
                      1 : edges }
         ReferenceElement.__init__( self, LINE, verts, topology )
 
-class UFCInterval( ReferenceElement ):
+    def get_facet_element( self ):
+        raise NotImplementedError()
+
+
+class UFCInterval(UFCReferenceElement):
     """This is the reference interval with vertices (0.0,) and (1.0,)."""
     def __init__( self ):
         verts = ( (0.0,), (1.0,) )
@@ -307,6 +385,16 @@ class UFCInterval( ReferenceElement ):
         topology = { 0 : { 0 : (0,) , 1 : (1,) } , \
                      1 : edges }
         ReferenceElement.__init__( self, LINE, verts, topology )
+
+    def __eq__(self, other):
+        if isinstance(other, UFCInterval):
+            return True
+        else:
+            return False
+
+    def get_facet_element( self ):
+        raise NotImplementedError()
+
 
 class DefaultTriangle( ReferenceElement ):
     """This is the reference triangle with vertices (-1.0,-1.0),
@@ -321,7 +409,11 @@ class DefaultTriangle( ReferenceElement ):
                      1 : edges , 2 : faces }
         ReferenceElement.__init__( self, TRIANGLE, verts, topology )
 
-class UFCTriangle( ReferenceElement ):
+    def get_facet_element( self ):
+        return DefaultInterval()
+
+
+class UFCTriangle(UFCReferenceElement):
     """This is the reference triangle with vertices (0.0,0.0),
     (1.0,0.0), and (0.0,1.0)."""
     def __init__( self ):
@@ -338,6 +430,15 @@ class UFCTriangle( ReferenceElement ):
         n = numpy.array((t[1], -t[0]))
         return n/numpy.linalg.norm(n)
 
+    def __eq__(self, other):
+        if isinstance(other, UFCTriangle):
+            return True
+        else:
+            return False
+
+    def get_facet_element( self ):
+        return UFCInterval()
+
 
 class IntrepidTriangle( ReferenceElement ):
     """This is the Intrepid triangle with vertices (0,0),(1,0),(0,1)"""
@@ -350,6 +451,11 @@ class IntrepidTriangle( ReferenceElement ):
         topology = { 0 : { 0 : (0,) , 1 : (1,) , 2 : (2,) } , \
                      1 : edges , 2 : faces }
         ReferenceElement.__init__( self, TRIANGLE, verts, topology )
+
+    def get_facet_element( self ):
+        # I think the UFC interval is equivalent to what the
+        # IntrepidInterval would be.
+        return UFCInterval()
 
 
 class DefaultTetrahedron( ReferenceElement ):
@@ -376,6 +482,10 @@ class DefaultTetrahedron( ReferenceElement ):
         topology = { 0: vs , 1 : edges , 2 : faces , 3 : tets }
         ReferenceElement.__init__( self, TETRAHEDRON, verts, topology )
 
+    def get_facet_element( self ):
+        return DefaultTriangle()
+
+
 class IntrepidTetrahedron( ReferenceElement ):
     """This is the reference tetrahedron with vertices (0,0,0),
     (1,0,0),(0,1,0), and (0,0,1) used in the Intrepid project."""
@@ -399,8 +509,11 @@ class IntrepidTetrahedron( ReferenceElement ):
         topology = { 0: vs , 1 : edges , 2 : faces , 3 : tets }
         ReferenceElement.__init__( self, TETRAHEDRON, verts, topology )
 
+    def get_facet_element( self ):
+        return IntrepidTriangle()
 
-class UFCTetrahedron( ReferenceElement ):
+
+class UFCTetrahedron(UFCReferenceElement):
     """This is the reference tetrahedron with vertices (0,0,0),
     (1,0,0),(0,1,0), and (0,0,1)."""
     def __init__( self ):
@@ -428,6 +541,108 @@ class UFCTetrahedron( ReferenceElement ):
         t = self.compute_tangents(2, i)
         n = numpy.cross(t[0], t[1])
         return -2.0*n/numpy.linalg.norm(n)
+
+    def __eq__(self, other):
+        if isinstance(other, UFCTetrahedron):
+            return True
+        else:
+            return False
+
+    def get_facet_element( self ):
+        return UFCTriangle()
+
+
+class FiredrakeQuadrilateral( ReferenceElement ):
+    """This is the reference quadrilateral with vertices
+    (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
+    def __init__( self ):
+        verts = ((0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0))
+        edges = { 0: (0, 1), 1: (2, 3), 2: (0, 2), 3: (1, 3) }
+        faces = { 0: (0, 1, 2, 3) }
+        topology = { 0: { 0: (0,), 1: (1,), 2: (2,), 3: (3,) },
+                     1: edges, 2: faces }
+        ReferenceElement.__init__(self, QUADRILATERAL, verts, topology)
+
+        self.A = UFCInterval()
+        self.B = UFCInterval()
+
+    def __eq__(self, other):
+        return isinstance(other, FiredrakeQuadrilateral)
+
+    def get_facet_element( self ):
+        return UFCInterval()
+
+    def get_facet_transform(self, facet_i):
+        """Return a function f such that for a point with facet coordinates
+        x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
+        """
+        if facet_i == 0:
+            return lambda p: numpy.array([0.0, float(p)])
+        elif facet_i == 1:
+            return lambda p: numpy.array([1.0, float(p)])
+        elif facet_i == 2:
+            return lambda p: numpy.array([float(p), 0.0])
+        elif facet_i == 3:
+            return lambda p: numpy.array([float(p), 1.0])
+        else:
+            raise RuntimeError("Illegal quadrilateral facet number.")
+
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        result = True
+        for c in point:
+            result &= (c + epsilon >= 0)
+            result &= (c - epsilon <= 1)
+        return result
+
+
+class TensorProductCell( ReferenceElement ):
+    """A cell that is the product of FIAT cells A and B"""
+    def __init__( self, A, B ):
+        self.A = A
+        self.B = B
+        # vertices
+        verts = tuple([ a_coord + b_coord for a_coord in A.get_vertices() \
+                                    for b_coord in B.get_vertices() ])
+        # topology
+        Atop = A.get_topology()
+        Btop = B.get_topology()
+        Bvcount = len(B.get_vertices())
+        topology = {}
+        for curAdim in Atop:
+            for curBdim in Btop:
+                topology[(curAdim,curBdim)] = {}
+                dim_cur = 0
+                for thingA in Atop[curAdim]:
+                    for thingB in Btop[curBdim]:
+                        topology[(curAdim,curBdim)][dim_cur] = \
+                          [x*Bvcount + y for x in Atop[curAdim][thingA] \
+                          for y in Btop[curBdim][thingB]]
+                        dim_cur += 1
+
+        ReferenceElement.__init__( self , TENSORPRODUCT , verts , topology )
+
+    def __eq__(self, other):
+        return self.A == other.A and self.B == other.B
+
+    def get_horiz_facet_transform(self, facet_i):
+        assert isinstance(self.B, UFCInterval)
+        assert facet_i in (0, 1)
+        return lambda p: numpy.hstack([p, float(facet_i)])
+
+    def get_vert_facet_transform(self, facet_i):
+        assert isinstance(self.B, UFCInterval)
+        vf = self.A.get_facet_transform(facet_i)
+        return lambda p: numpy.hstack([vf(p[:-1]), p[-1]])
+
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        dim_A = self.A.get_spatial_dimension()
+        dim_B = self.B.get_spatial_dimension()
+        assert len(point) == dim_A + dim_B
+        return self.A.contains_point(point[:dim_A], epsilon=epsilon) & self.B.contains_point(point[dim_A:], epsilon=epsilon)
 
 
 def make_affine_mapping( xs, ys ):
@@ -476,6 +691,8 @@ def default_simplex( spatial_dim ):
         return DefaultTriangle()
     elif spatial_dim == 3:
         return DefaultTetrahedron()
+    else:
+        raise RuntimeError("Can't create default simplex of dimension %s." % str(spatial_dim))
 
 def ufc_simplex( spatial_dim ):
     """Factory function that maps spatial dimension to an instance of
@@ -487,7 +704,32 @@ def ufc_simplex( spatial_dim ):
     elif spatial_dim == 3:
         return UFCTetrahedron()
     else:
-        raise RuntimeError("Don't know how to create UFC simplex for dimension %s" % str(spatial_dim))
+        raise RuntimeError("Can't create UFC simplex of dimension %s." % str(spatial_dim))
+
+
+def ufc_cell( cell ):
+    """Handle incoming calls from FFC."""
+
+    # celltype could be a string or a cell.
+    if isinstance(cell, str):
+        celltype = cell
+    else:
+        celltype = cell.cellname()
+
+    if " * " in celltype:
+        # Tensor product cell
+        return TensorProductCell(*map(ufc_cell, celltype.split(" * ")))
+    elif celltype == "quadrilateral":
+        return FiredrakeQuadrilateral()
+    elif celltype == "interval":
+        return ufc_simplex(1)
+    elif celltype == "triangle":
+        return ufc_simplex(2)
+    elif celltype == "tetrahedron":
+        return ufc_simplex(3)
+    else:
+        raise RuntimeError("Don't know how to create UFC cell of type %s" % str(celltype))
+
 
 def volume( verts ):
     """Constructs the volume of the simplex spanned by verts"""

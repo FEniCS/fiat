@@ -1,4 +1,5 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This file is part of FIAT.
 #
@@ -313,7 +314,8 @@ class Nedelec( finite_element.FiniteElement ):
             dual = NedelecDual2D( ref_el, degree)
         else:
             raise Exception("Not implemented")
-        finite_element.FiniteElement.__init__( self, poly_set, dual, degree,
+        formdegree = 1 # 1-form
+        finite_element.FiniteElement.__init__( self, poly_set, dual, degree, formdegree,
                                                mapping="covariant piola")
 
 if __name__ == "__main__":

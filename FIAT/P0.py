@@ -16,11 +16,10 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # Written by Robert C. Kirby
+# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
-#
-# Last changed: 2005-05-16
 
 from . import reference_element, dual_set, functional, polynomial_set, finite_element
 import numpy
@@ -49,7 +48,9 @@ class P0( finite_element.FiniteElement ):
     def __init__( self, ref_el ):
         poly_set = polynomial_set.ONPolynomialSet( ref_el, 0 )
         dual = P0Dual( ref_el )
-        finite_element.FiniteElement.__init__( self, poly_set, dual, 0 )
+        degree = 0
+        formdegree = ref_el.get_spatial_dimension() # n-form
+        finite_element.FiniteElement.__init__( self, poly_set, dual, degree, formdegree )
 
 if __name__ == "__main__":
     T = reference_element.UFCTriangle()

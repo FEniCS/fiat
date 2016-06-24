@@ -1,4 +1,5 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This file is part of FIAT.
 #
@@ -48,10 +49,11 @@ class DiscontinuousLagrangeDualSet( dual_set.DualSet ):
 
 class HigherOrderDiscontinuousLagrange( finite_element.FiniteElement ):
     """The discontinuous Lagrange finite element.  It is what it is."""
-    def __init__( self, ref_el, degree ):
+    def __init__( self , ref_el , degree ):
         poly_set = polynomial_set.ONPolynomialSet( ref_el, degree )
         dual = DiscontinuousLagrangeDualSet( ref_el, degree )
-        finite_element.FiniteElement.__init__( self, poly_set, dual, degree )
+        formdegree = ref_el.get_spatial_dimension() # n-form
+        finite_element.FiniteElement.__init__( self, poly_set, dual, degree, formdegree )
 
 def DiscontinuousLagrange( ref_el, degree ):
     if degree == 0:

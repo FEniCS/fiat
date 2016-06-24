@@ -1,4 +1,5 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This file is part of FIAT.
 #
@@ -14,14 +15,18 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+#
+# Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 
 import numpy
 from .polynomial_set import PolynomialSet
+from .quadrature import make_quadrature
+from .reference_element import TensorProductCell, LINE
 
 class FiniteElement:
     """Class implementing Ciarlet's abstraction of a finite element
     being a domain, function space, and set of nodes."""
-    def __init__( self , poly_set , dual , order, mapping="affine"):
+    def __init__( self , poly_set , dual , order, formdegree=None, mapping="affine"):
         # first, compare ref_el of poly_set and dual
         # need to overload equality
         #if poly_set.get_reference_element() != dual.get_reference_element:
@@ -29,6 +34,7 @@ class FiniteElement:
 
         # The order (degree) of the polynomial basis
         self.order = order
+        self.formdegree = formdegree
 
         self.ref_el = poly_set.get_reference_element()
         self.dual = dual
@@ -103,10 +109,19 @@ class FiniteElement:
         freedom for the finite element."""
         return self.dual.get_entity_ids()
 
+    def entity_closure_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom on the closure of those entities for the finite element."""
+        return self.dual.get_entity_closure_ids()
+
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
         finite element."""
         return self.poly_set.get_coeffs()
+
+    def get_formdegree(self):
+        """Return the degree of the associated form (FEEC)"""
+        return self.formdegree
 
     def mapping(self):
         """Return a list of appropriate mappings from the reference
@@ -139,3 +154,52 @@ class FiniteElement:
     def get_num_members(self, arg):
         "Return number of members of the expansion set."
         return self.get_nodal_basis().get_expansion_set().get_num_members(arg)
+
+
+def _facet_support_dofs(elem, quad, facet_transform, facets):
+    """Generic facet support dofs constructor.
+
+    :arg elem: FIAT finite element
+    :arg quad: Quadrature rule on the facet
+    :arg facet_transform: A function mapping a facet number onto a function
+    which maps coordinates on the facet onto coordinates on the cell.
+    :arg facets: Facet numbers to loop over.
+    """
+    eps = 1.e-8  # Is this a safe value?
+
+    weights = quad.get_weights()
+    dim = elem.ref_el.get_spatial_dimension()
+
+    result = {}
+    for f in facets:
+        points = map(facet_transform(f), quad.get_points())
+
+        # Integrate the square of the basis functions on the facet.
+        vals = numpy.double(elem.tabulate(0, points)[(0,) * dim])
+        # Ints contains the square of the basis functions
+        # integrated over the facet.
+        if elem.value_shape():
+            # Vector-valued functions.
+            ints = numpy.dot(numpy.einsum("...ij,...ij->...j", vals, vals), weights)
+        else:
+            ints = numpy.dot(vals**2, weights)
+
+        result[f] = [dof for dof, i in enumerate(ints) if i > eps]
+
+    return result
+
+
+def facet_support_dofs(elem):
+    """Return the map of facet id to the degrees of freedom for which the
+    corresponding basis functions take non-zero values."""
+    if not hasattr(elem, "_facet_support_dofs"):
+        # Non-extruded cells only
+        assert not isinstance(elem.ref_el, TensorProductCell)
+
+        q = make_quadrature(elem.ref_el.get_facet_element(), max(2*elem.degree(), 1))
+        ft = lambda f: elem.ref_el.get_facet_transform(f)
+        dim = elem.ref_el.get_spatial_dimension()
+        facets = elem.entity_dofs()[dim-1].keys()
+        elem._facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
+
+    return elem._facet_support_dofs

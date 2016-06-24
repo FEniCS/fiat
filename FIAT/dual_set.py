@@ -16,16 +16,34 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 import numpy
+from six import iteritems
+
 
 class DualSet:
     def __init__( self, nodes, ref_el, entity_ids ):
         self.nodes = nodes
         self.ref_el = ref_el
         self.entity_ids = entity_ids
+
+        # Compute the nodes on the closure of each sub_entity.
+        self.entity_closure_ids = {}
+        for dim, entities in iteritems(ref_el.sub_entities):
+            self.entity_closure_ids[dim] = {}
+
+            for e, sub_entities in iteritems(entities):
+                ids = []
+
+                for d, se in sub_entities:
+                    ids += self.entity_ids[d][se]
+                self.entity_closure_ids[d][e] = ids
+
         return
 
     def get_nodes( self ):
         return self.nodes
+
+    def get_entity_closure_ids( self ):
+        return self.entity_closure_ids
 
     def get_entity_ids( self ):
         return self.entity_ids

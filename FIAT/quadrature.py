@@ -16,13 +16,14 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # Modified by Marie E. Rognes (meg@simula.no), 2012
+# Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 
 from . import reference_element, expansions, jacobi
 import math
 import numpy
 from .factorial import factorial
 
-class QuadratureRule:
+class QuadratureRule( object ):
     """General class that models integration over a reference element
     as the weighted sum of a function evaluated at a set of points."""
     def __init__( self, ref_el, pts, wts ):
@@ -160,19 +161,58 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
     def jacobian(self):
         return self._J
 
+class TensorProductQuadratureRule(QuadratureRule):
+    """Returns the quadrature rule for a TensorProduct cell, by
+    combining the quadrature rules of the two components"""
+    def __init__( self , ref_el , m ):
+        # Firedrake issue #372 (duplicate: #420)
+        #
+        # This is added here to handle the constant times dx
+        # integral on tensor product elements (e.g. extruded mesh).
+        # For example,
+        #
+        #   assemble(1.0 * dx)
+        #
+        if isinstance(m, int):
+            if m == 1:
+                m = (1, 1)
+            else:
+                raise RuntimeError("Tuple expected as number of points on tensor product element")
+
+        # Get quadrature rules of subcomponents
+        quadA = make_quadrature( ref_el.A, m[0] )
+        quadB = make_quadrature( ref_el.B, m[1] )
+
+        # Combine them. Coordinates are "concatenated", weights are multiplied
+        pts = tuple([pt_a + pt_b for pt_a in quadA.pts for pt_b in quadB.pts ])
+        wts = tuple([wt_a*wt_b for wt_a in quadA.wts for wt_b in quadB.wts ])
+        QuadratureRule.__init__( self , ref_el , pts , wts )
+
 
 def make_quadrature( ref_el, m ):
     """Returns the collapsed quadrature rule using m points per
-    direction on the given reference element."""
+    direction on the given reference element. In the tensor product
+    case, m is a tuple."""
 
-    msg = "Expecting at least one (not %d) quadrature point per direction" % m
-    assert (m > 0), msg
+    if isinstance(m, tuple):
+        min_m = min(m)
+    else:
+        min_m = m
+
+    msg = "Expecting at least one (not %d) quadrature point per direction" % min_m
+    assert (min_m > 0), msg
+
     if ref_el.get_shape() == reference_element.LINE:
         return GaussJacobiQuadratureLineRule( ref_el, m )
     elif ref_el.get_shape() == reference_element.TRIANGLE:
         return CollapsedQuadratureTriangleRule( ref_el, m )
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule( ref_el, m )
+    elif ref_el.get_shape() == reference_element.QUADRILATERAL:
+        return TensorProductQuadratureRule( ref_el, (m, m) )
+    elif ref_el.get_shape() == reference_element.TENSORPRODUCT:
+        return TensorProductQuadratureRule( ref_el, m )
+
 
 # rule to get Gauss-Jacobi points
 def compute_gauss_jacobi_points( a, b, m ):

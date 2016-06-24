@@ -111,7 +111,8 @@ class BrezziDouglasFortinMarini( finite_element.FiniteElement ):
 
         poly_set = BDFMSpace(ref_el, degree)
         dual = BDFMDualSet(ref_el, degree-1)
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree,
+        formdegree = ref_el.get_spatial_dimension() - 1
+        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree,
                                                mapping="contravariant piola")
 
         return
