@@ -23,8 +23,7 @@ class BDFMDualSet(dual_set.DualSet):
             pts_cur = ref_el.make_points(sd - 1, i, sd + degree)
             for j in range(len(pts_cur)):
                 pt_cur = pts_cur[j]
-                f = functional.PointScaledNormalEvaluation(ref_el, i,
-                                                           pt_cur)
+                f = functional.PointScaledNormalEvaluation(ref_el, i, pt_cur)
                 nodes.append(f)
 
         # codimension 1 facet tangents.
@@ -36,8 +35,7 @@ class BDFMDualSet(dual_set.DualSet):
             tangent_count += len(pts_cur)
             for j in range(len(pts_cur)):
                 pt_cur = pts_cur[j]
-                f = functional.PointEdgeTangentEvaluation(ref_el, i,
-                                                          pt_cur)
+                f = functional.PointEdgeTangentEvaluation(ref_el, i, pt_cur)
                 nodes.append(f)
 
         # sets vertices (and in 3d, edges) to have no nodes

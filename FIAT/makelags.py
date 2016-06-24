@@ -40,9 +40,7 @@ def matrix_to_array(mat, mat_name):
     u = numpy.ravel(numpy.transpose(mat))
 
     array_name = mat_name
-    return \
-        """static double %s[] = %s;""" % ( array_name,
-                                           array_to_C_string(u))
+    return """static double %s[] = %s;""" % (array_name, array_to_C_string(u))
 
 T = reference_element.DefaultTriangle()
 shape = "Triangle"

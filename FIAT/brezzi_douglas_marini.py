@@ -38,8 +38,7 @@ class BDMDualSet(dual_set.DualSet):
             pts_cur = ref_el.make_points(sd - 1, i, sd + degree)
             for j in range(len(pts_cur)):
                 pt_cur = pts_cur[j]
-                f = functional.PointScaledNormalEvaluation(ref_el, i,
-                                                           pt_cur)
+                f = functional.PointScaledNormalEvaluation(ref_el, i, pt_cur)
                 nodes.append(f)
 
         # internal nodes
@@ -53,8 +52,7 @@ class BDMDualSet(dual_set.DualSet):
 
             for i in range(len(Ned_at_qpts)):
                 phi_cur = Ned_at_qpts[i, :]
-                l_cur = functional.FrobeniusIntegralMoment(ref_el, Q,
-                                                           phi_cur)
+                l_cur = functional.FrobeniusIntegralMoment(ref_el, Q, phi_cur)
                 nodes.append(l_cur)
 
         # sets vertices (and in 3d, edges) to have no nodes
