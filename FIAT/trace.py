@@ -80,12 +80,12 @@ def map_from_reference_facet(point, vertices):
       point: the reference point to be mapped to the facet
     """
     # Compute barycentric coordinates of point relative to reference facet:
-    reference_simplex = ufc_simplex(len(vertices)-1)
+    reference_simplex = ufc_simplex(len(vertices) - 1)
     reference_vertices = reference_simplex.get_vertices()
     coords = barycentric_coordinates([point, ], reference_vertices)[0]
 
     # Evaluate physical coordinate of point using barycentric coordinates
-    point = sum(vertices[j]*coords[j] for j in range(len(coords)))
+    point = sum(vertices[j] * coords[j] for j in range(len(coords)))
 
     return tuple(point)
 
@@ -101,7 +101,7 @@ def map_to_reference_facet(points, vertices, facet):
     all_coords = barycentric_coordinates(points, vertices)
 
     # Extract vertices of reference facet simplex
-    reference_facet_simplex = ufc_simplex(len(vertices)-2)
+    reference_facet_simplex = ufc_simplex(len(vertices) - 2)
     ref_vertices = reference_facet_simplex.get_vertices()
 
     reference_points = []
@@ -112,7 +112,7 @@ def map_to_reference_facet(points, vertices, facet):
 
         # Evaluate reference coordinate of point using revised
         # barycentric coordinates
-        reference_pt = sum(numpy.asarray(ref_vertices[j])*new_coords[j]
+        reference_pt = sum(numpy.asarray(ref_vertices[j]) * new_coords[j]
                            for j in range(len(new_coords)))
 
         reference_points += [reference_pt]
@@ -151,7 +151,7 @@ class DiscontinuousLagrangeTrace(object):
         # For each facet, we have dim(DG_k on that facet) number of dofs
         n = self.DG.space_dimension()
         for i in range(self.num_facets):
-            self.entity_ids[tdim-1][i] = range(i*n, (i+1)*n)
+            self.entity_ids[tdim - 1][i] = range(i * n, (i + 1) * n)
 
     def degree(self):
         return self.k
@@ -162,7 +162,7 @@ class DiscontinuousLagrangeTrace(object):
     def space_dimension(self):
         """The space dimension of the trace space corresponds to the
         DG space dimesion on each facet times the number of facets."""
-        return self.DG.space_dimension()*self.num_facets
+        return self.DG.space_dimension() * self.num_facets
 
     def entity_dofs(self):
         return self.entity_ids
@@ -232,7 +232,7 @@ class DiscontinuousLagrangeTrace(object):
             non_zeros = list(self.DG.tabulate(order, new_points).values())[0]
             m = non_zeros.shape[0]
             dg_dim = self.DG.space_dimension()
-            values[dg_dim*unique_facet:dg_dim*unique_facet+m, :] = non_zeros
+            values[dg_dim*unique_facet:dg_dim*unique_facet + m, :] = non_zeros
 
         # Return expected dictionary
         tdim = self.cell.get_spatial_dimension()
@@ -259,6 +259,7 @@ class DiscontinuousLagrangeTrace(object):
 
     def __str__(self):
         return "DiscontinuousLagrangeTrace(%s, %s)" % (self.cell, self.k)
+
 
 if __name__ == "__main__":
 

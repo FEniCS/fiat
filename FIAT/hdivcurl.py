@@ -28,7 +28,7 @@ def Hdiv(element):
     if element.A.get_formdegree() is None or element.B.get_formdegree() is None:
         raise ValueError("form degree of sub-element was None (not set during initialisation), Hdiv cannot be done without this information")
     formdegree = element.A.get_formdegree() + element.B.get_formdegree()
-    if not (formdegree == element.get_reference_element().get_spatial_dimension() - 1):
+    if formdegree != element.get_reference_element().get_spatial_dimension() - 1:
         raise ValueError("Tried to use Hdiv on a non-(n-1)-form element")
 
     newelement = TensorProductElement(element.A, element.B)  # make a copy to return

@@ -41,7 +41,7 @@ class LagrangeDualSet(dual_set.DualSet):
                              for x in pts_cur]
                 nnodes_cur = len(nodes_cur)
                 nodes += nodes_cur
-                entity_ids[dim][entity] = list(range(cur, cur+nnodes_cur))
+                entity_ids[dim][entity] = list(range(cur, cur + nnodes_cur))
                 cur += nnodes_cur
 
         dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
@@ -56,16 +56,17 @@ class Lagrange(finite_element.FiniteElement):
         formdegree = 0  # 0-form
         finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree)
 
+
 if __name__ == "__main__":
     from . import reference_element
     # UFC triangle and points
     T = reference_element.UFCTriangle()
     pts = T.make_lattice(1)
-   # pts = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
+    # pts = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
 
     # FIAT triangle and points
-#    T = reference_element.DefaultTriangle()
-#    pts = [(-1.0, -1.0), (1.0, -1.0), (-1.0, 1.0)]
+    # T = reference_element.DefaultTriangle()
+    # pts = [(-1.0, -1.0), (1.0, -1.0), (-1.0, 1.0)]
 
     L = Lagrange(T, 1)
     Ufs = L.get_nodal_basis()

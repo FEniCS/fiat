@@ -68,8 +68,8 @@ for i in range(3):
     l = K.volume_of_subcomplex(1, i)
     nt = numpy.transpose([n, t])
     [f, g] = numpy.dot(nhat, numpy.dot(AinvT, nt)) / l
-    D[3+i, 3+i] = f
-    D[3+i, 6+i] = g
+    D[3 + i, 3 + i] = f
+    D[3 + i, 6 + i] = g
 
 for d in D.tolist():
     print(d)
@@ -79,13 +79,13 @@ for i in range(3):
     E[i, i] = 1.0
 
 for i in range(3):
-    E[3+i, 3+i] = K.volume_of_subcomplex(1, i)
+    E[3 + i, 3 + i] = K.volume_of_subcomplex(1, i)
 
 for i in range(3):
     evids = K.topology[1][i]
     elen = K.volume_of_subcomplex(1, i)
-    E[6+i, evids[1]] = 1.0
-    E[6+i, evids[0]] = -1.0
+    E[6 + i, evids[1]] = 1.0
+    E[6 + i, evids[0]] = -1.0
 
 print(E)
 print()

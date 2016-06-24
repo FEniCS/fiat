@@ -47,11 +47,10 @@ class QuadratureRule(object):
 class GaussJacobiQuadratureLineRule(QuadratureRule):
     """Gauss-Jacobi quadature rule determined by Jacobi weights a and b
     using m roots of m:th order Jacobi polynomial."""
-#    def __init__( self , ref_el , a , b , m ):
 
     def __init__(self, ref_el, m):
         # this gives roots on the default (-1,1) reference element
-        #        (xs_ref,ws_ref) = compute_gauss_jacobi_rule( a , b , m )
+        #        (xs_ref, ws_ref) = compute_gauss_jacobi_rule(a, b, m)
         (xs_ref, ws_ref) = compute_gauss_jacobi_rule(0., 0., m)
 
         Ref1 = reference_element.DefaultLine()
@@ -159,8 +158,8 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
         points = numpy.array([F(p) for p in ref_points])
 
         # Map weights: multiply reference weights by sqrt(|J^T J|)
-        detJTJ = numpy.linalg.det(J.transpose()*J)
-        weights = numpy.sqrt(detJTJ)*ref_weights
+        detJTJ = numpy.linalg.det(J.transpose() * J)
+        weights = numpy.sqrt(detJTJ) * ref_weights
 
         # Initialize super class with new points and weights
         QuadratureRule.__init__(self, reference_tet, points, weights)
@@ -199,7 +198,7 @@ class TensorProductQuadratureRule(QuadratureRule):
 
         # Combine them. Coordinates are "concatenated", weights are multiplied
         pts = tuple([pt_a + pt_b for pt_a in quadA.pts for pt_b in quadB.pts])
-        wts = tuple([wt_a*wt_b for wt_a in quadA.wts for wt_b in quadB.wts])
+        wts = tuple([wt_a * wt_b for wt_a in quadA.wts for wt_b in quadB.wts])
         QuadratureRule.__init__(self, ref_el, pts, wts)
 
 
@@ -238,9 +237,9 @@ def compute_gauss_jacobi_points(a, b, m):
     eps = 1.e-8
     max_iter = 100
     for k in range(0, m):
-        r = -math.cos((2.0*k + 1.0) * math.pi / (2.0 * m))
+        r = -math.cos((2.0 * k + 1.0) * math.pi / (2.0 * m))
         if k > 0:
-            r = 0.5 * (r + x[k-1])
+            r = 0.5 * (r + x[k - 1])
         j = 0
         delta = 2 * eps
         while j < max_iter:
@@ -265,7 +264,7 @@ def compute_gauss_jacobi_points(a, b, m):
 def compute_gauss_jacobi_rule(a, b, m):
     xs = compute_gauss_jacobi_points(a, b, m)
 
-    a1 = math.pow(2, a+b+1)
+    a1 = math.pow(2, a + b + 1)
     a2 = gamma(a + m + 1)
     a3 = gamma(b + m + 1)
     a4 = gamma(a + b + m + 1)
@@ -300,11 +299,12 @@ def ln_gamma(xx):
     for j in range(0, 6):
         y = y + 1
         ser += cof[j] / y
-    return -tmp + math.log(2.5066282746310005*ser/x)
+    return -tmp + math.log(2.5066282746310005 * ser / x)
 
 
 def gamma(xx):
     return math.exp(ln_gamma(xx))
+
 
 if __name__ == "__main__":
     T = reference_element.DefaultTetrahedron()
@@ -321,10 +321,12 @@ if __name__ == "__main__":
                         for i in range(phis.shape[0])]
                        for j in range(phis.shape[0])])
 
-#    print qpts
-#    print qwts
+    # print qpts
+    # print qwts
     # print foo
-    cells = [(reference_element.default_simplex(i), reference_element.ufc_simplex(i)) for i in range(1, 4)]
+    cells = [(reference_element.default_simplex(i),
+              reference_element.ufc_simplex(i))
+             for i in range(1, 4)]
     order = 1
     for def_elem, ufc_elem in cells:
         print("\n\ndefault element")

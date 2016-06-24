@@ -22,6 +22,6 @@ def factorial(n):
     if not isinstance(n, type(1)) or n < 0:
         raise ArithmeticError("factorial only defined on natural numbers.")
     f = 1
-    for i in range(1, n+1):
+    for i in range(1, n + 1):
         f = f * i
     return f

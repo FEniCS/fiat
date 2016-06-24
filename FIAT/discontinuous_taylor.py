@@ -29,7 +29,7 @@ class DiscontinuousTaylorDualSet(dual_set.DualSet):
 
     def __init__(self, ref_el, degree):
 
-        assert(ref_el.get_spatial_dimension() == 1)
+        assert ref_el.get_spatial_dimension() == 1
 
         entity_ids = {}
         nodes = []
@@ -41,14 +41,14 @@ class DiscontinuousTaylorDualSet(dual_set.DualSet):
 
         vertices = ref_el.get_vertices()
         midpoint = (vertices[1][0] + vertices[0][0]) / 2.0
-        for k in range(1, degree+1):
+        for k in range(1, degree + 1):
             nodes.append(functional.PointDerivative(ref_el, (midpoint,), [k]))
 
         entity_ids[0] = {}
         entity_ids[1] = {}
         entity_ids[0][0] = []
         entity_ids[0][1] = []
-        entity_ids[1][0] = list(range(degree+1))
+        entity_ids[1][0] = list(range(degree + 1))
 
         dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
 

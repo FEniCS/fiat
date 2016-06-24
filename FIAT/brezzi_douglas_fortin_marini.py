@@ -5,7 +5,6 @@ import numpy
 
 
 class BDFMDualSet(dual_set.DualSet):
-
     def __init__(self, ref_el, degree):
 
         # Initialize containers for map: mesh_entity -> dof number and
@@ -19,7 +18,7 @@ class BDFMDualSet(dual_set.DualSet):
         # Define each functional for the dual set
         # codimension 1 facet normals.
         # note this will die for degree greater than 1.
-        for i in range(len(t[sd-1])):
+        for i in range(len(t[sd - 1])):
             pts_cur = ref_el.make_points(sd - 1, i, sd + degree)
             for j in range(len(pts_cur)):
                 pt_cur = pts_cur[j]
@@ -30,7 +29,7 @@ class BDFMDualSet(dual_set.DualSet):
         # because the tangent component is discontinuous, these actually
         # count as internal nodes.
         tangent_count = 0
-        for i in range(len(t[sd-1])):
+        for i in range(len(t[sd - 1])):
             pts_cur = ref_el.make_points(sd - 1, i, sd + degree - 1)
             tangent_count += len(pts_cur)
             for j in range(len(pts_cur)):
@@ -50,13 +49,13 @@ class BDFMDualSet(dual_set.DualSet):
         pts_facet_0 = ref_el.make_points(sd - 1, 0, sd + degree)
         pts_per_facet = len(pts_facet_0)
 
-        entity_ids[sd-1] = {}
-        for i in range(len(t[sd-1])):
-            entity_ids[sd-1][i] = list(range(cur, cur + pts_per_facet))
+        entity_ids[sd - 1] = {}
+        for i in range(len(t[sd - 1])):
+            entity_ids[sd - 1][i] = list(range(cur, cur + pts_per_facet))
             cur += pts_per_facet
 
         # internal nodes
-        entity_ids[sd] = {0: list(range(cur, cur+tangent_count))}
+        entity_ids[sd] = {0: list(range(cur, cur + tangent_count))}
         cur += tangent_count
 
         dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
@@ -78,8 +77,9 @@ def BDFMSpace(ref_el, order):
     # Scalar quadratic Lagrange element.
     lagrange_ele = lagrange.Lagrange(ref_el, order)
     # Select the dofs associated with the edges.
-    edge_dofs_dict = lagrange_ele.dual.get_entity_ids()[sd-1]
-    edge_dofs = numpy.array([(edge, dof) for edge, dofs in list(edge_dofs_dict.items())
+    edge_dofs_dict = lagrange_ele.dual.get_entity_ids()[sd - 1]
+    edge_dofs = numpy.array([(edge, dof)
+                             for edge, dofs in list(edge_dofs_dict.items())
                              for dof in dofs])
 
     tangent_polys = lagrange_ele.poly_set.take(edge_dofs[:, 1])
@@ -111,12 +111,17 @@ class BrezziDouglasFortinMarini(finite_element.FiniteElement):
             raise Exception("BDFM_k elements only valid for k == 2")
 
         poly_set = BDFMSpace(ref_el, degree)
-        dual = BDFMDualSet(ref_el, degree-1)
+        dual = BDFMDualSet(ref_el, degree - 1)
         formdegree = ref_el.get_spatial_dimension() - 1
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree,
+        finite_element.FiniteElement.__init__(self,
+                                              poly_set,
+                                              dual,
+                                              degree,
+                                              formdegree,
                                               mapping="contravariant piola")
 
         return
+
 
 if __name__ == "__main__":
     T = reference_element.UFCTriangle()

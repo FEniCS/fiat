@@ -46,7 +46,7 @@ class CubicHermiteDualSet(dual_set.DualSet):
 
                 nodes.append(pd(ref_el, verts[v], alpha))
 
-            entity_ids[0][v] = list(range(cur, cur+1+sd))
+            entity_ids[0][v] = list(range(cur, cur + 1 + sd))
             cur += sd + 1
 
         # no edge dof
@@ -59,10 +59,10 @@ class CubicHermiteDualSet(dual_set.DualSet):
             pt = ref_el.make_points(2, f, 3)[0]
             n = functional.PointEvaluation(ref_el, pt)
             nodes.append(n)
-            entity_ids[2] = list(range(cur, cur+1))
+            entity_ids[2] = list(range(cur, cur + 1))
             cur += 1
 
-        for dim in range(3, sd+1):
+        for dim in range(3, sd + 1):
             entity_ids[dim] = {}
             for facet in top[dim]:
                 entity_ids[dim][facet] = []
@@ -77,6 +77,7 @@ class CubicHermite(finite_element.FiniteElement):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 3)
         dual = CubicHermiteDualSet(ref_el)
         finite_element.FiniteElement.__init__(self, poly_set, dual, 3)
+
 
 if __name__ == "__main__":
     from . import reference_element

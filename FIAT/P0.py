@@ -26,7 +26,6 @@ import numpy
 
 
 class P0Dual(dual_set.DualSet):
-
     def __init__(self, ref_el):
         entity_ids = {}
         nodes = []

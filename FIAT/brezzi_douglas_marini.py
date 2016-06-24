@@ -21,7 +21,6 @@ from . import finite_element, raviart_thomas, quadrature, functional, \
 
 
 class BDMDualSet(dual_set.DualSet):
-
     def __init__(self, ref_el, degree):
 
         # Initialize containers for map: mesh_entity -> dof number and
@@ -34,7 +33,7 @@ class BDMDualSet(dual_set.DualSet):
 
         # Define each functional for the dual set
         # codimension 1 facets
-        for i in range(len(t[sd-1])):
+        for i in range(len(t[sd - 1])):
             pts_cur = ref_el.make_points(sd - 1, i, sd + degree)
             for j in range(len(pts_cur)):
                 pt_cur = pts_cur[j]
@@ -67,9 +66,9 @@ class BDMDualSet(dual_set.DualSet):
         pts_facet_0 = ref_el.make_points(sd - 1, 0, sd + degree)
         pts_per_facet = len(pts_facet_0)
 
-        entity_ids[sd-1] = {}
-        for i in range(len(t[sd-1])):
-            entity_ids[sd-1][i] = list(range(cur, cur + pts_per_facet))
+        entity_ids[sd - 1] = {}
+        for i in range(len(t[sd - 1])):
+            entity_ids[sd - 1][i] = list(range(cur, cur + pts_per_facet))
             cur += pts_per_facet
 
         # internal nodes, if applicable
@@ -91,13 +90,18 @@ class BrezziDouglasMarini(finite_element.FiniteElement):
             raise Exception("BDM_k elements only valid for k >= 1")
 
         sd = ref_el.get_spatial_dimension()
-        poly_set = polynomial_set.ONPolynomialSet(ref_el, degree, (sd,))
+        poly_set = polynomial_set.ONPolynomialSet(ref_el, degree, (sd, ))
         dual = BDMDualSet(ref_el, degree)
-        formdegree = sd-1  # (n-1)-form
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree,
+        formdegree = sd - 1  # (n-1)-form
+        finite_element.FiniteElement.__init__(self,
+                                              poly_set,
+                                              dual,
+                                              degree,
+                                              formdegree,
                                               mapping="contravariant piola")
 
         return
+
 
 if __name__ == "__main__":
     T = reference_element.UFCTetrahedron()

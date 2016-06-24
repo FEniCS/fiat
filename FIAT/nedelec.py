@@ -29,14 +29,14 @@ def NedelecSpace2D(ref_el, k):
     if sd != 2:
         raise Exception("NedelecSpace2D requires 2d reference element")
 
-    vec_Pkp1 = polynomial_set.ONPolynomialSet(ref_el, k+1, (sd,))
+    vec_Pkp1 = polynomial_set.ONPolynomialSet(ref_el, k + 1, (sd,))
 
-    dimPkp1 = expansions.polynomial_dimension(ref_el, k+1)
+    dimPkp1 = expansions.polynomial_dimension(ref_el, k + 1)
     dimPk = expansions.polynomial_dimension(ref_el, k)
-    dimPkm1 = expansions.polynomial_dimension(ref_el, k-1)
+    dimPkm1 = expansions.polynomial_dimension(ref_el, k - 1)
 
-    vec_Pk_indices = reduce(lambda a, b: a+b,
-                            [list(range(i*dimPkp1, i*dimPkp1+dimPk))
+    vec_Pk_indices = reduce(lambda a, b: a + b,
+                            [list(range(i * dimPkp1, i * dimPkp1 + dimPk))
                              for i in range(sd)])
     vec_Pk_from_Pkp1 = vec_Pkp1.take(vec_Pk_indices)
 
@@ -102,12 +102,12 @@ def NedelecSpace3D(ref_el, k):
         dimPkm1 = 0
 
     vec_Pk_indices = reduce(lambda a, b: a + b,
-                            [list(range(i * dimPkp1, i * dimPkp1+dimPk))
+                            [list(range(i * dimPkp1, i * dimPkp1 + dimPk))
                              for i in range(sd)])
     vec_Pk = vec_Pkp1.take(vec_Pk_indices)
 
     vec_Pke_indices = reduce(lambda a, b: a + b,
-                             [list(range(i*dimPkp1+dimPkm1, i*dimPkp1+dimPk))
+                             [list(range(i * dimPkp1 + dimPkm1, i * dimPkp1 + dimPk))
                               for i in range(sd)])
 
     vec_Pke = vec_Pkp1.take(vec_Pke_indices)
@@ -130,8 +130,9 @@ def NedelecSpace3D(ref_el, k):
 
     for i in range(vec_Pke.get_num_members()):
         for j in range(sd):  # vector components
-            qwts_cur_bf_val = (Qpts[:, (j+2) % 3]*Pke_qpts[i, (j+1) % 3, :]
-                               - Qpts[:, (j+1) % 3] * Pke_qpts[i, (j+2) % 3, :]) * Qwts
+            qwts_cur_bf_val = (
+                Qpts[:, (j + 2) % 3] * Pke_qpts[i, (j + 1) % 3, :] -
+                Qpts[:, (j + 1) % 3] * Pke_qpts[i, (j + 2) % 3, :]) * Qwts
             PkCrossXcoeffs[i, j, :] = numpy.dot(Pkp1_at_Qpts, qwts_cur_bf_val)
 #            for k in range( Pkp1.get_num_members() ):
 #                 PkCrossXcoeffs[i,j,k] = sum( Qwts * cur_bf_val * Pkp1_at_Qpts[k,:] )
@@ -244,9 +245,7 @@ class NedelecDual3D(dual_set.DualSet):
                 for j in range(len(pts_cur)):  # loop over points
                     pt_cur = pts_cur[j]
                     for k in range(2):  # loop over tangents
-                        f = functional.PointFaceTangentEvaluation(ref_el,
-                                                                  i, k,
-                                                                  pt_cur)
+                        f = functional.PointFaceTangentEvaluation(ref_el, i, k, pt_cur)
                         nodes.append(f)
 
         if degree > 1:  # internal moments

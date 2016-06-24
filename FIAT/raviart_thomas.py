@@ -27,14 +27,14 @@ def RTSpace(ref_el, deg):
     (P_k)^d + P_k x"""
     sd = ref_el.get_spatial_dimension()
 
-    vec_Pkp1 = polynomial_set.ONPolynomialSet(ref_el, deg+1, (sd,))
+    vec_Pkp1 = polynomial_set.ONPolynomialSet(ref_el, deg + 1, (sd,))
 
-    dimPkp1 = expansions.polynomial_dimension(ref_el, deg+1)
+    dimPkp1 = expansions.polynomial_dimension(ref_el, deg + 1)
     dimPk = expansions.polynomial_dimension(ref_el, deg)
-    dimPkm1 = expansions.polynomial_dimension(ref_el, deg-1)
+    dimPkm1 = expansions.polynomial_dimension(ref_el, deg - 1)
 
-    vec_Pk_indices = reduce(lambda a, b: a+b,
-                            [list(range(i*dimPkp1, i*dimPkp1+dimPk))
+    vec_Pk_indices = reduce(lambda a, b: a + b,
+                            [list(range(i * dimPkp1, i * dimPkp1 + dimPk))
                              for i in range(sd)])
     vec_Pk_from_Pkp1 = vec_Pkp1.take(vec_Pk_indices)
 
@@ -85,7 +85,7 @@ class RTDualSet(dual_set.DualSet):
         t = ref_el.get_topology()
 
         # codimension 1 facets
-        for i in range(len(t[sd-1])):
+        for i in range(len(t[sd - 1])):
             pts_cur = ref_el.make_points(sd - 1, i, sd + degree)
             for j in range(len(pts_cur)):
                 pt_cur = pts_cur[j]
@@ -101,18 +101,17 @@ class RTDualSet(dual_set.DualSet):
                     l_cur = cpe(ref_el, d, (sd,), pts[i])
                     nodes.append(l_cur)
 
-#            Q = quadrature.make_quadrature( ref_el , 2 * ( degree + 1 ) )
-#            qpts = Q.get_points()
-#            Pkm1 = polynomial_set.ONPolynomialSet( ref_el , degree - 1 )
-#            zero_index = tuple( [ 0 for i in range( sd ) ]  )
-#            Pkm1_at_qpts = Pkm1.tabulate( qpts )[ zero_index ]
+            # Q = quadrature.make_quadrature(ref_el, 2 * ( degree + 1 ))
+            # qpts = Q.get_points()
+            # Pkm1 = polynomial_set.ONPolynomialSet(ref_el, degree - 1)
+            # zero_index = tuple([0 for i in range(sd)])
+            # Pkm1_at_qpts = Pkm1.tabulate(qpts)[zero_index]
 
-#            for d in range( sd ):
-#                for i in range( Pkm1_at_qpts.shape[0] ):
-#                    phi_cur = Pkm1_at_qpts[i,:]
-#                    l_cur = functional.IntegralMoment( ref_el , Q , \
-#                                                       phi_cur , (d,) , (sd,) )
-#                    nodes.append( l_cur )
+            # for d in range(sd):
+            #     for i in range(Pkm1_at_qpts.shape[0]):
+            #         phi_cur = Pkm1_at_qpts[i, :]
+            #         l_cur = functional.IntegralMoment(ref_el, Q, phi_cur, (d,), (sd,))
+            #         nodes.append(l_cur)
 
         # sets vertices (and in 3d, edges) to have no nodes
         for i in range(sd - 1):
@@ -125,9 +124,9 @@ class RTDualSet(dual_set.DualSet):
         # set codimension 1 (edges 2d, faces 3d) dof
         pts_facet_0 = ref_el.make_points(sd - 1, 0, sd + degree)
         pts_per_facet = len(pts_facet_0)
-        entity_ids[sd-1] = {}
-        for i in range(len(t[sd-1])):
-            entity_ids[sd-1][i] = list(range(cur, cur + pts_per_facet))
+        entity_ids[sd - 1] = {}
+        for i in range(len(t[sd - 1])):
+            entity_ids[sd - 1][i] = list(range(cur, cur + pts_per_facet))
             cur += pts_per_facet
 
         # internal nodes, if applicable
@@ -160,14 +159,13 @@ if __name__ == "__main__":
     for k in range(6):
         RT = RaviartThomas(T, k)
 
+    # RTfs = RT.get_nodal_basis()
 
-#    RTfs = RT.get_nodal_basis()
+    # pts = T.make_lattice(1)
+    # print pts
 
-#    pts = T.make_lattice( 1 )
-#    print pts
+    # zero_index = tuple([0 for i in range(sd)])
 
-#    zero_index = tuple( [ 0 for i in range(sd) ] )
-#
-#    RTvals = RTfs.tabulate( pts )[zero_index]
+    # RTvals = RTfs.tabulate(pts)[zero_index]
 
-#    print RTvals
+    # print RTvals

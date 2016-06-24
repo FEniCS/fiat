@@ -56,10 +56,10 @@ class ReggeDual(DualSet):
         top = cell.get_topology()
         d = cell.get_spatial_dimension()
         if (d < 2) or (d > 3):
-            raise("Regge elements only implemented for dimension 2--3.")
+            raise ValueError("Regge elements only implemented for dimension 2--3.")
 
         # No vertex dof
-        ids[0] = dict(list(zip(list(range(d+1)), ([] for i in range(d+1)))))
+        ids[0] = dict(list(zip(list(range(d + 1)), ([] for i in range(d + 1)))))
         # edge dofs
         (_dofs, _ids) = self._generate_edge_dofs(cell, degree, 0)
         dofs.extend(_dofs)
@@ -135,8 +135,7 @@ class ReggeDual(DualSet):
             dofs += [InnerProduct(cell, e[i], e[j], p)
                      for [i, j] in index_iterator((d, d)) if i <= j]
         # Fill ids
-        ids = {0:
-               list(range(offset, offset + len(pts) * d * (d + 1) // 2))}
+        ids = {0: list(range(offset, offset + len(pts) * d * (d + 1) // 2))}
         return (dofs, ids)
 
 
@@ -150,7 +149,7 @@ class Regge(FiniteElement):
 
     def __init__(self, cell, degree):
         # Check degree
-        assert(degree >= 0), "Regge start at degree 0!"
+        assert degree >= 0, "Regge start at degree 0!"
         # Get dimension
         d = cell.get_spatial_dimension()
         # Construct polynomial basis for d-vector fields
@@ -162,22 +161,20 @@ class Regge(FiniteElement):
         # Call init of super-class
         FiniteElement.__init__(self, Ps, Ls, degree, mapping=mapping)
 
+
 if __name__ == "__main__":
     print("Test 0: Regge degree 0 in 2D.")
     T = UFCTriangle()
     R = Regge(T, 0)
     print("-----")
     pts = numpy.array([[0.0, 0.0]])
-    ts = numpy.array([[0.0, 1.0],
-                      [1.0, 0.0],
-                      [-1.0, 1.0]])
+    ts = numpy.array([[0.0, 1.0], [1.0, 0.0], [-1.0, 1.0]])
     vals = R.tabulate(0, pts)[(0, 0)]
     for i in range(R.space_dimension()):
         print("Basis #{}:".format(i))
         for j in range(len(pts)):
             tut = [t.dot(vals[i, :, :, j].dot(t)) for t in ts]
-            print("u(t,t) for edge tagents t at {} are: {}".format(
-                pts[j], tut))
+            print("u(t,t) for edge tagents t at {} are: {}".format(pts[j], tut))
     print("-----")
     print("Expected result: a single 1 for each basis and zeros for others.")
     print("")
@@ -198,8 +195,7 @@ if __name__ == "__main__":
         print("Basis #{}:".format(i))
         for j in range(len(pts)):
             tut = [t.dot(vals[i, :, :, j].dot(t)) for t in ts]
-            print("u(t,t) for edge tagents t at {} are: {}".format(
-                pts[j], tut))
+            print("u(t,t) for edge tagents t at {} are: {}".format(pts[j], tut))
     print("-----")
     print("Expected result: a single 1 for each basis and zeros for others.")
     print("")

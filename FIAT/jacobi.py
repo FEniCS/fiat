@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
-
 """Several functions related to the one-dimensional jacobi polynomials:
 Evaluation, evaluation of derivatives, plus computation of the roots
 via Newton's method.  These mainly are used in defining the expansion
@@ -39,7 +38,7 @@ def eval_jacobi(a, b, n, x):
         pn2 = 1.0
         pn1 = 0.5 * (a - b + (apb + 2.0) * x)
         p = 0
-        for k in range(2, n+1):
+        for k in range(2, n + 1):
             a1 = 2.0 * k * (k + apb) * (2.0 * k + apb - 2.0)
             a2 = (2.0 * k + apb - 1.0) * (a * a - b * b)
             a3 = ( 2.0 * k + apb - 2.0 )  \
@@ -62,7 +61,7 @@ def eval_jacobi_batch(a, b, n, xs):
     Returns a two-dimensional array of points, where the
     rows correspond to the Jacobi polynomials and the
     columns correspond to the points."""
-    result = numpy.zeros((n+1, len(xs)), xs.dtype)
+    result = numpy.zeros((n + 1, len(xs)), xs.dtype)
     # hack to make sure AD type is propogated through
     for ii in range(result.shape[1]):
         result[0, ii] = 1.0 + xs[ii, 0] - xs[ii, 0]
@@ -73,7 +72,7 @@ def eval_jacobi_batch(a, b, n, xs):
         result[1, :] = 0.5 * (a - b + (a + b + 2.0) * xsnew)
 
         apb = a + b
-        for k in range(2, n+1):
+        for k in range(2, n + 1):
             a1 = 2.0 * k * (k + apb) * (2.0 * k + apb - 2.0)
             a2 = (2.0 * k + apb - 1.0) * (a * a - b * b)
             a3 = ( 2.0 * k + apb - 2.0 )  \
@@ -94,7 +93,7 @@ def eval_jacobi_deriv(a, b, n, x):
     if n == 0:
         return 0.0
     else:
-        return 0.5 * (a + b + n + 1) * eval_jacobi(a+1, b+1, n-1, x)
+        return 0.5 * (a + b + n + 1) * eval_jacobi(a + 1, b + 1, n - 1, x)
 
 
 def eval_jacobi_deriv_batch(a, b, n, xs):
@@ -103,11 +102,11 @@ def eval_jacobi_deriv_batch(a, b, n, xs):
     Returns a two-dimensional array of points, where the
     rows correspond to the Jacobi polynomials and the
     columns correspond to the points."""
-    results = numpy.zeros((n+1, len(xs)), "d")
+    results = numpy.zeros((n + 1, len(xs)), "d")
     if n == 0:
         return results
     else:
-        results[1:, :] = eval_jacobi_batch(a+1, b+1, n-1, xs)
-    for j in range(1, n+1):
-        results[j, :] *= 0.5*(a+b+j+1)
+        results[1:, :] = eval_jacobi_batch(a + 1, b + 1, n - 1, xs)
+    for j in range(1, n + 1):
+        results[j, :] *= 0.5 * (a + b + j + 1)
     return results

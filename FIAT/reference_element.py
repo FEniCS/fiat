@@ -16,7 +16,6 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
-
 """
 Abstract class and particular implementations of finite element
 reference simplex geometry/topology.
@@ -82,7 +81,7 @@ def lattice_iter(start, finish, depth):
             yield [ii]
     else:
         for ii in range(start, finish):
-            for jj in lattice_iter(start, finish-ii, depth - 1):
+            for jj in lattice_iter(start, finish - ii, depth - 1):
                 yield [ii] + jj
 
 
@@ -193,7 +192,7 @@ class ReferenceElement:
 
         # what is the vertex not in the facet?
         verts_set = set(t[sd][0])
-        verts_facet = set(t[sd-1][facet_i])
+        verts_facet = set(t[sd - 1][facet_i])
         verts_diff = verts_set.difference(verts_facet)
         if len(verts_diff) != 1:
             raise Exception("barf in normal computation: getting sign")
@@ -215,8 +214,7 @@ class ReferenceElement:
         of dimension dim.  Returns a (possibly empty) list.
         These tangents are *NOT* normalized to have unit length."""
         t = self.get_topology()
-        vs = list(map(numpy.array,
-                      self.get_vertices_of_subcomplex(t[dim][i])))
+        vs = list(map(numpy.array, self.get_vertices_of_subcomplex(t[dim][i])))
         ts = [v - vs[0] for v in vs[1:]]
         return ts
 
@@ -248,7 +246,7 @@ class ReferenceElement:
         t = self.get_topology()
         (v0, v1, v2) = list(map(numpy.array,
                                 self.get_vertices_of_subcomplex(t[2][face_i])))
-        return (v1-v0, v2-v0)
+        return (v1 - v0, v2 - v0)
 
     def make_lattice(self, n, interior=0):
         """Constructs a lattice of points on the simplex.  For
@@ -270,7 +268,7 @@ class ReferenceElement:
         for indices in lattice_iter(interior, n + 1 - interior, m):
             res_cur = vs[0].copy()
             for i in range(len(indices)):
-                res_cur += indices[i] * hs[m-i-1]
+                res_cur += indices[i] * hs[m - i - 1]
             result.append(tuple(res_cur))
 
         return result
@@ -314,7 +312,7 @@ class ReferenceElement:
         volume of that facet."""
         t = self.get_topology()
         sd = self.get_spatial_dimension()
-        facet_verts_ids = t[sd-1][facet_i]
+        facet_verts_ids = t[sd - 1][facet_i]
         facet_verts_coords = self.get_vertices_of_subcomplex(facet_verts_ids)
 
         v = volume(facet_verts_coords)
@@ -344,17 +342,16 @@ class ReferenceElement:
         A = numpy.zeros([sd_f, sd_f])
 
         for i in range(A.shape[0]):
-            A[i, :] = (v_f[i+1] - v_f[0])
+            A[i, :] = (v_f[i + 1] - v_f[0])
             A[i, :] /= A[i, :].dot(A[i, :])
 
         # Facet vertices in cell space.
-        v_c = numpy.array(
-            self.get_vertices_of_subcomplex(t[sd_c - 1][facet_i]))
+        v_c = numpy.array(self.get_vertices_of_subcomplex(t[sd_c - 1][facet_i]))
 
         B = numpy.zeros([sd_c, sd_f])
 
         for j in range(B.shape[1]):
-            B[:, j] = (v_c[j+1] - v_c[0])
+            B[:, j] = (v_c[j + 1] - v_c[0])
 
         C = B.dot(A)
 
@@ -364,7 +361,6 @@ class ReferenceElement:
 
 
 class UFCReferenceElement(ReferenceElement):
-
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
@@ -442,7 +438,7 @@ class UFCTriangle(UFCReferenceElement):
         "UFC consistent normal"
         t = self.compute_tangents(1, i)[0]
         n = numpy.array((t[1], -t[0]))
-        return n/numpy.linalg.norm(n)
+        return n / numpy.linalg.norm(n)
 
     def __eq__(self, other):
         if isinstance(other, UFCTriangle):
@@ -558,7 +554,7 @@ class UFCTetrahedron(UFCReferenceElement):
         "UFC consistent normals."
         t = self.compute_tangents(2, i)
         n = numpy.cross(t[0], t[1])
-        return -2.0*n/numpy.linalg.norm(n)
+        return -2.0 * n / numpy.linalg.norm(n)
 
     def __eq__(self, other):
         if isinstance(other, UFCTetrahedron):
@@ -623,7 +619,8 @@ class TensorProductCell(ReferenceElement):
         self.A = A
         self.B = B
         # vertices
-        verts = tuple([a_coord + b_coord for a_coord in A.get_vertices()
+        verts = tuple([a_coord + b_coord
+                       for a_coord in A.get_vertices()
                        for b_coord in B.get_vertices()])
         # topology
         Atop = A.get_topology()
@@ -678,25 +675,25 @@ def make_affine_mapping(xs, ys):
     # find A in R^{dim_y,dim_x}, b in R^{dim_y} such that
     # A xs[i] + b = ys[i] for all i
 
-    mat = numpy.zeros((dim_x*dim_y+dim_y, dim_x*dim_y+dim_y), "d")
-    rhs = numpy.zeros((dim_x*dim_y+dim_y,), "d")
+    mat = numpy.zeros((dim_x * dim_y + dim_y, dim_x * dim_y + dim_y), "d")
+    rhs = numpy.zeros((dim_x * dim_y + dim_y,), "d")
 
     # loop over points
     for i in range(len(xs)):
         # loop over components of each A * point + b
         for j in range(dim_y):
-            row_cur = i*dim_y+j
+            row_cur = i * dim_y + j
             col_start = dim_x * j
             col_finish = col_start + dim_x
             mat[row_cur, col_start:col_finish] = numpy.array(xs[i])
             rhs[row_cur] = ys[i][j]
             # need to get terms related to b
-            mat[row_cur, dim_y*dim_x+j] = 1.0
+            mat[row_cur, dim_y * dim_x + j] = 1.0
 
     sol = numpy.linalg.solve(mat, rhs)
 
-    A = numpy.reshape(sol[:dim_x*dim_y], (dim_y, dim_x))
-    b = sol[dim_x*dim_y:]
+    A = numpy.reshape(sol[:dim_x * dim_y], (dim_y, dim_x))
+    b = sol[dim_x * dim_y:]
 
     return A, b
 
@@ -774,19 +771,20 @@ def volume(verts):
 
     return p / factorial(sd)
 
+
 if __name__ == "__main__":
-    #    U = UFCTetrahedron()
-    #    print U.make_points( 1 , 1 , 3 )
-    #    for i in range(len(U.vertices)):
-    #        print U.compute_normal( i )
+    # U = UFCTetrahedron()
+    # print U.make_points(1, 1, 3)
+    # for i in range(len(U.vertices)):
+    #     print U.compute_normal(i)
 
     V = DefaultTetrahedron()
     sd = V.get_spatial_dimension()
 
-#    print make_affine_mapping(V.get_vertices(),U.get_vertices())
+    # print make_affine_mapping(V.get_vertices(), U.get_vertices())
 
     for i in range(len(V.vertices)):
         print(V.compute_normal(i))
         print(V.compute_scaled_normal(i))
-        print(volume(V.get_vertices_of_subcomplex(V.topology[sd-1][i])))
+        print(volume(V.get_vertices_of_subcomplex(V.topology[sd - 1][i])))
         print()

@@ -39,22 +39,20 @@ def lattice_iter(start, finish, depth):
             yield [ii]
     else:
         for ii in range(start, finish):
-            for jj in lattice_iter(start, finish-ii, depth - 1):
+            for jj in lattice_iter(start, finish - ii, depth - 1):
                 yield [ii] + jj
 
 
 def make_lattice(n, vs, numtype):
-    hs = numpy.array([(vs[i] - vs[0]) / numtype(n)
-                      for i in range(1, len(vs))]
-                     )
+    hs = numpy.array([(vs[i] - vs[0]) / numtype(n) for i in range(1, len(vs))])
 
     result = []
 
     m = len(hs)
-    for indices in lattice_iter(0, n+1, m):
+    for indices in lattice_iter(0, n + 1, m):
         res_cur = vs[0].copy()
         for i in range(len(indices)):
-            res_cur += indices[i] * hs[m-i-1]
+            res_cur += indices[i] * hs[m - i - 1]
         result.append(res_cur)
 
     return numpy.array(result)
@@ -72,8 +70,7 @@ def make_tetrahedron_lattice(n, numtype):
     vs = numpy.array([(numtype(-1), numtype(-1), numtype(-1)),
                       (numtype(1), numtype(-1), numtype(-1)),
                       (numtype(-1), numtype(1), numtype(-1)),
-                      (numtype(-1), numtype(-1), numtype(1))
-                      ])
+                      (numtype(-1), numtype(-1), numtype(1))])
     return make_lattice(n, vs, numtype)
 
 
@@ -93,9 +90,9 @@ def _tabulate_triangle_single(n, pts, numtype):
         return numpy.array([], numtype)
 
     def idx(p, q):
-        return (p+q)*(p+q+1)//2 + q
+        return (p + q) * (p + q + 1) // 2 + q
 
-    results = (n+1)*(n+2)//2 * [None]
+    results = (n + 1) * (n + 2) // 2 * [None]
 
     results[0] = numtype(1) \
         + pts[0] - pts[0] \
@@ -113,7 +110,7 @@ def _tabulate_triangle_single(n, pts, numtype):
 
     # foo = one + two*x + y
 
-    f1 = (one+two*x+y)/two
+    f1 = (one + two * x + y) / two
     f2 = (one - y) / two
     f3 = f2**2
 
@@ -129,9 +126,9 @@ def _tabulate_triangle_single(n, pts, numtype):
         results[idx(p, 1)] = (one + two*p+(three+two*p)*y) / two \
             * results[idx(p, 0)]
 
-    for p in range(n-1):
-        for q in range(1, n-p):
-            (a1, a2, a3) = jrc(2*p+1, 0, q, numtype)
+    for p in range(n - 1):
+        for q in range(1, n - p):
+            (a1, a2, a3) = jrc(2 * p + 1, 0, q, numtype)
             results[idx(p, q+1)] = \
                 (a1 * y + a2) * results[idx(p, q)] \
                 - a3 * results[idx(p, q-1)]
@@ -145,9 +142,9 @@ def tabulate_tetrahedron(n, pts, numtype):
 
 def _tabulate_tetrahedron_single(n, pts, numtype):
     def idx(p, q, r):
-        return (p+q+r)*(p+q+r+1)*(p+q+r+2)//6 + (q+r)*(q+r+1)//2 + r
+        return (p + q + r)*(p + q + r + 1)*(p + q + r + 2)//6 + (q + r)*(q + r + 1)//2 + r
 
-    results = (n+1)*(n+2)*(n+3)//6 * [None]
+    results = (n + 1) * (n + 2) * (n + 3) // 6 * [None]
     results[0] = 1.0 \
         + pts[0] - pts[0] \
         + pts[1] - pts[1] \
@@ -164,11 +161,11 @@ def _tabulate_tetrahedron_single(n, pts, numtype):
     two = numtype(2)
     three = numtype(3)
 
-    factor1 = (two + two*x + y + z) / two
-    factor2 = ((y+z)/two)**2
+    factor1 = (two + two * x + y + z) / two
+    factor2 = ((y + z) / two)**2
     factor3 = (one + two * y + z) / two
     factor4 = (1 - z) / two
-    factor5 = factor4 ** 2
+    factor5 = factor4**2
 
     results[idx(1, 0, 0)] = factor1
     for p in range(1, n):
@@ -181,23 +178,23 @@ def _tabulate_tetrahedron_single(n, pts, numtype):
         results[idx(p, 1, 0)] = results[idx(p, 0, 0)] \
             * (p * (one + y) + (two + three * y + z) / two)
 
-    for p in range(0, n-1):
-        for q in range(1, n-p):
-            (aq, bq, cq) = jrc(2*p+1, 0, q, numtype)
+    for p in range(0, n - 1):
+        for q in range(1, n - p):
+            (aq, bq, cq) = jrc(2 * p + 1, 0, q, numtype)
             qmcoeff = aq * factor3 + bq * factor4
             qm1coeff = cq * factor5
             results[idx(p, q+1, 0)] = qmcoeff * results[idx(p, q, 0)] \
                 - qm1coeff * results[idx(p, q-1, 0)]
 
     for p in range(n):
-        for q in range(n-p):
+        for q in range(n - p):
             results[idx(p, q, 1)] = results[idx(p, q, 0)] \
                 * (one + p + q + (two + q + p) * z)
 
-    for p in range(n-1):
-        for q in range(0, n-p-1):
-            for r in range(1, n-p-q):
-                ar, br, cr = jrc(2*p+2*q+2, 0, r, numtype)
+    for p in range(n - 1):
+        for q in range(0, n - p - 1):
+            for r in range(1, n - p - q):
+                ar, br, cr = jrc(2 * p + 2 * q + 2, 0, r, numtype)
                 results[idx(p, q, r+1)] = \
                     (ar * z + br) * results[idx(p, q, r)] \
                     - cr * results[idx(p, q, r-1)]
@@ -235,7 +232,7 @@ def tabulate_jet(D, n, pts, order, numtype):
     # (gradient, Hessian, ...)
     m = data1[0].shape[0]
     n = data1[0].shape[1]
-    data2 = [[tuple([data1[r][i][j] for r in range(order+1)])
+    data2 = [[tuple([data1[r][i][j] for r in range(order + 1)])
               for j in range(n)]
              for i in range(m)]
     return data2

@@ -66,10 +66,8 @@ class FiniteElement:
 
         new_coeffs_flat = numpy.dot(numpy.transpose(Vinv), B)
 
-        new_shp = tuple([new_coeffs_flat.shape[0]]
-                        + list(shp[1:]))
-        new_coeffs = numpy.reshape(new_coeffs_flat,
-                                   new_shp)
+        new_shp = tuple([new_coeffs_flat.shape[0]] + list(shp[1:]))
+        new_coeffs = numpy.reshape(new_coeffs_flat, new_shp)
 
         self.poly_set = PolynomialSet(self.ref_el,
                                       poly_set.get_degree(),
@@ -129,7 +127,7 @@ class FiniteElement:
         """Return a list of appropriate mappings from the reference
         element to a physical element for each basis function of the
         finite element."""
-        return [self._mapping]*self.space_dimension()
+        return [self._mapping] * self.space_dimension()
 
     def num_sub_elements(self):
         "Return the number of sub-elements."

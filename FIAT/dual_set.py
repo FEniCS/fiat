@@ -20,7 +20,6 @@ from six import iteritems
 
 
 class DualSet:
-
     def __init__(self, nodes, ref_el, entity_ids):
         self.nodes = nodes
         self.ref_el = ref_el

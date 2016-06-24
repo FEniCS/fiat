@@ -20,7 +20,6 @@ import numpy
 
 
 class ArgyrisDualSet(dual_set.DualSet):
-
     def __init__(self, ref_el, degree):
         entity_ids = {}
         nodes = []
@@ -54,7 +53,7 @@ class ArgyrisDualSet(dual_set.DualSet):
             for alpha in alphas:
                 nodes.append(pd(ref_el, verts[v], alpha))
 
-            entity_ids[0][v] = list(range(cur, cur+6))
+            entity_ids[0][v] = list(range(cur, cur + 6))
             cur += 6
 
         # edge dof
@@ -72,7 +71,7 @@ class ArgyrisDualSet(dual_set.DualSet):
                 ptvalpts = ref_el.make_points(1, e, degree - 4)
                 ptvalnds = [pe(ref_el, pt) for pt in ptvalpts]
                 nodes.extend(ptvalnds)
-                entity_ids[1][e] += list(range(cur, cur+len(ptvalpts)))
+                entity_ids[1][e] += list(range(cur, cur + len(ptvalpts)))
                 cur += len(ptvalpts)
 
         # internal dof
@@ -81,7 +80,7 @@ class ArgyrisDualSet(dual_set.DualSet):
             internalpts = ref_el.make_points(2, 0, degree - 3)
             internalnds = [pe(ref_el, pt) for pt in internalpts]
             nodes.extend(internalnds)
-            entity_ids[2][0] = list(range(cur, cur+len(internalpts)))
+            entity_ids[2][0] = list(range(cur, cur + len(internalpts)))
             cur += len(internalpts)
 
         dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
@@ -124,7 +123,7 @@ class QuinticArgyrisDualSet(dual_set.DualSet):
             for alpha in alphas:
                 nodes.append(pd(ref_el, verts[v], alpha))
 
-            entity_ids[0][v] = list(range(cur, cur+6))
+            entity_ids[0][v] = list(range(cur, cur + 6))
             cur += 6
 
         # edge dof -- normal at each edge midpoint
@@ -155,6 +154,7 @@ class QuinticArgyris(finite_element.FiniteElement):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 5)
         dual = QuinticArgyrisDualSet(ref_el)
         finite_element.FiniteElement.__init__(self, poly_set, dual, 5)
+
 
 if __name__ == "__main__":
     from . import reference_element

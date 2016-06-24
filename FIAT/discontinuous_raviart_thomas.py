@@ -38,12 +38,11 @@ class DRTDualSet(dual_set.DualSet):
         t = ref_el.get_topology()
 
         # codimension 1 facets
-        for i in range(len(t[sd-1])):
+        for i in range(len(t[sd - 1])):
             pts_cur = ref_el.make_points(sd - 1, i, sd + degree)
             for j in range(len(pts_cur)):
                 pt_cur = pts_cur[j]
-                f = functional.PointScaledNormalEvaluation(ref_el, i,
-                                                           pt_cur)
+                f = functional.PointScaledNormalEvaluation(ref_el, i, pt_cur)
                 nodes.append(f)
 
         # internal nodes.  Let's just use points at a lattice
@@ -62,9 +61,9 @@ class DRTDualSet(dual_set.DualSet):
                 entity_ids[i][j] = []
 
         # set codimension 1 (edges 2d, faces 3d) to have no dofs
-        entity_ids[sd-1] = {}
-        for i in range(len(t[sd-1])):
-            entity_ids[sd-1][i] = []
+        entity_ids[sd - 1] = {}
+        for i in range(len(t[sd - 1])):
+            entity_ids[sd - 1][i] = []
 
         # cell dofs
         entity_ids[sd] = {0: list(range(len(nodes)))}
