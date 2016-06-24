@@ -26,12 +26,13 @@ def test_basis_derivatives_scaling():
     from FIAT.lagrange import Lagrange
 
     class Interval(ReferenceElement):
+
         def __init__(self, a, b):
-            verts = ( (a,), (b,) )
-            edges = { 0 : ( 0, 1 ) }
-            topology = { 0 : { 0 : (0,) , 1: (1,) } , \
-                         1 : edges }
-            ReferenceElement.__init__( self, LINE, verts, topology )
+            verts = ((a,), (b,))
+            edges = {0: (0, 1)}
+            topology = {0: {0: (0,), 1: (1,)},
+                        1: edges}
+            ReferenceElement.__init__(self, LINE, verts, topology)
 
     random.seed(42)
     for i in range(26):

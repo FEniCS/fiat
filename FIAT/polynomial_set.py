@@ -65,6 +65,7 @@ class PolynomialSet:
          empty) tuple giving the index for a vector- or tensor-valued
          function.
     """
+
     def __init__(self, ref_el, degree, embedded_degree,
                  expansion_set, coeffs, dmats
                  ):
@@ -134,7 +135,7 @@ class PolynomialSet:
         sys.path.append("..")
         #import FIAT_S
         import sympy
-        #syms = FIAT_S.polynomials. \
+        # syms = FIAT_S.polynomials. \
         #    make_syms(self.get_reference_element().get_spatial_dimension())
         #ds_nosub = FIAT_S.polynomials.dubs(self.get_embedded_degree(), syms)
         T1 = reference_element.DefaultReferenceElement()
@@ -142,7 +143,7 @@ class PolynomialSet:
         A, b = reference_element.make_affine_mapping(
             T2.get_vertices(),
             T1.get_vertices()
-            )
+        )
 
         if len(self.coeffs.shape) == 2:
             return [sympy.Polynomial(
@@ -155,6 +156,7 @@ class ONPolynomialSet(PolynomialSet):
     """Constructs an orthonormal basis out of expansion set by having
     an identity matrix of coefficients.  Can be used to specify ON
     bases  for vector- and tensor-valued sets as well."""
+
     def __init__(self, ref_el, degree, shape=tuple()):
 
         if shape == tuple():
@@ -198,7 +200,6 @@ class ONPolynomialSet(PolynomialSet):
             v = numpy.transpose(expansion_set.tabulate(degree, pts))
             vinv = numpy.linalg.inv(v)
 
-            
             dv = expansion_set.tabulate_derivatives(degree, pts)
             dtildes = [[[a[1][i] for a in dvrow] for dvrow in dv]
                        for i in range(sd)
@@ -267,12 +268,14 @@ def polynomial_set_union_normalized(A, B):
                          A.get_expansion_set(),
                          coeffs, A.get_dmats())
 
+
 class ONSymTensorPolynomialSet(PolynomialSet):
     """
     Constructs an orthonormal basis for symmetric-tensor-valued
     polynomials on a reference element.
     """
-    def __init__(self, ref_el, degree, size = None):
+
+    def __init__(self, ref_el, degree, size=None):
 
         sd = ref_el.get_spatial_dimension()
         if size == None:
@@ -305,7 +308,7 @@ class ONSymTensorPolynomialSet(PolynomialSet):
                     cur_idx = tuple([cur_bf] + [j, i] + [exp_bf])
                     coeffs[cur_idx] = 1.0
                     cur_bf += 1
-                
+
         # construct dmats. this is the same as ONPolynomialSet.
         pts = ref_el.make_points(sd, 0, degree + sd + 1)
         v = numpy.transpose(expansion_set.tabulate(degree, pts))
@@ -319,7 +322,6 @@ class ONSymTensorPolynomialSet(PolynomialSet):
                                degree, embedded_degree,
                                expansion_set, coeffs, dmats
                                )
-
 
 
 if __name__ == "__main__":

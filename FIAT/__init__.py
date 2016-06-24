@@ -31,29 +31,29 @@ from FIAT.trace_hdiv import HDivTrace
 from FIAT.restricted import RestrictedElement
 
 # List of supported elements and mapping to element classes
-supported_elements = {"Argyris":                      Argyris,
-                      "Brezzi-Douglas-Marini":        BrezziDouglasMarini,
+supported_elements = {"Argyris": Argyris,
+                      "Brezzi-Douglas-Marini": BrezziDouglasMarini,
                       "Brezzi-Douglas-Fortin-Marini": BrezziDouglasFortinMarini,
-                      "Bubble":                       Bubble,
-                      "Crouzeix-Raviart":             CrouzeixRaviart,
-                      "Discontinuous Lagrange":       DiscontinuousLagrange,
-                      "Discontinuous Taylor":         DiscontinuousTaylor,
+                      "Bubble": Bubble,
+                      "Crouzeix-Raviart": CrouzeixRaviart,
+                      "Discontinuous Lagrange": DiscontinuousLagrange,
+                      "Discontinuous Taylor": DiscontinuousTaylor,
                       "Discontinuous Lagrange Trace": DiscontinuousLagrangeTrace,
                       "Discontinuous Raviart-Thomas": DiscontinuousRaviartThomas,
-                      "Hermite":                      CubicHermite,
-                      "Lagrange":                     Lagrange,
-                      "Morley":                       Morley,
-                      "Nedelec 1st kind H(curl)":     Nedelec,
-                      "Nedelec 2nd kind H(curl)":     NedelecSecondKind,
-                      "Raviart-Thomas":               RaviartThomas,
-                      "Regge":                        Regge,
-                      "EnrichedElement":              EnrichedElement,
-                      "TensorProductElement":         TensorProductElement,
-                      "BrokenElement":                DiscontinuousElement,
-                      "TraceElement":                 HDivTrace}
+                      "Hermite": CubicHermite,
+                      "Lagrange": Lagrange,
+                      "Morley": Morley,
+                      "Nedelec 1st kind H(curl)": Nedelec,
+                      "Nedelec 2nd kind H(curl)": NedelecSecondKind,
+                      "Raviart-Thomas": RaviartThomas,
+                      "Regge": Regge,
+                      "EnrichedElement": EnrichedElement,
+                      "TensorProductElement": TensorProductElement,
+                      "BrokenElement": DiscontinuousElement,
+                      "TraceElement": HDivTrace}
 
 # List of extra elements
-extra_elements = {"P0":              P0,
+extra_elements = {"P0": P0,
                   "Quintic Argyris": QuinticArgyris}
 
 # Important functionality

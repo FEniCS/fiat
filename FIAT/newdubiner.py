@@ -45,7 +45,7 @@ def lattice_iter(start, finish, depth):
 
 def make_lattice(n, vs, numtype):
     hs = numpy.array([(vs[i] - vs[0]) / numtype(n)
-                     for i in range(1, len(vs))]
+                      for i in range(1, len(vs))]
                      )
 
     result = []
@@ -70,8 +70,8 @@ def make_triangle_lattice(n, numtype):
 
 def make_tetrahedron_lattice(n, numtype):
     vs = numpy.array([(numtype(-1), numtype(-1), numtype(-1)),
-                      (numtype(1),  numtype(-1), numtype(-1)),
-                      (numtype(-1), numtype(1),  numtype(-1)),
+                      (numtype(1), numtype(-1), numtype(-1)),
+                      (numtype(-1), numtype(1), numtype(-1)),
                       (numtype(-1), numtype(-1), numtype(1))
                       ])
     return make_lattice(n, vs, numtype)

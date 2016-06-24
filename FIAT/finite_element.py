@@ -23,13 +23,15 @@ from .polynomial_set import PolynomialSet
 from .quadrature import make_quadrature
 from .reference_element import TensorProductCell, LINE
 
+
 class FiniteElement:
     """Class implementing Ciarlet's abstraction of a finite element
     being a domain, function space, and set of nodes."""
-    def __init__( self , poly_set , dual , order, formdegree=None, mapping="affine"):
+
+    def __init__(self, poly_set, dual, order, formdegree=None, mapping="affine"):
         # first, compare ref_el of poly_set and dual
         # need to overload equality
-        #if poly_set.get_reference_element() != dual.get_reference_element:
+        # if poly_set.get_reference_element() != dual.get_reference_element:
         #    raise Exception, ""
 
         # The order (degree) of the polynomial basis
@@ -44,37 +46,37 @@ class FiniteElement:
 
         # build generalized Vandermonde matrix
         old_coeffs = poly_set.get_coeffs()
-        dualmat = dual.to_riesz( poly_set )
+        dualmat = dual.to_riesz(poly_set)
 
         shp = dualmat.shape
-        if len( shp ) > 2:
-            num_cols = numpy.prod( shp[1:] )
+        if len(shp) > 2:
+            num_cols = numpy.prod(shp[1:])
 
-            A = numpy.reshape( dualmat, (dualmat.shape[0], num_cols) )
-            B = numpy.reshape( old_coeffs, (old_coeffs.shape[0], num_cols ) )
+            A = numpy.reshape(dualmat, (dualmat.shape[0], num_cols))
+            B = numpy.reshape(old_coeffs, (old_coeffs.shape[0], num_cols))
         else:
             A = dualmat
             B = old_coeffs
 
-        V = numpy.dot( A, numpy.transpose( B ) )
-        self.V=V
-        (u, s, vt) = numpy.linalg.svd( V )
+        V = numpy.dot(A, numpy.transpose(B))
+        self.V = V
+        (u, s, vt) = numpy.linalg.svd(V)
 
-        Vinv = numpy.linalg.inv( V )
+        Vinv = numpy.linalg.inv(V)
 
-        new_coeffs_flat = numpy.dot( numpy.transpose( Vinv ), B)
+        new_coeffs_flat = numpy.dot(numpy.transpose(Vinv), B)
 
-        new_shp = tuple( [ new_coeffs_flat.shape[0] ] \
-                          + list( shp[1:] ) )
-        new_coeffs = numpy.reshape( new_coeffs_flat, \
-                                    new_shp )
+        new_shp = tuple([new_coeffs_flat.shape[0]]
+                        + list(shp[1:]))
+        new_coeffs = numpy.reshape(new_coeffs_flat,
+                                   new_shp)
 
-        self.poly_set = PolynomialSet( self.ref_el, \
-                                       poly_set.get_degree(), \
-                                       poly_set.get_embedded_degree(), \
-                                       poly_set.get_expansion_set(), \
-                                       new_coeffs, \
-                                       poly_set.get_dmats() )
+        self.poly_set = PolynomialSet(self.ref_el,
+                                      poly_set.get_degree(),
+                                      poly_set.get_embedded_degree(),
+                                      poly_set.get_expansion_set(),
+                                      new_coeffs,
+                                      poly_set.get_dmats())
 
         return
 
@@ -82,20 +84,20 @@ class FiniteElement:
         "Return the degree of the (embedding) polynomial space."
         return self.poly_set.get_embedded_degree()
 
-    def get_reference_element( self ):
+    def get_reference_element(self):
         "Return the reference element for the finite element."
         return self.ref_el
 
-    def get_nodal_basis( self ):
+    def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
         for the finite element."""
         return self.poly_set
 
-    def get_dual_set( self ):
+    def get_dual_set(self):
         "Return the dual for the finite element."
         return self.dual
 
-    def get_order( self ):
+    def get_order(self):
         "Return the order of the element (may be different from the degree)"
         return self.order
 

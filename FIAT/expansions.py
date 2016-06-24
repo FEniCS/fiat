@@ -116,6 +116,7 @@ def xi_tetrahedron(eta):
 
 class LineExpansionSet:
     """Evaluates the Legendre basis on a line reference element."""
+
     def __init__(self, ref_el):
         if ref_el.get_spatial_dimension() != 1:
             raise Exception("Must have a line")
@@ -171,9 +172,11 @@ class LineExpansionSet:
 
         return dv
 
+
 class TriangleExpansionSet:
     """Evaluates the orthonormal Dubiner basis on a triangular
     reference element."""
+
     def __init__(self, ref_el):
         if ref_el.get_spatial_dimension() != 2:
             raise Exception("Must have a triangle")
@@ -254,7 +257,7 @@ class TriangleExpansionSet:
                 results[idx(p, q)] *= math.sqrt((p+0.5)*(p+q+1.0))
 
         return results
-        #return self.scale * results
+        # return self.scale * results
 
     def tabulate_derivatives(self, n, pts):
         order = 1
@@ -266,7 +269,7 @@ class TriangleExpansionSet:
         n = data[0].shape[1]
         data2 = [[tuple([data[r][i][j] for r in range(order+1)])
                   for j in range(n)]
-                 for i in range(m)]        
+                 for i in range(m)]
         return data2
 
     def tabulate_jet(self, n, pts, order=1):
@@ -275,6 +278,7 @@ class TriangleExpansionSet:
 
 class TetrahedronExpansionSet:
     """Collapsed orthonormal polynomial expanion on a tetrahedron."""
+
     def __init__(self, ref_el):
         if ref_el.get_spatial_dimension() != 3:
             raise Exception("Must be a tetrahedron")
@@ -368,8 +372,8 @@ class TetrahedronExpansionSet:
                 for r in range(1, n-p-q):
                     ar, br, cr = jrc(2*p+2*q+2, 0, r)
                     results[idx(p, q, r+1)] = \
-                                (ar * z + br) * results[idx(p, q, r) ] \
-                                - cr * results[idx(p, q, r-1) ]
+                        (ar * z + br) * results[idx(p, q, r) ] \
+                        - cr * results[idx(p, q, r-1)]
 
         for p in range(n+1):
             for q in range(n-p+1):
@@ -397,7 +401,7 @@ class TetrahedronExpansionSet:
         return _tabulate_dpts(self._tabulate, 3, n, order, numpy.array(pts))
 
 
-def get_expansion_set( ref_el ):
+def get_expansion_set(ref_el):
     """Returns an ExpansionSet instance appopriate for the given
     reference element."""
     if ref_el.get_shape() == reference_element.LINE:
@@ -434,7 +438,7 @@ if __name__ == "__main__":
 
     Phis = expansions.get_expansion_set(E)
 
-    phis = Phis.tabulate(k, pts)    
+    phis = Phis.tabulate(k, pts)
 
     dphis = Phis.tabulate_derivatives(k, pts)
 

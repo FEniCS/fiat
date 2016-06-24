@@ -22,6 +22,7 @@
 
 from . import finite_element, polynomial_set, dual_set, functional
 
+
 def _initialize_entity_ids(topology):
     entity_ids = {}
     for (i, entity) in list(topology.items()):
@@ -29,6 +30,7 @@ def _initialize_entity_ids(topology):
         for j in entity:
             entity_ids[i][j] = []
     return entity_ids
+
 
 class CrouzeixRaviartDualSet(dual_set.DualSet):
     """Dual basis for Crouzeix-Raviart element (linears continuous at
@@ -56,6 +58,7 @@ class CrouzeixRaviartDualSet(dual_set.DualSet):
 
         # Initialize super-class
         dual_set.DualSet.__init__(self, nodes, cell, entity_ids)
+
 
 class CrouzeixRaviart(finite_element.FiniteElement):
     """The Crouzeix-Raviart finite element:

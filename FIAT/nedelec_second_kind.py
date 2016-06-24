@@ -27,6 +27,7 @@ from .raviart_thomas import RaviartThomas
 from .quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
 from .reference_element import UFCTriangle, UFCTetrahedron
 
+
 class NedelecSecondKindDual(DualSet):
     """
     This class represents the dual basis for the Nedelec H(curl)
@@ -56,7 +57,7 @@ class NedelecSecondKindDual(DualSet):
     these elements coincide with the CG_k elements.)
     """
 
-    def __init__ (self, cell, degree):
+    def __init__(self, cell, degree):
 
         # Define degrees of freedom
         (dofs, ids) = self.generate_degrees_of_freedom(cell, degree)
@@ -132,7 +133,7 @@ class NedelecSecondKindDual(DualSet):
             return (dofs, ids)
 
         msg = "2nd kind Nedelec face dofs only available with UFC convention"
-        assert isinstance(cell, UFCTetrahedron),  msg
+        assert isinstance(cell, UFCTetrahedron), msg
 
         # Iterate over the faces of the tet
         num_faces = len(cell.get_topology()[2])
@@ -165,7 +166,7 @@ class NedelecSecondKindDual(DualSet):
             phis = numpy.ndarray((d, num_quad_points))
             for i in range(num_rts):
                 for q in range(num_quad_points):
-                    phi_i_q = scale*J*numpy.matrix(Phis[i,:, q]).transpose()
+                    phi_i_q = scale*J*numpy.matrix(Phis[i, :, q]).transpose()
                     for j in range(d):
                         phis[j, q] = phi_i_q[j]
 
@@ -201,12 +202,13 @@ class NedelecSecondKindDual(DualSet):
         phi_at_qs = phi.tabulate(qs)[(0,)*d]
 
         # Use (Frobenius) integral moments against RTs as dofs
-        dofs = [IntegralMoment(cell, Q, phi_at_qs[i,:])
+        dofs = [IntegralMoment(cell, Q, phi_at_qs[i, :])
                 for i in range(len(phi_at_qs))]
 
         # Associate these dofs with the interior
         ids = {0: list(range(offset, offset + len(dofs)))}
         return (dofs, ids)
+
 
 class NedelecSecondKind(FiniteElement):
     """
@@ -231,7 +233,7 @@ class NedelecSecondKind(FiniteElement):
         Ls = NedelecSecondKindDual(cell, degree)
 
         # Set form degree
-        formdegree = 1 # 1-form
+        formdegree = 1  # 1-form
 
         # Set mapping
         mapping = "covariant piola"
@@ -240,7 +242,7 @@ class NedelecSecondKind(FiniteElement):
         FiniteElement.__init__(self, Ps, Ls, degree, formdegree, mapping=mapping)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
 
     for k in range(1, 4):
         T = UFCTriangle()
@@ -250,6 +252,5 @@ if __name__=="__main__":
         T = UFCTetrahedron()
         N2curl = NedelecSecondKind(T, k)
         Nfs = N2curl.get_nodal_basis()
-        pts = T.make_lattice( 1 )
-        vals = Nfs.tabulate( pts, 1 )
-
+        pts = T.make_lattice(1)
+        vals = Nfs.tabulate(pts, 1)

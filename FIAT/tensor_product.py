@@ -119,7 +119,7 @@ class TensorProductElement(FiniteElement):
                         # has spatial dimension >1, since we are not
                         # explicitly scaling by facet size
                         if len(_first_point(Bnode)) > 1:
-                        # TODO: support this case one day
+                            # TODO: support this case one day
                             raise NotImplementedError("PointScaledNormalEval x PointEval is not yet supported if the second shape has dimension > 1")
                         # We cannot make a new functional.PSNEval in
                         # the natural way, since it tries to compute
@@ -378,7 +378,7 @@ def vert_facet_support_dofs(elem):
             q = make_quadrature(elem.ref_el.B, deg)
         else:
             vfacet_el = TensorProductCell(elem.ref_el.A.get_facet_element(),
-                                         elem.ref_el.B)
+                                          elem.ref_el.B)
             q = make_quadrature(vfacet_el, (deg, deg))
         ft = lambda f: elem.ref_el.get_vert_facet_transform(f)
         dim = elem.ref_el.A.get_spatial_dimension()

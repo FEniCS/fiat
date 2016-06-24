@@ -27,6 +27,7 @@ from FIAT.polynomial_set import mis
 # Tolerance for geometry identifications
 epsilon = 1.e-8
 
+
 def extract_unique_facet(coordinates, tolerance=epsilon):
     """Determine whether a set of points, each point described by its
     barycentric coordinates ('coordinates'), are all on one of the
@@ -49,6 +50,7 @@ def extract_unique_facet(coordinates, tolerance=epsilon):
     # If we have a unique facet, return it and success
     return (unique_facet.pop(), True)
 
+
 def barycentric_coordinates(points, vertices):
     """Compute barycentric coordinates for a set of points ('points'),
     relative to a simplex defined by a set of vertices ('vertices').
@@ -70,6 +72,7 @@ def barycentric_coordinates(points, vertices):
         coords.append(lam)
     return coords
 
+
 def map_from_reference_facet(point, vertices):
     """
     Input:
@@ -79,12 +82,13 @@ def map_from_reference_facet(point, vertices):
     # Compute barycentric coordinates of point relative to reference facet:
     reference_simplex = ufc_simplex(len(vertices)-1)
     reference_vertices = reference_simplex.get_vertices()
-    coords = barycentric_coordinates([point,], reference_vertices)[0]
+    coords = barycentric_coordinates([point, ], reference_vertices)[0]
 
     # Evaluate physical coordinate of point using barycentric coordinates
     point = sum(vertices[j]*coords[j] for j in range(len(coords)))
 
     return tuple(point)
+
 
 def map_to_reference_facet(points, vertices, facet):
     """Given a set of points in n D and a set of vertices describing a
@@ -114,8 +118,10 @@ def map_to_reference_facet(points, vertices, facet):
         reference_points += [reference_pt]
     return reference_points
 
+
 class DiscontinuousLagrangeTrace(object):
     ""
+
     def __init__(self, cell, k):
 
         tdim = cell.get_spatial_dimension()
@@ -183,7 +189,7 @@ class DiscontinuousLagrangeTrace(object):
             for dof in DG_k_dual_basis:
                 # PointEvaluation only carries one point
                 point = list(dof.get_point_dict().keys())[0]
-                pt = map_from_reference_facet([point,], vertices)
+                pt = map_from_reference_facet([point, ], vertices)
                 points.append(pt)
 
         # One degree of freedom per point:

@@ -19,7 +19,12 @@
 # Last changed: 2014-06-30
 
 from __future__ import print_function
-import nose, json, numpy, warnings, os, sys
+import nose
+import json
+import numpy
+import warnings
+import os
+import sys
 
 from FIAT import supported_elements, make_quadrature, ufc_simplex, \
     newdubiner, expansions, reference_element, polynomial_set
@@ -32,6 +37,7 @@ prefix = 'fiat-reference-data'
 
 
 class NumpyEncoder(json.JSONEncoder):
+
     def default(self, obj):
         # If numpy array, convert it to a list and store it in a dict.
         if isinstance(obj, numpy.ndarray):
@@ -55,7 +61,7 @@ def test_polynomials():
         ps = polynomial_set.ONPolynomialSet(
             ref_el=reference_element.DefaultTetrahedron(),
             degree=3
-            )
+        )
         return ps.dmats
 
     # Try reading reference values
@@ -76,12 +82,13 @@ def test_polynomials():
         assert (abs(dmat - reference_dmat) < tolerance).all()
     return
 
+
 def test_polynomials_1D():
     def create_data():
         ps = polynomial_set.ONPolynomialSet(
             ref_el=reference_element.DefaultLine(),
             degree=3
-            )
+        )
         return ps.dmats
 
     # Try reading reference values
@@ -120,7 +127,7 @@ def test_expansions():
     except IOError:
         warnings.warn('Reference file "%s" could not be loaded! '
                       'Creating a new reference file!' % filename,
-                       RuntimeWarning)
+                      RuntimeWarning)
         reference = create_data()
         # Convert reference to list of int
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
@@ -160,7 +167,7 @@ def test_expansions_jet():
     except IOError:
         warnings.warn('Reference file "%s" could not be loaded! '
                       'Creating a new reference file!' % filename,
-                       RuntimeWarning)
+                      RuntimeWarning)
         reference_jet = create_data()
         # Store the data for the future
         json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
@@ -189,7 +196,7 @@ def test_newdubiner():
     except IOError:
         warnings.warn('Reference file "%s" could not be loaded! '
                       'Creating a new reference file!' % filename,
-                       RuntimeWarning)
+                      RuntimeWarning)
         reference = create_data()
         # Convert reference to list of int
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
@@ -220,7 +227,7 @@ def test_newdubiner_jet():
     except IOError:
         warnings.warn('Reference file "%s" could not be loaded! '
                       'Creating a new reference file!' % filename,
-                       RuntimeWarning)
+                      RuntimeWarning)
         reference_jet = create_data()
         # Store the data for the future
         json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
@@ -307,7 +314,7 @@ def test_quadrature():
         ("Bubble", 3, 4),
         ("Bubble", 3, 5),
         ("Bubble", 3, 6)
-        )
+    )
 
     def create_data(family, dim, degree):
         '''Create the reference data.
@@ -363,7 +370,6 @@ def test_quadrature():
             reference[str(test_case)] = ref
         # Store the data for the future
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
-
 
 
 def main(args):

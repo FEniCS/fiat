@@ -22,6 +22,7 @@ from six import iteritems
 
 class Bubble(FiniteElement):
     """The Bubble finite element: the interior dofs of the Lagrange FE"""
+
     def __init__(self, ref_el, degree):
         self._element = Lagrange(ref_el, degree)
 

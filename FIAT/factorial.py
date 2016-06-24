@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-def factorial( n ):
+
+def factorial(n):
     """Computes n! for n an integer >= 0.
     Raises an ArithmeticError otherwise."""
     if not isinstance(n, type(1)) or n < 0:
@@ -24,4 +25,3 @@ def factorial( n ):
     for i in range(1, n+1):
         f = f * i
     return f
-
