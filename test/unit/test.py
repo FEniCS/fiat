@@ -17,7 +17,6 @@
 
 import nose
 from nose.tools import assert_equal, assert_almost_equal
-import numpy
 
 
 def test_basis_derivatives_scaling():

@@ -36,8 +36,6 @@ class MorleyDualSet(dual_set.DualSet):
         if sd != 2:
             raise Exception("Illegal spatial dimension")
 
-        pd = functional.PointDerivative
-
         # vertex point evaluations
 
         entity_ids[0] = {}

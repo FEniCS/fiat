@@ -17,7 +17,7 @@ version = re.findall('__version__ = "(.*)"',
 
 url = "https://bitbucket.org/fenics-project/fiat/"
 tarball = None
-if not 'dev' in version:
+if 'dev' not in version:
     tarball = url + "downloads/fiat-%s.tar.gz" % version
 
 setup(name="FIAT",

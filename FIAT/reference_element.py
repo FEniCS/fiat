@@ -63,7 +63,6 @@ def linalg_subspace_intersection(A, B):
     (y, c, zt) = numpy.linalg.svd(C)
 
     U = numpy.dot(qa, y)
-    V = numpy.dot(qb, numpy.transpose(zt))
 
     rank_c = len([s for s in c if numpy.abs(1.0 - s) < 1.e-10])
 
@@ -200,7 +199,7 @@ class ReferenceElement:
         vert_on = verts_facet.pop()
 
         # get a vector from the off vertex to the facet
-        v_to_facet = numpy.array( self.vertices[vert_on] ) \
+        v_to_facet = numpy.array(self.vertices[vert_on]) \
             - numpy.array(self.vertices[vert_off])
 
         if numpy.dot(v_to_facet, nfoo) > 0.0:
@@ -419,7 +418,7 @@ class DefaultTriangle(ReferenceElement):
         ReferenceElement.__init__(self, TRIANGLE, verts, topology)
 
     def get_facet_element(self):
-        return DefaultInterval()
+        return DefaultLine()
 
 
 class UFCTriangle(UFCReferenceElement):

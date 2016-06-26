@@ -74,7 +74,6 @@ class NedelecSecondKindDual(DualSet):
         # Extract spatial dimension and topology
         d = cell.get_spatial_dimension()
         assert (d in (2, 3)), "Second kind Nedelecs only implemented in 2/3D."
-        topology = cell.get_topology()
 
         # Zero vertex-based degrees of freedom (d+1 of these)
         ids[0] = dict(list(zip(list(range(d + 1)), ([] for i in range(d + 1)))))
@@ -142,7 +141,6 @@ class NedelecSecondKindDual(DualSet):
             # Construct quadrature scheme for this face
             m = 2 * (degree + 1)
             Q_face = UFCTetrahedronFaceQuadratureRule(face, m)
-            quad_points = Q_face.get_points()
 
             # Construct Raviart-Thomas of (degree - 1) on the
             # reference face

@@ -59,7 +59,6 @@ def barycentric_coordinates(points, vertices):
     # Form map matrix
     last = numpy.asarray(vertices[-1])
     T = numpy.matrix([numpy.array(v) - last for v in vertices[:-1]]).T
-    detT = numpy.linalg.det(T)
     invT = numpy.linalg.inv(T)
 
     # Compute barycentric coordinates for all points

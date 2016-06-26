@@ -369,7 +369,7 @@ class TetrahedronExpansionSet:
                 for r in range(1, n - p - q):
                     ar, br, cr = jrc(2 * p + 2 * q + 2, 0, r)
                     results[idx(p, q, r+1)] = \
-                        (ar * z + br) * results[idx(p, q, r) ] \
+                        (ar * z + br) * results[idx(p, q, r)] \
                         - cr * results[idx(p, q, r-1)]
 
         for p in range(n + 1):

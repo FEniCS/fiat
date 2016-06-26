@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import finite_element, raviart_thomas, quadrature, functional, \
-    dual_set, reference_element, polynomial_set, nedelec
+from . import (finite_element, quadrature, functional, dual_set,
+               reference_element, polynomial_set, nedelec)
 
 
 class BDMDualSet(dual_set.DualSet):

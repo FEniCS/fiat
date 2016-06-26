@@ -1,5 +1,5 @@
-from . import finite_element, quadrature, functional, \
-    dual_set, reference_element, polynomial_set, lagrange
+from . import (finite_element, functional, dual_set,
+               reference_element, polynomial_set, lagrange)
 
 import numpy
 

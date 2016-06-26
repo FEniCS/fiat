@@ -17,10 +17,7 @@
 #
 # Modified by Jan Blechta 2014
 
-from . import expansions, polynomial_set, quadrature, reference_element, dual_set, \
-    quadrature, finite_element, functional
-import numpy
-from functools import reduce
+from . import dual_set, finite_element, functional
 from .raviart_thomas import RTSpace
 
 

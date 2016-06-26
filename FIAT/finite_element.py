@@ -21,7 +21,7 @@
 import numpy
 from .polynomial_set import PolynomialSet
 from .quadrature import make_quadrature
-from .reference_element import TensorProductCell, LINE
+from .reference_element import TensorProductCell
 
 
 class FiniteElement:
