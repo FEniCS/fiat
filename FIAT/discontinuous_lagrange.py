@@ -18,12 +18,14 @@
 
 from . import finite_element, polynomial_set, dual_set, functional, P0
 
-class DiscontinuousLagrangeDualSet( dual_set.DualSet ):
+
+class DiscontinuousLagrangeDualSet(dual_set.DualSet):
     """The dual basis for Lagrange elements.  This class works for
     simplices of any dimension.  Nodes are point evaluation at
     equispaced points.  This is the discontinuous version where
     all nodes are topologically associated with the cell itself"""
-    def __init__( self, ref_el, degree ):
+
+    def __init__(self, ref_el, degree):
         entity_ids = {}
         nodes = []
 
@@ -32,45 +34,48 @@ class DiscontinuousLagrangeDualSet( dual_set.DualSet ):
         top = ref_el.get_topology()
 
         cur = 0
-        for dim in sorted( top ):
+        for dim in sorted(top):
             entity_ids[dim] = {}
-            for entity in sorted( top[dim] ):
-                pts_cur = ref_el.make_points( dim, entity, degree )
-                nodes_cur = [ functional.PointEvaluation( ref_el, x ) \
-                              for x in pts_cur ]
-                nnodes_cur = len( nodes_cur )
-                nodes +=  nodes_cur
-                entity_ids[dim][entity]=[]
+            for entity in sorted(top[dim]):
+                pts_cur = ref_el.make_points(dim, entity, degree)
+                nodes_cur = [functional.PointEvaluation(ref_el, x)
+                             for x in pts_cur]
+                nnodes_cur = len(nodes_cur)
+                nodes += nodes_cur
+                entity_ids[dim][entity] = []
                 cur += nnodes_cur
 
         entity_ids[dim][0] = list(range(len(nodes)))
 
-        dual_set.DualSet.__init__( self, nodes, ref_el, entity_ids )
+        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
 
-class HigherOrderDiscontinuousLagrange( finite_element.FiniteElement ):
+
+class HigherOrderDiscontinuousLagrange(finite_element.FiniteElement):
     """The discontinuous Lagrange finite element.  It is what it is."""
-    def __init__( self , ref_el , degree ):
-        poly_set = polynomial_set.ONPolynomialSet( ref_el, degree )
-        dual = DiscontinuousLagrangeDualSet( ref_el, degree )
-        formdegree = ref_el.get_spatial_dimension() # n-form
-        finite_element.FiniteElement.__init__( self, poly_set, dual, degree, formdegree )
 
-def DiscontinuousLagrange( ref_el, degree ):
+    def __init__(self, ref_el, degree):
+        poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
+        dual = DiscontinuousLagrangeDualSet(ref_el, degree)
+        formdegree = ref_el.get_spatial_dimension()  # n-form
+        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree)
+
+
+def DiscontinuousLagrange(ref_el, degree):
     if degree == 0:
-        return P0.P0( ref_el )
+        return P0.P0(ref_el)
     else:
-        return HigherOrderDiscontinuousLagrange( ref_el, degree )
+        return HigherOrderDiscontinuousLagrange(ref_el, degree)
 
-if __name__=="__main__":
+if __name__ == "__main__":
     from . import reference_element
     T = reference_element.DefaultTetrahedron()
     for k in range(2, 3):
-        U = DiscontinuousLagrange( T, k )
+        U = DiscontinuousLagrange(T, k)
 
     Ufs = U.get_nodal_basis()
-    pts = T.make_lattice( k )
+    pts = T.make_lattice(k)
     print(pts)
-    for foo, bar in list(Ufs.tabulate( pts, 1 ).items()):
+    for foo, bar in list(Ufs.tabulate(pts, 1).items()):
         print(foo)
         print(bar)
         print()

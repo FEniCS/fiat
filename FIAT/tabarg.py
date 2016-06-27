@@ -23,9 +23,9 @@ lattice_size = 10 * degree
 T = reference_element.DefaultTriangle()
 
 U = argyris.QuinticArgyris(T)
-pts = T.make_lattice( lattice_size )
+pts = T.make_lattice(lattice_size)
 
-bfvals = U.get_nodal_basis().tabulate_new( pts )
+bfvals = U.get_nodal_basis().tabulate_new(pts)
 u0 = bfvals[0]
 fout = open("arg0.dat", "w")
 for i in range(len(pts)):

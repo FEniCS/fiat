@@ -24,10 +24,12 @@ from .functional import PointwiseInnerProductEvaluation as InnerProduct
 from .functional import index_iterator
 from .reference_element import UFCTriangle, UFCTetrahedron
 
+
 class ReggeDual(DualSet):
     """
     """
-    def __init__ (self, cell, degree):
+
+    def __init__(self, cell, degree):
         (dofs, ids) = self.generate_degrees_of_freedom(cell, degree)
         DualSet.__init__(self, dofs, cell, ids)
 
@@ -47,17 +49,17 @@ class ReggeDual(DualSet):
         implement the element uniformly for all dimensions due to its edge,
         facet=trig, cell style.
         """
-        
+
         dofs = []
         ids = {}
-        
+
         top = cell.get_topology()
         d = cell.get_spatial_dimension()
         if (d < 2) or (d > 3):
-            raise("Regge elements only implemented for dimension 2--3.")
-        
+            raise ValueError("Regge elements only implemented for dimension 2--3.")
+
         # No vertex dof
-        ids[0] = dict(list(zip(list(range(d+1)), ([] for i in range(d+1)))))
+        ids[0] = dict(list(zip(list(range(d + 1)), ([] for i in range(d + 1)))))
         # edge dofs
         (_dofs, _ids) = self._generate_edge_dofs(cell, degree, 0)
         dofs.extend(_dofs)
@@ -78,7 +80,7 @@ class ReggeDual(DualSet):
         dofs = []
         ids = {}
         for s in range(len(cell.get_topology()[1])):
-            # Points to evaluate the inner product            
+            # Points to evaluate the inner product
             pts = cell.make_points(1, s, degree + 2)
             # Evalute squared length of the tagent vector along an edge
             t = cell.compute_edge_tangent(s)
@@ -121,7 +123,7 @@ class ReggeDual(DualSet):
         d = cell.get_spatial_dimension()
         if (d == 2 and degree == 0) or (d == 3 and degree <= 1):
             return ([], {0: []})
-        # Compute dofs. There is only one cell. So no need to loop here~ 
+        # Compute dofs. There is only one cell. So no need to loop here~
         # Points to evaluate the inner product
         pts = cell.make_points(d, 0, degree + 2)
         # Let {e1,..,ek} be the Euclidean basis. We evaluate inner products
@@ -131,11 +133,11 @@ class ReggeDual(DualSet):
         # Fill dofs
         for p in pts:
             dofs += [InnerProduct(cell, e[i], e[j], p)
-                     for [i,j] in index_iterator((d, d)) if i <= j]
+                     for [i, j] in index_iterator((d, d)) if i <= j]
         # Fill ids
-        ids = {0 :
-               list(range(offset, offset + len(pts) * d * (d + 1) // 2))}
+        ids = {0: list(range(offset, offset + len(pts) * d * (d + 1) // 2))}
         return (dofs, ids)
+
 
 class Regge(FiniteElement):
     """
@@ -147,7 +149,7 @@ class Regge(FiniteElement):
 
     def __init__(self, cell, degree):
         # Check degree
-        assert(degree >= 0), "Regge start at degree 0!"
+        assert degree >= 0, "Regge start at degree 0!"
         # Get dimension
         d = cell.get_spatial_dimension()
         # Construct polynomial basis for d-vector fields
@@ -159,22 +161,20 @@ class Regge(FiniteElement):
         # Call init of super-class
         FiniteElement.__init__(self, Ps, Ls, degree, mapping=mapping)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     print("Test 0: Regge degree 0 in 2D.")
     T = UFCTriangle()
     R = Regge(T, 0)
     print("-----")
     pts = numpy.array([[0.0, 0.0]])
-    ts = numpy.array([[0.0, 1.0],
-                      [1.0, 0.0],
-                      [-1.0, 1.0]])
+    ts = numpy.array([[0.0, 1.0], [1.0, 0.0], [-1.0, 1.0]])
     vals = R.tabulate(0, pts)[(0, 0)]
     for i in range(R.space_dimension()):
         print("Basis #{}:".format(i))
         for j in range(len(pts)):
             tut = [t.dot(vals[i, :, :, j].dot(t)) for t in ts]
-            print("u(t,t) for edge tagents t at {} are: {}".format(
-                pts[j], tut))
+            print("u(t,t) for edge tagents t at {} are: {}".format(pts[j], tut))
     print("-----")
     print("Expected result: a single 1 for each basis and zeros for others.")
     print("")
@@ -195,8 +195,7 @@ if __name__=="__main__":
         print("Basis #{}:".format(i))
         for j in range(len(pts)):
             tut = [t.dot(vals[i, :, :, j].dot(t)) for t in ts]
-            print("u(t,t) for edge tagents t at {} are: {}".format(
-                pts[j], tut))
+            print("u(t,t) for edge tagents t at {} are: {}".format(pts[j], tut))
     print("-----")
     print("Expected result: a single 1 for each basis and zeros for others.")
     print("")
@@ -213,5 +212,5 @@ if __name__=="__main__":
         print("Degree {} in 3D:".format(k))
         T = UFCTetrahedron()
         R = Regge(T, k)
-        print(R.entity_dofs())        
+        print(R.entity_dofs())
         print("")

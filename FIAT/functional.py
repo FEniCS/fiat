@@ -53,9 +53,8 @@ class Functional:
     All functionals are discrete in the sense that
     the are written as a weighted sum of (components of) their
     argument evaluated at particular points."""
-    def __init__(self, ref_el, target_shape,
-                 pt_dict, deriv_dict, functional_type
-                 ):
+
+    def __init__(self, ref_el, target_shape, pt_dict, deriv_dict, functional_type):
         self.ref_el = ref_el
         self.target_shape = target_shape
         self.pt_dict = pt_dict
@@ -88,8 +87,7 @@ class Functional:
         # import Scientific.Functions.Derivatives as Derivatives
         for pt in self.deriv_dict:
             dpt = tuple([Derivatives.DerivVar(pt[i], i, self.max_deriv_order)
-                         for i in range(len(pt))
-                         ])
+                         for i in range(len(pt))])
             for (w, a, c) in self.deriv_dict[pt]:
                 fpt = f(dpt)
                 order = sum(a)
@@ -185,10 +183,10 @@ class Functional:
 class PointEvaluation(Functional):
     """Class representing point evaluation of scalar functions at a
     particular point x."""
+
     def __init__(self, ref_el, x):
         pt_dict = {x: [(1.0, tuple())]}
-        Functional.__init__(self, ref_el, tuple(), pt_dict, {},
-                            "PointEval")
+        Functional.__init__(self, ref_el, tuple(), pt_dict, {}, "PointEval")
         return
 
     def tostr(self):
@@ -199,6 +197,7 @@ class PointEvaluation(Functional):
 class ComponentPointEvaluation(Functional):
     """Class representing point evaluation of a particular component
     of a vector function at a particular point x."""
+
     def __init__(self, ref_el, comp, shp, x):
         if len(shp) != 1:
             raise Exception("Illegal shape")
@@ -217,14 +216,13 @@ class ComponentPointEvaluation(Functional):
 class PointDerivative(Functional):
     """Class representing point partial differentiation of scalar
     functions at a particular point x."""
+
     def __init__(self, ref_el, x, alpha):
         dpt_dict = {x: [(1.0, alpha, tuple())]}
         self.alpha = alpha
         self.order = sum(self.alpha)
 
-        Functional.__init__(self, ref_el, tuple(), {},
-                            dpt_dict, "PointDeriv"
-                            )
+        Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointDeriv")
         return
 
     def to_riesz(self, poly_set):
@@ -250,6 +248,7 @@ class PointDerivative(Functional):
 
 
 class PointNormalDerivative(Functional):
+
     def __init__(self, ref_el, facet_no, pt):
         n = ref_el.compute_normal(facet_no)
         self.n = n
@@ -257,23 +256,19 @@ class PointNormalDerivative(Functional):
 
         alphas = []
         for i in range(sd):
-            alpha = [0]*sd
+            alpha = [0] * sd
             alpha[i] = 1
             alphas.append(alpha)
         dpt_dict = {pt: [(n[i], alphas[i], tuple()) for i in range(sd)]}
 
-        Functional.__init__(self, ref_el, tuple(), {},
-                            dpt_dict, "PointNormalDeriv"
-                            )
+        Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
 
         return
 
     def to_riesz(self, poly_set):
         #import Scientific.Functions.FirstDerivatives as FirstDerivatives
         x = list(self.deriv_dict.keys())[0]
-        dx = tuple([FirstDerivatives.DerivVar(x[i], i)
-                    for i in range(len(x))
-                    ])
+        dx = tuple([FirstDerivatives.DerivVar(x[i], i) for i in range(len(x))])
 
         es = poly_set.get_expansion_set()
         ed = poly_set.get_embedded_degree()
@@ -284,14 +279,10 @@ class PointNormalDerivative(Functional):
         return numpy.dot(bfs_grad, self.n)
 
 
-class IntegralMoment (Functional):
-    """
-    An IntegralMoment is a functional
+class IntegralMoment(Functional):
+    """An IntegralMoment is a functional"""
 
-    """
-    def __init__(self, ref_el, Q, f_at_qpts, comp=tuple(),
-                 shp=tuple()
-                 ):
+    def __init__(self, ref_el, Q, f_at_qpts, comp=tuple(), shp=tuple()):
         """
         Create IntegralMoment
 
@@ -314,9 +305,7 @@ class IntegralMoment (Functional):
         for i in range(len(qpts)):
             pt_cur = tuple(qpts[i])
             pt_dict[pt_cur] = [(qwts[i] * f_at_qpts[i], comp)]
-        Functional.__init__(self, ref_el, shp,
-                            pt_dict, {}, "IntegralMoment"
-                            )
+        Functional.__init__(self, ref_el, shp, pt_dict, {}, "IntegralMoment")
 
     def to_riesz(self, poly_set):
         T = poly_set.get_reference_element()
@@ -327,8 +316,8 @@ class IntegralMoment (Functional):
         bfs = es.tabulate(ed, pts)
         wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
         result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-        
-        if(len(self.comp)==0):
+
+        if len(self.comp) == 0:
             result[:] = numpy.dot(bfs, wts)
         else:
             result[self.comp, :] = numpy.dot(bfs, wts)
@@ -337,6 +326,7 @@ class IntegralMoment (Functional):
 
 
 class FrobeniusIntegralMoment(Functional):
+
     def __init__(self, ref_el, Q, f_at_qpts):
         # f_at_qpts is num components x num_qpts
         if len(Q.get_points()) != f_at_qpts.shape[1]:
@@ -352,9 +342,7 @@ class FrobeniusIntegralMoment(Functional):
             pt_dict[pt_cur] = [(qwts[i] * f_at_qpts[j, i], (j,))
                                for j in range(f_at_qpts.shape[0])]
 
-        Functional.__init__(self, ref_el, shp,
-                            pt_dict, {}, "FrobeniusIntegralMoment"
-                            )
+        Functional.__init__(self, ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment")
 
 
 # point normals happen on a d-1 dimensional facet
@@ -362,6 +350,7 @@ class FrobeniusIntegralMoment(Functional):
 class PointNormalEvaluation(Functional):
     """Implements the evaluation of the normal component of a vector at a
     point on a facet of codimension 1."""
+
     def __init__(self, ref_el, facet_no, pt):
         n = ref_el.compute_normal(facet_no)
         self.n = n
@@ -370,24 +359,21 @@ class PointNormalEvaluation(Functional):
         pt_dict = {pt: [(n[i], (i,)) for i in range(sd)]}
 
         shp = (sd,)
-        Functional.__init__(self, ref_el, shp,
-                            pt_dict, {}, "PointNormalEval"
-                            )
+        Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointNormalEval")
         return
 
 
 class PointEdgeTangentEvaluation(Functional):
     """Implements the evaluation of the tangential component of a
     vector at a point on a facet of dimension 1."""
+
     def __init__(self, ref_el, edge_no, pt):
         t = ref_el.compute_edge_tangent(edge_no)
         self.t = t
         sd = ref_el.get_spatial_dimension()
         pt_dict = {pt: [(t[i], (i,)) for i in range(sd)]}
         shp = (sd,)
-        Functional.__init__(self, ref_el, shp,
-                            pt_dict, {}, "PointEdgeTangent"
-                            )
+        Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointEdgeTangent")
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -403,6 +389,7 @@ class PointEdgeTangentEvaluation(Functional):
 class PointFaceTangentEvaluation(Functional):
     """Implements the evaluation of a tangential component of a
     vector at a point on a facet of codimension 1."""
+
     def __init__(self, ref_el, face_no, tno, pt):
         t = ref_el.compute_face_tangents(face_no)[tno]
         self.t = t
@@ -410,9 +397,7 @@ class PointFaceTangentEvaluation(Functional):
         sd = ref_el.get_spatial_dimension()
         pt_dict = {pt: [(t[i], (i,)) for i in range(sd)]}
         shp = (sd,)
-        Functional.__init__(self, ref_el, shp,
-                            pt_dict, {}, "PointFaceTangent"
-                            )
+        Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointFaceTangent")
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -428,15 +413,14 @@ class PointScaledNormalEvaluation(Functional):
     """Implements the evaluation of the normal component of a vector at a
     point on a facet of codimension 1, where the normal is scaled by
     the volume of that facet."""
+
     def __init__(self, ref_el, facet_no, pt):
         self.n = ref_el.compute_scaled_normal(facet_no)
         sd = ref_el.get_spatial_dimension()
         shp = (sd,)
 
         pt_dict = {pt: [(self.n[i], (i,)) for i in range(sd)]}
-        Functional.__init__(self, ref_el, shp,
-                            pt_dict, {}, "PointScaledNormalEval"
-                            )
+        Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointScaledNormalEval")
         return
 
     def tostr(self):
@@ -448,6 +432,7 @@ class PointScaledNormalEvaluation(Functional):
         phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
         return numpy.outer(self.n, phis)
 
+
 class PointwiseInnerProductEvaluation(Functional):
     """
     This is a functional on symmetric 2-tensor fields. Let u be such a
@@ -458,19 +443,19 @@ class PointwiseInnerProductEvaluation(Functional):
     from the Frobenius inner product of u with wv^T. This gives the 
     correct weights.
     """
+
     def __init__(self, ref_el, v, w, p):
         sd = ref_el.get_spatial_dimension()
 
         wvT = numpy.outer(w, v)
-        
-        pt_dict = {p: [(wvT[i][j], (i, j, )) for [i, j] in
-                        index_iterator((sd, sd))]}
 
-        shp = (sd, sd, )
-        Functional.__init__(self, ref_el, shp,
-                            pt_dict, {}, "PointwiseInnerProductEval"
-                            )
+        pt_dict = {p: [(wvT[i][j], (i, j))
+                       for i, j in index_iterator((sd, sd))]}
+
+        shp = (sd, sd)
+        Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
         return
+
 
 def moments_against_set(ref_el, U, Q):
     # check that U and Q are both over ref_el

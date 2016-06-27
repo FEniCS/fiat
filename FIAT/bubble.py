@@ -22,6 +22,7 @@ from six import iteritems
 
 class Bubble(FiniteElement):
     """The Bubble finite element: the interior dofs of the Lagrange FE"""
+
     def __init__(self, ref_el, degree):
         self._element = Lagrange(ref_el, degree)
 
@@ -36,7 +37,8 @@ class Bubble(FiniteElement):
         for dim, entities in iteritems(self._element.entity_dofs()):
             entity_ids[dim] = dict((entity, []) for entity in entities)
         # keep the IDs, starting from 'index'
-        entity_ids[cell_dim][0] = [e - self.first_node_index for e in cell_entity_dofs]
+        entity_ids[cell_dim][0] = [e - self.first_node_index
+                                   for e in cell_entity_dofs]
         self.fsdim = len(entity_ids[cell_dim][0])
         # keep the dual set nodes we want, starting from 'index'
         nodes = self._element.dual_basis()[self.first_node_index:]
@@ -61,7 +63,7 @@ class Bubble(FiniteElement):
         return self._element.get_formdegree()
 
     def mapping(self):
-        return [self._element._mapping]*self.space_dimension()
+        return [self._element._mapping] * self.space_dimension()
 
     def num_sub_elements(self):
         raise NotImplementedError

@@ -31,21 +31,21 @@ else:
     sys.exit(0)
 
 
-fin = open( filename, "r" )
+fin = open(filename, "r")
 
-coords = [ ]
+coords = []
 
 for line in fin:
-    coords.append( line.split() )
+    coords.append(line.split())
 
 fin.close()
 
-n = len( coords )
+n = len(coords)
 
 print("%s points" % (str(n),))
 
 
-fout = open( output, "w" )
+fout = open(output, "w")
 fout.write("""# vtk DataFile Version 2.0
 points
 ASCII
@@ -56,18 +56,18 @@ for c in coords:
     fout.write("%s %s %s\n" % (c[0], c[1], c[2]))
 
 fout.write("CELLS %s %s\n" % (n, 2*n))
-for i in range( n ):
+for i in range(n):
     fout.write("1 %s\n" % (i,))
 
 fout.write("CELL_TYPES %s\n" % (n,))
-for i in range( n ):
+for i in range(n):
     fout.write("1\n")
 
 fout.write("POINT_DATA %s\n" % (n,))
 fout.write("""SCALARS Z float 1
 LOOKUP_TABLE default\n""")
 
-for i in range( n ):
+for i in range(n):
     fout.write("%s\n", ncoords[i][3])
 
 fout.close()

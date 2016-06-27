@@ -20,7 +20,8 @@
 # First added:  2007-06-09
 # Last changed: 2014-05-15
 
-import os, sys
+import os
+import sys
 
 # Name of log file
 pwd = os.path.dirname(os.path.abspath(__file__))

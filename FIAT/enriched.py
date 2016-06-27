@@ -123,7 +123,8 @@ class EnrichedElement(FiniteElement):
                 # We build a new array, which will be the concatenation
                 # of the two subarrays, in the first index.
 
-                temp = numpy.zeros((Asd+Bsd, npoints), dtype=Atab[index].dtype)
+                temp = numpy.zeros((Asd + Bsd, npoints),
+                                   dtype=Atab[index].dtype)
                 temp[:Asd, :] = Atab[index][:, :]
                 temp[Asd:, :] = Btab[index][:, :]
 
@@ -135,7 +136,8 @@ class EnrichedElement(FiniteElement):
                 # We build a new array, which will be the concatenation
                 # of the two subarrays, in the first index.
 
-                temp = numpy.zeros((Asd+Bsd, vs[0], npoints), dtype=Atab[index].dtype)
+                temp = numpy.zeros((Asd + Bsd, vs[0], npoints),
+                                   dtype=Atab[index].dtype)
                 temp[:Asd, :, :] = Atab[index][:, :, :]
                 temp[Asd:, :, :] = Btab[index][:, :, :]
 

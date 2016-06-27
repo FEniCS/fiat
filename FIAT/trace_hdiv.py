@@ -142,9 +142,9 @@ class HDivTrace(FiniteElement):
             for i in self.dofmapping:
                 temp[i, :] = np.dot(normal, elt_tab[(0,)*dim][self.dofmapping[i]])
         else:
-             # raise RuntimeError("Attempted to tabulate a Trace space away from a facet")
-             temp = np.zeros((self.fsdim, len(points)))
-             temp[:] = np.NAN
+            # raise RuntimeError("Attempted to tabulate a Trace space away from a facet")
+            temp = np.zeros((self.fsdim, len(points)))
+            temp[:] = np.NAN
 
         # TODO: Many of these values should be 0.  Should we zero all
         # entries below a certain tolerance?

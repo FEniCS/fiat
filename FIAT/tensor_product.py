@@ -50,7 +50,8 @@ class TensorProductElement(FiniteElement):
             self.formdegree = A.get_formdegree() + B.get_formdegree()
 
         # set up reference element
-        self.ref_el = TensorProductCell(A.get_reference_element(), B.get_reference_element())
+        self.ref_el = TensorProductCell(A.get_reference_element(),
+                                        B.get_reference_element())
 
         if A.mapping()[0] != "affine" and B.mapping()[0] == "affine":
             self._mapping = A.mapping()[0]
@@ -119,7 +120,7 @@ class TensorProductElement(FiniteElement):
                         # has spatial dimension >1, since we are not
                         # explicitly scaling by facet size
                         if len(_first_point(Bnode)) > 1:
-                        # TODO: support this case one day
+                            # TODO: support this case one day
                             raise NotImplementedError("PointScaledNormalEval x PointEval is not yet supported if the second shape has dimension > 1")
                         # We cannot make a new functional.PSNEval in
                         # the natural way, since it tries to compute
@@ -245,7 +246,7 @@ class TensorProductElement(FiniteElement):
         Asdim = self.A.get_reference_element().get_spatial_dimension()
         Bsdim = self.B.get_reference_element().get_spatial_dimension()
         pointsA = [point[0:Asdim] for point in points]
-        pointsB = [point[Asdim:Asdim+Bsdim] for point in points]
+        pointsB = [point[Asdim:Asdim + Bsdim] for point in points]
         Atab = self.A.tabulate(order, pointsA)
         Btab = self.B.tabulate(order, pointsB)
         npoints = len(points)
@@ -370,7 +371,7 @@ def vert_facet_support_dofs(elem):
         # Extruded cells only
         assert isinstance(elem.ref_el, TensorProductCell)
 
-        deg = max(2*elem.degree(), 1)
+        deg = max(2 * elem.degree(), 1)
         if elem.ref_el.A.get_shape() == LINE:
             # Cell is extruded interval, vertical facet is extruded point,
             # but we cannot integrate on point reference cells,
@@ -378,7 +379,7 @@ def vert_facet_support_dofs(elem):
             q = make_quadrature(elem.ref_el.B, deg)
         else:
             vfacet_el = TensorProductCell(elem.ref_el.A.get_facet_element(),
-                                         elem.ref_el.B)
+                                          elem.ref_el.B)
             q = make_quadrature(vfacet_el, (deg, deg))
         ft = lambda f: elem.ref_el.get_vert_facet_transform(f)
         dim = elem.ref_el.A.get_spatial_dimension()
