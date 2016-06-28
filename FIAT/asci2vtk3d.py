@@ -68,6 +68,6 @@ fout.write("""SCALARS Z float 1
 LOOKUP_TABLE default\n""")
 
 for i in range(n):
-    fout.write("%s\n", ncoords[i][3])
+    fout.write("%s\n", coords[i][3])
 
 fout.close()
