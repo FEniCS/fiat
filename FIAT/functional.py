@@ -21,9 +21,9 @@
 # - a reference element domain
 # - type information
 
-import numpy
-from functools import reduce
 from collections import OrderedDict
+from itertools import chain
+import numpy
 import sympy
 
 
@@ -61,9 +61,8 @@ class Functional(object):
         self.deriv_dict = deriv_dict
         self.functional_type = functional_type
         if len(deriv_dict) > 0:
-            per_point = reduce(lambda a, b: a + b, list(deriv_dict.values()))
-            alphas = \
-                [foo[1] for foo in per_point]
+            per_point = list(chain(*deriv_dict.values()))
+            alphas = [foo[1] for foo in per_point]
             self.max_deriv_order = max([sum(foo) for foo in alphas])
         else:
             self.max_deriv_order = 0

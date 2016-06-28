@@ -18,7 +18,7 @@
 
 from . import polynomial_set, expansions, quadrature, dual_set, \
     finite_element, functional
-from functools import reduce
+from itertools import chain
 import numpy
 
 
@@ -35,9 +35,8 @@ def NedelecSpace2D(ref_el, k):
     dimPk = expansions.polynomial_dimension(ref_el, k)
     dimPkm1 = expansions.polynomial_dimension(ref_el, k - 1)
 
-    vec_Pk_indices = reduce(lambda a, b: a + b,
-                            [list(range(i * dimPkp1, i * dimPkp1 + dimPk))
-                             for i in range(sd)])
+    vec_Pk_indices = list(chain(*(range(i * dimPkp1, i * dimPkp1 + dimPk)
+                                  for i in range(sd))))
     vec_Pk_from_Pkp1 = vec_Pkp1.take(vec_Pk_indices)
 
     Pkp1 = polynomial_set.ONPolynomialSet(ref_el, k + 1)
@@ -101,14 +100,12 @@ def NedelecSpace3D(ref_el, k):
     else:
         dimPkm1 = 0
 
-    vec_Pk_indices = reduce(lambda a, b: a + b,
-                            [list(range(i * dimPkp1, i * dimPkp1 + dimPk))
-                             for i in range(sd)])
+    vec_Pk_indices = list(chain(*(range(i * dimPkp1, i * dimPkp1 + dimPk)
+                                  for i in range(sd))))
     vec_Pk = vec_Pkp1.take(vec_Pk_indices)
 
-    vec_Pke_indices = reduce(lambda a, b: a + b,
-                             [list(range(i * dimPkp1 + dimPkm1, i * dimPkp1 + dimPk))
-                              for i in range(sd)])
+    vec_Pke_indices = list(chain(*(range(i * dimPkp1 + dimPkm1, i * dimPkp1 + dimPk)
+                                   for i in range(sd))))
 
     vec_Pke = vec_Pkp1.take(vec_Pke_indices)
 

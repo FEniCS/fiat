@@ -20,7 +20,7 @@ from . import (expansions, polynomial_set, quadrature,
                reference_element, dual_set, finite_element,
                functional)
 import numpy
-from functools import reduce
+from itertools import chain
 
 
 def RTSpace(ref_el, deg):
@@ -34,9 +34,8 @@ def RTSpace(ref_el, deg):
     dimPk = expansions.polynomial_dimension(ref_el, deg)
     dimPkm1 = expansions.polynomial_dimension(ref_el, deg - 1)
 
-    vec_Pk_indices = reduce(lambda a, b: a + b,
-                            [list(range(i * dimPkp1, i * dimPkp1 + dimPk))
-                             for i in range(sd)])
+    vec_Pk_indices = list(chain(*(range(i * dimPkp1, i * dimPkp1 + dimPk)
+                                  for i in range(sd))))
     vec_Pk_from_Pkp1 = vec_Pkp1.take(vec_Pk_indices)
 
     Pkp1 = polynomial_set.ONPolynomialSet(ref_el, deg + 1)
