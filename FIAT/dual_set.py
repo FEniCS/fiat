@@ -19,7 +19,7 @@ import numpy
 from six import iteritems
 
 
-class DualSet:
+class DualSet(object):
     def __init__(self, nodes, ref_el, entity_ids):
         self.nodes = nodes
         self.ref_el = ref_el
@@ -36,8 +36,6 @@ class DualSet:
                 for d, se in sub_entities:
                     ids += self.entity_ids[d][se]
                 self.entity_closure_ids[d][e] = ids
-
-        return
 
     def get_nodes(self):
         return self.nodes

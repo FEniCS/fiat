@@ -50,7 +50,7 @@ class DiscontinuousTaylorDualSet(dual_set.DualSet):
         entity_ids[0][1] = []
         entity_ids[1][0] = list(range(degree + 1))
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(DiscontinuousTaylorDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class HigherOrderDiscontinuousTaylor(finite_element.FiniteElement):
@@ -60,7 +60,7 @@ class HigherOrderDiscontinuousTaylor(finite_element.FiniteElement):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
         dual = DiscontinuousTaylorDualSet(ref_el, degree)
         formdegree = ref_el.get_spatial_dimension()  # n-form
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree)
+        super(HigherOrderDiscontinuousTaylor, self).__init__(poly_set, dual, degree, formdegree)
 
 
 def DiscontinuousTaylor(ref_el, degree):

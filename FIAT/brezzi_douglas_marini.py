@@ -78,7 +78,7 @@ class BDMDualSet(dual_set.DualSet):
             num_internal_nodes = len(Ned_at_qpts)
             entity_ids[sd][0] = list(range(cur, cur + num_internal_nodes))
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(BDMDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class BrezziDouglasMarini(finite_element.FiniteElement):
@@ -93,14 +93,8 @@ class BrezziDouglasMarini(finite_element.FiniteElement):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree, (sd, ))
         dual = BDMDualSet(ref_el, degree)
         formdegree = sd - 1  # (n-1)-form
-        finite_element.FiniteElement.__init__(self,
-                                              poly_set,
-                                              dual,
-                                              degree,
-                                              formdegree,
-                                              mapping="contravariant piola")
-
-        return
+        super(BrezziDouglasMarini, self).__init__(poly_set, dual, degree, formdegree,
+                                                  mapping="contravariant piola")
 
 
 if __name__ == "__main__":

@@ -212,7 +212,7 @@ class NedelecDual2D(dual_set.DualSet):
             num_internal_dof = sd * Pkm1_at_qpts.shape[0]
             entity_ids[2][0] = list(range(cur, cur + num_internal_dof))
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(NedelecDual2D, self).__init__(nodes, ref_el, entity_ids)
 
 
 class NedelecDual3D(dual_set.DualSet):
@@ -287,7 +287,7 @@ class NedelecDual3D(dual_set.DualSet):
             num_internal_dof = Pkm2_at_qpts.shape[0] * sd
             entity_ids[3][0] = list(range(cur, cur + num_internal_dof))
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(NedelecDual3D, self).__init__(nodes, ref_el, entity_ids)
 
 
 class Nedelec(finite_element.FiniteElement):
@@ -306,8 +306,8 @@ class Nedelec(finite_element.FiniteElement):
         else:
             raise Exception("Not implemented")
         formdegree = 1  # 1-form
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree,
-                                              mapping="covariant piola")
+        super(Nedelec, self).__init__(poly_set, dual, degree, formdegree,
+                                      mapping="covariant piola")
 
 if __name__ == "__main__":
     from . import reference_element

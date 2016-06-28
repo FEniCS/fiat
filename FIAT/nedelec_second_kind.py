@@ -63,7 +63,7 @@ class NedelecSecondKindDual(DualSet):
         (dofs, ids) = self.generate_degrees_of_freedom(cell, degree)
 
         # Call init of super-class
-        DualSet.__init__(self, dofs, cell, ids)
+        super(NedelecSecondKindDual, self).__init__(dofs, cell, ids)
 
     def generate_degrees_of_freedom(self, cell, degree):
         "Generate dofs and geometry-to-dof maps (ids)."
@@ -237,7 +237,7 @@ class NedelecSecondKind(FiniteElement):
         mapping = "covariant piola"
 
         # Call init of super-class
-        FiniteElement.__init__(self, Ps, Ls, degree, formdegree, mapping=mapping)
+        super(NedelecSecondKind, self).__init__(Ps, Ls, degree, formdegree, mapping=mapping)
 
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ def test_basis_derivatives_scaling():
             edges = {0: (0, 1)}
             topology = {0: {0: (0,), 1: (1,)},
                         1: edges}
-            ReferenceElement.__init__(self, LINE, verts, topology)
+            super(Interval, self).__init__(LINE, verts, topology)
 
     random.seed(42)
     for i in range(26):

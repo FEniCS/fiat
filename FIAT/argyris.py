@@ -83,7 +83,7 @@ class ArgyrisDualSet(dual_set.DualSet):
             entity_ids[2][0] = list(range(cur, cur + len(internalpts)))
             cur += len(internalpts)
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(ArgyrisDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class QuinticArgyrisDualSet(dual_set.DualSet):
@@ -135,7 +135,7 @@ class QuinticArgyrisDualSet(dual_set.DualSet):
             entity_ids[1][e] = [cur]
             cur += 1
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(QuinticArgyrisDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class Argyris(finite_element.FiniteElement):
@@ -144,7 +144,7 @@ class Argyris(finite_element.FiniteElement):
     def __init__(self, ref_el, degree):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
         dual = ArgyrisDualSet(ref_el, degree)
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree)
+        super(Argyris, self).__init__(poly_set, dual, degree)
 
 
 class QuinticArgyris(finite_element.FiniteElement):
@@ -153,7 +153,7 @@ class QuinticArgyris(finite_element.FiniteElement):
     def __init__(self, ref_el):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 5)
         dual = QuinticArgyrisDualSet(ref_el)
-        finite_element.FiniteElement.__init__(self, poly_set, dual, 5)
+        super(QuinticArgyris, self).__init__(poly_set, dual, 5)
 
 
 if __name__ == "__main__":

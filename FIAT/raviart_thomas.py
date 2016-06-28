@@ -137,7 +137,7 @@ class RTDualSet(dual_set.DualSet):
                                                                  degree - 1)
             entity_ids[sd][0] = list(range(cur, cur + num_internal_nodes * sd))
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(RTDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class RaviartThomas(finite_element.FiniteElement):
@@ -149,8 +149,8 @@ class RaviartThomas(finite_element.FiniteElement):
         poly_set = RTSpace(ref_el, degree)
         dual = RTDualSet(ref_el, degree)
         formdegree = ref_el.get_spatial_dimension() - 1  # (n-1)-form
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree,
-                                              mapping="contravariant piola")
+        super(RaviartThomas, self).__init__(poly_set, dual, degree, formdegree,
+                                            mapping="contravariant piola")
 
 
 if __name__ == "__main__":

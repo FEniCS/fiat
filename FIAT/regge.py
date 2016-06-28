@@ -26,12 +26,10 @@ from .reference_element import UFCTriangle, UFCTetrahedron
 
 
 class ReggeDual(DualSet):
-    """
-    """
 
     def __init__(self, cell, degree):
         (dofs, ids) = self.generate_degrees_of_freedom(cell, degree)
-        DualSet.__init__(self, dofs, cell, ids)
+        super(ReggeDual, self).__init__(dofs, cell, ids)
 
     def generate_degrees_of_freedom(self, cell, degree):
         """
@@ -155,7 +153,7 @@ class Regge(FiniteElement):
         # Set mapping
         mapping = "pullback as metric"
         # Call init of super-class
-        FiniteElement.__init__(self, Ps, Ls, degree, mapping=mapping)
+        super(Regge, self).__init__(Ps, Ls, degree, mapping=mapping)
 
 
 if __name__ == "__main__":

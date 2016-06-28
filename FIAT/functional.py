@@ -48,7 +48,7 @@ def index_iterator(shp):
 # integers
 
 
-class Functional:
+class Functional(object):
     """Class implementing an abstract functional.
     All functionals are discrete in the sense that
     the are written as a weighted sum of (components of) their
@@ -67,7 +67,6 @@ class Functional:
             self.max_deriv_order = max([sum(foo) for foo in alphas])
         else:
             self.max_deriv_order = 0
-        return
 
     def get_point_dict(self):
         """Returns the functional information, which is a dictionary
@@ -149,7 +148,6 @@ class PointEvaluation(Functional):
     def __init__(self, ref_el, x):
         pt_dict = {x: [(1.0, tuple())]}
         Functional.__init__(self, ref_el, tuple(), pt_dict, {}, "PointEval")
-        return
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -185,7 +183,6 @@ class PointDerivative(Functional):
         self.order = sum(self.alpha)
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointDeriv")
-        return
 
     def to_riesz(self, poly_set):
         x = list(self.deriv_dict.keys())[0]
@@ -224,8 +221,6 @@ class PointNormalDerivative(Functional):
         dpt_dict = {pt: [(n[i], alphas[i], tuple()) for i in range(sd)]}
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
-
-        return
 
 
 class IntegralMoment(Functional):
@@ -307,7 +302,6 @@ class PointNormalEvaluation(Functional):
 
         shp = (sd,)
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointNormalEval")
-        return
 
 
 class PointEdgeTangentEvaluation(Functional):
@@ -368,7 +362,6 @@ class PointScaledNormalEvaluation(Functional):
 
         pt_dict = {pt: [(self.n[i], (i,)) for i in range(sd)]}
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointScaledNormalEval")
-        return
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -401,7 +394,6 @@ class PointwiseInnerProductEvaluation(Functional):
 
         shp = (sd, sd)
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
-        return
 
 
 if __name__ == "__main__":

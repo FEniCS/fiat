@@ -113,7 +113,7 @@ def xi_tetrahedron(eta):
     return xi1, xi2, xi3
 
 
-class LineExpansionSet:
+class LineExpansionSet(object):
     """Evaluates the Legendre basis on a line reference element."""
 
     def __init__(self, ref_el):
@@ -172,7 +172,7 @@ class LineExpansionSet:
         return dv
 
 
-class TriangleExpansionSet:
+class TriangleExpansionSet(object):
     """Evaluates the orthonormal Dubiner basis on a triangular
     reference element."""
 
@@ -274,7 +274,7 @@ class TriangleExpansionSet:
         return _tabulate_dpts(self._tabulate, 2, n, order, numpy.array(pts))
 
 
-class TetrahedronExpansionSet:
+class TetrahedronExpansionSet(object):
     """Collapsed orthonormal polynomial expanion on a tetrahedron."""
 
     def __init__(self, ref_el):
@@ -287,8 +287,6 @@ class TetrahedronExpansionSet:
         self.A, self.b = reference_element.make_affine_mapping(v1, v2)
         self.mapping = lambda x: numpy.dot(self.A, x) + self.b
         self.scale = numpy.sqrt(numpy.linalg.det(self.A))
-
-        return
 
     def get_num_members(self, n):
         return (n + 1) * (n + 2) * (n + 3) // 6

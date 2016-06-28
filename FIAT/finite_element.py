@@ -24,7 +24,7 @@ from .quadrature import make_quadrature
 from .reference_element import TensorProductCell
 
 
-class FiniteElement:
+class FiniteElement(object):
     """Class implementing Ciarlet's abstraction of a finite element
     being a domain, function space, and set of nodes."""
 
@@ -75,8 +75,6 @@ class FiniteElement:
                                       poly_set.get_expansion_set(),
                                       new_coeffs,
                                       poly_set.get_dmats())
-
-        return
 
     def degree(self):
         "Return the degree of the (embedding) polynomial space."

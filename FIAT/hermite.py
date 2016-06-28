@@ -67,7 +67,7 @@ class CubicHermiteDualSet(dual_set.DualSet):
             for facet in top[dim]:
                 entity_ids[dim][facet] = []
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(CubicHermiteDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class CubicHermite(finite_element.FiniteElement):
@@ -76,7 +76,7 @@ class CubicHermite(finite_element.FiniteElement):
     def __init__(self, ref_el):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 3)
         dual = CubicHermiteDualSet(ref_el)
-        finite_element.FiniteElement.__init__(self, poly_set, dual, 3)
+        super(CubicHermite, self).__init__(poly_set, dual, 3)
 
 
 if __name__ == "__main__":

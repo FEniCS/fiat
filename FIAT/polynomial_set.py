@@ -50,7 +50,7 @@ def mis(m, n):
 # k is the expansion function
 # so if I have all bfs at a given point x in an array bf,
 # then dot(coeffs, bf) gives the array of bfs
-class PolynomialSet:
+class PolynomialSet(object):
     """Implements a set of polynomials as linear combinations of an
     expansion set over a reference element.
     ref_el: the reference element
@@ -73,7 +73,6 @@ class PolynomialSet:
         self.expansion_set = expansion_set
         self.coeffs = coeffs
         self.dmats = dmats
-        return
 
     def tabulate_new(self, pts):
         return numpy.dot(self.coeffs,
