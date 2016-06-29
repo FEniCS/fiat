@@ -26,25 +26,23 @@ from .reference_element import UFCTriangle, UFCTetrahedron
 
 
 class ReggeDual(DualSet):
-    """
-    """
 
     def __init__(self, cell, degree):
         (dofs, ids) = self.generate_degrees_of_freedom(cell, degree)
-        DualSet.__init__(self, dofs, cell, ids)
+        super(ReggeDual, self).__init__(dofs, cell, ids)
 
     def generate_degrees_of_freedom(self, cell, degree):
-        """ 
+        """
         Suppose f is a k-face of the reference n-cell. Let t1,...,tk be a
         basis for the tangent space of f as n-vectors. Given a symmetric
         2-tensor field u on Rn. One set of dofs for Regge(r) on f is
-        the moment of each of the (k+1)k/2 scalar functions 
-          [u(t1,t1),u(t1,t2),...,u(t1,tk), 
-           u(t2,t2), u(t2,t3),...,..., u(tk,tk)] 
+        the moment of each of the (k+1)k/2 scalar functions
+          [u(t1,t1),u(t1,t2),...,u(t1,tk),
+           u(t2,t2), u(t2,t3),...,..., u(tk,tk)]
         aginst scalar polynomials of degrees (r-k+1). Here this is
         implemented as pointwise evaluations of those scalar functions.
 
-        Below is an implementation for dimension 2--3. In dimension 1, 
+        Below is an implementation for dimension 2--3. In dimension 1,
         Regge(r)=DG(r). It is awkward in the current FEniCS interface to
         implement the element uniformly for all dimensions due to its edge,
         facet=trig, cell style.
@@ -53,7 +51,6 @@ class ReggeDual(DualSet):
         dofs = []
         ids = {}
 
-        top = cell.get_topology()
         d = cell.get_spatial_dimension()
         if (d < 2) or (d > 3):
             raise ValueError("Regge elements only implemented for dimension 2--3.")
@@ -95,7 +92,6 @@ class ReggeDual(DualSet):
         """Generate dofs on facets in 3D."""
         # Return empty if there is no such dofs
         dofs = []
-        d = cell.get_spatial_dimension()
         ids = dict(list(zip(list(range(4)), ([] for i in range(4)))))
         if degree == 0:
             return (dofs, ids)
@@ -150,8 +146,6 @@ class Regge(FiniteElement):
     def __init__(self, cell, degree):
         # Check degree
         assert degree >= 0, "Regge start at degree 0!"
-        # Get dimension
-        d = cell.get_spatial_dimension()
         # Construct polynomial basis for d-vector fields
         Ps = ONSymTensorPolynomialSet(cell, degree)
         # Construct dual space
@@ -159,7 +153,7 @@ class Regge(FiniteElement):
         # Set mapping
         mapping = "pullback as metric"
         # Call init of super-class
-        FiniteElement.__init__(self, Ps, Ls, degree, mapping=mapping)
+        super(Regge, self).__init__(Ps, Ls, degree, mapping=mapping)
 
 
 if __name__ == "__main__":

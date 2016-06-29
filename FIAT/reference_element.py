@@ -63,7 +63,6 @@ def linalg_subspace_intersection(A, B):
     (y, c, zt) = numpy.linalg.svd(C)
 
     U = numpy.dot(qa, y)
-    V = numpy.dot(qb, numpy.transpose(zt))
 
     rank_c = len([s for s in c if numpy.abs(1.0 - s) < 1.e-10])
 
@@ -85,7 +84,7 @@ def lattice_iter(start, finish, depth):
                 yield [ii] + jj
 
 
-class ReferenceElement:
+class ReferenceElement(object):
     """Abstract class for a reference element simplex.  Provides
     accessors for geometry (vertex coordinates) as well as topology
     (orderings of vertices that make up edges, facecs, etc."""
@@ -200,7 +199,7 @@ class ReferenceElement:
         vert_on = verts_facet.pop()
 
         # get a vector from the off vertex to the facet
-        v_to_facet = numpy.array( self.vertices[vert_on] ) \
+        v_to_facet = numpy.array(self.vertices[vert_on]) \
             - numpy.array(self.vertices[vert_off])
 
         if numpy.dot(v_to_facet, nfoo) > 0.0:
@@ -378,7 +377,7 @@ class DefaultLine(ReferenceElement):
         edges = {0: (0, 1)}
         topology = {0: {0: (0,), 1: (1,)},
                     1: edges}
-        ReferenceElement.__init__(self, LINE, verts, topology)
+        super(DefaultLine, self).__init__(LINE, verts, topology)
 
     def get_facet_element(self):
         raise NotImplementedError()
@@ -392,7 +391,7 @@ class UFCInterval(UFCReferenceElement):
         edges = {0: (0, 1)}
         topology = {0: {0: (0,), 1: (1,)},
                     1: edges}
-        ReferenceElement.__init__(self, LINE, verts, topology)
+        super(UFCInterval, self).__init__(LINE, verts, topology)
 
     def __eq__(self, other):
         if isinstance(other, UFCInterval):
@@ -416,10 +415,10 @@ class DefaultTriangle(ReferenceElement):
         faces = {0: (0, 1, 2)}
         topology = {0: {0: (0,), 1: (1,), 2: (2,)},
                     1: edges, 2: faces}
-        ReferenceElement.__init__(self, TRIANGLE, verts, topology)
+        super(DefaultTriangle, self).__init__(TRIANGLE, verts, topology)
 
     def get_facet_element(self):
-        return DefaultInterval()
+        return DefaultLine()
 
 
 class UFCTriangle(UFCReferenceElement):
@@ -432,7 +431,7 @@ class UFCTriangle(UFCReferenceElement):
         faces = {0: (0, 1, 2)}
         topology = {0: {0: (0,), 1: (1,), 2: (2,)},
                     1: edges, 2: faces}
-        ReferenceElement.__init__(self, TRIANGLE, verts, topology)
+        super(UFCTriangle, self).__init__(TRIANGLE, verts, topology)
 
     def compute_normal(self, i):
         "UFC consistent normal"
@@ -461,7 +460,7 @@ class IntrepidTriangle(ReferenceElement):
         faces = {0: (0, 1, 2)}
         topology = {0: {0: (0,), 1: (1,), 2: (2,)},
                     1: edges, 2: faces}
-        ReferenceElement.__init__(self, TRIANGLE, verts, topology)
+        super(IntrepidTriangle, self).__init__(TRIANGLE, verts, topology)
 
     def get_facet_element(self):
         # I think the UFC interval is equivalent to what the
@@ -492,7 +491,7 @@ class DefaultTetrahedron(ReferenceElement):
                  3: (0, 1, 2)}
         tets = {0: (0, 1, 2, 3)}
         topology = {0: vs, 1: edges, 2: faces, 3: tets}
-        ReferenceElement.__init__(self, TETRAHEDRON, verts, topology)
+        super(DefaultTetrahedron, self).__init__(TETRAHEDRON, verts, topology)
 
     def get_facet_element(self):
         return DefaultTriangle()
@@ -520,7 +519,7 @@ class IntrepidTetrahedron(ReferenceElement):
                  3: (0, 2, 1)}
         tets = {0: (0, 1, 2, 3)}
         topology = {0: vs, 1: edges, 2: faces, 3: tets}
-        ReferenceElement.__init__(self, TETRAHEDRON, verts, topology)
+        super(IntrepidTetrahedron, self).__init__(TETRAHEDRON, verts, topology)
 
     def get_facet_element(self):
         return IntrepidTriangle()
@@ -548,7 +547,7 @@ class UFCTetrahedron(UFCReferenceElement):
                  3: (0, 1, 2)}
         tets = {0: (0, 1, 2, 3)}
         topology = {0: vs, 1: edges, 2: faces, 3: tets}
-        ReferenceElement.__init__(self, TETRAHEDRON, verts, topology)
+        super(UFCTetrahedron, self).__init__(TETRAHEDRON, verts, topology)
 
     def compute_normal(self, i):
         "UFC consistent normals."
@@ -576,7 +575,7 @@ class FiredrakeQuadrilateral(ReferenceElement):
         faces = {0: (0, 1, 2, 3)}
         topology = {0: {0: (0,), 1: (1,), 2: (2,), 3: (3,)},
                     1: edges, 2: faces}
-        ReferenceElement.__init__(self, QUADRILATERAL, verts, topology)
+        super(FiredrakeQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
 
         self.A = UFCInterval()
         self.B = UFCInterval()
@@ -638,7 +637,7 @@ class TensorProductCell(ReferenceElement):
                              for y in Btop[curBdim][thingB]]
                         dim_cur += 1
 
-        ReferenceElement.__init__(self, TENSORPRODUCT, verts, topology)
+        super(TensorProductCell, self).__init__(TENSORPRODUCT, verts, topology)
 
     def __eq__(self, other):
         return self.A == other.A and self.B == other.B

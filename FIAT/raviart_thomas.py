@@ -16,10 +16,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import expansions, polynomial_set, quadrature, reference_element, dual_set, \
-    quadrature, finite_element, functional
+from . import (expansions, polynomial_set, quadrature,
+               reference_element, dual_set, finite_element,
+               functional)
 import numpy
-from functools import reduce
+from itertools import chain
 
 
 def RTSpace(ref_el, deg):
@@ -33,9 +34,8 @@ def RTSpace(ref_el, deg):
     dimPk = expansions.polynomial_dimension(ref_el, deg)
     dimPkm1 = expansions.polynomial_dimension(ref_el, deg - 1)
 
-    vec_Pk_indices = reduce(lambda a, b: a + b,
-                            [list(range(i * dimPkp1, i * dimPkp1 + dimPk))
-                             for i in range(sd)])
+    vec_Pk_indices = list(chain(*(range(i * dimPkp1, i * dimPkp1 + dimPk)
+                                  for i in range(sd))))
     vec_Pk_from_Pkp1 = vec_Pkp1.take(vec_Pk_indices)
 
     Pkp1 = polynomial_set.ONPolynomialSet(ref_el, deg + 1)
@@ -136,7 +136,7 @@ class RTDualSet(dual_set.DualSet):
                                                                  degree - 1)
             entity_ids[sd][0] = list(range(cur, cur + num_internal_nodes * sd))
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(RTDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class RaviartThomas(finite_element.FiniteElement):
@@ -148,8 +148,8 @@ class RaviartThomas(finite_element.FiniteElement):
         poly_set = RTSpace(ref_el, degree)
         dual = RTDualSet(ref_el, degree)
         formdegree = ref_el.get_spatial_dimension() - 1  # (n-1)-form
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree,
-                                              mapping="contravariant piola")
+        super(RaviartThomas, self).__init__(poly_set, dual, degree, formdegree,
+                                            mapping="contravariant piola")
 
 
 if __name__ == "__main__":

@@ -43,7 +43,7 @@ class P0Dual(dual_set.DualSet):
 
         entity_ids[sd] = {0: [0]}
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(P0Dual, self).__init__(nodes, ref_el, entity_ids)
 
 
 class P0(finite_element.FiniteElement):
@@ -53,7 +53,7 @@ class P0(finite_element.FiniteElement):
         dual = P0Dual(ref_el)
         degree = 0
         formdegree = ref_el.get_spatial_dimension()  # n-form
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree)
+        super(P0, self).__init__(poly_set, dual, degree, formdegree)
 
 if __name__ == "__main__":
     T = reference_element.UFCTriangle()

@@ -32,7 +32,6 @@ class QuadratureRule(object):
         self.ref_el = ref_el
         self.pts = pts
         self.wts = wts
-        return
 
     def get_points(self):
         return numpy.array(self.pts)
@@ -66,8 +65,6 @@ class GaussJacobiQuadratureLineRule(QuadratureRule):
 
         QuadratureRule.__init__(self, ref_el, xs, ws)
 
-        return
-
 
 class CollapsedQuadratureTriangleRule(QuadratureRule):
     """Implements the collapsed quadrature rules defined in
@@ -94,8 +91,6 @@ class CollapsedQuadratureTriangleRule(QuadratureRule):
         wts = [0.5 * scale * w1 * w2 for w1 in wx for w2 in wy]
 
         QuadratureRule.__init__(self, ref_el, tuple(pts), tuple(wts))
-
-        return
 
 
 class CollapsedQuadratureTetrahedronRule(QuadratureRule):
@@ -125,8 +120,6 @@ class CollapsedQuadratureTetrahedronRule(QuadratureRule):
                for w1 in wx for w2 in wy for w3 in wz]
 
         QuadratureRule.__init__(self, ref_el, tuple(pts), tuple(wts))
-
-        return
 
 
 class UFCTetrahedronFaceQuadratureRule(QuadratureRule):

@@ -80,7 +80,6 @@ def test_polynomials():
 
     for dmat, reference_dmat in zip(dmats, reference):
         assert (abs(dmat - reference_dmat) < tolerance).all()
-    return
 
 
 def test_polynomials_1D():
@@ -107,7 +106,6 @@ def test_polynomials_1D():
 
     for dmat, reference_dmat in zip(dmats, reference):
         assert (abs(dmat - reference_dmat) < tolerance).all()
-    return
 
 
 def test_expansions():
@@ -148,7 +146,6 @@ def test_expansions():
             assert abs(value - reference_value) < tolerance
             diff = numpy.array(gradient) - numpy.array(reference_gradient)
             assert (abs(diff) < tolerance).all()
-    return
 
 
 def test_expansions_jet():
@@ -179,8 +176,6 @@ def test_expansions_jet():
         diff = numpy.array(datum) - numpy.array(reference_datum)
         assert (abs(diff) < tolerance).all()
 
-    return
-
 
 def test_newdubiner():
     def create_data():
@@ -209,7 +204,6 @@ def test_newdubiner():
             for k in range(2):
                 diff = numpy.array(point[k]) - numpy.array(reference_point[k])
                 assert (abs(diff) < tolerance).all()
-    return
 
 
 def test_newdubiner_jet():
@@ -238,8 +232,6 @@ def test_newdubiner_jet():
             for k in range(3):
                 diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
                 assert (abs(diff) < tolerance).all()
-
-    return
 
 
 def test_quadrature():
@@ -341,7 +333,6 @@ def test_quadrature():
             assert table[eval(dtuple)].shape == reference_table[dtuple].shape
             diff = table[eval(dtuple)] - reference_table[dtuple]
             assert (abs(diff) < tolerance).all()
-        return
 
     filename = os.path.join(prefix, "reference.json")
 

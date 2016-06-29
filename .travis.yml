@@ -15,6 +15,7 @@ before_script:
   - echo -e "Host bitbucket.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 
 before_install:
+  - pip install flake8
   - pip install nose
   - pip install nose-parameterized
 
@@ -22,4 +23,5 @@ install:
   - pip install .
 
 script:
+  - flake8 .
   - nosetests test/

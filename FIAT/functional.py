@@ -21,9 +21,9 @@
 # - a reference element domain
 # - type information
 
-import numpy
-from functools import reduce
 from collections import OrderedDict
+from itertools import chain
+import numpy
 import sympy
 
 
@@ -48,7 +48,7 @@ def index_iterator(shp):
 # integers
 
 
-class Functional:
+class Functional(object):
     """Class implementing an abstract functional.
     All functionals are discrete in the sense that
     the are written as a weighted sum of (components of) their
@@ -61,47 +61,11 @@ class Functional:
         self.deriv_dict = deriv_dict
         self.functional_type = functional_type
         if len(deriv_dict) > 0:
-            per_point = reduce(lambda a, b: a + b, list(deriv_dict.values()))
-            alphas = \
-                [foo[1] for foo in per_point]
+            per_point = list(chain(*deriv_dict.values()))
+            alphas = [foo[1] for foo in per_point]
             self.max_deriv_order = max([sum(foo) for foo in alphas])
         else:
             self.max_deriv_order = 0
-        return
-
-    def evaluate(self, f):
-        """Evaluates the functional on some callable object f."""
-        result = 0
-
-        # non-derivative part
-        # TODO pt_dict? comp?
-        for pt in pt_dict:
-            wc_list = pt_dict[pt]
-            for (w, c) in wc_list:
-                if comp == tuple:
-                    result += w * f(pt)
-                else:
-                    result += w * f(pt)[comp]
-
-        # Import AD modules from ScientificPython
-        # import Scientific.Functions.Derivatives as Derivatives
-        for pt in self.deriv_dict:
-            dpt = tuple([Derivatives.DerivVar(pt[i], i, self.max_deriv_order)
-                         for i in range(len(pt))])
-            for (w, a, c) in self.deriv_dict[pt]:
-                fpt = f(dpt)
-                order = sum(a)
-                if c == tuple():
-                    val_cur = fpt[order]
-                else:
-                    val_cur = fpt[c][order]
-                for i in range(len[a]):
-                    for j in range(a[j]):
-                        val_cur = val_cur[i]
-
-                result += val_cur
-
-        return result
 
     def get_point_dict(self):
         """Returns the functional information, which is a dictionary
@@ -136,8 +100,6 @@ class Functional:
 
         result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
 
-        shp = poly_set.get_shape()
-
         # loop over points
         for j in range(len(pts)):
             pt_cur = pts[j]
@@ -149,10 +111,8 @@ class Functional:
                     result[c][i] += w * bfs[i, j]
 
         def pt_to_dpt(pt, dorder):
-            dpt = []
-            for i in range(len(pt)):
-                dpt.append(Derivatives.DerivVar(pt[i], i, dorder))
-            return tuple(dpt)
+            assert len(pt) == 0  # code was broken anyway othewise
+            return ()
 
         # loop over deriv points
         dpt_dict = self.deriv_dict
@@ -187,7 +147,6 @@ class PointEvaluation(Functional):
     def __init__(self, ref_el, x):
         pt_dict = {x: [(1.0, tuple())]}
         Functional.__init__(self, ref_el, tuple(), pt_dict, {}, "PointEval")
-        return
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -223,7 +182,6 @@ class PointDerivative(Functional):
         self.order = sum(self.alpha)
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointDeriv")
-        return
 
     def to_riesz(self, poly_set):
         x = list(self.deriv_dict.keys())[0]
@@ -263,21 +221,6 @@ class PointNormalDerivative(Functional):
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
 
-        return
-
-    def to_riesz(self, poly_set):
-        #import Scientific.Functions.FirstDerivatives as FirstDerivatives
-        x = list(self.deriv_dict.keys())[0]
-        dx = tuple([FirstDerivatives.DerivVar(x[i], i) for i in range(len(x))])
-
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-
-        bfs = es.tabulate(ed, [dx])[:, 0]
-
-        bfs_grad = numpy.array([b[1] for b in bfs])
-        return numpy.dot(bfs_grad, self.n)
-
 
 class IntegralMoment(Functional):
     """An IntegralMoment is a functional"""
@@ -308,8 +251,6 @@ class IntegralMoment(Functional):
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "IntegralMoment")
 
     def to_riesz(self, poly_set):
-        T = poly_set.get_reference_element()
-        sd = T.get_spatial_dimension()
         es = poly_set.get_expansion_set()
         ed = poly_set.get_embedded_degree()
         pts = list(self.pt_dict.keys())
@@ -360,7 +301,6 @@ class PointNormalEvaluation(Functional):
 
         shp = (sd,)
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointNormalEval")
-        return
 
 
 class PointEdgeTangentEvaluation(Functional):
@@ -421,7 +361,6 @@ class PointScaledNormalEvaluation(Functional):
 
         pt_dict = {pt: [(self.n[i], (i,)) for i in range(sd)]}
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointScaledNormalEval")
-        return
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -440,7 +379,7 @@ class PointwiseInnerProductEvaluation(Functional):
     v^T u(p) w.
 
     Clearly v^iu_{ij}w^j = u_{ij}v^iw^j. Thus the value can be computed
-    from the Frobenius inner product of u with wv^T. This gives the 
+    from the Frobenius inner product of u with wv^T. This gives the
     correct weights.
     """
 
@@ -454,21 +393,6 @@ class PointwiseInnerProductEvaluation(Functional):
 
         shp = (sd, sd)
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
-        return
-
-
-def moments_against_set(ref_el, U, Q):
-    # check that U and Q are both over ref_el
-
-    qpts = Q.get_points()
-    qwts = Q.get_weights()
-
-    Uvals = U.tabulate(pts)
-
-    # handle scalar case
-
-    for i in range(Uvals.shape[0]):  # loop over members of U
-        pass
 
 
 if __name__ == "__main__":

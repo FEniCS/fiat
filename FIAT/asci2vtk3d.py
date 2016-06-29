@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright (C) 2008-2012 Robert C. Kirby (Texas Tech University)
 #
 # This file is part of FIAT.
@@ -14,8 +16,6 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
-
-#!/usr/bin/env python
 
 # 3d mode: x y z f, f = f(x,y,z)
 import sys
@@ -68,6 +68,6 @@ fout.write("""SCALARS Z float 1
 LOOKUP_TABLE default\n""")
 
 for i in range(n):
-    fout.write("%s\n", ncoords[i][3])
+    fout.write("%s\n", coords[i][3])
 
 fout.close()

@@ -20,7 +20,6 @@ via Newton's method.  These mainly are used in defining the expansion
 functions over the simplices and in defining quadrature
 rules over each domain."""
 
-import math
 import numpy
 
 
@@ -41,10 +40,10 @@ def eval_jacobi(a, b, n, x):
         for k in range(2, n + 1):
             a1 = 2.0 * k * (k + apb) * (2.0 * k + apb - 2.0)
             a2 = (2.0 * k + apb - 1.0) * (a * a - b * b)
-            a3 = ( 2.0 * k + apb - 2.0 )  \
-                * ( 2.0 * k + apb - 1.0 ) \
+            a3 = (2.0 * k + apb - 2.0)  \
+                * (2.0 * k + apb - 1.0) \
                 * (2.0 * k + apb)
-            a4 = 2.0 * ( k + a - 1.0 ) * ( k + b - 1.0 ) \
+            a4 = 2.0 * (k + a - 1.0) * (k + b - 1.0) \
                 * (2.0 * k + apb)
             a2 = a2 / a1
             a3 = a3 / a1
@@ -75,15 +74,15 @@ def eval_jacobi_batch(a, b, n, xs):
         for k in range(2, n + 1):
             a1 = 2.0 * k * (k + apb) * (2.0 * k + apb - 2.0)
             a2 = (2.0 * k + apb - 1.0) * (a * a - b * b)
-            a3 = ( 2.0 * k + apb - 2.0 )  \
-                * ( 2.0 * k + apb - 1.0 ) \
+            a3 = (2.0 * k + apb - 2.0)  \
+                * (2.0 * k + apb - 1.0) \
                 * (2.0 * k + apb)
-            a4 = 2.0 * ( k + a - 1.0 ) * ( k + b - 1.0 ) \
+            a4 = 2.0 * (k + a - 1.0) * (k + b - 1.0) \
                 * (2.0 * k + apb)
             a2 = a2 / a1
             a3 = a3 / a1
             a4 = a4 / a1
-            result[k, :] = ( a2 + a3 * xsnew ) * result[k-1, :] \
+            result[k, :] = (a2 + a3 * xsnew) * result[k-1, :] \
                 - a4 * result[k-2, :]
     return result
 

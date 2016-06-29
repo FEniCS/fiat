@@ -17,10 +17,7 @@
 #
 # Modified by Jan Blechta 2014
 
-from . import expansions, polynomial_set, quadrature, reference_element, dual_set, \
-    quadrature, finite_element, functional
-import numpy
-from functools import reduce
+from . import dual_set, finite_element, functional
 from .raviart_thomas import RTSpace
 
 
@@ -68,7 +65,7 @@ class DRTDualSet(dual_set.DualSet):
         # cell dofs
         entity_ids[sd] = {0: list(range(len(nodes)))}
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(DRTDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class DiscontinuousRaviartThomas(finite_element.FiniteElement):
@@ -79,5 +76,5 @@ class DiscontinuousRaviartThomas(finite_element.FiniteElement):
         degree = q - 1
         poly_set = RTSpace(ref_el, degree)
         dual = DRTDualSet(ref_el, degree)
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree,
-                                              mapping="contravariant piola")
+        super(DiscontinuousRaviartThomas, self).__init__(poly_set, dual, degree,
+                                                         mapping="contravariant piola")

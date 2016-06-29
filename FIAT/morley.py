@@ -36,8 +36,6 @@ class MorleyDualSet(dual_set.DualSet):
         if sd != 2:
             raise Exception("Illegal spatial dimension")
 
-        pd = functional.PointDerivative
-
         # vertex point evaluations
 
         entity_ids[0] = {}
@@ -56,7 +54,7 @@ class MorleyDualSet(dual_set.DualSet):
             entity_ids[1][e] = [cur]
             cur += 1
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(MorleyDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class Morley(finite_element.FiniteElement):
@@ -65,7 +63,7 @@ class Morley(finite_element.FiniteElement):
     def __init__(self, ref_el):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 2)
         dual = MorleyDualSet(ref_el)
-        finite_element.FiniteElement.__init__(self, poly_set, dual, 2)
+        super(Morley, self).__init__(poly_set, dual, 2)
 
 if __name__ == "__main__":
     from . import reference_element

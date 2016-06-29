@@ -37,13 +37,13 @@ for test in tests:
     print("Running tests: %s" % test)
     print("----------------------------------------------------------------------")
     os.chdir(os.path.join(pwd, test))
-    #failure = os.system("python test.py | tee -a %s" % logfile)
+    # failure = os.system("python test.py | tee -a %s" % logfile)
     failure = os.system("python test.py")
     if failure:
         print("Test FAILED")
         failed.append(test)
     print("")
 
-#print("To view the test log, use the following command: less -R test.log")
+# print("To view the test log, use the following command: less -R test.log")
 
 sys.exit(len(failed))

@@ -47,7 +47,7 @@ class DiscontinuousLagrangeDualSet(dual_set.DualSet):
 
         entity_ids[dim][0] = list(range(len(nodes)))
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(DiscontinuousLagrangeDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class HigherOrderDiscontinuousLagrange(finite_element.FiniteElement):
@@ -57,7 +57,7 @@ class HigherOrderDiscontinuousLagrange(finite_element.FiniteElement):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
         dual = DiscontinuousLagrangeDualSet(ref_el, degree)
         formdegree = ref_el.get_spatial_dimension()  # n-form
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree)
+        super(HigherOrderDiscontinuousLagrange, self).__init__(poly_set, dual, degree, formdegree)
 
 
 def DiscontinuousLagrange(ref_el, degree):

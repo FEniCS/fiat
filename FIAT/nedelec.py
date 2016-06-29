@@ -18,7 +18,7 @@
 
 from . import polynomial_set, expansions, quadrature, dual_set, \
     finite_element, functional
-from functools import reduce
+from itertools import chain
 import numpy
 
 
@@ -35,9 +35,8 @@ def NedelecSpace2D(ref_el, k):
     dimPk = expansions.polynomial_dimension(ref_el, k)
     dimPkm1 = expansions.polynomial_dimension(ref_el, k - 1)
 
-    vec_Pk_indices = reduce(lambda a, b: a + b,
-                            [list(range(i * dimPkp1, i * dimPkp1 + dimPk))
-                             for i in range(sd)])
+    vec_Pk_indices = list(chain(*(range(i * dimPkp1, i * dimPkp1 + dimPk)
+                                  for i in range(sd))))
     vec_Pk_from_Pkp1 = vec_Pkp1.take(vec_Pk_indices)
 
     Pkp1 = polynomial_set.ONPolynomialSet(ref_el, k + 1)
@@ -101,14 +100,12 @@ def NedelecSpace3D(ref_el, k):
     else:
         dimPkm1 = 0
 
-    vec_Pk_indices = reduce(lambda a, b: a + b,
-                            [list(range(i * dimPkp1, i * dimPkp1 + dimPk))
-                             for i in range(sd)])
+    vec_Pk_indices = list(chain(*(range(i * dimPkp1, i * dimPkp1 + dimPk)
+                                  for i in range(sd))))
     vec_Pk = vec_Pkp1.take(vec_Pk_indices)
 
-    vec_Pke_indices = reduce(lambda a, b: a + b,
-                             [list(range(i * dimPkp1 + dimPkm1, i * dimPkp1 + dimPk))
-                              for i in range(sd)])
+    vec_Pke_indices = list(chain(*(range(i * dimPkp1 + dimPkm1, i * dimPkp1 + dimPk)
+                                   for i in range(sd))))
 
     vec_Pke = vec_Pkp1.take(vec_Pke_indices)
 
@@ -212,7 +209,7 @@ class NedelecDual2D(dual_set.DualSet):
             num_internal_dof = sd * Pkm1_at_qpts.shape[0]
             entity_ids[2][0] = list(range(cur, cur + num_internal_dof))
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(NedelecDual2D, self).__init__(nodes, ref_el, entity_ids)
 
 
 class NedelecDual3D(dual_set.DualSet):
@@ -287,7 +284,7 @@ class NedelecDual3D(dual_set.DualSet):
             num_internal_dof = Pkm2_at_qpts.shape[0] * sd
             entity_ids[3][0] = list(range(cur, cur + num_internal_dof))
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(NedelecDual3D, self).__init__(nodes, ref_el, entity_ids)
 
 
 class Nedelec(finite_element.FiniteElement):
@@ -306,8 +303,8 @@ class Nedelec(finite_element.FiniteElement):
         else:
             raise Exception("Not implemented")
         formdegree = 1  # 1-form
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree, formdegree,
-                                              mapping="covariant piola")
+        super(Nedelec, self).__init__(poly_set, dual, degree, formdegree,
+                                      mapping="covariant piola")
 
 if __name__ == "__main__":
     from . import reference_element

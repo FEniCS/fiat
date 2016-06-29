@@ -50,7 +50,7 @@ def mis(m, n):
 # k is the expansion function
 # so if I have all bfs at a given point x in an array bf,
 # then dot(coeffs, bf) gives the array of bfs
-class PolynomialSet:
+class PolynomialSet(object):
     """Implements a set of polynomials as linear combinations of an
     expansion set over a reference element.
     ref_el: the reference element
@@ -73,7 +73,6 @@ class PolynomialSet:
         self.expansion_set = expansion_set
         self.coeffs = coeffs
         self.dmats = dmats
-        return
 
     def tabulate_new(self, pts):
         return numpy.dot(self.coeffs,
@@ -123,24 +122,6 @@ class PolynomialSet:
         new_coeffs = numpy.take(self.get_coeffs(), items, 0)
         return PolynomialSet(self.ref_el, self.degree, self.embedded_degree,
                              self.expansion_set, new_coeffs, self.dmats)
-
-    def to_sympy(self):
-        import sys
-        sys.path.append("..")
-        #import FIAT_S
-        import sympy
-        # syms = FIAT_S.polynomials. \
-        #    make_syms(self.get_reference_element().get_spatial_dimension())
-        #ds_nosub = FIAT_S.polynomials.dubs(self.get_embedded_degree(), syms)
-        T1 = reference_element.DefaultReferenceElement()
-        T2 = self.get_reference_element()
-        A, b = reference_element.make_affine_mapping(T2.get_vertices(),
-                                                     T1.get_vertices())
-
-        if len(self.coeffs.shape) == 2:
-            return [sympy.Polynomial(sum([self.coeffs[i, j] * ds[j]
-                                          for j in range(self.coeffs.shape[1])]))
-                    for i in range(self.coeffs.shape[0])]
 
 
 class ONPolynomialSet(PolynomialSet):
@@ -258,7 +239,7 @@ class ONSymTensorPolynomialSet(PolynomialSet):
     def __init__(self, ref_el, degree, size=None):
 
         sd = ref_el.get_spatial_dimension()
-        if size == None:
+        if size is None:
             size = sd
 
         shape = (size, size)
@@ -314,4 +295,4 @@ if __name__ == "__main__":
         print(alpha)
         print(jet[alpha])
 
-   # print U.get_shape()
+    # print U.get_shape()
