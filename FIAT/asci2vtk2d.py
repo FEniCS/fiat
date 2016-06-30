@@ -18,6 +18,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 # 2d mode: x y z, z = f(x,y)
+from __future__ import print_function
 import sys
 
 if len(sys.argv) > 1:
