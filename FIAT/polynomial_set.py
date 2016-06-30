@@ -278,21 +278,3 @@ class ONSymTensorPolynomialSet(PolynomialSet):
         dmats = [numpy.dot(vinv, numpy.transpose(dtilde)) for dtilde in dtildes]
         PolynomialSet.__init__(self, ref_el, degree, embedded_degree,
                                expansion_set, coeffs, dmats)
-
-
-if __name__ == "__main__":
-    from . import reference_element
-
-    T = reference_element.UFCTriangle()
-    U = ONPolynomialSet(T, 2)
-
-    print(U.coeffs[0:6, 0:6])
-
-    pts = T.make_lattice(3)
-
-    jet = U.tabulate(pts, 1)
-    for alpha in sorted(jet):
-        print(alpha)
-        print(jet[alpha])
-
-    # print U.get_shape()

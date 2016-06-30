@@ -388,15 +388,3 @@ def vert_facet_support_dofs(elem):
         elem._vert_facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
 
     return elem._vert_facet_support_dofs
-
-
-if __name__ == "__main__":
-    from . import reference_element
-    from . import lagrange
-    from . import raviart_thomas
-    S = reference_element.UFCTriangle()
-    T = reference_element.UFCInterval()
-    W = raviart_thomas.RaviartThomas(S, 1)
-    X = lagrange.Lagrange(T, 3)
-    Y = TensorProductElement(W, X)
-    Z = TensorProductElement(Y, X)

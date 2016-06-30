@@ -16,9 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import (expansions, polynomial_set, quadrature,
-               reference_element, dual_set, finite_element,
-               functional)
+from . import (expansions, polynomial_set, quadrature, dual_set,
+               finite_element, functional)
 import numpy
 from itertools import chain
 
@@ -150,22 +149,3 @@ class RaviartThomas(finite_element.FiniteElement):
         formdegree = ref_el.get_spatial_dimension() - 1  # (n-1)-form
         super(RaviartThomas, self).__init__(poly_set, dual, degree, formdegree,
                                             mapping="contravariant piola")
-
-
-if __name__ == "__main__":
-    T = reference_element.UFCTriangle()
-    sd = T.get_spatial_dimension()
-
-    for k in range(6):
-        RT = RaviartThomas(T, k)
-
-    # RTfs = RT.get_nodal_basis()
-
-    # pts = T.make_lattice(1)
-    # print pts
-
-    # zero_index = tuple([0 for i in range(sd)])
-
-    # RTvals = RTfs.tabulate(pts)[zero_index]
-
-    # print RTvals

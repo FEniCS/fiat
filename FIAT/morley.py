@@ -64,13 +64,3 @@ class Morley(finite_element.FiniteElement):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 2)
         dual = MorleyDualSet(ref_el)
         super(Morley, self).__init__(poly_set, dual, 2)
-
-if __name__ == "__main__":
-    from . import reference_element
-    T = reference_element.DefaultTriangle()
-    U = Morley(T)
-
-    Ufs = U.get_nodal_basis()
-    pts = T.make_lattice(1)
-    print(pts)
-    print(list(Ufs.tabulate(pts).values())[0])

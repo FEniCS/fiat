@@ -1,5 +1,5 @@
-from . import (finite_element, functional, dual_set,
-               reference_element, polynomial_set, lagrange)
+from . import (finite_element, functional, dual_set, polynomial_set,
+               lagrange)
 
 import numpy
 
@@ -115,9 +115,3 @@ class BrezziDouglasFortinMarini(finite_element.FiniteElement):
         formdegree = ref_el.get_spatial_dimension() - 1
         super(BrezziDouglasFortinMarini, self).__init__(poly_set, dual, degree, formdegree,
                                                         mapping="contravariant piola")
-
-
-if __name__ == "__main__":
-    T = reference_element.UFCTriangle()
-
-    BDFM = BrezziDouglasFortinMarini(T, 2)

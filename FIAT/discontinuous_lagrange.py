@@ -65,17 +65,3 @@ def DiscontinuousLagrange(ref_el, degree):
         return P0.P0(ref_el)
     else:
         return HigherOrderDiscontinuousLagrange(ref_el, degree)
-
-if __name__ == "__main__":
-    from . import reference_element
-    T = reference_element.DefaultTetrahedron()
-    for k in range(2, 3):
-        U = DiscontinuousLagrange(T, k)
-
-    Ufs = U.get_nodal_basis()
-    pts = T.make_lattice(k)
-    print(pts)
-    for foo, bar in list(Ufs.tabulate(pts, 1).items()):
-        print(foo)
-        print(bar)
-        print()

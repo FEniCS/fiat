@@ -21,7 +21,7 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-from . import reference_element, dual_set, functional, polynomial_set, finite_element
+from . import dual_set, functional, polynomial_set, finite_element
 import numpy
 
 
@@ -54,10 +54,3 @@ class P0(finite_element.FiniteElement):
         degree = 0
         formdegree = ref_el.get_spatial_dimension()  # n-form
         super(P0, self).__init__(poly_set, dual, degree, formdegree)
-
-if __name__ == "__main__":
-    T = reference_element.UFCTriangle()
-    U = P0(T)
-
-    print(U.get_dual_set().entity_ids)
-    print(U.get_nodal_basis().tabulate(T.make_lattice(1)))

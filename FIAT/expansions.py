@@ -420,29 +420,3 @@ def polynomial_dimension(ref_el, degree):
         return max(0, (degree + 1) * (degree + 2) * (degree + 3) // 6)
     else:
         raise Exception("Unknown reference element type.")
-
-
-if __name__ == "__main__":
-    from . import expansions
-
-    E = reference_element.DefaultTriangle()
-
-    k = 3
-
-    pts = E.make_lattice(k)
-
-    Phis = expansions.get_expansion_set(E)
-
-    phis = Phis.tabulate(k, pts)
-
-    dphis = Phis.tabulate_derivatives(k, pts)
-
-#    dphis_x = numpy.array([[d[1][0] for d in dphi] for dphi in dphis])
-#    dphis_y = numpy.array([[d[1][1] for d in dphi] for dphi in dphis])
-#    dphis_z = numpy.array([[d[1][2] for d in dphi] for dphi in dphis])
-
-#    print dphis_x
-
-#    for dmat in make_dmats(E, k):
-#        print dmat
-#        print

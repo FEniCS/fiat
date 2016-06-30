@@ -236,16 +236,3 @@ def tabulate_jet(D, n, pts, order, numtype):
               for j in range(n)]
              for i in range(m)]
     return data2
-
-
-if __name__ == "__main__":
-    import gmpy
-
-    latticeK = 2
-    D = 3
-
-    pts = make_tetrahedron_lattice(latticeK, gmpy.mpq)
-
-    vals = tabulate_tetrahedron_derivatives(D, pts, gmpy.mpq)
-
-    print(vals)

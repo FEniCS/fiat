@@ -25,7 +25,7 @@ from .functional import PointEdgeTangentEvaluation as Tangent
 from .functional import FrobeniusIntegralMoment as IntegralMoment
 from .raviart_thomas import RaviartThomas
 from .quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
-from .reference_element import UFCTriangle, UFCTetrahedron
+from .reference_element import UFCTetrahedron
 
 
 class NedelecSecondKindDual(DualSet):
@@ -238,17 +238,3 @@ class NedelecSecondKind(FiniteElement):
 
         # Call init of super-class
         super(NedelecSecondKind, self).__init__(Ps, Ls, degree, formdegree, mapping=mapping)
-
-
-if __name__ == "__main__":
-
-    for k in range(1, 4):
-        T = UFCTriangle()
-        N2curl = NedelecSecondKind(T, k)
-
-    for k in range(1, 4):
-        T = UFCTetrahedron()
-        N2curl = NedelecSecondKind(T, k)
-        Nfs = N2curl.get_nodal_basis()
-        pts = T.make_lattice(1)
-        vals = Nfs.tabulate(pts, 1)

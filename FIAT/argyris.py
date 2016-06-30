@@ -16,7 +16,6 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 from . import finite_element, polynomial_set, dual_set, functional
-import numpy
 
 
 class ArgyrisDualSet(dual_set.DualSet):
@@ -154,19 +153,3 @@ class QuinticArgyris(finite_element.FiniteElement):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 5)
         dual = QuinticArgyrisDualSet(ref_el)
         super(QuinticArgyris, self).__init__(poly_set, dual, 5)
-
-
-if __name__ == "__main__":
-    from . import reference_element
-    from . import lagrange
-    T = reference_element.DefaultTriangle()
-    for k in range(5, 11):
-        U = Argyris(T, k)
-        U2 = lagrange.Lagrange(T, k)
-        c = U.get_nodal_basis().get_coeffs()
-        sigma = numpy.linalg.svd(c, compute_uv=0)
-        print("Argyris ", k, max(sigma) / min(sigma))
-        c = U2.get_nodal_basis().get_coeffs()
-        sigma = numpy.linalg.svd(c, compute_uv=0)
-        print("Lagrange ", k, max(sigma) / min(sigma))
-        print()

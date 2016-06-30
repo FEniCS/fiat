@@ -780,21 +780,3 @@ def volume(verts):
     p = numpy.prod([si for si in s if (si) > 1.e-10])
 
     return p / factorial(sd)
-
-
-if __name__ == "__main__":
-    # U = UFCTetrahedron()
-    # print U.make_points(1, 1, 3)
-    # for i in range(len(U.vertices)):
-    #     print U.compute_normal(i)
-
-    V = DefaultTetrahedron()
-    sd = V.get_spatial_dimension()
-
-    # print make_affine_mapping(V.get_vertices(), U.get_vertices())
-
-    for i in range(len(V.vertices)):
-        print(V.compute_normal(i))
-        print(V.compute_scaled_normal(i))
-        print(volume(V.get_vertices_of_subcomplex(V.topology[sd - 1][i])))
-        print()

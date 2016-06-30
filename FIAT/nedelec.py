@@ -305,17 +305,3 @@ class Nedelec(finite_element.FiniteElement):
         formdegree = 1  # 1-form
         super(Nedelec, self).__init__(poly_set, dual, degree, formdegree,
                                       mapping="covariant piola")
-
-if __name__ == "__main__":
-    from . import reference_element
-    T = reference_element.DefaultTriangle()
-    sd = T.get_spatial_dimension()
-
-    for k in range(1):
-        N = Nedelec(T, k)
-        Nfs = N.get_nodal_basis()
-        pts = T.make_lattice(1)
-        vals = Nfs.tabulate(pts, 1)
-        for foo in sorted(vals):
-            print(foo)
-            print(vals[foo])
