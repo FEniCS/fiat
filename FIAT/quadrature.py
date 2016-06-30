@@ -18,11 +18,11 @@
 # Modified by Marie E. Rognes (meg@simula.no), 2012
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2015
 
-from . import reference_element, expansions, jacobi, orthopoly
+from FIAT import reference_element, expansions, jacobi, orthopoly
 import math
 import numpy
-from .factorial import factorial
-from .gamma import gamma
+from FIAT.factorial import factorial
+from FIAT.gamma import gamma
 
 
 class QuadratureRule(object):

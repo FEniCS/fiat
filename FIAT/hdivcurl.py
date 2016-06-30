@@ -17,8 +17,8 @@
 
 import numpy
 import types
-from .tensor_product import TensorProductElement
-from . import functional
+from FIAT.tensor_product import TensorProductElement
+from FIAT import functional
 
 
 def Hdiv(element):

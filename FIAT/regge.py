@@ -17,11 +17,11 @@
 
 import numpy
 
-from .finite_element import FiniteElement
-from .dual_set import DualSet
-from .polynomial_set import ONSymTensorPolynomialSet
-from .functional import PointwiseInnerProductEvaluation as InnerProduct
-from .functional import index_iterator
+from FIAT.finite_element import FiniteElement
+from FIAT.dual_set import DualSet
+from FIAT.polynomial_set import ONSymTensorPolynomialSet
+from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct
+from FIAT.functional import index_iterator
 
 
 class ReggeDual(DualSet):

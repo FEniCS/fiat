@@ -21,8 +21,8 @@ to allow users to get coordinates that they want."""
 import numpy
 import math
 import sympy
-from . import reference_element
-from . import jacobi
+from FIAT import reference_element
+from FIAT import jacobi
 
 
 def _tabulate_dpts(tabulator, D, n, order, pts):

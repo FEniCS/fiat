@@ -17,12 +17,12 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 import numpy
-from .finite_element import FiniteElement, _facet_support_dofs
-from .reference_element import TensorProductCell, LINE
-from .polynomial_set import mis
-from .quadrature import make_quadrature
-from . import dual_set
-from . import functional
+from FIAT.finite_element import FiniteElement, _facet_support_dofs
+from FIAT.reference_element import TensorProductCell, LINE
+from FIAT.polynomial_set import mis
+from FIAT.quadrature import make_quadrature
+from FIAT import dual_set
+from FIAT import functional
 
 
 def _first_point(node):

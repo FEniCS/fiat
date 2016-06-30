@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import finite_element, polynomial_set, dual_set, functional, P0
+from FIAT import finite_element, polynomial_set, dual_set, functional, P0
 
 
 class DiscontinuousLagrangeDualSet(dual_set.DualSet):

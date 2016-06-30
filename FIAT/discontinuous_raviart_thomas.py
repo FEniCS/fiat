@@ -17,8 +17,8 @@
 #
 # Modified by Jan Blechta 2014
 
-from . import dual_set, finite_element, functional
-from .raviart_thomas import RTSpace
+from FIAT import dual_set, finite_element, functional
+from FIAT.raviart_thomas import RTSpace
 
 
 class DRTDualSet(dual_set.DualSet):

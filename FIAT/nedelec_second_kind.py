@@ -18,14 +18,14 @@
 
 import numpy
 
-from .finite_element import FiniteElement
-from .dual_set import DualSet
-from .polynomial_set import ONPolynomialSet
-from .functional import PointEdgeTangentEvaluation as Tangent
-from .functional import FrobeniusIntegralMoment as IntegralMoment
-from .raviart_thomas import RaviartThomas
-from .quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
-from .reference_element import UFCTetrahedron
+from FIAT.finite_element import FiniteElement
+from FIAT.dual_set import DualSet
+from FIAT.polynomial_set import ONPolynomialSet
+from FIAT.functional import PointEdgeTangentEvaluation as Tangent
+from FIAT.functional import FrobeniusIntegralMoment as IntegralMoment
+from FIAT.raviart_thomas import RaviartThomas
+from FIAT.quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
+from FIAT.reference_element import UFCTetrahedron
 
 
 class NedelecSecondKindDual(DualSet):

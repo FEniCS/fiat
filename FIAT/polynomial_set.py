@@ -26,9 +26,9 @@
 # we have an interface for defining sets of functionals (moments against
 # an entire set of polynomials)
 
-from . import expansions
+from FIAT import expansions
 import numpy
-from .functional import index_iterator
+from FIAT.functional import index_iterator
 
 
 def mis(m, n):

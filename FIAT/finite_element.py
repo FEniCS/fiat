@@ -19,9 +19,9 @@
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 
 import numpy
-from .polynomial_set import PolynomialSet
-from .quadrature import make_quadrature
-from .reference_element import TensorProductCell
+from FIAT.polynomial_set import PolynomialSet
+from FIAT.quadrature import make_quadrature
+from FIAT.reference_element import TensorProductCell
 
 
 class FiniteElement(object):

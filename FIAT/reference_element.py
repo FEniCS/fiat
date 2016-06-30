@@ -760,7 +760,7 @@ def ufc_cell(cell):
 
 def volume(verts):
     """Constructs the volume of the simplex spanned by verts"""
-    from .factorial import factorial
+    from FIAT.factorial import factorial
     # use fact that volume of UFC reference element is 1/n!
     sd = len(verts) - 1
     ufcel = ufc_simplex(sd)

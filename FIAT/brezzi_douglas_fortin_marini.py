@@ -1,5 +1,5 @@
-from . import (finite_element, functional, dual_set, polynomial_set,
-               lagrange)
+from FIAT import (finite_element, functional, dual_set,
+                  polynomial_set, lagrange)
 
 import numpy
 

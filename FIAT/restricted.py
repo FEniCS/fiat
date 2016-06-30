@@ -20,8 +20,8 @@
 import numpy
 import six
 from six import iteritems
-from .dual_set import DualSet
-from .finite_element import FiniteElement
+from FIAT.dual_set import DualSet
+from FIAT.finite_element import FiniteElement
 
 
 class RestrictedElement(FiniteElement):

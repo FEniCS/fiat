@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import shapes, Lagrange
+from FIAT import shapes, Lagrange
 
 shape = 3
 degree = 3

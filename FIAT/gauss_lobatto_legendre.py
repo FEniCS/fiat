@@ -17,8 +17,8 @@
 #
 # Written by David A. Ham (david.ham@imperial.ac.uk), 2015
 
-from . import finite_element, polynomial_set, dual_set, functional, quadrature
-from .reference_element import LINE
+from FIAT import finite_element, polynomial_set, dual_set, functional, quadrature
+from FIAT.reference_element import LINE
 
 
 class GaussLobattoLegendreDualSet(dual_set.DualSet):

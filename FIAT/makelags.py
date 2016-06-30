@@ -16,8 +16,8 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-from . import lagrange
-from . import reference_element
+from FIAT import lagrange
+from FIAT import reference_element
 import string
 import numpy
 

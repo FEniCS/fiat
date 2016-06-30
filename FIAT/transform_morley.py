@@ -16,7 +16,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-from . import morley, reference_element
+from FIAT import morley, reference_element
 import numpy
 
 # Let's set up the reference triangle and another one

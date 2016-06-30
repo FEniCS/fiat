@@ -17,8 +17,8 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 import numpy
-from .finite_element import FiniteElement
-from . import dual_set
+from FIAT.finite_element import FiniteElement
+from FIAT import dual_set
 from copy import copy
 
 

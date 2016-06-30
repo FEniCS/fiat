@@ -33,7 +33,7 @@
 from __future__ import division
 import numpy as np
 from six.moves import xrange, reduce
-from .gamma import gamma
+from FIAT.gamma import gamma
 
 
 def gauss(alpha, beta):

@@ -20,7 +20,7 @@
 #
 # Last changed: 2010-01-28
 
-from . import finite_element, polynomial_set, dual_set, functional
+from FIAT import finite_element, polynomial_set, dual_set, functional
 
 
 def _initialize_entity_ids(topology):

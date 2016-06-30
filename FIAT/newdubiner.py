@@ -220,7 +220,7 @@ def _tabulate_single(D, n, pts, numtype):
 
 
 def tabulate_jet(D, n, pts, order, numtype):
-    from .expansions import _tabulate_dpts
+    from FIAT.expansions import _tabulate_dpts
 
     # Wrap the tabulator to allow for nondefault numtypes
     def tabulator_wrap(n, X):
