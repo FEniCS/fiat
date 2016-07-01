@@ -22,8 +22,6 @@ from . import reference_element, expansions, jacobi, orthopoly
 import math
 import numpy
 from .factorial import factorial
-from .reference_element import LINE, TRIANGLE, TETRAHEDRON, QUADRILATERAL
-from scipy.special import legendre
 
 
 class QuadratureRule(object):
