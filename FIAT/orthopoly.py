@@ -31,6 +31,7 @@
 from __future__ import division
 import numpy as np
 import scipy as sp
+from six.moves import xrange, reduce
 
 
 def gauss(alpha, beta):
