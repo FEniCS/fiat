@@ -2,7 +2,7 @@
     orthopoly.py - A suite of functions for generating orthogonal polynomials
     and quadrature rules.
 
-    Copyright (c) 2014 Greg von Winckel 
+    Copyright (c) 2014 Greg von Winckel
     All rights reserved.
 
     Permission is hereby granted, free of charge, to any person obtaining
@@ -18,10 +18,10 @@
 
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     Last updated on Wed Jan  1 14:29:25 MST 2014
@@ -34,16 +34,16 @@ import scipy as sp
 
 
 def gauss(alpha, beta):
-    """ 
-    Compute the Gauss nodes and weights from the recursion 
-    coefficients associated with a set of orthogonal polynomials 
+    """
+    Compute the Gauss nodes and weights from the recursion
+    coefficients associated with a set of orthogonal polynomials
 
-    Inputs: 
+    Inputs:
     alpha - recursion coefficients
     beta - recursion coefficients
 
-    Outputs: 
-    x - quadrature nodes		
+    Outputs:
+    x - quadrature nodes
     w - quadrature weights
 
     Adapted from the MATLAB code by Walter Gautschi
@@ -62,17 +62,17 @@ def radau(alpha, beta, xr):
     """
     Compute the Radau nodes and weights with the preassigned node xr
 
-    Inputs: 
+    Inputs:
     alpha - recursion coefficients
     beta - recursion coefficients
     xr - assigned node location
 
-    Outputs: 
-    x - quadrature nodes		
+    Outputs:
+    x - quadrature nodes
     w - quadrature weights
 
-    Based on the section 7 of the paper 
-    "Some modified matrix eigenvalue problems" 
+    Based on the section 7 of the paper
+    "Some modified matrix eigenvalue problems"
     by Gene Golub, SIAM Review Vol 15, No. 2, April 1973, pp.318--334
     """
     from scipy.linalg import solve_banded
@@ -90,21 +90,21 @@ def radau(alpha, beta, xr):
 
 def lobatto(alpha, beta, xl1, xl2):
     """
-        Compute the Lobatto nodes and weights with the preassigned 
+        Compute the Lobatto nodes and weights with the preassigned
         nodea xl1,xl2
 
-        Inputs: 
+        Inputs:
         alpha - recursion coefficients
         beta - recursion coefficients
         xl1 - assigned node location
         xl2 - assigned node location
 
-        Outputs: 
-        x - quadrature nodes        
+        Outputs:
+        x - quadrature nodes
         w - quadrature weights
 
-        Based on the section 7 of the paper 
-        "Some modified matrix eigenvalue problems" 
+        Based on the section 7 of the paper
+        "Some modified matrix eigenvalue problems"
         by Gene Golub, SIAM Review Vol 15, No. 2, April 1973, pp.318--334
     """
     from scipy.linalg import solve_banded, solve
@@ -130,25 +130,25 @@ def lobatto(alpha, beta, xl1, xl2):
 
 
 def rec_jacobi(N, a, b):
-    """ 
-    Generate the recursion coefficients alpha_k, beta_k 
+    """
+    Generate the recursion coefficients alpha_k, beta_k
 
     P_{k+1}(x) = (x-alpha_k)*P_{k}(x) - beta_k P_{k-1}(x)
 
-    for the Jacobi polynomials which are orthogonal on [-1,1] 
-    with respect to the weight w(x)=[(1-x)^a]*[(1+x)^b]  
+    for the Jacobi polynomials which are orthogonal on [-1,1]
+    with respect to the weight w(x)=[(1-x)^a]*[(1+x)^b]
 
-    Inputs: 
+    Inputs:
     N - polynomial order
     a - weight parameter
     b - weight parameter
 
-    Outputs: 
+    Outputs:
     alpha - recursion coefficients
     beta - recursion coefficients
 
     Adapted from the MATLAB code by Dirk Laurie and Walter Gautschi
-    http://www.cs.purdue.edu/archives/2002/wxg/codes/r_jacobi.m 
+    http://www.cs.purdue.edu/archives/2002/wxg/codes/r_jacobi.m
     """
 
     from scipy.special import gamma
@@ -175,27 +175,27 @@ def rec_jacobi(N, a, b):
 
 def rec_jacobi01(N, a, b):
     """
-    Generate the recursion coefficients alpha_k, beta_k 
-    for the Jacobi polynomials which are orthogonal on [0,1] 
+    Generate the recursion coefficients alpha_k, beta_k
+    for the Jacobi polynomials which are orthogonal on [0,1]
 
     See rec_jacobi for the recursion coefficients on [-1,1]
 
-    Inputs: 
+    Inputs:
     N - polynomial order
     a - weight parameter
     b - weight parameter
 
-    Outputs: 
+    Outputs:
     alpha - recursion coefficients
     beta - recursion coefficients
 
-    Adapted from the MATLAB implementation: 
+    Adapted from the MATLAB implementation:
     https://www.cs.purdue.edu/archives/2002/wxg/codes/r_jacobi01.m
 
     """
 
     if a <= -1 or b <= -1:
-        raise ValueError('''Jacobi coefficients are defined only 
+        raise ValueError('''Jacobi coefficients are defined only
                             for alpha,beta > -1''')
 
     if not isinstance(N, int):
@@ -214,8 +214,8 @@ def rec_jacobi01(N, a, b):
 
 
 def polyval(alpha, beta, x):
-    """ 
-    Evaluate polynomials on x given the recursion coefficients alpha and beta 
+    """
+    Evaluate polynomials on x given the recursion coefficients alpha and beta
     """
 
     N = len(alpha)
@@ -232,11 +232,11 @@ def polyval(alpha, beta, x):
 
 
 def jacobi(N, a, b, x, NOPT=1):
-    """ 
-    JACOBI computes the Jacobi polynomials which are orthogonal on [-1,1] 
-    with respect to the weight w(x)=[(1-x)^a]*[(1+x)^b] and evaluate them 
-    on the given grid up to P_N(x). Setting NOPT=2 returns the 
-    L2-normalized polynomials 
+    """
+    JACOBI computes the Jacobi polynomials which are orthogonal on [-1,1]
+    with respect to the weight w(x)=[(1-x)^a]*[(1+x)^b] and evaluate them
+    on the given grid up to P_N(x). Setting NOPT=2 returns the
+    L2-normalized polynomials
     """
 
     m = len(x)
@@ -272,12 +272,12 @@ def jacobi(N, a, b, x, NOPT=1):
 
 
 def jacobiD(N, a, b, x, NOPT=1):
-    """ 
-    JACOBID computes the first derivatives of the normalized Jacobi 
-    polynomials which are orthogonal on [-1,1] with respect 
-    to the weight w(x)=[(1-x)^a]*[(1+x)^b] and evaluate them 
+    """
+    JACOBID computes the first derivatives of the normalized Jacobi
+    polynomials which are orthogonal on [-1,1] with respect
+    to the weight w(x)=[(1-x)^a]*[(1+x)^b] and evaluate them
     on the given grid up to P_N(x). Setting NOPT=2 returns
-    the derivatives of the L2-normalized polynomials 
+    the derivatives of the L2-normalized polynomials
     """
 
     z = np.zeros((len(x), 1))
@@ -291,19 +291,19 @@ def jacobiD(N, a, b, x, NOPT=1):
 
 
 def mm_log(N, a):
-    """ 
+    """
     MM_LOG Modified moments for a logarithmic weight function.
 
     The call mm=MM_LOG(n,a) computes the first n modified moments of the
-    logarithmic weight function w(t)=t^a log(1/t) on [0,1] relative to 
-    shifted Legendre polynomials. 
+    logarithmic weight function w(t)=t^a log(1/t) on [0,1] relative to
+    shifted Legendre polynomials.
 
-    REFERENCE:  Walter Gautschi,``On the preceding paper `A Legendre 
-                polynomial integral' by James L. Blue'', 
+    REFERENCE:  Walter Gautschi,``On the preceding paper `A Legendre
+                polynomial integral' by James L. Blue'',
                 Math. Comp. 33 (1979), 742-743.
 
-    Adapted from the MATLAB implementation: 
-    https://www.cs.purdue.edu/archives/2002/wxg/codes/mm_log.m 
+    Adapted from the MATLAB implementation:
+    https://www.cs.purdue.edu/archives/2002/wxg/codes/mm_log.m
     """
 
     if a <= -1:
@@ -341,7 +341,7 @@ def mod_chebyshev(N, mom, alpham, betam):
     Calcuate the recursion coefficients for the orthogonal polynomials
     which are are orthogonal with respect to a weight function which is
     represented in terms of its modifed moments which are obtained by
-    integrating the monic polynomials against the weight function. 
+    integrating the monic polynomials against the weight function.
 
     REFERENCES:
 
@@ -351,7 +351,7 @@ def mod_chebyshev(N, mom, alpham, betam):
     Walter Gautschi, "Orthogonal Polynomials (in Matlab)
     Journal of Computational and Applied Mathematics, Vol. 178 (2005) 215--234
 
-    Adapted from the MATLAB implementation: 
+    Adapted from the MATLAB implementation:
     https://www.cs.purdue.edu/archives/2002/wxg/codes/chebyshev.m
     """
 
@@ -388,19 +388,19 @@ def mod_chebyshev(N, mom, alpham, betam):
 
 
 def rec_jaclog(N, a):
-    """ 
-    Generate the recursion coefficients alpha_k, beta_k 
+    """
+    Generate the recursion coefficients alpha_k, beta_k
 
     P_{k+1}(x) = (x-alpha_k)*P_{k}(x) - beta_k P_{k-1}(x)
 
-    for the monic polynomials which are orthogonal on [0,1] 
+    for the monic polynomials which are orthogonal on [0,1]
     with respect to the weight w(x)=x^a*log(1/x)
 
-    Inputs: 
+    Inputs:
     N - polynomial order
     a - weight parameter
 
-    Outputs: 
+    Outputs:
     alpha - recursion coefficients
     beta - recursion coefficients
 
