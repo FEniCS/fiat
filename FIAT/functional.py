@@ -189,9 +189,7 @@ class PointDerivative(Functional):
         dvars = tuple(d for d, a in zip(dX, self.alpha)
                       for count in range(a))
 
-        foo = sympy.diff(fn(X), *dvars).evalf(subs=dict(zip(dX, x)))
-        float(foo)
-        return foo
+        return sympy.diff(fn(X), *dvars).evalf(subs=dict(zip(dX, x)))
 
     def to_riesz(self, poly_set):
         x = list(self.deriv_dict.keys())[0]
