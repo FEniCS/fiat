@@ -352,11 +352,12 @@ def horiz_facet_support_dofs(elem):
     corresponding basis functions take non-zero values."""
     if not hasattr(elem, "_horiz_facet_support_dofs"):
         # Extruded cells only
-        assert isinstance(elem.ref_el, TensorProductCell)
+        ref_el = elem.get_reference_element()
+        assert isinstance(ref_el, TensorProductCell)
 
-        q = make_quadrature(elem.ref_el.A, max(2*elem.degree(), 1))
-        ft = lambda f: elem.ref_el.get_horiz_facet_transform(f)
-        dim = elem.ref_el.A.get_spatial_dimension()
+        q = make_quadrature(ref_el.A, max(2*elem.degree(), 1))
+        ft = lambda f: ref_el.get_horiz_facet_transform(f)
+        dim = ref_el.A.get_spatial_dimension()
         facets = elem.entity_dofs()[(dim, 0)].keys()
         elem._horiz_facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
 

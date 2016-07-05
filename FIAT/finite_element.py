@@ -168,7 +168,8 @@ def _facet_support_dofs(elem, quad, facet_transform, facets):
     eps = 1.e-8  # Is this a safe value?
 
     weights = quad.get_weights()
-    dim = elem.ref_el.get_spatial_dimension()
+    ref_el = elem.get_reference_element()
+    dim = ref_el.get_spatial_dimension()
 
     result = {}
     for f in facets:
