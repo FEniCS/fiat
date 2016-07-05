@@ -67,6 +67,18 @@ class Functional(object):
         else:
             self.max_deriv_order = 0
 
+    def evaluate(self, f):
+        """Obsolete and broken functional evaluation.
+
+        To evaluate the functional, call it on the target function:
+
+          functional(function)
+        """
+        raise AttributeError("To evaluate the functional just call it on a function.")
+
+    def __call__(self, fn):
+        raise NotImplementedError("Evaluation is not yet implemented for %s" % type(self))
+
     def get_point_dict(self):
         """Returns the functional information, which is a dictionary
         mapping each point in the support of the functional to a list
@@ -110,29 +122,8 @@ class Functional(object):
                 for (w, c) in wc_list:
                     result[c][i] += w * bfs[i, j]
 
-        def pt_to_dpt(pt, dorder):
-            assert len(pt) == 0  # code was broken anyway othewise
-            return ()
-
-        # loop over deriv points
-        dpt_dict = self.deriv_dict
-        mdo = self.max_deriv_order
-
-        dpts = list(dpt_dict.keys())
-        dpts_dv = [pt_to_dpt(pt, mdo) for pt in dpts]
-
-        dbfs = es.tabulate(ed, dpts_dv)
-
-        for j in range(len(dpts)):
-            dpt_cur = dpts[j]
-            for i in range(dbfs.shape[0]):
-                for (w, a, c) in dpt_dict[dpt_cur]:
-                    dval_cur = dbfs[i, j][sum(a)]
-                    for k in range(len(a)):
-                        for l in range(a[k]):
-                            dval_cur = dval_cur[k]
-
-                    result[c][i] += w * dval_cur
+        if self.deriv_dict:
+            raise NotImplementedError("Generic to_riesz implementation does not support derivatives")
 
         return result
 
@@ -147,6 +138,10 @@ class PointEvaluation(Functional):
     def __init__(self, ref_el, x):
         pt_dict = {x: [(1.0, tuple())]}
         Functional.__init__(self, ref_el, tuple(), pt_dict, {}, "PointEval")
+
+    def __call__(self, fn):
+        """Evaluate the functional on the function fn."""
+        return fn(tuple(self.pt_dict.keys())[0])
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -183,10 +178,22 @@ class PointDerivative(Functional):
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointDeriv")
 
+    def __call__(self, fn):
+        """Evaluate the functional on the function fn. Note that this depends
+        on sympy being able to differentiate fn."""
+        x = list(self.deriv_dict.keys())[0]
+
+        X = sympy.DeferredVector('x')
+        dX = numpy.asarray([X[i] for i in range(len(x))])
+
+        dvars = tuple(d for d, a in zip(dX, self.alpha)
+                      for count in range(a))
+
+        return sympy.diff(fn(X), *dvars).evalf(subs=dict(zip(dX, x)))
+
     def to_riesz(self, poly_set):
         x = list(self.deriv_dict.keys())[0]
-        if len(x) != 1:
-            raise NotImplementedError
+
         X = sympy.DeferredVector('x')
         dx = numpy.asarray([X[i] for i in range(len(x))])
 
@@ -195,13 +202,12 @@ class PointDerivative(Functional):
 
         bfs = es.tabulate(ed, [dx])[:, 0]
 
-        idx = []
-        for i in range(len(self.alpha)):
-            for j in range(self.alpha[i]):
-                idx.append(i)
-        idx = tuple(idx)
+        # Expand the multi-index as a series of variables to
+        # differentiate with respect to.
+        dvars = tuple(d for d, a in zip(dx, self.alpha)
+                      for count in range(a))
 
-        return numpy.asarray([sympy.lambdify(X, sympy.diff(b, dx[0], self.order))(x)
+        return numpy.asarray([sympy.lambdify(X, sympy.diff(b, *dvars))(x)
                               for b in bfs])
 
 
@@ -249,6 +255,16 @@ class IntegralMoment(Functional):
             pt_cur = tuple(qpts[i])
             pt_dict[pt_cur] = [(qwts[i] * f_at_qpts[i], comp)]
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "IntegralMoment")
+
+    def __call__(self, fn):
+        """Evaluate the functional on the function fn."""
+        pts = list(self.pt_dict.keys())
+        wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
+        result = numpy.dot([fn(p) for p in pts], wts)
+
+        if self.comp:
+            result = result[self.comp]
+        return result
 
     def to_riesz(self, poly_set):
         es = poly_set.get_expansion_set()

@@ -10,6 +10,7 @@
  - Add tensor product elements (for tensor product cells)
  - Add H(div) and H(curl) element-modifiers for TPEs
  - Add enriched element, i.e. sum of elements (e.g. for building Mini)
+ - Add multidimensional taylor elements
  - Finding non-vanishing DoFs on a facets
  - Add tensor product quadrature rule
  - Make regression tests working again after few years
