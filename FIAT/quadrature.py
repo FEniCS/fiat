@@ -81,9 +81,14 @@ class GaussLobattoQuadratureLineRule(QuadratureRule):
         Ref1 = reference_element.DefaultLine()
         verts = Ref1.get_vertices()
 
-        # Calculate the recursion coefficients.
-        alpha, beta = orthopoly.rec_jacobi(m, 0, 0)
-        xs_ref, ws_ref = orthopoly.lobatto(alpha, beta, verts[0][0], verts[1][0])
+        if m > 2:
+            # Calculate the recursion coefficients.
+            alpha, beta = orthopoly.rec_jacobi(m, 0, 0)
+            xs_ref, ws_ref = orthopoly.lobatto(alpha, beta, verts[0][0], verts[1][0])
+        else:
+            # Special case for lowest order.
+            xs_ref = [v[0] for v in verts[:]]
+            ws_ref = (0.5 * (xs_ref[1] - xs_ref[0]), ) * 2
 
         A, b = reference_element.make_affine_mapping(Ref1.get_vertices(),
                                                      ref_el.get_vertices())
