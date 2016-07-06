@@ -20,21 +20,21 @@
 from . import finite_element, polynomial_set, dual_set, functional, quadrature
 
 
-class GaussLobattoDualSet(dual_set.DualSet):
+class GaussLobattoLegendreDualSet(dual_set.DualSet):
     """The dual basis for 1D continuous elements with nodes at the
     Gauss-Lobatto points."""
     def __init__(self, ref_el, degree):
         entity_ids = {0: {0: [0], 1: [degree]},
                       1: {0: list(range(1, degree))}}
-        l = quadrature.GaussLobattoQuadratureLineRule(ref_el, degree+1)
+        l = quadrature.GaussLobattoLegendreQuadratureLineRule(ref_el, degree+1)
         nodes = [functional.PointEvaluation(ref_el, x) for x in l.pts]
 
         dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
 
 
-class GaussLobatto(finite_element.FiniteElement):
+class GaussLobattoLegendre(finite_element.FiniteElement):
     """1D continuous element with nodes at the Gauss-Lobatto points."""
     def __init__(self, ref_el, degree):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
-        dual = GaussLobattoDualSet(ref_el, degree)
+        dual = GaussLobattoLegendreDualSet(ref_el, degree)
         finite_element.FiniteElement.__init__(self, poly_set, dual, degree)

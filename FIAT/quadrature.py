@@ -66,8 +66,8 @@ class GaussJacobiQuadratureLineRule(QuadratureRule):
         QuadratureRule.__init__(self, ref_el, xs, ws)
 
 
-class GaussLobattoQuadratureLineRule(QuadratureRule):
-    """Implement the Gauss-Lobatto quadrature rules on the interval using
+class GaussLobattoLegendreQuadratureLineRule(QuadratureRule):
+    """Implement the Gauss-Lobatto-Legendre quadrature rules on the interval using
     Greg von Winckel's implementation. This facilitates implementing
     spectral elements.
 
@@ -76,7 +76,7 @@ class GaussLobattoQuadratureLineRule(QuadratureRule):
     def __init__(self, ref_el, m):
         if m < 2:
             raise ValueError(
-                "Gauss-Labotto quadrature invalid for fewer than 2 points")
+                "Gauss-Labotto-Legendre quadrature invalid for fewer than 2 points")
 
         Ref1 = reference_element.DefaultLine()
         verts = Ref1.get_vertices()

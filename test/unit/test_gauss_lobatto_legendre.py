@@ -27,12 +27,12 @@ from nose_parameterized import parameterized
 @parameterized([(degree,) for degree in range(1, 7)])
 def test_basis_values(degree):
     """Ensure that integrating a simple monomial produces the expected results."""
-    from FIAT import ufc_simplex, GaussLobatto, make_quadrature
+    from FIAT import ufc_simplex, GaussLobattoLegendre, make_quadrature
 
     s = ufc_simplex(1)
     q = make_quadrature(s, degree + 1)
 
-    fe = GaussLobatto(s, degree)
+    fe = GaussLobattoLegendre(s, degree)
     tab = fe.tabulate(0, q.pts)[(0,)]
 
     for test_degree in range(degree + 1):
