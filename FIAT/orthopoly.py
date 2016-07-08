@@ -32,7 +32,6 @@
 
 from __future__ import division
 import numpy as np
-import scipy as sp
 from six.moves import xrange, reduce
 from .gamma import gamma
 
@@ -54,41 +53,12 @@ def gauss(alpha, beta):
     http://www.cs.purdue.edu/archives/2002/wxg/codes/gauss.m
     """
 
-    from scipy.linalg import eig_banded
+    from numpy.linalg import eigh
 
-    A = np.vstack((np.sqrt(beta), alpha))
-    x, V = eig_banded(A, lower=False)
-    w = beta[0] * sp.real(sp.power(V[0, :], 2))
-    return x, w
+    A = np.diag(np.sqrt(beta)[1:], 1) + np.diag(alpha)
+    x, V = eigh(A, "U")
 
-
-def radau(alpha, beta, xr):
-    """
-    Compute the Radau nodes and weights with the preassigned node xr
-
-    Inputs:
-    alpha - recursion coefficients
-    beta - recursion coefficients
-    xr - assigned node location
-
-    Outputs:
-    x - quadrature nodes
-    w - quadrature weights
-
-    Based on the section 7 of the paper
-    "Some modified matrix eigenvalue problems"
-    by Gene Golub, SIAM Review Vol 15, No. 2, April 1973, pp.318--334
-    """
-    from scipy.linalg import solve_banded
-    n = len(alpha) - 1
-    f = np.zeros(n)
-    f[-1] = beta[-1]
-    A = np.vstack((np.sqrt(beta), alpha - xr))
-    J = np.vstack((A[:, 0:-1], A[0, 1:]))
-    delta = solve_banded((1, 1), J, f)
-    alphar = alpha
-    alphar[-1] = xr + delta[-1]
-    x, w = gauss(alphar, beta)
+    w = beta[0] * np.real(np.power(V[0, :], 2))
     return x, w
 
 
@@ -111,16 +81,16 @@ def lobatto(alpha, beta, xl1, xl2):
         "Some modified matrix eigenvalue problems"
         by Gene Golub, SIAM Review Vol 15, No. 2, April 1973, pp.318--334
     """
-    from scipy.linalg import solve_banded, solve
+    from numpy.linalg import solve
     n = len(alpha) - 1
     en = np.zeros(n)
     en[-1] = 1
     A1 = np.vstack((np.sqrt(beta), alpha - xl1))
-    J1 = np.vstack((A1[:, 0:-1], A1[0, 1:]))
+    J1 = np.diag(A1[0, 1:-1], 1) + np.diag(A1[1, 1:]) + np.diag(A1[0, 1:-1], -1)
     A2 = np.vstack((np.sqrt(beta), alpha - xl2))
-    J2 = np.vstack((A2[:, 0:-1], A2[0, 1:]))
-    g1 = solve_banded((1, 1), J1, en)
-    g2 = solve_banded((1, 1), J2, en)
+    J2 = np.diag(A2[0, 1:-1], 1) + np.diag(A2[1, 1:]) + np.diag(A2[0, 1:-1], -1)
+    g1 = solve(J1, en)
+    g2 = solve(J2, en)
     C = np.array(((1, -g1[-1]), (1, -g2[-1])))
     xl = np.array((xl1, xl2))
     ab = solve(C, xl)

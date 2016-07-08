@@ -29,4 +29,4 @@ setup(name="FIAT",
       download_url=tarball,
       license="LGPL v3 or later",
       packages=["FIAT"],
-      install_requires=["numpy", "sympy", "six", "scipy"])
+      install_requires=["numpy", "sympy", "six"])
