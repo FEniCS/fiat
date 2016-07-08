@@ -18,15 +18,13 @@
 # Authors:
 #
 # David Ham
-import nose
-from nose.tools import assert_almost_equal
+import pytest
 import numpy as np
-from nose_parameterized import parameterized
 
 
-@parameterized([(dim, degree)
-                for dim in range(1, 4)
-                for degree in range(4)])
+@pytest.mark.parametrize("dim, degree", [(dim, degree)
+                                         for dim in range(1, 4)
+                                         for degree in range(4)])
 def test_basis_values(dim, degree):
     """Ensure that integrating a simple monomial produces the expected results."""
     from FIAT import ufc_simplex, DiscontinuousTaylor, make_quadrature
@@ -39,11 +37,12 @@ def test_basis_values(dim, degree):
 
     for test_degree in range(degree + 1):
         coefs = [n(lambda x: x[0]**test_degree) for n in fe.dual.nodes]
-        integral = np.dot(coefs, np.dot(tab, q.wts))
+        integral = np.float(np.dot(coefs, np.dot(tab, q.wts)))
         reference = np.dot([x[0]**test_degree
                             for x in q.pts], q.wts)
-        assert_almost_equal(integral, reference)
+        assert np.isclose(integral, reference, rtol=1e-14)
 
 
-if __name__ == "__main__":
-    nose.main()
+if __name__ == '__main__':
+    import os
+    pytest.main(os.path.abspath(__file__))
