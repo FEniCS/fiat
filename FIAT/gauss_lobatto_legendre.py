@@ -18,6 +18,7 @@
 # Written by David A. Ham (david.ham@imperial.ac.uk), 2015
 
 from . import finite_element, polynomial_set, dual_set, functional, quadrature
+from .reference_element import LINE
 
 
 class GaussLobattoLegendreDualSet(dual_set.DualSet):
@@ -35,6 +36,8 @@ class GaussLobattoLegendreDualSet(dual_set.DualSet):
 class GaussLobattoLegendre(finite_element.FiniteElement):
     """1D continuous element with nodes at the Gauss-Lobatto points."""
     def __init__(self, ref_el, degree):
+        if ref_el.shape != LINE:
+            raise ValueError("Gauss-Lobatto-Legendre elements are only defined in one dimension.")
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
         dual = GaussLobattoLegendreDualSet(ref_el, degree)
         finite_element.FiniteElement.__init__(self, poly_set, dual, degree)
