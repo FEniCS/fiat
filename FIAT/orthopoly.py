@@ -25,6 +25,8 @@
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     Last updated on Wed Jan  1 14:29:25 MST 2014
+
+    Modified by David A. Ham (david.ham@imperial.ac.uk), 2016
 """
 
 
@@ -32,6 +34,7 @@ from __future__ import division
 import numpy as np
 import scipy as sp
 from six.moves import xrange, reduce
+from .gamma import gamma
 
 
 def gauss(alpha, beta):
@@ -152,8 +155,6 @@ def rec_jacobi(N, a, b):
     http://www.cs.purdue.edu/archives/2002/wxg/codes/r_jacobi.m
     """
 
-    from scipy.special import gamma
-
     nu = (b - a) / float(a + b + 2)
     mu = 2 ** (a + b + 1) * gamma(a + 1) * gamma(b + 1) / gamma(a + b + 2)
 
@@ -264,7 +265,6 @@ def jacobi(N, a, b, x, NOPT=1):
                        d * P[:, k - 2]) / (k2 * (k + apb) * g2)
 
     if NOPT == 2:
-        from scipy.special import gamma
         k = np.arange(N + 1)
         pnorm = 2 ** (apb + 1) * gamma(k + a + 1) * gamma(k + b + 1) / \
             ((2 * k + a + b + 1) * (gamma(k + 1) * gamma(k + a + b + 1)))
@@ -320,7 +320,7 @@ def mm_log(N, a):
 
             p = range(n - a, n + a + 2)
             mm[n] = (-1) ** (n - a) / prod(p)
-            mm[n] *= sp.special.gamma(a + 1) ** 2
+            mm[n] *= gamma(a + 1) ** 2
 
         else:
             if n == 0:
