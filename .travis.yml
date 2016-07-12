@@ -18,7 +18,7 @@ before_install:
   - pip install --upgrade pip
   - pip install flake8
   - pip install nose
-  - pip install nose-parameterized
+  - pip install pytest
   - pip install six
 
 install:
