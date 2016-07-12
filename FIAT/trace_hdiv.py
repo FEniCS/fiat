@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import numpy as np
-from .finite_element import FiniteElement
-from . import functional
-from . import dual_set
-from . import TensorProductElement
+from FIAT.finite_element import FiniteElement
+from FIAT import functional
+from FIAT import dual_set
+from FIAT import TensorProductElement
 
 
 class HDivTrace(FiniteElement):
@@ -151,7 +153,7 @@ class HDivTrace(FiniteElement):
         if order == 0:
             return {(0,)*dim: temp}
         else:
-            from .polynomial_set import mis
+            from FIAT.polynomial_set import mis
             tempdict = {(0,)*dim: temp}
             for i in range(order):
                 alphas = mis(dim, i+1)

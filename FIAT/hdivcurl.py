@@ -15,10 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import numpy
 import types
-from .tensor_product import TensorProductElement
-from . import functional
+from FIAT.tensor_product import TensorProductElement
+from FIAT import functional
 
 
 def Hdiv(element):

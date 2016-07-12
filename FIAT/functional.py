@@ -21,6 +21,8 @@
 # - a reference element domain
 # - type information
 
+from __future__ import absolute_import
+
 from collections import OrderedDict
 from itertools import chain
 import numpy
@@ -409,17 +411,3 @@ class PointwiseInnerProductEvaluation(Functional):
 
         shp = (sd, sd)
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
-
-
-if __name__ == "__main__":
-    # test functionals
-    from . import polynomial_set, reference_element
-    ref_el = reference_element.DefaultTriangle()
-    sd = ref_el.get_spatial_dimension()
-    U = polynomial_set.ONPolynomialSet(ref_el, 5)
-
-    f = PointDerivative(ref_el, (0.0, 0.0), (1, 0))
-    print(numpy.allclose(Functional.to_riesz(f, U), f.to_riesz(U)))
-
-    f = PointNormalDerivative(ref_el, 0, (0.0, 0.0))
-    print(numpy.allclose(Functional.to_riesz(f, U), f.to_riesz(U)))

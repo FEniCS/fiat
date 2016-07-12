@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import finite_element, polynomial_set, dual_set, functional, P0
+from __future__ import absolute_import
+
+from FIAT import finite_element, polynomial_set, dual_set, functional, P0
 
 
 class DiscontinuousLagrangeDualSet(dual_set.DualSet):
@@ -65,17 +67,3 @@ def DiscontinuousLagrange(ref_el, degree):
         return P0.P0(ref_el)
     else:
         return HigherOrderDiscontinuousLagrange(ref_el, degree)
-
-if __name__ == "__main__":
-    from . import reference_element
-    T = reference_element.DefaultTetrahedron()
-    for k in range(2, 3):
-        U = DiscontinuousLagrange(T, k)
-
-    Ufs = U.get_nodal_basis()
-    pts = T.make_lattice(k)
-    print(pts)
-    for foo, bar in list(Ufs.tabulate(pts, 1).items()):
-        print(foo)
-        print(bar)
-        print()

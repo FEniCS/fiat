@@ -15,14 +15,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import numpy
 
-from .finite_element import FiniteElement
-from .dual_set import DualSet
-from .polynomial_set import ONSymTensorPolynomialSet
-from .functional import PointwiseInnerProductEvaluation as InnerProduct
-from .functional import index_iterator
-from .reference_element import UFCTriangle, UFCTetrahedron
+from FIAT.finite_element import FiniteElement
+from FIAT.dual_set import DualSet
+from FIAT.polynomial_set import ONSymTensorPolynomialSet
+from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct
+from FIAT.functional import index_iterator
 
 
 class ReggeDual(DualSet):
@@ -154,57 +155,3 @@ class Regge(FiniteElement):
         mapping = "pullback as metric"
         # Call init of super-class
         super(Regge, self).__init__(Ps, Ls, degree, mapping=mapping)
-
-
-if __name__ == "__main__":
-    print("Test 0: Regge degree 0 in 2D.")
-    T = UFCTriangle()
-    R = Regge(T, 0)
-    print("-----")
-    pts = numpy.array([[0.0, 0.0]])
-    ts = numpy.array([[0.0, 1.0], [1.0, 0.0], [-1.0, 1.0]])
-    vals = R.tabulate(0, pts)[(0, 0)]
-    for i in range(R.space_dimension()):
-        print("Basis #{}:".format(i))
-        for j in range(len(pts)):
-            tut = [t.dot(vals[i, :, :, j].dot(t)) for t in ts]
-            print("u(t,t) for edge tagents t at {} are: {}".format(pts[j], tut))
-    print("-----")
-    print("Expected result: a single 1 for each basis and zeros for others.")
-    print("")
-
-    print("Test 1: Regge degree 0 in 3D.")
-    T = UFCTetrahedron()
-    R = Regge(T, 0)
-    print("-----")
-    pts = numpy.array([[0.0, 0.0, 0.0]])
-    ts = numpy.array([[1.0, 0.0, 0.0],
-                      [0.0, 1.0, 0.0],
-                      [0.0, 0.0, 1.0],
-                      [1.0, -1.0, 0.0],
-                      [1.0, 0.0, -1.0],
-                      [0.0, 1.0, -1.0]])
-    vals = R.tabulate(0, pts)[(0, 0, 0)]
-    for i in range(R.space_dimension()):
-        print("Basis #{}:".format(i))
-        for j in range(len(pts)):
-            tut = [t.dot(vals[i, :, :, j].dot(t)) for t in ts]
-            print("u(t,t) for edge tagents t at {} are: {}".format(pts[j], tut))
-    print("-----")
-    print("Expected result: a single 1 for each basis and zeros for others.")
-    print("")
-
-    print("Test 2: association of dofs to mesh entities.")
-    print("------")
-    for k in range(0, 3):
-        print("Degree {} in 2D:".format(k))
-        T = UFCTriangle()
-        R = Regge(T, k)
-        print(R.entity_dofs())
-        print("")
-    for k in range(0, 3):
-        print("Degree {} in 3D:".format(k))
-        T = UFCTetrahedron()
-        R = Regge(T, k)
-        print(R.entity_dofs())
-        print("")

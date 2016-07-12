@@ -2,6 +2,8 @@
 evaluating arbitrary order Lagrange and many other elements.
 Simplices in one, two, and three dimensions are supported."""
 
+from __future__ import absolute_import
+
 # Import finite element classes
 from FIAT.finite_element import FiniteElement  # noqa
 from FIAT.argyris import Argyris
@@ -30,9 +32,9 @@ from FIAT.trace_hdiv import HDivTrace
 from FIAT.restricted import RestrictedElement  # noqa
 
 # Important functionality
-from .quadrature import make_quadrature  # noqa
-from .reference_element import ufc_cell, ufc_simplex  # noqa
-from .hdivcurl import Hdiv, Hcurl  # noqa
+from FIAT.quadrature import make_quadrature  # noqa
+from FIAT.reference_element import ufc_cell, ufc_simplex  # noqa
+from FIAT.hdivcurl import Hdiv, Hcurl  # noqa
 
 __version__ = "2016.2.0.dev0"
 

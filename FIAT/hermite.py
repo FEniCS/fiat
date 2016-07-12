@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import finite_element, polynomial_set, dual_set, functional
+from __future__ import absolute_import
+
+from FIAT import finite_element, polynomial_set, dual_set, functional
 
 
 class CubicHermiteDualSet(dual_set.DualSet):
@@ -77,14 +79,3 @@ class CubicHermite(finite_element.FiniteElement):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 3)
         dual = CubicHermiteDualSet(ref_el)
         super(CubicHermite, self).__init__(poly_set, dual, 3)
-
-
-if __name__ == "__main__":
-    from . import reference_element
-    T = reference_element.DefaultTetrahedron()
-    U = CubicHermite(T)
-
-    Ufs = U.get_nodal_basis()
-    pts = T.make_lattice(3)
-    print(pts)
-    print(list(Ufs.tabulate(pts).values())[0])

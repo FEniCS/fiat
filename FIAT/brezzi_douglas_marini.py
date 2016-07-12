@@ -16,8 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import (finite_element, quadrature, functional, dual_set,
-               reference_element, polynomial_set, nedelec)
+from __future__ import absolute_import
+
+from FIAT import (finite_element, quadrature, functional, dual_set,
+                  polynomial_set, nedelec)
 
 
 class BDMDualSet(dual_set.DualSet):
@@ -95,12 +97,3 @@ class BrezziDouglasMarini(finite_element.FiniteElement):
         formdegree = sd - 1  # (n-1)-form
         super(BrezziDouglasMarini, self).__init__(poly_set, dual, degree, formdegree,
                                                   mapping="contravariant piola")
-
-
-if __name__ == "__main__":
-    T = reference_element.UFCTetrahedron()
-
-    for k in range(1, 3):
-        print(k)
-        BDM = BrezziDouglasMarini(T, k)
-        print()

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
 from __future__ import print_function
 
 import numpy
@@ -258,18 +259,3 @@ class DiscontinuousLagrangeTrace(object):
 
     def __str__(self):
         return "DiscontinuousLagrangeTrace(%s, %s)" % (self.cell, self.k)
-
-
-if __name__ == "__main__":
-
-    print("\n2D ----------------")
-    T = ufc_simplex(2)
-    element = DiscontinuousLagrangeTrace(T, 1)
-    pts = [(0.0, 1.0), (1.0, 0.0)]
-    print("values = ", element.tabulate(0, pts))
-
-    print("\n3D ----------------")
-    T = ufc_simplex(3)
-    element = DiscontinuousLagrangeTrace(T, 1)
-    pts = [(0.1, 0.0, 0.0), (0.0, 1.0, 0.0)]
-    print("values = ", element.tabulate(0, pts))

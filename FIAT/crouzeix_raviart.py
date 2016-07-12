@@ -20,7 +20,9 @@
 #
 # Last changed: 2010-01-28
 
-from . import finite_element, polynomial_set, dual_set, functional
+from __future__ import absolute_import
+
+from FIAT import finite_element, polynomial_set, dual_set, functional
 
 
 def _initialize_entity_ids(topology):
@@ -79,16 +81,3 @@ class CrouzeixRaviart(finite_element.FiniteElement):
         space = polynomial_set.ONPolynomialSet(cell, 1)
         dual = CrouzeixRaviartDualSet(cell, 1)
         super(CrouzeixRaviart, self).__init__(space, dual, 1)
-
-
-if __name__ == "__main__":
-
-    from . import reference_element
-
-    cells = [reference_element.UFCTriangle(),
-             reference_element.UFCTetrahedron()]
-    for cell in cells:
-        print("Checking CrouzeixRaviart(cell, 1)")
-        element = CrouzeixRaviart(cell, 1)
-        print([L.pt_dict for L in element.dual_basis()])
-        print()

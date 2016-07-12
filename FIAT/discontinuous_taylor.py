@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 from FIAT import finite_element, polynomial_set, dual_set, functional, P0, quadrature
-from FIAT.reference_element import ufc_simplex
 from FIAT.polynomial_set import mis
 import numpy
 
@@ -66,15 +67,3 @@ def DiscontinuousTaylor(ref_el, degree):
         return P0.P0(ref_el)
     else:
         return HigherOrderDiscontinuousTaylor(ref_el, degree)
-
-if __name__ == "__main__":
-
-    T = ufc_simplex(1)
-    element = DiscontinuousTaylor(T, 1)
-    pts = [(0.0,), (0.5,), (1.0,)]
-    a = element.tabulate(1, pts)
-
-    assert(numpy.abs(a[0, ]-numpy.array([[1., 1., 1.],
-                                         [-0.5, 0., 0.5]])).max() < 1.0e-10)
-    assert(numpy.abs(a[1, ]-numpy.array([[0., 0., 0.],
-                                         [1.0, 1.0, 1.0]])).max() < 1.0e-10)

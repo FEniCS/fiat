@@ -17,11 +17,13 @@
 
 # Based on FFC file restrictedelement.py and Jan's own FIAT implementation
 
+from __future__ import absolute_import
+
 import numpy
 import six
 from six import iteritems
-from .dual_set import DualSet
-from .finite_element import FiniteElement
+from FIAT.dual_set import DualSet
+from FIAT.finite_element import FiniteElement
 
 
 class RestrictedElement(FiniteElement):

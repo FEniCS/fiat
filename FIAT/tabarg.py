@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import argyris, reference_element
+from __future__ import absolute_import
+
+from FIAT import argyris, reference_element
 
 degree = 5
 lattice_size = 10 * degree

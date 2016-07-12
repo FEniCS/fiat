@@ -16,9 +16,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import numpy
-from .finite_element import FiniteElement
-from . import dual_set
+from FIAT.finite_element import FiniteElement
+from FIAT import dual_set
 from copy import copy
 
 

@@ -15,15 +15,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
+import random
 import numpy as np
 import pytest
 
+from FIAT.reference_element import LINE, ReferenceElement
+from FIAT.reference_element import UFCInterval, UFCTriangle
+from FIAT.lagrange import Lagrange
+from FIAT.discontinuous_lagrange import DiscontinuousLagrange
+from FIAT.nedelec import Nedelec
+from FIAT.raviart_thomas import RaviartThomas
+from FIAT.tensor_product import TensorProductElement
+from FIAT.hdivcurl import Hdiv, Hcurl
+from FIAT.enriched import EnrichedElement
+
 
 def test_basis_derivatives_scaling():
-    import random
-    from FIAT.reference_element import LINE, ReferenceElement
-    from FIAT.lagrange import Lagrange
-
     class Interval(ReferenceElement):
 
         def __init__(self, a, b):
@@ -64,11 +73,6 @@ def test_basis_derivatives_scaling():
 
 
 def test_TFE_1Dx1D_scalar():
-    from FIAT.reference_element import UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-
     T = UFCInterval()
     P1_DG = DiscontinuousLagrange(T, 1)
     P2 = Lagrange(T, 2)
@@ -89,12 +93,6 @@ def test_TFE_1Dx1D_scalar():
 
 
 def test_TFE_1Dx1D_vector():
-    from FIAT.reference_element import UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.hdivcurl import Hdiv, Hcurl
-
     T = UFCInterval()
     P1_DG = DiscontinuousLagrange(T, 1)
     P2 = Lagrange(T, 2)
@@ -142,11 +140,6 @@ def test_TFE_1Dx1D_vector():
 
 
 def test_TFE_2Dx1D_scalar_triangle():
-    from FIAT.reference_element import UFCTriangle, UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-
     S = UFCTriangle()
     T = UFCInterval()
     P1_DG = DiscontinuousLagrange(S, 1)
@@ -171,11 +164,6 @@ def test_TFE_2Dx1D_scalar_triangle():
 
 
 def test_TFE_2Dx1D_scalar_quad():
-    from FIAT.reference_element import UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-
     T = UFCInterval()
     P1 = Lagrange(T, 1)
     P1_DG = DiscontinuousLagrange(T, 1)
@@ -199,12 +187,6 @@ def test_TFE_2Dx1D_scalar_quad():
 
 
 def test_TFE_2Dx1D_scalar_triangle_hdiv():
-    from FIAT.reference_element import UFCTriangle, UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.hdivcurl import Hdiv
-
     S = UFCTriangle()
     T = UFCInterval()
     P1_DG = DiscontinuousLagrange(S, 1)
@@ -247,12 +229,6 @@ def test_TFE_2Dx1D_scalar_triangle_hdiv():
 
 
 def test_TFE_2Dx1D_scalar_triangle_hcurl():
-    from FIAT.reference_element import UFCTriangle, UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.hdivcurl import Hcurl
-
     S = UFCTriangle()
     T = UFCInterval()
     P1 = Lagrange(S, 1)
@@ -286,12 +262,6 @@ def test_TFE_2Dx1D_scalar_triangle_hcurl():
 
 
 def test_TFE_2Dx1D_scalar_quad_hdiv():
-    from FIAT.reference_element import UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.hdivcurl import Hdiv
-
     T = UFCInterval()
     P1 = Lagrange(T, 1)
     P1_DG = DiscontinuousLagrange(T, 1)
@@ -331,12 +301,6 @@ def test_TFE_2Dx1D_scalar_quad_hdiv():
 
 
 def test_TFE_2Dx1D_scalar_quad_hcurl():
-    from FIAT.reference_element import UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.hdivcurl import Hcurl
-
     T = UFCInterval()
     P1 = Lagrange(T, 1)
     P1_DG = DiscontinuousLagrange(T, 1)
@@ -376,12 +340,6 @@ def test_TFE_2Dx1D_scalar_quad_hcurl():
 
 
 def test_TFE_2Dx1D_vector_triangle_hdiv():
-    from FIAT.reference_element import UFCTriangle, UFCInterval
-    from FIAT.raviart_thomas import RaviartThomas
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.hdivcurl import Hdiv
-
     S = UFCTriangle()
     T = UFCInterval()
     RT1 = RaviartThomas(S, 1)
@@ -415,12 +373,6 @@ def test_TFE_2Dx1D_vector_triangle_hdiv():
 
 
 def test_TFE_2Dx1D_vector_triangle_hcurl():
-    from FIAT.reference_element import UFCTriangle, UFCInterval
-    from FIAT.nedelec import Nedelec
-    from FIAT.lagrange import Lagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.hdivcurl import Hcurl
-
     S = UFCTriangle()
     T = UFCInterval()
     Ned1 = Nedelec(S, 1)
@@ -454,12 +406,6 @@ def test_TFE_2Dx1D_vector_triangle_hcurl():
 
 
 def test_TFE_2Dx1D_vector_triangle_hdiv_rotate():
-    from FIAT.reference_element import UFCTriangle, UFCInterval
-    from FIAT.nedelec import Nedelec
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.hdivcurl import Hdiv
-
     S = UFCTriangle()
     T = UFCInterval()
     Ned1 = Nedelec(S, 1)
@@ -493,12 +439,6 @@ def test_TFE_2Dx1D_vector_triangle_hdiv_rotate():
 
 
 def test_TFE_2Dx1D_vector_triangle_hcurl_rotate():
-    from FIAT.reference_element import UFCTriangle, UFCInterval
-    from FIAT.raviart_thomas import RaviartThomas
-    from FIAT.lagrange import Lagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.hdivcurl import Hcurl
-
     S = UFCTriangle()
     T = UFCInterval()
     RT1 = RaviartThomas(S, 1)
@@ -532,13 +472,6 @@ def test_TFE_2Dx1D_vector_triangle_hcurl_rotate():
 
 
 def test_TFE_2Dx1D_vector_quad_hdiv():
-    from FIAT.reference_element import UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.enriched import EnrichedElement
-    from FIAT.hdivcurl import Hdiv
-
     T = UFCInterval()
     P1 = Lagrange(T, 1)
     P0 = DiscontinuousLagrange(T, 0)
@@ -584,13 +517,6 @@ def test_TFE_2Dx1D_vector_quad_hdiv():
 
 
 def test_TFE_2Dx1D_vector_quad_hcurl():
-    from FIAT.reference_element import UFCInterval
-    from FIAT.lagrange import Lagrange
-    from FIAT.discontinuous_lagrange import DiscontinuousLagrange
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.enriched import EnrichedElement
-    from FIAT.hdivcurl import Hcurl
-
     T = UFCInterval()
     P1 = Lagrange(T, 1)
     P0 = DiscontinuousLagrange(T, 0)

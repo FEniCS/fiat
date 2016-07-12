@@ -20,6 +20,9 @@
 # First added:  2007-06-09
 # Last changed: 2016-07-08
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 import os
 import sys
 

@@ -28,6 +28,8 @@ and orderings of entities have a single point of entry.
 
 Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
+from __future__ import absolute_import
+
 from six import iteritems
 import numpy
 
@@ -760,7 +762,7 @@ def ufc_cell(cell):
 
 def volume(verts):
     """Constructs the volume of the simplex spanned by verts"""
-    from .factorial import factorial
+    from FIAT.factorial import factorial
     # use fact that volume of UFC reference element is 1/n!
     sd = len(verts) - 1
     ufcel = ufc_simplex(sd)
@@ -780,21 +782,3 @@ def volume(verts):
     p = numpy.prod([si for si in s if (si) > 1.e-10])
 
     return p / factorial(sd)
-
-
-if __name__ == "__main__":
-    # U = UFCTetrahedron()
-    # print U.make_points(1, 1, 3)
-    # for i in range(len(U.vertices)):
-    #     print U.compute_normal(i)
-
-    V = DefaultTetrahedron()
-    sd = V.get_spatial_dimension()
-
-    # print make_affine_mapping(V.get_vertices(), U.get_vertices())
-
-    for i in range(len(V.vertices)):
-        print(V.compute_normal(i))
-        print(V.compute_scaled_normal(i))
-        print(volume(V.get_vertices_of_subcomplex(V.topology[sd - 1][i])))
-        print()

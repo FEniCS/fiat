@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import numpy
 
 
@@ -220,7 +222,7 @@ def _tabulate_single(D, n, pts, numtype):
 
 
 def tabulate_jet(D, n, pts, order, numtype):
-    from .expansions import _tabulate_dpts
+    from FIAT.expansions import _tabulate_dpts
 
     # Wrap the tabulator to allow for nondefault numtypes
     def tabulator_wrap(n, X):
@@ -236,16 +238,3 @@ def tabulate_jet(D, n, pts, order, numtype):
               for j in range(n)]
              for i in range(m)]
     return data2
-
-
-if __name__ == "__main__":
-    import gmpy
-
-    latticeK = 2
-    D = 3
-
-    pts = make_tetrahedron_lattice(latticeK, gmpy.mpq)
-
-    vals = tabulate_tetrahedron_derivatives(D, pts, gmpy.mpq)
-
-    print(vals)

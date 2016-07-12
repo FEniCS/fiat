@@ -16,13 +16,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import numpy
-from .finite_element import FiniteElement, _facet_support_dofs
-from .reference_element import TensorProductCell, LINE
-from .polynomial_set import mis
-from .quadrature import make_quadrature
-from . import dual_set
-from . import functional
+from FIAT.finite_element import FiniteElement, _facet_support_dofs
+from FIAT.reference_element import TensorProductCell, LINE
+from FIAT.polynomial_set import mis
+from FIAT.quadrature import make_quadrature
+from FIAT import dual_set
+from FIAT import functional
 
 
 def _first_point(node):
@@ -388,15 +390,3 @@ def vert_facet_support_dofs(elem):
         elem._vert_facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
 
     return elem._vert_facet_support_dofs
-
-
-if __name__ == "__main__":
-    from . import reference_element
-    from . import lagrange
-    from . import raviart_thomas
-    S = reference_element.UFCTriangle()
-    T = reference_element.UFCInterval()
-    W = raviart_thomas.RaviartThomas(S, 1)
-    X = lagrange.Lagrange(T, 3)
-    Y = TensorProductElement(W, X)
-    Z = TensorProductElement(Y, X)

@@ -16,8 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import polynomial_set, expansions, quadrature, dual_set, \
-    finite_element, functional
+from __future__ import absolute_import
+
+from FIAT import (polynomial_set, expansions, quadrature, dual_set,
+                  finite_element, functional)
 from itertools import chain
 import numpy
 
@@ -305,17 +307,3 @@ class Nedelec(finite_element.FiniteElement):
         formdegree = 1  # 1-form
         super(Nedelec, self).__init__(poly_set, dual, degree, formdegree,
                                       mapping="covariant piola")
-
-if __name__ == "__main__":
-    from . import reference_element
-    T = reference_element.DefaultTriangle()
-    sd = T.get_spatial_dimension()
-
-    for k in range(1):
-        N = Nedelec(T, k)
-        Nfs = N.get_nodal_basis()
-        pts = T.make_lattice(1)
-        vals = Nfs.tabulate(pts, 1)
-        for foo in sorted(vals):
-            print(foo)
-            print(vals[foo])

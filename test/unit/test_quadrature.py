@@ -17,6 +17,8 @@
 #
 # Written by David A. Ham (david.ham@imperial.ac.uk), 2015
 
+from __future__ import absolute_import
+
 import pytest
 import FIAT
 import numpy
