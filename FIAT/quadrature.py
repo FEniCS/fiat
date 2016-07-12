@@ -16,12 +16,13 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # Modified by Marie E. Rognes (meg@simula.no), 2012
-# Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
+# Modified by David A. Ham (david.ham@imperial.ac.uk), 2015
 
-from . import reference_element, expansions, jacobi
+from . import reference_element, expansions, jacobi, orthopoly
 import math
 import numpy
 from .factorial import factorial
+from .gamma import gamma
 
 
 class QuadratureRule(object):
@@ -53,6 +54,43 @@ class GaussJacobiQuadratureLineRule(QuadratureRule):
         (xs_ref, ws_ref) = compute_gauss_jacobi_rule(0., 0., m)
 
         Ref1 = reference_element.DefaultLine()
+        A, b = reference_element.make_affine_mapping(Ref1.get_vertices(),
+                                                     ref_el.get_vertices())
+
+        mapping = lambda x: numpy.dot(A, x) + b
+
+        scale = numpy.linalg.det(A)
+
+        xs = tuple([tuple(mapping(x_ref)[0]) for x_ref in xs_ref])
+        ws = tuple([scale * w for w in ws_ref])
+
+        QuadratureRule.__init__(self, ref_el, xs, ws)
+
+
+class GaussLobattoLegendreQuadratureLineRule(QuadratureRule):
+    """Implement the Gauss-Lobatto-Legendre quadrature rules on the interval using
+    Greg von Winckel's implementation. This facilitates implementing
+    spectral elements.
+
+    The quadrature rule uses m points for a degree of precision of 2m-3.
+    """
+    def __init__(self, ref_el, m):
+        if m < 2:
+            raise ValueError(
+                "Gauss-Labotto-Legendre quadrature invalid for fewer than 2 points")
+
+        Ref1 = reference_element.DefaultLine()
+        verts = Ref1.get_vertices()
+
+        if m > 2:
+            # Calculate the recursion coefficients.
+            alpha, beta = orthopoly.rec_jacobi(m, 0, 0)
+            xs_ref, ws_ref = orthopoly.lobatto(alpha, beta, verts[0][0], verts[1][0])
+        else:
+            # Special case for lowest order.
+            xs_ref = [v[0] for v in verts[:]]
+            ws_ref = (0.5 * (xs_ref[1] - xs_ref[0]), ) * 2
+
         A, b = reference_element.make_affine_mapping(Ref1.get_vertices(),
                                                      ref_el.get_vertices())
 
@@ -268,35 +306,6 @@ def compute_gauss_jacobi_rule(a, b, m):
           for x in xs]
 
     return xs, ws
-
-
-# A C implementation for ln_gamma function taken from Numerical
-# recipes in C: The art of scientific
-# computing, 2nd edition, Press, Teukolsky, Vetterling, Flannery, Cambridge
-# University press, page 214
-# translated into Python by Robert Kirby
-# See originally Abramowitz and Stegun's Handbook of Mathematical Functions.
-
-def ln_gamma(xx):
-    cof = [76.18009172947146,
-           -86.50532032941677,
-           24.01409824083091,
-           -1.231739572450155,
-           0.1208650973866179e-2,
-           -0.5395239384953e-5]
-    y = xx
-    x = xx
-    tmp = x + 5.5
-    tmp -= (x + 0.5) * math.log(tmp)
-    ser = 1.000000000190015
-    for j in range(0, 6):
-        y = y + 1
-        ser += cof[j] / y
-    return -tmp + math.log(2.5066282746310005 * ser / x)
-
-
-def gamma(xx):
-    return math.exp(ln_gamma(xx))
 
 
 if __name__ == "__main__":

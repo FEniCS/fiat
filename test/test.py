@@ -18,7 +18,7 @@
 # along with fiat. If not, see <http://www.gnu.org/licenses/>.
 #
 # First added:  2007-06-09
-# Last changed: 2014-05-15
+# Last changed: 2016-07-08
 
 import os
 import sys
@@ -29,16 +29,16 @@ logfile = os.path.join(pwd, "test.log")
 os.system("rm -f %s" % logfile)
 
 # Tests to run
-tests = ["unit", "regression"]
+tests = [("unit", "py.test"), ("regression", "python test.py")]
 
 # Run tests
 failed = []
-for test in tests:
+for test, command in tests:
     print("Running tests: %s" % test)
     print("----------------------------------------------------------------------")
     os.chdir(os.path.join(pwd, test))
     # failure = os.system("python test.py | tee -a %s" % logfile)
-    failure = os.system("python test.py")
+    failure = os.system(command)
     if failure:
         print("Test FAILED")
         failed.append(test)

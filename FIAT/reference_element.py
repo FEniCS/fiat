@@ -119,6 +119,17 @@ class ReferenceElement(object):
 
                 self.sub_entities[dim][e] = sorted(sub_entities)
 
+    def __hash__(self):
+        """Since ReferenceElements are singleton classes, we can use the type."""
+
+        return hash(type(self))
+
+    def __eq__(self, other):
+        """Since ReferenceElements are singleton classes, we can use the class
+        itself for equality."""
+
+        return type(self) == type(other)
+
     def get_shape(self):
         """Returns the code for the element's shape."""
         return self.shape

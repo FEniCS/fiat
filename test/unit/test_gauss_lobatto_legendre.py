@@ -22,25 +22,23 @@ import pytest
 import numpy as np
 
 
-@pytest.mark.parametrize("dim, degree", [(dim, degree)
-                                         for dim in range(1, 4)
-                                         for degree in range(4)])
-def test_basis_values(dim, degree):
+@pytest.mark.parametrize("degree", range(1, 7))
+def test_basis_values(degree):
     """Ensure that integrating a simple monomial produces the expected results."""
-    from FIAT import ufc_simplex, DiscontinuousTaylor, make_quadrature
+    from FIAT import ufc_simplex, GaussLobattoLegendre, make_quadrature
 
-    s = ufc_simplex(dim)
+    s = ufc_simplex(1)
     q = make_quadrature(s, degree + 1)
 
-    fe = DiscontinuousTaylor(s, degree)
-    tab = fe.tabulate(0, q.pts)[(0,) * dim]
+    fe = GaussLobattoLegendre(s, degree)
+    tab = fe.tabulate(0, q.pts)[(0,)]
 
     for test_degree in range(degree + 1):
         coefs = [n(lambda x: x[0]**test_degree) for n in fe.dual.nodes]
-        integral = np.float(np.dot(coefs, np.dot(tab, q.wts)))
+        integral = np.dot(coefs, np.dot(tab, q.wts))
         reference = np.dot([x[0]**test_degree
                             for x in q.pts], q.wts)
-        assert np.isclose(integral, reference, rtol=1e-14)
+        assert np.allclose(integral, reference, rtol=1e-14)
 
 
 if __name__ == '__main__':

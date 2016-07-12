@@ -14,6 +14,7 @@ from FIAT.trace import DiscontinuousLagrangeTrace
 from FIAT.discontinuous_raviart_thomas import DiscontinuousRaviartThomas
 from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
+from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre
 from FIAT.morley import Morley
 from FIAT.nedelec import Nedelec
 from FIAT.nedelec_second_kind import NedelecSecondKind
@@ -47,6 +48,7 @@ supported_elements = {"Argyris": Argyris,
                       "Discontinuous Raviart-Thomas": DiscontinuousRaviartThomas,
                       "Hermite": CubicHermite,
                       "Lagrange": Lagrange,
+                      "Gauss-Lobatto-Legendre": GaussLobattoLegendre,
                       "Morley": Morley,
                       "Nedelec 1st kind H(curl)": Nedelec,
                       "Nedelec 2nd kind H(curl)": NedelecSecondKind,
