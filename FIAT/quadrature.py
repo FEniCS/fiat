@@ -18,9 +18,12 @@
 # Modified by Marie E. Rognes (meg@simula.no), 2012
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2015
 
-from FIAT import reference_element, expansions, jacobi, orthopoly
+from __future__ import absolute_import
+
 import math
 import numpy
+
+from FIAT import reference_element, expansions, jacobi, orthopoly
 from FIAT.factorial import factorial
 from FIAT.gamma import gamma
 

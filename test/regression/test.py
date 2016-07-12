@@ -18,7 +18,9 @@
 # First added:  2010-01-31
 # Last changed: 2014-06-30
 
+from __future__ import absolute_import
 from __future__ import print_function
+
 import nose
 import json
 import numpy

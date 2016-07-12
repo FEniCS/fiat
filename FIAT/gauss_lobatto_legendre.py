@@ -17,6 +17,8 @@
 #
 # Written by David A. Ham (david.ham@imperial.ac.uk), 2015
 
+from __future__ import absolute_import
+
 from FIAT import finite_element, polynomial_set, dual_set, functional, quadrature
 from FIAT.reference_element import LINE
 

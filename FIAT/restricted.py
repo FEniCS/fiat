@@ -17,6 +17,8 @@
 
 # Based on FFC file restrictedelement.py and Jan's own FIAT implementation
 
+from __future__ import absolute_import
+
 import numpy
 import six
 from six import iteritems

@@ -26,8 +26,10 @@
 # we have an interface for defining sets of functionals (moments against
 # an entire set of polynomials)
 
-from FIAT import expansions
+from __future__ import absolute_import
+
 import numpy
+from FIAT import expansions
 from FIAT.functional import index_iterator
 
 

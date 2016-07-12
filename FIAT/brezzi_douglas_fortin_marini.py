@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from FIAT import (finite_element, functional, dual_set,
                   polynomial_set, lagrange)
 

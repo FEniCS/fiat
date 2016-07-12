@@ -18,6 +18,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 # 3d mode: x y z f, f = f(x,y,z)
+from __future__ import absolute_import
 from __future__ import print_function
 import sys
 

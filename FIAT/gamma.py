@@ -16,6 +16,9 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2016
+
+from __future__ import absolute_import
+
 import math
 
 

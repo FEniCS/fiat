@@ -18,6 +18,8 @@
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 
+from __future__ import absolute_import
+
 import numpy
 from FIAT.polynomial_set import PolynomialSet
 from FIAT.quadrature import make_quadrature

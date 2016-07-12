@@ -2,6 +2,8 @@
 evaluating arbitrary order Lagrange and many other elements.
 Simplices in one, two, and three dimensions are supported."""
 
+from __future__ import absolute_import
+
 # Import finite element classes
 from FIAT.finite_element import FiniteElement  # noqa
 from FIAT.argyris import Argyris
