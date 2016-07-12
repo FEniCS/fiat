@@ -30,11 +30,11 @@ def interval():
 @pytest.mark.parametrize(("points, degree"), ((p, d)
                                               for p in range(2, 10)
                                               for d in range(2*p - 2)))
-def test_gauss_lobatto_quadrature(interval, points, degree):
+def test_gauss_lobatto_legendre_quadrature(interval, points, degree):
     """Check that the quadrature rules correctly integrate all the right
     polynomial degrees."""
 
-    q = FIAT.quadrature.GaussLobattoQuadratureLineRule(interval, points)
+    q = FIAT.quadrature.GaussLobattoLegendreQuadratureLineRule(interval, points)
 
     assert numpy.round(q.integrate(lambda x: x[0]**degree) - 1./(degree+1), 14) == 0.
 
