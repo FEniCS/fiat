@@ -4,4 +4,4 @@ pipelines:
   default:
     - step:
         script:
-          - pip install -e
+          - pip install -e .
