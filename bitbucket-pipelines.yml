@@ -8,4 +8,4 @@ pipelines:
           - pip install pytest
           - pip install nose
           - cd test/
-          - python ./test.py
+          - py.test .
