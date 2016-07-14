@@ -615,35 +615,47 @@ class FiredrakeQuadrilateral(Cell):
 
 
 class TensorProductCell(Cell):
-    """A cell that is the product of FIAT cells A and B"""
+    """A cell that is the product of FIAT cells."""
 
-    def __init__(self, A, B):
-        self.A = A
-        self.B = B
-        # vertices
-        verts = tuple([a_coord + b_coord
-                       for a_coord in A.get_vertices()
-                       for b_coord in B.get_vertices()])
-        # topology
-        Atop = A.get_topology()
-        Btop = B.get_topology()
-        Bvcount = len(B.get_vertices())
+    def __init__(self, *cells):
+        from itertools import chain, product
+        from numpy import ravel_multi_index, transpose
+
+        vertices = tuple(tuple(chain(*coords))
+                         for coords in product(*[cell.get_vertices()
+                                                 for cell in cells]))
+
+        shape = tuple(len(c.get_vertices()) for c in cells)
         topology = {}
-        for curAdim in Atop:
-            for curBdim in Btop:
-                topology[(curAdim, curBdim)] = {}
-                dim_cur = 0
-                for thingA in Atop[curAdim]:
-                    for thingB in Btop[curBdim]:
-                        topology[(curAdim, curBdim)][dim_cur] = \
-                            [x*Bvcount + y for x in Atop[curAdim][thingA]
-                             for y in Btop[curBdim][thingB]]
-                        dim_cur += 1
+        for dim in product(*[cell.get_topology().keys()
+                             for cell in cells]):
+            topology[dim] = {}
+            topds = [cell.get_topology()[d]
+                     for cell, d in zip(cells, dim)]
+            for tuple_ei in product(*[sorted(topd)for topd in topds]):
+                tuple_vs = list(product(*[topd[ei]
+                                          for topd, ei in zip(topds, tuple_ei)]))
+                vs = tuple(ravel_multi_index(transpose(tuple_vs), shape))
+                topology[dim][tuple_ei] = vs
+            # Flatten entity numbers
+            topology[dim] = dict(enumerate(topology[dim][key]
+                                           for key in sorted(topology[dim])))
 
-        super(TensorProductCell, self).__init__(TENSORPRODUCT, verts, topology)
+        super(TensorProductCell, self).__init__(TENSORPRODUCT, vertices, topology)
+        self._cells = tuple(cells)
 
     def _key(self):
-        return (self.A, self.B)
+        return self._cells
+
+    @property
+    def A(self):
+        assert len(self._cells) == 2
+        return self._cells[0]
+
+    @property
+    def B(self):
+        assert len(self._cells) == 2
+        return self._cells[1]
 
     def get_horiz_facet_transform(self, facet_i):
         assert isinstance(self.B, UFCInterval)
