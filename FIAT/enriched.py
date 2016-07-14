@@ -67,7 +67,6 @@ class EnrichedElement(FiniteElement):
         # the entities of the constituent elements
         Adofs = A.entity_dofs()
         Bdofs = B.entity_dofs()
-
         offset = A.space_dimension()  # number of entities belonging to A
         entity_ids = {}
 
