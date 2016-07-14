@@ -38,6 +38,7 @@ from six import iteritems
 from six.moves import reduce
 import numpy
 
+POINT = 0
 LINE = 1
 TRIANGLE = 2
 TETRAHEDRON = 3
@@ -413,6 +414,18 @@ class UFCSimplex(Simplex):
             result &= (c + epsilon >= 0)
         return result
 
+    def get_subcell(self, dimension):
+        return ufc_simplex(dimension)
+
+
+class UFCPoint(UFCSimplex):
+    """This is the reference point."""
+
+    def __init__(self):
+        verts = ((),)
+        topology = {0: {0: (0,)}}
+        super(UFCPoint, self).__init__(POINT, verts, topology)
+
 
 class DefaultLine(Simplex):
     """This is the reference line with vertices (-1.0,) and (1.0,)."""
@@ -608,6 +621,9 @@ class FiredrakeQuadrilateral(Cell):
         self.B = UFCInterval()
         self.cells = (self.A, self.B)  # workaround
 
+    def get_subcell(self, dimension):
+        return ufc_simplex(dimension)
+
     def get_facet_element(self):
         return UFCInterval()
 
@@ -702,6 +718,10 @@ class TensorProductCell(Cell):
         return [slice(delimiter[i], delimiter[i+1])
                 for i in range(n)]
 
+    def get_subcell(self, dimension):
+        return TensorProductCell(*[c.get_subcell(d)
+                                   for c, d in zip(self.cells, dimension)])
+
     def get_entity_transform(self, dim, entity_i):
         # unravel entity_i
         shape = tuple(len(c.get_topology()[d])
@@ -718,16 +738,6 @@ class TensorProductCell(Cell):
             return list(itertools.chain(*[t(point[s])
                                           for t, s in zip(sct, slices)]))
         return transform
-
-    def get_horiz_facet_transform(self, facet_i):
-        assert isinstance(self.B, UFCInterval)
-        assert facet_i in (0, 1)
-        return lambda p: numpy.hstack([p, float(facet_i)])
-
-    def get_vert_facet_transform(self, facet_i):
-        assert isinstance(self.B, UFCInterval)
-        vf = self.A.get_facet_transform(facet_i)
-        return lambda p: numpy.hstack([vf(p[:-1]), p[-1]])
 
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
@@ -793,7 +803,9 @@ def default_simplex(spatial_dim):
 def ufc_simplex(spatial_dim):
     """Factory function that maps spatial dimension to an instance of
     the UFC reference simplex of that dimension."""
-    if spatial_dim == 1:
+    if spatial_dim == 0:
+        return UFCPoint()
+    elif spatial_dim == 1:
         return UFCInterval()
     elif spatial_dim == 2:
         return UFCTriangle()

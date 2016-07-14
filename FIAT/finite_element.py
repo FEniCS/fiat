@@ -156,7 +156,7 @@ class FiniteElement(object):
         return self.get_nodal_basis().get_expansion_set().get_num_members(arg)
 
 
-def _facet_support_dofs(elem, quad, facet_transform, facets):
+def _entity_support_dofs(elem, quad, facet_transform, facets):
     """Generic facet support dofs constructor.
 
     :arg elem: FIAT finite element
@@ -190,17 +190,21 @@ def _facet_support_dofs(elem, quad, facet_transform, facets):
     return result
 
 
-def facet_support_dofs(elem):
+def entity_support_dofs(elem, entity_dim):
     """Return the map of facet id to the degrees of freedom for which the
     corresponding basis functions take non-zero values."""
-    if not hasattr(elem, "_facet_support_dofs"):
-        # Non-extruded cells only
-        assert not isinstance(elem.ref_el, TensorProductCell)
-
-        q = make_quadrature(elem.ref_el.get_facet_element(), max(2*elem.degree(), 1))
-        ft = lambda f: elem.ref_el.get_facet_transform(f)
-        dim = elem.ref_el.get_spatial_dimension()
-        facets = elem.entity_dofs()[dim-1].keys()
-        elem._facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
-
-    return elem._facet_support_dofs
+    if not hasattr(elem, "_entity_support_dofs"):
+        elem._entity_support_dofs = {}
+    cache = elem._entity_support_dofs
+    try:
+        return cache[entity_dim]
+    except KeyError:
+        degree = max(2*elem.degree(), 1)
+        if isinstance(elem.ref_el, TensorProductCell):
+            degree = (degree,) * len(elem.ref_el.cells)
+        q = make_quadrature(elem.ref_el, degree, entity_dim)
+        et = lambda i: elem.ref_el.get_entity_transform(entity_dim, i)
+        entities = elem.entity_dofs()[entity_dim].keys()
+        result = _entity_support_dofs(elem, q, et, entities)
+        cache[entity_dim] = result
+        return result
