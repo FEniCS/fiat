@@ -36,7 +36,7 @@ def _first_point_pair(node):
     return tuple(node.get_point_dict().items())[0]
 
 
-class TensorProductElement(CiarletElement):
+class TensorProductElement(FiniteElement):
     """Class implementing a finite element that is the tensor product
     of two existing finite elements."""
 
@@ -226,6 +226,31 @@ class TensorProductElement(CiarletElement):
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
+
+    def dual_basis(self):
+        """Return the dual basis (list of functionals) for the finite
+        element."""
+        return self.dual.get_nodes()
+
+    def entity_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom for the enriched element."""
+        return self.dual.get_entity_ids()
+
+    def entity_closure_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom on the closure of those entities for the finite element."""
+        return self.dual.get_entity_closure_ids()
+
+    def get_dual_set(self):
+        "Return the dual for the finite element."
+        return self.dual
+
+    def mapping(self):
+        """Return a list of appropriate mappings from the reference
+        element to a physical element for each basis function of the
+        finite element."""
+        return [self._mapping] * self.space_dimension()
 
     def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
