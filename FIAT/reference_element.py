@@ -652,10 +652,12 @@ class TensorProductCell(Cell):
         from itertools import chain, product
         from numpy import ravel_multi_index, transpose
 
+        # Vertices
         vertices = tuple(tuple(chain(*coords))
                          for coords in product(*[cell.get_vertices()
                                                  for cell in cells]))
 
+        # Topology
         shape = tuple(len(c.get_vertices()) for c in cells)
         topology = {}
         for dim in product(*[cell.get_topology().keys()
@@ -668,25 +670,25 @@ class TensorProductCell(Cell):
                                           for topd, ei in zip(topds, tuple_ei)]))
                 vs = tuple(ravel_multi_index(transpose(tuple_vs), shape))
                 topology[dim][tuple_ei] = vs
-            # Flatten entity numbers
+            # flatten entity numbers
             topology[dim] = dict(enumerate(topology[dim][key]
                                            for key in sorted(topology[dim])))
 
         super(TensorProductCell, self).__init__(TENSORPRODUCT, vertices, topology)
-        self._cells = tuple(cells)
+        self.cells = tuple(cells)
 
     def _key(self):
-        return self._cells
+        return self.cells
 
     @property
     def A(self):
-        assert len(self._cells) == 2
-        return self._cells[0]
+        assert len(self.cells) == 2
+        return self.cells[0]
 
     @property
     def B(self):
-        assert len(self._cells) == 2
-        return self._cells[1]
+        assert len(self.cells) == 2
+        return self.cells[1]
 
     @staticmethod
     def _split_slices(lengths):
@@ -700,12 +702,12 @@ class TensorProductCell(Cell):
     def get_entity_transform(self, dim, entity_i):
         # unravel entity_i
         shape = tuple(len(c.get_topology()[d])
-                      for c, d in zip(self._cells, dim))
+                      for c, d in zip(self.cells, dim))
         alpha = numpy.unravel_index(entity_i, shape)
 
         # entity transform on each subcell
         sct = [c.get_entity_transform(d, i)
-               for c, d, i in zip(self._cells, dim, alpha)]
+               for c, d, i in zip(self.cells, dim, alpha)]
 
         slices = TensorProductCell._split_slices(dim)
 
@@ -729,12 +731,12 @@ class TensorProductCell(Cell):
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
-        lengths = [c.get_spatial_dimension() for c in self._cells]
+        lengths = [c.get_spatial_dimension() for c in self.cells]
         assert len(point) == sum(lengths)
         slices = TensorProductCell._split_slices(lengths)
         return reduce(operator.and_,
                       (c.contains_point(point[s], epsilon=epsilon)
-                       for c, s in zip(self._cells, slices)),
+                       for c, s in zip(self.cells, slices)),
                       True)
 
 
