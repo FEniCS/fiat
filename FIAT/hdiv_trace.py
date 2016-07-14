@@ -119,7 +119,7 @@ class TraceHDiv(FiniteElement):
         return self._entity_dofs
 
     def tabulate(self, order, points, entity):
-        """Return tabulated values basis functions at given points."""
+        """Return tabulated values of basis functions at given points."""
 
         facet_dim = self.cell.get_spatial_dimension() - 1
         sdim = self.space_dimension()

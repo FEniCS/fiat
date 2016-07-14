@@ -19,7 +19,6 @@
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 # Modified by Thomas H. Gibson (t.gibson15@imperial.ac.uk), 2016
 
-
 from __future__ import absolute_import, print_function, division
 
 import numpy
@@ -92,8 +91,13 @@ class FiniteElement(object):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points.
 
-        Modified for trace element tabulation - passing information
-        about the entity of a particular facet element."""
+        :arg order: The maximum order of derivative.
+        :arg points: An iterable of points.
+        :arg entity: Optional (dimension, entity number) pair
+                     indicating which topological entity of the
+                     reference element to tabulate on.  If ``None``,
+                     default cell-wise tabulation is performed.
+        """
         raise NotImplementedError()
 
     def value_shape(self):
