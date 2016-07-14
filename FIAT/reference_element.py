@@ -31,6 +31,7 @@ Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod
+import operator
 
 from six import iteritems
 import numpy
@@ -687,9 +688,16 @@ class TensorProductCell(Cell):
         assert len(self._cells) == 2
         return self._cells[1]
 
-    def get_entity_transform(self, dim, entity_i):
-        import operator
+    @staticmethod
+    def _split_slices(lengths):
+        n = len(lengths)
+        delimiter = [0] * (n + 1)
+        for i in range(n):
+            delimiter[i + 1] = delimiter[i] + lengths[i]
+        return [slice(delimiter[i], delimiter[i+1])
+                for i in range(n)]
 
+    def get_entity_transform(self, dim, entity_i):
         # unravel entity_i
         shape = tuple(len(c.get_topology()[d])
                       for c, d in zip(self._cells, dim))
@@ -699,12 +707,7 @@ class TensorProductCell(Cell):
         sct = [c.get_entity_transform(d, i)
                for c, d, i in zip(self._cells, dim, alpha)]
 
-        # slices for splitting the point coordinates
-        delimiter = [0] * (len(dim) + 1)
-        for i in range(len(dim)):
-            delimiter[i + 1] = delimiter[i] + dim[i]
-        slices = [slice(delimiter[i], delimiter[i+1])
-                  for i in range(len(dim))]
+        slices = TensorProductCell._split_slices(dim)
 
         def transform(point):
             return reduce(operator.add,
@@ -726,10 +729,13 @@ class TensorProductCell(Cell):
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
-        dim_A = self.A.get_spatial_dimension()
-        dim_B = self.B.get_spatial_dimension()
-        assert len(point) == dim_A + dim_B
-        return self.A.contains_point(point[:dim_A], epsilon=epsilon) & self.B.contains_point(point[dim_A:], epsilon=epsilon)
+        lengths = [c.get_spatial_dimension() for c in self._cells]
+        assert len(point) == sum(lengths)
+        slices = TensorProductCell._split_slices(lengths)
+        return reduce(operator.and_,
+                      (c.contains_point(point[s], epsilon=epsilon)
+                       for c, s in zip(self._cells, slices)),
+                      True)
 
 
 def make_affine_mapping(xs, ys):
