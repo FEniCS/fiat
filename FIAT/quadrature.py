@@ -20,6 +20,7 @@
 
 from __future__ import absolute_import
 
+import itertools
 import math
 import numpy
 
@@ -235,13 +236,16 @@ def make_quadrature(ref_el, m):
         return make_tensor_product_quadrature(quadA, quadB)
 
 
-def make_tensor_product_quadrature(quadA, quadB):
+def make_tensor_product_quadrature(*quad_rules):
     """Returns the quadrature rule for a TensorProduct cell, by combining
-    the quadrature rules of the two components."""
-    ref_el = reference_element.TensorProductCell(quadA.ref_el, quadB.ref_el)
+    the quadrature rules of the components."""
+    ref_el = reference_element.TensorProductCell(*[q.ref_el
+                                                   for q in quad_rules])
     # Coordinates are "concatenated", weights are multiplied
-    pts = tuple([tuple(pt_a) + tuple(pt_b) for pt_a in quadA.pts for pt_b in quadB.pts])
-    wts = tuple([wt_a * wt_b for wt_a in quadA.wts for wt_b in quadB.wts])
+    pts = [list(itertools.chain(*pt_tuple))
+           for pt_tuple in itertools.product(*[q.pts for q in quad_rules])]
+    wts = [numpy.prod(wt_tuple)
+           for wt_tuple in itertools.product(*[q.wts for q in quad_rules])]
     return QuadratureRule(ref_el, pts, wts)
 
 
