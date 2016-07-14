@@ -31,9 +31,11 @@ Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod
+import itertools
 import operator
 
 from six import iteritems
+from six.moves import reduce
 import numpy
 
 LINE = 1
@@ -713,10 +715,8 @@ class TensorProductCell(Cell):
         slices = TensorProductCell._split_slices(dim)
 
         def transform(point):
-            return reduce(operator.add,
-                          (tuple(t(point[s]))
-                           for t, s in zip(sct, slices)),
-                          ())
+            return list(itertools.chain(*[t(point[s])
+                                          for t, s in zip(sct, slices)]))
         return transform
 
     def get_horiz_facet_transform(self, facet_i):
