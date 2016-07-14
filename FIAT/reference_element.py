@@ -30,6 +30,8 @@ Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
 from __future__ import absolute_import
 
+from abc import ABCMeta, abstractmethod
+
 from six import iteritems
 import numpy
 
@@ -90,6 +92,8 @@ class Cell(object):
     """Abstract class for a reference cell.  Provides accessors for
     geometry (vertex coordinates) as well as topology (orderings of
     vertices that make up edges, facecs, etc."""
+
+    __metaclass__ = ABCMeta
 
     def __init__(self, shape, vertices, topology):
         """The constructor takes a shape code, the physical vertices expressed
@@ -158,6 +162,10 @@ class Cell(object):
         """Returns the tuple of vertex coordinates associated with the labels
         contained in the iterable t."""
         return tuple([self.vertices[ti] for ti in t])
+
+    @abstractmethod
+    def get_entity_transform(self, dim, entity_i):
+        pass
 
 
 class Simplex(Cell):
@@ -376,6 +384,16 @@ class Simplex(Cell):
         offset = v_c[0] - C.dot(v_f[0])
 
         return lambda x: offset + C.dot(x)
+
+    def get_entity_transform(self, dim, entity_i):
+        space_dim = self.get_spatial_dimension()
+        if dim == space_dim:  # cell points
+            assert entity_i == 0
+            return lambda point: point
+        elif dim == space_dim - 1:  # facet points
+            return self.get_facet_transform(entity_i)
+        else:
+            raise NotImplementedError("Co-dimension >1 not implemented.")
 
 
 # Backwards compatible name
@@ -604,6 +622,18 @@ class FiredrakeQuadrilateral(Cell):
         else:
             raise RuntimeError("Illegal quadrilateral facet number.")
 
+    def get_entity_transform(self, dim, entity_i):
+        if dim == 2:  # cell points
+            assert entity_i == 0
+            return lambda point: point
+        elif dim == 1:  # facet points
+            return self.get_facet_transform(entity_i)
+        elif dim == 0:
+            result = self.get_vertices()[self.get_topology()[0][entity_i]]
+            return lambda point: result
+        else:
+            raise ValueError("Illegal subentity dimension: %s" % dim)
+
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
@@ -656,6 +686,32 @@ class TensorProductCell(Cell):
     def B(self):
         assert len(self._cells) == 2
         return self._cells[1]
+
+    def get_entity_transform(self, dim, entity_i):
+        import operator
+
+        # unravel entity_i
+        shape = tuple(len(c.get_topology()[d])
+                      for c, d in zip(self._cells, dim))
+        alpha = numpy.unravel_index(entity_i, shape)
+
+        # entity transform on each subcell
+        sct = [c.get_entity_transform(d, i)
+               for c, d, i in zip(self._cells, dim, alpha)]
+
+        # slices for splitting the point coordinates
+        delimiter = [0] * (len(dim) + 1)
+        for i in range(len(dim)):
+            delimiter[i + 1] = delimiter[i] + dim[i]
+        slices = [slice(delimiter[i], delimiter[i+1])
+                  for i in range(len(dim))]
+
+        def transform(point):
+            return reduce(operator.add,
+                          (tuple(t(point[s]))
+                           for t, s in zip(sct, slices)),
+                          ())
+        return transform
 
     def get_horiz_facet_transform(self, facet_i):
         assert isinstance(self.B, UFCInterval)
