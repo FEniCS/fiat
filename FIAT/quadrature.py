@@ -208,7 +208,7 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
         return self._J
 
 
-def make_quadrature(ref_el, m, entity_dim=None):
+def make_quadrature(ref_el, m):
     """Returns the collapsed quadrature rule using m points per
     direction on the given reference element. In the tensor product
     case, m is a tuple."""
@@ -220,9 +220,6 @@ def make_quadrature(ref_el, m, entity_dim=None):
 
     msg = "Expecting at least one (not %d) quadrature point per direction" % min_m
     assert (min_m > 0), msg
-
-    if entity_dim is not None:
-        ref_el = ref_el.get_subcell(entity_dim)
 
     if ref_el.get_shape() == reference_element.POINT:
         return QuadratureRule(ref_el, [()], [1])
