@@ -617,9 +617,7 @@ class FiredrakeQuadrilateral(Cell):
                     1: edges, 2: faces}
         super(FiredrakeQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
 
-        self.A = UFCInterval()
-        self.B = UFCInterval()
-        self.cells = (self.A, self.B)  # workaround
+        self.cells = (UFCInterval(), UFCInterval())  # workaround
 
     def get_subcell(self, dimension):
         return ufc_simplex(dimension)
@@ -698,16 +696,6 @@ class TensorProductCell(Cell):
 
     def _key(self):
         return self.cells
-
-    @property
-    def A(self):
-        assert len(self.cells) == 2
-        return self.cells[0]
-
-    @property
-    def B(self):
-        assert len(self.cells) == 2
-        return self.cells[1]
 
     @staticmethod
     def _split_slices(lengths):

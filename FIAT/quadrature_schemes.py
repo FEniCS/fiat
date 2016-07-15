@@ -64,9 +64,9 @@ def create_quadrature(ref_el, degree, scheme="default"):
         integrate exactly.
     """
     if ref_el.get_shape() == TENSORPRODUCT:
-        quadA = create_quadrature(ref_el.A, degree[0], scheme)
-        quadB = create_quadrature(ref_el.B, degree[1], scheme)
-        return make_tensor_product_quadrature(quadA, quadB)
+        quad_rules = [create_quadrature(c, d, scheme)
+                      for c, d in zip(ref_el.cells, degree)]
+        return make_tensor_product_quadrature(*quad_rules)
 
     if degree < 0:
         raise ValueError("Need positive degree, not %d" % degree)
