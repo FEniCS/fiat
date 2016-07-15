@@ -620,6 +620,8 @@ class FiredrakeQuadrilateral(Cell):
         self.cells = (UFCInterval(), UFCInterval())  # workaround
 
     def get_subcell(self, dimension):
+        if dimension == 2:
+            return self
         return ufc_simplex(dimension)
 
     def get_facet_element(self):
