@@ -140,8 +140,9 @@ class TraceHDiv(FiniteElement):
         # Retrieve function evaluations (order = 0 case)
         nf = self.trace.space_dimension()
         facet_id = entity[1]
-        nonzerovals = self.trace.tabulate(0, points).values()[0]
-        phivals[key[-1]][nf*facet_id:nf*(facet_id + 1), :] = nonzerovals
+        nonzerovals = list(self.trace.tabulate(0, points).values())[0]
+        evalkey = list(key)[-1]
+        phivals[evalkey][nf*facet_id:nf*(facet_id + 1), :] = nonzerovals
 
         # If asking for gradient evaluations, raise TraceError
         # but return functon evaluations, and zeros for the gradient.
