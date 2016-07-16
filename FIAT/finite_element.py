@@ -30,62 +30,33 @@ from FIAT.quadrature_schemes import create_quadrature
 
 class FiniteElement(object):
     """Class implementing a basic abstraction template for special
-    types of finite elements, like traces. Most special methods will
-    need to be implemented by the special element in its module."""
+    types of finite elements. These elements do not have an explicit dual
+    associated with it. Most special methods will need to be implemented
+    by the special element in its module.
 
-    def __init__(self, ref_el, order, formdegree=None, mapping="affine"):
+    Examples of special elements that inherit from this class include
+    the following:
 
+    EnrichedElement: The direct sum of two finite elements;
+    TensorProductElement: The direct product of two finite elements;
+    TraceHDiv: The trace of a finite element."""
+
+    def __init__(self, ref_el, order, formdegree=None):
         self.order = order
         self.formdegree = formdegree
-        self.mapping = mapping
-
         self.ref_el = ref_el
-
-    def degree(self):
-        "Return the degree of the (embedding) polynomial space."
-        raise NotImplementedError()
 
     def get_order(self):
         "Return the order of the element (may be different from the degree)"
         return self.order
 
-    def entity_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom for the finite element."""
-        raise NotImplementedError()
-
-    def entity_closure_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom on the closure of those entities for the finite element."""
-        raise NotImplementedError()
-
     def get_reference_element(self):
         "Return the reference element for the finite element."
         return self.ref_el
 
-    def get_nodal_basis(self):
-        """Return the nodal basis, encoded as a PolynomialSet object,
-        for the finite element."""
-        raise NotImplementedError()
-
-    def get_coeffs(self):
-        """Return the expansion coefficients for the basis of the
-        finite element."""
-        raise NotImplementedError()
-
     def get_formdegree(self):
         """Return the degree of the associated form (FEEC)"""
         return self.formdegree
-
-    def mapping(self):
-        """Return a list of appropriate mappings from the reference
-        element to a physical element for each basis function of the
-        finite element."""
-        raise NotImplementedError()
-
-    def space_dimension(self):
-        "Return the dimension of the finite element space."
-        raise NotImplementedError()
 
     def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
@@ -98,11 +69,8 @@ class FiniteElement(object):
                      reference element to tabulate on.  If ``None``,
                      default cell-wise tabulation is performed.
         """
-        raise NotImplementedError()
-
-    def value_shape(self):
-        "Return the value shape of the finite element functions."
-        raise NotImplementedError()
+        raise NotImplementedError(
+            "Tabulation must be specified in the element class that inherits from FiniteElement.")
 
 
 class CiarletElement(FiniteElement):
@@ -278,7 +246,7 @@ def entity_support_dofs(elem, entity_dim):
         points = list(map(entity_transform, quad.get_points()))
 
         # Integrate the square of the basis functions on the facet.
-        vals = numpy.double(elem.tabulate(0, points, None)[(0,) * dim])
+        vals = numpy.double(elem.tabulate(0, points)[(0,) * dim])
         # Ints contains the square of the basis functions
         # integrated over the facet.
         if elem.value_shape():
