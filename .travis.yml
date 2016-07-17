@@ -11,9 +11,6 @@ python:
   - "2.7"
   - "3.4"
 
-before_script:
-  - echo -e "Host bitbucket.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-
 before_install:
   - pip install --upgrade pip
   - pip install flake8
@@ -25,4 +22,4 @@ install:
 
 script:
   - flake8 .
-  - py.test test/
+  - DATA_REPO_GIT="" py.test test/

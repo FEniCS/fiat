@@ -7,4 +7,4 @@ pipelines:
           - pip install -e .
           - pip install pytest
           - cd test/
-          - py.test .
+          - DATA_REPO_GIT="" py.test .
