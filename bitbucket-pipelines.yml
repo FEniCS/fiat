@@ -6,6 +6,5 @@ pipelines:
         script:
           - pip install -e .
           - pip install pytest
-          - pip install nose
           - cd test/
           - py.test .
