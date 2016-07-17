@@ -26,7 +26,6 @@ import json
 import numpy
 import warnings
 import os
-import sys
 
 from FIAT import supported_elements, make_quadrature, ufc_simplex, \
     newdubiner, expansions, reference_element, polynomial_set
