@@ -60,7 +60,7 @@ def json_numpy_obj_hook(dct):
 
 
 def load_reference(filename, create_data):
-    """Load reference from file. On failure create new file using suplied
+    """Load reference from file. On failure create new file using supplied
     function.
     """
     try:
