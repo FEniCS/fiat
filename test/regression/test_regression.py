@@ -60,6 +60,28 @@ def json_numpy_obj_hook(dct):
     return dct
 
 
+def load_reference(filename, create_data):
+    """Load reference from file. On failure create new file using suplied
+    function.
+    """
+    try:
+        # Try loading the reference
+        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
+    except IOError:
+        warnings.warn('Reference file "%s" could not be loaded! '
+                      'Creating a new reference file!' % filename,
+                      RuntimeWarning)
+
+        # Generate data and store for the future
+        reference = create_data()
+        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
+
+        # Report failure
+        pytest.fail('Comparison to "%s" failed!' % filename)
+
+    return reference
+
+
 def test_polynomials():
     def create_data():
         ps = polynomial_set.ONPolynomialSet(
@@ -70,18 +92,7 @@ def test_polynomials():
 
     # Try reading reference values
     filename = os.path.join(ref_path, "reference-polynomials.json")
-    try:
-        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                      RuntimeWarning)
-        reference = create_data()
-        # Store the data for the future
-        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
-
-        # Report failure
-        pytest.fail('Comparison to "%s" failed!' % filename)
+    reference = load_reference(filename, create_data)
 
     dmats = create_data()
 
@@ -99,18 +110,7 @@ def test_polynomials_1D():
 
     # Try reading reference values
     filename = os.path.join(ref_path, "reference-polynomials_1D.json")
-    try:
-        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                      RuntimeWarning)
-        reference = create_data()
-        # Store the data for the future
-        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
-
-        # Report failure
-        pytest.fail('Comparison to "%s" failed!' % filename)
+    reference = load_reference(filename, create_data)
 
     dmats = create_data()
 
@@ -130,18 +130,7 @@ def test_expansions():
 
     # Try reading reference values
     filename = os.path.join(ref_path, "reference-expansions.json")
-    try:
-        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                      RuntimeWarning)
-        reference = create_data()
-        # Convert reference to list of int
-        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
-
-        # Report failure
-        pytest.fail('Comparison to "%s" failed!' % filename)
+    reference = load_reference(filename, create_data)
 
     table_phi, table_dphi = create_data()
     reference_table_phi, reference_table_dphi = reference
@@ -172,23 +161,11 @@ def test_expansions_jet():
         return F.tabulate_jet(n, pts, order)
 
     filename = os.path.join(ref_path, "reference-expansions-jet.json")
-    try:
-        reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                      RuntimeWarning)
-        reference_jet = create_data()
-        # Store the data for the future
-        json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
-
-        # Report failure
-        pytest.fail('Comparison to "%s" failed!' % filename)
+    reference = load_reference(filename, create_data)
 
     # Test jet data
     data = create_data()
-    reference_data = reference_jet
-    for datum, reference_datum in zip(data, reference_data):
+    for datum, reference_datum in zip(data, reference):
         diff = numpy.array(datum) - numpy.array(reference_datum)
         assert (abs(diff) < tolerance).all()
 
@@ -202,21 +179,10 @@ def test_newdubiner():
 
     # Try reading reference values
     filename = os.path.join(ref_path, "reference-newdubiner.json")
-    try:
-        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                      RuntimeWarning)
-        reference = create_data()
-        # Convert reference to list of int
-        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
-
-        # Report failure
-        pytest.fail('Comparison to "%s" failed!' % filename)
 
     # Actually perform the test
     table = create_data()
+    reference = load_reference(filename, create_data)
 
     for data, reference_data in zip(table, reference):
         for point, reference_point in zip(data, reference_data):
@@ -235,21 +201,10 @@ def test_newdubiner_jet():
         return newdubiner.tabulate_jet(D, n, pts, order, float)
 
     filename = os.path.join(ref_path, "reference-newdubiner-jet.json")
-    try:
-        reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                      RuntimeWarning)
-        reference_jet = create_data()
-        # Store the data for the future
-        json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
-
-        # Report failure
-        pytest.fail('Comparison to "%s" failed!' % filename)
+    reference = load_reference(filename, create_data)
 
     table_jet = create_data()
-    for datum, reference_datum in zip(table_jet, reference_jet):
+    for datum, reference_datum in zip(table_jet, reference):
         for entry, reference_entry in zip(datum, reference_datum):
             for k in range(3):
                 diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
