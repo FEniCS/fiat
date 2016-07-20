@@ -10,5 +10,5 @@ pipelines:
           - pip install .
           - pip3 install .
           - cd test/
-          - DATA_REPO_GIT="" py.test .
-          - DATA_REPO_GIT="" py.test-3 .
+          - DATA_REPO_GIT="" py.test -v .
+          - DATA_REPO_GIT="" py.test-3 -v .
