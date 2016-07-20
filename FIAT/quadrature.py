@@ -207,35 +207,6 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
         return self._J
 
 
-class TensorProductQuadratureRule(QuadratureRule):
-    """Returns the quadrature rule for a TensorProduct cell, by
-    combining the quadrature rules of the two components"""
-
-    def __init__(self, ref_el, m):
-        # Firedrake issue #372 (duplicate: #420)
-        #
-        # This is added here to handle the constant times dx
-        # integral on tensor product elements (e.g. extruded mesh).
-        # For example,
-        #
-        #   assemble(1.0 * dx)
-        #
-        if isinstance(m, int):
-            if m == 1:
-                m = (1, 1)
-            else:
-                raise RuntimeError("Tuple expected as number of points on tensor product element")
-
-        # Get quadrature rules of subcomponents
-        quadA = make_quadrature(ref_el.A, m[0])
-        quadB = make_quadrature(ref_el.B, m[1])
-
-        # Combine them. Coordinates are "concatenated", weights are multiplied
-        pts = tuple([pt_a + pt_b for pt_a in quadA.pts for pt_b in quadB.pts])
-        wts = tuple([wt_a * wt_b for wt_a in quadA.wts for wt_b in quadB.wts])
-        QuadratureRule.__init__(self, ref_el, pts, wts)
-
-
 def make_quadrature(ref_el, m):
     """Returns the collapsed quadrature rule using m points per
     direction on the given reference element. In the tensor product
@@ -256,9 +227,22 @@ def make_quadrature(ref_el, m):
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule(ref_el, m)
     elif ref_el.get_shape() == reference_element.QUADRILATERAL:
-        return TensorProductQuadratureRule(ref_el, (m, m))
+        quad_line = make_quadrature(reference_element.UFCInterval(), m)
+        return make_tensor_product_quadrature(quad_line, quad_line)
     elif ref_el.get_shape() == reference_element.TENSORPRODUCT:
-        return TensorProductQuadratureRule(ref_el, m)
+        quadA = make_quadrature(ref_el.A, m[0])
+        quadB = make_quadrature(ref_el.B, m[1])
+        return make_tensor_product_quadrature(quadA, quadB)
+
+
+def make_tensor_product_quadrature(quadA, quadB):
+    """Returns the quadrature rule for a TensorProduct cell, by combining
+    the quadrature rules of the two components."""
+    ref_el = reference_element.TensorProductCell(quadA.ref_el, quadB.ref_el)
+    # Coordinates are "concatenated", weights are multiplied
+    pts = tuple([tuple(pt_a) + tuple(pt_b) for pt_a in quadA.pts for pt_b in quadB.pts])
+    wts = tuple([wt_a * wt_b for wt_a in quadA.wts for wt_b in quadB.wts])
+    return QuadratureRule(ref_el, pts, wts)
 
 
 # rule to get Gauss-Jacobi points

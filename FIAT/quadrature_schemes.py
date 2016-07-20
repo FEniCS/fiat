@@ -1,14 +1,13 @@
 """Quadrature schemes on cells
 
 This module generates quadrature schemes on reference cells that integrate
-exactly a polynomial of a given degree using a specified scheme. The
-UFC definition of a reference cell is used.
+exactly a polynomial of a given degree using a specified scheme.
 
 Scheme options are:
 
   scheme="default"
 
-  scheme="canonical" (collapsed Gauss scheme supplied by FIAT)
+  scheme="canonical" (collapsed Gauss scheme)
 
 Background on the schemes:
 
@@ -19,95 +18,85 @@ Background on the schemes:
 """
 
 # Copyright (C) 2011 Garth N. Wells
+# Copyright (C) 2016 Miklos Homolya
 #
-# This file is part of FFC.
+# This file is part of FIAT.
 #
-# FFC is free software: you can redistribute it and/or modify
+# FIAT is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# FFC is distributed in the hope that it will be useful,
+# FIAT is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with FFC. If not, see <http://www.gnu.org/licenses/>.
+# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # First added:  2011-04-19
 # Last changed: 2011-04-19
 
+from __future__ import absolute_import
+from __future__ import division
+
 # NumPy
 from numpy import array, arange, float64
 
-# FFC modules
-from ffc.log import error
-from ffc.fiatinterface import create_quadrature as fiat_create_quadrature
-
-# Dictionary mapping from cellname to dimension
-from ufl.cell import cellname2dim
+# FIAT
+from FIAT.reference_element import TENSORPRODUCT, UFCTriangle, UFCTetrahedron
+from FIAT.quadrature import QuadratureRule, make_quadrature, make_tensor_product_quadrature
 
 
-def create_quadrature(shape, degree, scheme="default"):
+def create_quadrature(ref_el, degree, scheme="default"):
     """
-    Generate quadrature rule (points, weights) for given shape
+    Generate quadrature rule for given reference element
     that will integrate an polynomial of order 'degree' exactly.
-    """
 
-    # FIXME: KBO: Can this be handled more elegantly?
-    # Handle point case
-    if isinstance(shape, int) and shape == 0 or cellname2dim[shape] == 0:
-        return ([()], array([1.0]))
+    For low-degree (<=6) polynomials on triangles and tetrahedra, this
+    uses hard-coded rules, otherwise it falls back to a collapsed
+    Gauss scheme on simplices.  On tensor-product cells, it is a
+    tensor-product quadrature rule of the subcells.
+
+    :arg cell: The FIAT cell to create the quadrature for.
+    :arg degree: The degree of polynomial that the rule should
+        integrate exactly.
+    """
+    if ref_el.get_shape() == TENSORPRODUCT:
+        quadA = create_quadrature(ref_el.A, degree[0], scheme)
+        quadB = create_quadrature(ref_el.B, degree[1], scheme)
+        return make_tensor_product_quadrature(quadA, quadB)
 
     if scheme == "default":
-        if shape == "tetrahedron":
-            return _tetrahedron_scheme(degree)
-        elif shape == "triangle":
+        # TODO: Point transformation to support good schemes on
+        # non-UFC reference elements.
+        if isinstance(ref_el, UFCTriangle):
             return _triangle_scheme(degree)
+        elif isinstance(ref_el, UFCTetrahedron):
+            return _tetrahedron_scheme(degree)
         else:
-            return _fiat_scheme(shape, degree)
-    elif scheme == "vertex":
-        # The vertex scheme, i.e., averaging the function value in the vertices
-        # and multiplying with the simplex volume, is only of order 1 and
-        # inferior to other generic schemes in terms of error reduction.
-        # Equation systems generated with the vertex scheme have some
-        # properties that other schemes lack, e.g., the mass matrix is
-        # a simple diagonal matrix. This may be prescribed in certain cases.
-        #
-        if degree > 1:
-            from warnings import warn
-            warn("Explicitly selected vertex quadrature (degree 1), but requested degree is %d." % degree)
-        if shape == "tetrahedron":
-            return (array([[0.0, 0.0, 0.0],
-                           [1.0, 0.0, 0.0],
-                           [0.0, 1.0, 0.0],
-                           [0.0, 0.0, 1.0]]),
-                    array([1.0/24.0, 1.0/24.0, 1.0/24.0, 1.0/24.0]))
-        elif shape == "triangle":
-            return (array([[0.0, 0.0],
-                           [1.0, 0.0],
-                           [0.0, 1.0]]),
-                    array([1.0/6.0, 1.0/6.0, 1.0/6.0]))
-        else:
-            # Trapezoidal rule.
-            return (array([[0.0, 0.0],
-                           [0.0, 1.0]]),
-                    array([1.0/2.0, 1.0/2.0]))
+            return _fiat_scheme(ref_el, degree)
     elif scheme == "canonical":
-        return _fiat_scheme(shape, degree)
+        return _fiat_scheme(ref_el, degree)
     else:
-        error("Unknown quadrature scheme: %s." % scheme)
+        raise ValueError("Unknown quadrature scheme: %s." % scheme)
 
 
-def _fiat_scheme(shape, degree):
+def _fiat_scheme(ref_el, degree):
     """Get quadrature scheme from FIAT interface"""
 
     # Number of points per axis for exact integration
     num_points_per_axis = (degree + 1 + 1) // 2
 
-    # Create and return FIAT quadrature rulet
-    return fiat_create_quadrature(shape, num_points_per_axis)
+    # Check for excess
+    if num_points_per_axis > 30:
+        dim = ref_el.get_spatial_dimension()
+        raise RuntimeError("Requested a quadrature rule with %d points per direction (%d points)" %
+                           (num_points_per_axis, num_points_per_axis**dim))
+
+    # Create and return FIAT quadrature rule
+    return make_quadrature(ref_el, num_points_per_axis)
 
 
 def _triangle_scheme(degree):
@@ -182,10 +171,10 @@ def _triangle_scheme(degree):
         w = w/2.0
     else:
         # Get canonical scheme
-        x, w = _fiat_scheme("triangle", degree)
+        return _fiat_scheme(UFCTriangle(), degree)
 
     # Return scheme
-    return x, w
+    return QuadratureRule(UFCTriangle(), x, w)
 
 
 def _tetrahedron_scheme(degree):
@@ -301,7 +290,7 @@ def _tetrahedron_scheme(degree):
         w = w/6.0
     else:
         # Get canonical scheme
-        x, w = _fiat_scheme("tetrahedron", degree)
+        return _fiat_scheme(UFCTetrahedron(), degree)
 
     # Return scheme
-    return x, w
+    return QuadratureRule(UFCTetrahedron(), x, w)
