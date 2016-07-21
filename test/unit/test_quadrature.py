@@ -92,7 +92,7 @@ def test_create_quadrature_tetrahedron(tetrahedron, degree, scheme):
 @pytest.mark.parametrize("basedeg", range(5))
 def test_create_quadrature_extr_interval(extr_interval, basedeg, extrdeg, scheme):
     q = FIAT.create_quadrature(extr_interval, (basedeg, extrdeg), scheme)
-    assert numpy.allclose(q.integrate(lambda (x, y): x**basedeg * y**extrdeg),
+    assert numpy.allclose(q.integrate(lambda x: x[0]**basedeg * x[1]**extrdeg),
                           1/(basedeg + 1) * 1/(extrdeg + 1))
 
 
@@ -100,7 +100,7 @@ def test_create_quadrature_extr_interval(extr_interval, basedeg, extrdeg, scheme
 @pytest.mark.parametrize("basedeg", range(5))
 def test_create_quadrature_extr_triangle(extr_triangle, basedeg, extrdeg, scheme):
     q = FIAT.create_quadrature(extr_triangle, (basedeg, extrdeg), scheme)
-    assert numpy.allclose(q.integrate(lambda (x, y, z): (x + y)**basedeg * z**extrdeg),
+    assert numpy.allclose(q.integrate(lambda x: (x[0] + x[1])**basedeg * x[2]**extrdeg),
                           1/(basedeg + 2) * 1/(extrdeg + 1))
 
 
@@ -115,7 +115,7 @@ def test_create_quadrature_quadrilateral(quadrilateral, degree, scheme):
 @pytest.mark.parametrize("basedeg", range(5))
 def test_create_quadrature_extr_quadrilateral(extr_quadrilateral, basedeg, extrdeg, scheme):
     q = FIAT.create_quadrature(extr_quadrilateral, (basedeg, extrdeg), scheme)
-    assert numpy.allclose(q.integrate(lambda (x, y, z): (x + y)**basedeg * z**extrdeg),
+    assert numpy.allclose(q.integrate(lambda x: (x[0] + x[1])**basedeg * x[2]**extrdeg),
                           (2**(basedeg + 2) - 2) / ((basedeg + 1)*(basedeg + 2)) * 1/(extrdeg + 1))
 
 
