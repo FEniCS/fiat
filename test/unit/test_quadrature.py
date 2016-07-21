@@ -153,6 +153,14 @@ def test_high_degree_runtime_error_tensor_prod(cell):
         FIAT.create_quadrature(cell, (60, 60))
 
 
+def test_tensor_product_composition(interval, triangle, extr_triangle, scheme):
+    degree = (4, 4)
+    qa = FIAT.create_quadrature(triangle, degree[0], scheme)
+    qb = FIAT.create_quadrature(interval, degree[1], scheme)
+    q = FIAT.create_quadrature(extr_triangle, degree, scheme)
+    assert len(q.get_points()) == len(qa.get_points())*len(qb.get_points())
+
+
 @pytest.mark.parametrize(("points, degree"), ((p, d)
                                               for p in range(2, 10)
                                               for d in range(2*p - 2)))
