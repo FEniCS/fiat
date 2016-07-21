@@ -68,6 +68,9 @@ def create_quadrature(ref_el, degree, scheme="default"):
         quadB = create_quadrature(ref_el.B, degree[1], scheme)
         return make_tensor_product_quadrature(quadA, quadB)
 
+    if degree < 0:
+        raise ValueError("Need positive degree, not %d" % degree)
+
     if scheme == "default":
         # TODO: Point transformation to support good schemes on
         # non-UFC reference elements.
