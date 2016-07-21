@@ -65,28 +65,29 @@ def extr_quadrilateral():
     return TensorProductCell(FiredrakeQuadrilateral(), UFCInterval())
 
 
-@pytest.mark.parametrize("scheme", ["canonical", "default"])
+@pytest.fixture(params=["canonical", "default"])
+def scheme(request):
+    return request.param
+
+
 @pytest.mark.parametrize("degree", range(8))
 def test_create_quadrature_interval(interval, degree, scheme):
     q = FIAT.create_quadrature(interval, degree, scheme)
     assert numpy.allclose(q.integrate(lambda x: x[0]**degree), 1/(degree + 1))
 
 
-@pytest.mark.parametrize("scheme", ["canonical", "default"])
 @pytest.mark.parametrize("degree", range(8))
 def test_create_quadrature_triangle(triangle, degree, scheme):
     q = FIAT.create_quadrature(triangle, degree, scheme)
     assert numpy.allclose(q.integrate(lambda x: sum(x)**degree), 1/(degree + 2))
 
 
-@pytest.mark.parametrize("scheme", ["canonical", "default"])
 @pytest.mark.parametrize("degree", range(8))
 def test_create_quadrature_tetrahedron(tetrahedron, degree, scheme):
     q = FIAT.create_quadrature(tetrahedron, degree, scheme)
     assert numpy.allclose(q.integrate(lambda x: sum(x)**degree), 1/(2*degree + 6))
 
 
-@pytest.mark.parametrize("scheme", ["canonical", "default"])
 @pytest.mark.parametrize("extrdeg", range(4))
 @pytest.mark.parametrize("basedeg", range(5))
 def test_create_quadrature_extr_interval(extr_interval, basedeg, extrdeg, scheme):
@@ -95,7 +96,6 @@ def test_create_quadrature_extr_interval(extr_interval, basedeg, extrdeg, scheme
                           1/(basedeg + 1) * 1/(extrdeg + 1))
 
 
-@pytest.mark.parametrize("scheme", ["canonical", "default"])
 @pytest.mark.parametrize("extrdeg", range(4))
 @pytest.mark.parametrize("basedeg", range(5))
 def test_create_quadrature_extr_triangle(extr_triangle, basedeg, extrdeg, scheme):
@@ -104,7 +104,6 @@ def test_create_quadrature_extr_triangle(extr_triangle, basedeg, extrdeg, scheme
                           1/(basedeg + 2) * 1/(extrdeg + 1))
 
 
-@pytest.mark.parametrize("scheme", ["canonical", "default"])
 @pytest.mark.parametrize("degree", range(8))
 def test_create_quadrature_quadrilateral(quadrilateral, degree, scheme):
     q = FIAT.create_quadrature(quadrilateral, degree, scheme)
@@ -112,13 +111,46 @@ def test_create_quadrature_quadrilateral(quadrilateral, degree, scheme):
                           (2**(degree + 2) - 2) / ((degree + 1)*(degree + 2)))
 
 
-@pytest.mark.parametrize("scheme", ["canonical", "default"])
 @pytest.mark.parametrize("extrdeg", range(4))
 @pytest.mark.parametrize("basedeg", range(5))
 def test_create_quadrature_extr_quadrilateral(extr_quadrilateral, basedeg, extrdeg, scheme):
     q = FIAT.create_quadrature(extr_quadrilateral, (basedeg, extrdeg), scheme)
     assert numpy.allclose(q.integrate(lambda (x, y, z): (x + y)**basedeg * z**extrdeg),
                           (2**(basedeg + 2) - 2) / ((basedeg + 1)*(basedeg + 2)) * 1/(extrdeg + 1))
+
+
+@pytest.mark.parametrize("cell", [interval(),
+                                  triangle(),
+                                  tetrahedron(),
+                                  quadrilateral()])
+def test_invalid_quadrature_degree(cell, scheme):
+    with pytest.raises(ValueError):
+        FIAT.create_quadrature(cell, -1, scheme)
+
+
+@pytest.mark.parametrize("cell", [extr_interval(),
+                                  extr_triangle(),
+                                  extr_quadrilateral()])
+def test_invalid_quadrature_degree_tensor_prod(cell):
+    with pytest.raises(ValueError):
+        FIAT.create_quadrature(cell, (-1, -1))
+
+
+@pytest.mark.parametrize("cell", [interval(),
+                                  triangle(),
+                                  tetrahedron(),
+                                  quadrilateral()])
+def test_high_degree_runtime_error(cell):
+    with pytest.raises(RuntimeError):
+        FIAT.create_quadrature(cell, 60)
+
+
+@pytest.mark.parametrize("cell", [extr_interval(),
+                                  extr_triangle(),
+                                  extr_quadrilateral()])
+def test_high_degree_runtime_error_tensor_prod(cell):
+    with pytest.raises(RuntimeError):
+        FIAT.create_quadrature(cell, (60, 60))
 
 
 @pytest.mark.parametrize(("points, degree"), ((p, d)
