@@ -22,7 +22,7 @@ from __future__ import absolute_import
 
 import numpy
 from FIAT.polynomial_set import PolynomialSet
-from FIAT.quadrature import make_quadrature
+from FIAT.quadrature_schemes import create_quadrature
 from FIAT.reference_element import TensorProductCell
 
 
@@ -179,7 +179,7 @@ def entity_support_dofs(elem, entity_dim):
     if isinstance(elem.ref_el, TensorProductCell):
         degree = (degree,) * len(elem.ref_el.cells)
 
-    quad = make_quadrature(elem.ref_el.get_subcell(entity_dim), degree)
+    quad = create_quadrature(elem.ref_el.get_subcell(entity_dim), degree)
     weights = quad.get_weights()
 
     eps = 1.e-8  # Is this a safe value?
