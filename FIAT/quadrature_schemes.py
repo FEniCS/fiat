@@ -64,6 +64,12 @@ def create_quadrature(ref_el, degree, scheme="default"):
         integrate exactly.
     """
     if ref_el.get_shape() == TENSORPRODUCT:
+        try:
+            degree = tuple(degree)
+        except TypeError:
+            degree = (degree,) * len(ref_el.cells)
+
+        assert len(ref_el.cells) == len(degree)
         quad_rules = [create_quadrature(c, d, scheme)
                       for c, d in zip(ref_el.cells, degree)]
         return make_tensor_product_quadrature(*quad_rules)
