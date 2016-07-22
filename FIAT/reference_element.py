@@ -30,7 +30,6 @@ Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
 from __future__ import absolute_import
 
-from abc import ABCMeta, abstractmethod
 import itertools
 import operator
 
@@ -96,8 +95,6 @@ class Cell(object):
     """Abstract class for a reference cell.  Provides accessors for
     geometry (vertex coordinates) as well as topology (orderings of
     vertices that make up edges, facecs, etc."""
-
-    __metaclass__ = ABCMeta
 
     def __init__(self, shape, vertices, topology):
         """The constructor takes a shape code, the physical vertices expressed
@@ -166,10 +163,6 @@ class Cell(object):
         """Returns the tuple of vertex coordinates associated with the labels
         contained in the iterable t."""
         return tuple([self.vertices[ti] for ti in t])
-
-    @abstractmethod
-    def get_entity_transform(self, dim, entity_i):
-        pass
 
 
 class Simplex(Cell):
@@ -406,6 +399,13 @@ ReferenceElement = Simplex
 
 class UFCSimplex(Simplex):
 
+    def get_facet_element(self):
+        dimension = self.get_spatial_dimension()
+        return self.construct_subelement(dimension - 1)
+
+    def construct_subelement(self, dimension):
+        return ufc_simplex(dimension)
+
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
@@ -414,17 +414,14 @@ class UFCSimplex(Simplex):
             result &= (c + epsilon >= 0)
         return result
 
-    def get_subcell(self, dimension):
-        return ufc_simplex(dimension)
 
-
-class UFCPoint(UFCSimplex):
+class Point(Simplex):
     """This is the reference point."""
 
     def __init__(self):
         verts = ((),)
         topology = {0: {0: (0,)}}
-        super(UFCPoint, self).__init__(POINT, verts, topology)
+        super(Point, self).__init__(POINT, verts, topology)
 
 
 class DefaultLine(Simplex):
@@ -450,9 +447,6 @@ class UFCInterval(UFCSimplex):
         topology = {0: {0: (0,), 1: (1,)},
                     1: edges}
         super(UFCInterval, self).__init__(LINE, verts, topology)
-
-    def get_facet_element(self):
-        raise NotImplementedError()
 
 
 class DefaultTriangle(Simplex):
@@ -490,9 +484,6 @@ class UFCTriangle(UFCSimplex):
         t = self.compute_tangents(1, i)[0]
         n = numpy.array((t[1], -t[0]))
         return n / numpy.linalg.norm(n)
-
-    def get_facet_element(self):
-        return UFCInterval()
 
 
 class IntrepidTriangle(Simplex):
@@ -601,68 +592,6 @@ class UFCTetrahedron(UFCSimplex):
         n = numpy.cross(t[0], t[1])
         return -2.0 * n / numpy.linalg.norm(n)
 
-    def get_facet_element(self):
-        return UFCTriangle()
-
-
-class FiredrakeQuadrilateral(Cell):
-    """This is the reference quadrilateral with vertices
-    (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
-
-    def __init__(self):
-        verts = ((0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0))
-        edges = {0: (0, 1), 1: (2, 3), 2: (0, 2), 3: (1, 3)}
-        faces = {0: (0, 1, 2, 3)}
-        topology = {0: {0: (0,), 1: (1,), 2: (2,), 3: (3,)},
-                    1: edges, 2: faces}
-        super(FiredrakeQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
-
-        self.cells = (UFCInterval(), UFCInterval())  # workaround
-
-    def get_subcell(self, dimension):
-        if dimension == 2:
-            return self
-        return ufc_simplex(dimension)
-
-    def get_facet_element(self):
-        return UFCInterval()
-
-    def get_facet_transform(self, facet_i):
-        """Return a function f such that for a point with facet coordinates
-        x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
-        """
-        if facet_i == 0:
-            return lambda p: numpy.array([0.0, float(p)])
-        elif facet_i == 1:
-            return lambda p: numpy.array([1.0, float(p)])
-        elif facet_i == 2:
-            return lambda p: numpy.array([float(p), 0.0])
-        elif facet_i == 3:
-            return lambda p: numpy.array([float(p), 1.0])
-        else:
-            raise RuntimeError("Illegal quadrilateral facet number.")
-
-    def get_entity_transform(self, dim, entity_i):
-        if dim == 2:  # cell points
-            assert entity_i == 0
-            return lambda point: point
-        elif dim == 1:  # facet points
-            return self.get_facet_transform(entity_i)
-        elif dim == 0:
-            result = self.get_vertices()[self.get_topology()[0][entity_i]]
-            return lambda point: result
-        else:
-            raise ValueError("Illegal subentity dimension: %s" % dim)
-
-    def contains_point(self, point, epsilon=0):
-        """Checks if reference cell contains given point
-        (with numerical tolerance)."""
-        result = True
-        for c in point:
-            result &= (c + epsilon >= 0)
-            result &= (c - epsilon <= 1)
-        return result
-
 
 class TensorProductCell(Cell):
     """A cell that is the product of FIAT cells."""
@@ -708,8 +637,8 @@ class TensorProductCell(Cell):
         return [slice(delimiter[i], delimiter[i+1])
                 for i in range(n)]
 
-    def get_subcell(self, dimension):
-        return TensorProductCell(*[c.get_subcell(d)
+    def construct_subelement(self, dimension):
+        return TensorProductCell(*[c.construct_subelement(d)
                                    for c, d in zip(self.cells, dimension)])
 
     def get_entity_transform(self, dim, entity_i):
@@ -739,6 +668,46 @@ class TensorProductCell(Cell):
                       (c.contains_point(point[s], epsilon=epsilon)
                        for c, s in zip(self.cells, slices)),
                       True)
+
+
+class FiredrakeQuadrilateral(Cell):
+    """This is the reference quadrilateral with vertices
+    (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
+
+    def __init__(self):
+        product = TensorProductCell(UFCInterval(), UFCInterval())
+        pt = product.get_topology()
+
+        verts = product.get_vertices()
+        topology = {0: pt[(0, 0)],
+                    1: dict(enumerate(pt[(0, 1)].values() + pt[(1, 0)].values())),
+                    2: pt[(1, 1)]}
+        super(FiredrakeQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
+        self.product = product
+
+    def construct_subelement(self, dimension):
+        if dimension == 2:
+            return self
+        elif dimension == 1:
+            return UFCInterval()
+        elif dimension == 0:
+            return Point()
+        else:
+            raise ValueError("Invalid dimension: %d" % (dimension,))
+
+    def get_entity_transform(self, dim, entity_i):
+        d, e = {0: lambda e: ((0, 0), e),
+                1: lambda e: {0: ((0, 1), 0),
+                              1: ((0, 1), 1),
+                              2: ((1, 0), 0),
+                              3: ((1, 0), 1)}[e],
+                2: lambda e: ((1, 1), e)}[dim](entity_i)
+        return self.product.get_entity_transform(d, e)
+
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        return self.product.contains_point(point, epsilon=epsilon)
 
 
 def make_affine_mapping(xs, ys):
@@ -794,7 +763,7 @@ def ufc_simplex(spatial_dim):
     """Factory function that maps spatial dimension to an instance of
     the UFC reference simplex of that dimension."""
     if spatial_dim == 0:
-        return UFCPoint()
+        return Point()
     elif spatial_dim == 1:
         return UFCInterval()
     elif spatial_dim == 2:

@@ -229,14 +229,6 @@ def make_quadrature(ref_el, m):
         return CollapsedQuadratureTriangleRule(ref_el, m)
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule(ref_el, m)
-    elif ref_el.get_shape() == reference_element.QUADRILATERAL:
-        quad_line = make_quadrature(reference_element.UFCInterval(), m)
-        return make_tensor_product_quadrature(quad_line, quad_line)
-    elif ref_el.get_shape() == reference_element.TENSORPRODUCT:
-        # TODO TODO TODO
-        quadA = make_quadrature(ref_el.cells[0], m[0])
-        quadB = make_quadrature(ref_el.cells[1], m[1])
-        return make_tensor_product_quadrature(quadA, quadB)
 
 
 def make_tensor_product_quadrature(*quad_rules):
