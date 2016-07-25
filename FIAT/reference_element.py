@@ -168,6 +168,10 @@ class Cell(object):
 class Simplex(Cell):
     """Abstract class for a reference simplex."""
 
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell."""
+        return self.get_spatial_dimension()
+
     def compute_normal(self, facet_i):
         """Returns the unit normal vector to facet i of codimension 1."""
         # first, let's compute the span of the simplex
@@ -637,6 +641,10 @@ class TensorProductCell(Cell):
         return [slice(delimiter[i], delimiter[i+1])
                 for i in range(n)]
 
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell."""
+        return tuple(c.get_dimension() for c in self.cells)
+
     def construct_subelement(self, dimension):
         return TensorProductCell(*[c.construct_subelement(d)
                                    for c, d in zip(self.cells, dimension)])
@@ -684,6 +692,10 @@ class FiredrakeQuadrilateral(Cell):
                     2: pt[(1, 1)]}
         super(FiredrakeQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
         self.product = product
+
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell."""
+        return self.get_spatial_dimension()
 
     def construct_subelement(self, dimension):
         if dimension == 2:
