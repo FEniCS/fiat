@@ -1,4 +1,4 @@
-# Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+# Copyright (C) 2016 Jan Blechta
 #
 # This file is part of FIAT.
 #
@@ -16,14 +16,9 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import print_function
 
 
-def factorial(n):
-    """Computes n! for n an integer >= 0.
-    Raises an ArithmeticError otherwise."""
-    if not isinstance(n, type(1)) or n < 0:
-        raise ArithmeticError("factorial only defined on natural numbers.")
-    f = 1
-    for i in range(1, n + 1):
-        f = f * i
-    return f
+def pytest_addoption(parser):
+    parser.addoption("--skip-download", dest='download', action='store_false',
+                     help="do not download FIAT reference data")

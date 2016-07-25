@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import argyris, reference_element
+from __future__ import absolute_import
+from FIAT import argyris, reference_element
 
 if __name__ == '__main__':
 
@@ -25,9 +26,9 @@ if __name__ == '__main__':
     T = reference_element.DefaultTriangle()
 
     U = argyris.QuinticArgyris(T)
-    pts = T.make_lattice( lattice_size )
+    pts = T.make_lattice(lattice_size)
 
-    bfvals = U.get_nodal_basis().tabulate_new( pts )
+    bfvals = U.get_nodal_basis().tabulate_new(pts)
     u0 = bfvals[0]
     fout = open("arg0.dat", "w")
     for i in range(len(pts)):

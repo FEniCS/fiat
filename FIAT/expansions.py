@@ -14,16 +14,17 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
-
 """Principal orthogonal expansion functions as defined by Karniadakis
 and Sherwin.  These are parametrized over a reference element so as
 to allow users to get coordinates that they want."""
 
+from __future__ import absolute_import
+
 import numpy
 import math
 import sympy
-from . import reference_element
-from . import jacobi
+from FIAT import reference_element
+from FIAT import jacobi
 
 
 def _tabulate_dpts(tabulator, D, n, order, pts):
@@ -63,7 +64,7 @@ def _tabulate_dpts(tabulator, D, n, order, pts):
             # component individually. This is necessary to maintain shapes
             # if evaluated with NumPy arrays.
             lmbd_tmp = sympy.lambdify(X, F)
-            lambda_x = lambda x: lmbd_tmp(x) + 0*x[0]
+            lambda_x = lambda x: lmbd_tmp(x) + 0 * x[0]
         return lambda_x
 
     def evaluate_lambda(lmbd, x):
@@ -81,8 +82,8 @@ def _tabulate_dpts(tabulator, D, n, order, pts):
     # append derivatives
     symbolic_tab = [[phi] for phi in symbolic_tab]
     #
-    data = (order+1) * [None]
-    for r in range(order+1):
+    data = (order + 1) * [None]
+    for r in range(order + 1):
         shape = [len(symbolic_tab), len(pts)] + r * [D]
         data[r] = numpy.empty(shape)
         for i, phi in enumerate(symbolic_tab):
@@ -114,8 +115,9 @@ def xi_tetrahedron(eta):
     return xi1, xi2, xi3
 
 
-class LineExpansionSet:
+class LineExpansionSet(object):
     """Evaluates the Legendre basis on a line reference element."""
+
     def __init__(self, ref_el):
         if ref_el.get_spatial_dimension() != 1:
             raise Exception("Must have a line")
@@ -128,7 +130,7 @@ class LineExpansionSet:
         self.scale = numpy.sqrt(numpy.linalg.det(self.A))
 
     def get_num_members(self, n):
-        return n+1
+        return n + 1
 
     def tabulate(self, n, pts):
         """Returns a numpy array A[i,j] = phi_i(pts[j])"""
@@ -136,7 +138,7 @@ class LineExpansionSet:
             ref_pts = numpy.array([self.mapping(pt) for pt in pts])
             psitilde_as = jacobi.eval_jacobi_batch(0, 0, n, ref_pts)
 
-            results = numpy.zeros((n+1, len(pts)), type(pts[0][0]))
+            results = numpy.zeros((n + 1, len(pts)), type(pts[0][0]))
             for k in range(n + 1):
                 results[k, :] = psitilde_as[k, :] * math.sqrt(k + 0.5)
 
@@ -153,9 +155,9 @@ class LineExpansionSet:
         psitilde_as_derivs = jacobi.eval_jacobi_deriv_batch(0, 0, n, ref_pts)
 
         # Jacobi polynomials defined on [-1, 1], first derivatives need scaling
-        psitilde_as_derivs *= 2.0/self.ref_el.volume()
+        psitilde_as_derivs *= 2.0 / self.ref_el.volume()
 
-        results = numpy.zeros((n+1, len(pts)), "d")
+        results = numpy.zeros((n + 1, len(pts)), "d")
         for k in range(0, n + 1):
             results[k, :] = psitilde_as_derivs[k, :] * numpy.sqrt(k + 0.5)
 
@@ -171,9 +173,11 @@ class LineExpansionSet:
 
         return dv
 
-class TriangleExpansionSet:
+
+class TriangleExpansionSet(object):
     """Evaluates the orthonormal Dubiner basis on a triangular
     reference element."""
+
     def __init__(self, ref_el):
         if ref_el.get_spatial_dimension() != 2:
             raise Exception("Must have a triangle")
@@ -186,7 +190,7 @@ class TriangleExpansionSet:
 #        self.scale = numpy.sqrt(numpy.linalg.det(self.A))
 
     def get_num_members(self, n):
-        return (n+1)*(n+2)//2
+        return (n + 1) * (n + 2) // 2
 
     def tabulate(self, n, pts):
         if len(pts) == 0:
@@ -199,11 +203,10 @@ class TriangleExpansionSet:
         '''
         m1, m2 = self.A.shape
         ref_pts = [sum(self.A[i][j] * pts[j] for j in range(m2)) + self.b[i]
-                   for i in range(m1)
-                   ]
+                   for i in range(m1)]
 
         def idx(p, q):
-            return (p+q)*(p+q+1)//2 + q
+            return (p + q) * (p + q + 1) // 2 + q
 
         def jrc(a, b, n):
             an = float((2*n+1+a+b)*(2*n+2+a+b)) \
@@ -214,7 +217,7 @@ class TriangleExpansionSet:
                 / float((n+1)*(n+1+a+b)*(2*n+a+b))
             return an, bn, cn
 
-        results = ((n+1)*(n+2)//2) * [None]
+        results = ((n + 1) * (n + 2) // 2) * [None]
 
         results[0] = 1.0 \
             + pts[0] - pts[0] \
@@ -226,14 +229,14 @@ class TriangleExpansionSet:
         x = ref_pts[0]
         y = ref_pts[1]
 
-        f1 = (1.0+2*x+y)/2.0
+        f1 = (1.0 + 2 * x + y) / 2.0
         f2 = (1.0 - y) / 2.0
         f3 = f2**2
 
         results[idx(1, 0)] = f1
 
         for p in range(1, n):
-            a = (2.0*p+1)/(1.0+p)
+            a = (2.0 * p + 1) / (1.0 + p)
             # b = p / (p+1.0)
             results[idx(p+1, 0)] = a * f1 * results[idx(p, 0)] \
                 - p/(1.0+p) * f3 * results[idx(p-1, 0)]
@@ -242,19 +245,19 @@ class TriangleExpansionSet:
             results[idx(p, 1)] = 0.5 * (1+2.0*p+(3.0+2.0*p)*y) \
                 * results[idx(p, 0)]
 
-        for p in range(n-1):
-            for q in range(1, n-p):
-                (a1, a2, a3) = jrc(2*p+1, 0, q)
+        for p in range(n - 1):
+            for q in range(1, n - p):
+                (a1, a2, a3) = jrc(2 * p + 1, 0, q)
                 results[idx(p, q+1)] = \
                     (a1 * y + a2) * results[idx(p, q)] \
                     - a3 * results[idx(p, q-1)]
 
-        for p in range(n+1):
-            for q in range(n-p+1):
-                results[idx(p, q)] *= math.sqrt((p+0.5)*(p+q+1.0))
+        for p in range(n + 1):
+            for q in range(n - p + 1):
+                results[idx(p, q)] *= math.sqrt((p + 0.5) * (p + q + 1.0))
 
         return results
-        #return self.scale * results
+        # return self.scale * results
 
     def tabulate_derivatives(self, n, pts):
         order = 1
@@ -266,15 +269,16 @@ class TriangleExpansionSet:
         n = data[0].shape[1]
         data2 = [[tuple([data[r][i][j] for r in range(order+1)])
                   for j in range(n)]
-                 for i in range(m)]        
+                 for i in range(m)]
         return data2
 
     def tabulate_jet(self, n, pts, order=1):
         return _tabulate_dpts(self._tabulate, 2, n, order, numpy.array(pts))
 
 
-class TetrahedronExpansionSet:
+class TetrahedronExpansionSet(object):
     """Collapsed orthonormal polynomial expanion on a tetrahedron."""
+
     def __init__(self, ref_el):
         if ref_el.get_spatial_dimension() != 3:
             raise Exception("Must be a tetrahedron")
@@ -286,10 +290,8 @@ class TetrahedronExpansionSet:
         self.mapping = lambda x: numpy.dot(self.A, x) + self.b
         self.scale = numpy.sqrt(numpy.linalg.det(self.A))
 
-        return
-
     def get_num_members(self, n):
-        return (n+1)*(n+2)*(n+3)//6
+        return (n + 1) * (n + 2) * (n + 3) // 6
 
     def tabulate(self, n, pts):
         if len(pts) == 0:
@@ -302,11 +304,10 @@ class TetrahedronExpansionSet:
         '''
         m1, m2 = self.A.shape
         ref_pts = [sum(self.A[i][j] * pts[j] for j in range(m2)) + self.b[i]
-                   for i in range(m1)
-                   ]
+                   for i in range(m1)]
 
         def idx(p, q, r):
-            return (p+q+r)*(p+q+r+1)*(p+q+r+2)//6 + (q+r)*(q+r+1)//2 + r
+            return (p + q + r)*(p + q + r + 1)*(p + q + r + 2)//6 + (q + r)*(q + r + 1)//2 + r
 
         def jrc(a, b, n):
             an = float((2*n+1+a+b)*(2*n+2+a+b)) \
@@ -317,7 +318,7 @@ class TetrahedronExpansionSet:
                 / float((n+1)*(n+1+a+b)*(2*n+a+b))
             return an, bn, cn
 
-        results = ((n+1)*(n+2)*(n+3)//6) * [None]
+        results = ((n + 1) * (n + 2) * (n + 3) // 6) * [None]
         results[0] = 1.0 \
             + pts[0] - pts[0] \
             + pts[1] - pts[1] \
@@ -330,11 +331,11 @@ class TetrahedronExpansionSet:
         y = ref_pts[1]
         z = ref_pts[2]
 
-        factor1 = 0.5 * (2.0 + 2.0*x + y + z)
-        factor2 = (0.5*(y+z))**2
+        factor1 = 0.5 * (2.0 + 2.0 * x + y + z)
+        factor2 = (0.5 * (y + z))**2
         factor3 = 0.5 * (1 + 2.0 * y + z)
         factor4 = 0.5 * (1 - z)
-        factor5 = factor4 ** 2
+        factor5 = factor4**2
 
         results[idx(1, 0, 0)] = factor1
         for p in range(1, n):
@@ -348,9 +349,9 @@ class TetrahedronExpansionSet:
             results[idx(p, 1, 0)] = results[idx(p, 0, 0)] \
                 * (p * (1.0 + y) + (2.0 + 3.0 * y + z) / 2)
 
-        for p in range(0, n-1):
-            for q in range(1, n-p):
-                (aq, bq, cq) = jrc(2*p+1, 0, q)
+        for p in range(0, n - 1):
+            for q in range(1, n - p):
+                (aq, bq, cq) = jrc(2 * p + 1, 0, q)
                 qmcoeff = aq * factor3 + bq * factor4
                 qm1coeff = cq * factor5
                 results[idx(p, q+1, 0)] = qmcoeff * results[idx(p, q, 0)] \
@@ -358,22 +359,22 @@ class TetrahedronExpansionSet:
 
         # now handle r=1
         for p in range(n):
-            for q in range(n-p):
+            for q in range(n - p):
                 results[idx(p, q, 1)] = results[idx(p, q, 0)] \
                     * (1.0 + p + q + (2.0 + q + p) * z)
 
         # general r by recurrence
-        for p in range(n-1):
-            for q in range(0, n-p-1):
-                for r in range(1, n-p-q):
-                    ar, br, cr = jrc(2*p+2*q+2, 0, r)
+        for p in range(n - 1):
+            for q in range(0, n - p - 1):
+                for r in range(1, n - p - q):
+                    ar, br, cr = jrc(2 * p + 2 * q + 2, 0, r)
                     results[idx(p, q, r+1)] = \
-                                (ar * z + br) * results[idx(p, q, r) ] \
-                                - cr * results[idx(p, q, r-1) ]
+                        (ar * z + br) * results[idx(p, q, r)] \
+                        - cr * results[idx(p, q, r-1)]
 
-        for p in range(n+1):
-            for q in range(n-p+1):
-                for r in range(n-p-q+1):
+        for p in range(n + 1):
+            for q in range(n - p + 1):
+                for r in range(n - p - q + 1):
                     results[idx(p, q, r)] *= \
                         math.sqrt((p+0.5)*(p+q+1.0)*(p+q+r+1.5))
 
@@ -388,7 +389,7 @@ class TetrahedronExpansionSet:
         # (gradient, Hessian, ...)
         m = data[0].shape[0]
         n = data[0].shape[1]
-        data2 = [[tuple([data[r][i][j] for r in range(order+1)])
+        data2 = [[tuple([data[r][i][j] for r in range(order + 1)])
                   for j in range(n)]
                  for i in range(m)]
         return data2
@@ -397,7 +398,7 @@ class TetrahedronExpansionSet:
         return _tabulate_dpts(self._tabulate, 3, n, order, numpy.array(pts))
 
 
-def get_expansion_set( ref_el ):
+def get_expansion_set(ref_el):
     """Returns an ExpansionSet instance appopriate for the given
     reference element."""
     if ref_el.get_shape() == reference_element.LINE:
@@ -416,34 +417,8 @@ def polynomial_dimension(ref_el, degree):
     if ref_el.get_shape() == reference_element.LINE:
         return max(0, degree + 1)
     elif ref_el.get_shape() == reference_element.TRIANGLE:
-        return max((degree+1)*(degree+2)//2, 0)
+        return max((degree + 1) * (degree + 2) // 2, 0)
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
-        return max(0, (degree+1)*(degree+2)*(degree+3)//6)
+        return max(0, (degree + 1) * (degree + 2) * (degree + 3) // 6)
     else:
         raise Exception("Unknown reference element type.")
-
-
-if __name__ == "__main__":
-    from . import expansions
-
-    E = reference_element.DefaultTriangle()
-
-    k = 3
-
-    pts = E.make_lattice(k)
-
-    Phis = expansions.get_expansion_set(E)
-
-    phis = Phis.tabulate(k, pts)    
-
-    dphis = Phis.tabulate_derivatives(k, pts)
-
-#    dphis_x = numpy.array([[d[1][0] for d in dphi] for dphi in dphis])
-#    dphis_y = numpy.array([[d[1][1] for d in dphi] for dphi in dphis])
-#    dphis_z = numpy.array([[d[1][2] for d in dphi] for dphi in dphis])
-
-#    print dphis_x
-
-#    for dmat in make_dmats(E, k):
-#        print dmat
-#        print

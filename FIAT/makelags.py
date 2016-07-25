@@ -15,35 +15,38 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from . import lagrange
-from . import reference_element
+from __future__ import absolute_import
+from __future__ import print_function
+
+from FIAT import lagrange
+from FIAT import reference_element
 import string
 import numpy
 
-def array_to_C_string( u ):
-    x = [ str( a ) for a in u ]
-    return "{ %s }" % ( string.join( x, " , " ) )
 
-def matrix_to_array( mat, mat_name ):
+def array_to_C_string(u):
+    x = [str(a) for a in u]
+    return "{ %s }" % (string.join(x, " , "))
+
+
+def matrix_to_array(mat, mat_name):
     (num_rows, num_cols) = mat.shape
 
     # get C array of data
-    u = numpy.ravel( numpy.transpose( mat ) )
+    u = numpy.ravel(numpy.transpose(mat))
 
     array_name = mat_name
-    return \
-"""static double %s[] = %s;""" % ( array_name, \
-        array_to_C_string( u ) )
+    return """static double %s[] = %s;""" % (array_name, array_to_C_string(u))
+
 
 if __name__ == '__main__':
 
     lagclass = \
-"""class Lagrange%s%d: public FiniteElement {
+    """class Lagrange%s%d: public FiniteElement {
 public:
   Lagrange%s%d():FiniteElement(%d,%d,%d,%d,%d,%s) {}
   virtual ~Lagrange%s%d(){}
 };"""
-
 
     T = reference_element.DefaultTriangle()
     shape = "Triangle"
@@ -51,8 +54,8 @@ public:
         L = lagrange.Lagrange(T, i)
         nb = L.get_nodal_basis()
         vdm = nb.get_coeffs()
-        array_name="Lagrange%s%dCoeffs"%(shape, i)
-        print(matrix_to_array( vdm, array_name ))
+        array_name = "Lagrange%s%dCoeffs" % (shape, i)
+        print(matrix_to_array(vdm, array_name))
         print(lagclass % (shape, i, shape, i,
                           nb.get_degree(),
                           nb.get_embedded_degree(),

@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 import re
 import sys
 
@@ -15,12 +18,18 @@ if sys.version_info < (2, 7):
 version = re.findall('__version__ = "(.*)"',
                      open('FIAT/__init__.py', 'r').read())[0]
 
+url = "https://bitbucket.org/fenics-project/fiat/"
+tarball = None
+if 'dev' not in version:
+    tarball = url + "downloads/fiat-%s.tar.gz" % version
+
 setup(name="FIAT",
-      version=version,
       description="FInite element Automatic Tabulator",
-      author="Robert C. Kirby",
-      author_email="robert.c.kirby@gmail.com",
-      url="http://www.math.ttu.edu/~kirby",
+      version=version,
+      author="Robert C. Kirby et al.",
+      author_email="fenics-dev@googlegroups.com",
+      url=url,
+      download_url=tarball,
       license="LGPL v3 or later",
       packages=["FIAT"],
-      install_requires=["sympy"])
+      install_requires=["numpy", "sympy", "six"])

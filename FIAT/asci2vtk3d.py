@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # Copyright (C) 2008-2012 Robert C. Kirby (Texas Tech University)
 #
 # This file is part of FIAT.
@@ -15,9 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-#!/usr/bin/env python
-
 # 3d mode: x y z f, f = f(x,y,z)
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 
 if __name__ == '__main__':
@@ -33,21 +35,21 @@ if __name__ == '__main__':
         sys.exit(0)
 
 
-    fin = open( filename, "r" )
+    fin = open(filename, "r")
 
-    coords = [ ]
+    coords = []
 
     for line in fin:
-        coords.append( line.split() )
+        coords.append(line.split())
 
     fin.close()
 
-    n = len( coords )
+    n = len(coords)
 
     print("%s points" % (str(n),))
 
 
-    fout = open( output, "w" )
+    fout = open(output, "w")
     fout.write("""# vtk DataFile Version 2.0
 points
 ASCII
@@ -58,18 +60,18 @@ POINTS %s float\n""" % (str(n),))
         fout.write("%s %s %s\n" % (c[0], c[1], c[2]))
 
     fout.write("CELLS %s %s\n" % (n, 2*n))
-    for i in range( n ):
+    for i in range(n):
         fout.write("1 %s\n" % (i,))
 
     fout.write("CELL_TYPES %s\n" % (n,))
-    for i in range( n ):
+    for i in range(n):
         fout.write("1\n")
 
-        fout.write("POINT_DATA %s\n" % (n,))
-        fout.write("""SCALARS Z float 1
+    fout.write("POINT_DATA %s\n" % (n,))
+    fout.write("""SCALARS Z float 1
 LOOKUP_TABLE default\n""")
 
-    for i in range( n ):
-        fout.write("%s\n", ncoords[i][3])
+    for i in range(n):
+        fout.write("%s\n", coords[i][3])
 
     fout.close()

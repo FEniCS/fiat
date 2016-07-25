@@ -15,22 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import nose
-import numpy
+from __future__ import absolute_import
+
+import random
+import numpy as np
+import pytest
+
+from FIAT.reference_element import LINE, ReferenceElement
+from FIAT.lagrange import Lagrange
 
 
 def test_basis_derivatives_scaling():
-    import random
-    from FIAT.reference_element import LINE, ReferenceElement
-    from FIAT.lagrange import Lagrange
-
     class Interval(ReferenceElement):
+
         def __init__(self, a, b):
-            verts = ( (a,), (b,) )
-            edges = { 0 : ( 0, 1 ) }
-            topology = { 0 : { 0 : (0,) , 1: (1,) } , \
-                         1 : edges }
-            ReferenceElement.__init__( self, LINE, verts, topology )
+            verts = ((a,), (b,))
+            edges = {0: (0, 1)}
+            topology = {0: {0: (0,), 1: (1,)},
+                        1: edges}
+            super(Interval, self).__init__(LINE, verts, topology)
 
     random.seed(42)
     for i in range(26):
@@ -45,22 +48,23 @@ def test_basis_derivatives_scaling():
         tab = element.get_nodal_basis().tabulate(points, 2)
 
         # first basis function
-        nose.tools.assert_almost_equal(tab[(0,)][0][0], 1.0)
-        nose.tools.assert_almost_equal(tab[(0,)][0][1], 0.5)
-        nose.tools.assert_almost_equal(tab[(0,)][0][2], 0.0)
+        assert np.isclose(tab[(0,)][0][0], 1.0)
+        assert np.isclose(tab[(0,)][0][1], 0.5)
+        assert np.isclose(tab[(0,)][0][2], 0.0)
         # second basis function
-        nose.tools.assert_almost_equal(tab[(0,)][1][0], 0.0)
-        nose.tools.assert_almost_equal(tab[(0,)][1][1], 0.5)
-        nose.tools.assert_almost_equal(tab[(0,)][1][2], 1.0)
+        assert np.isclose(tab[(0,)][1][0], 0.0)
+        assert np.isclose(tab[(0,)][1][1], 0.5)
+        assert np.isclose(tab[(0,)][1][2], 1.0)
 
         # first and second derivatives
         D = 1.0 / (b - a)
         for p in range(len(points)):
-            nose.tools.assert_almost_equal(tab[(1,)][0][p], -D)
-            nose.tools.assert_almost_equal(tab[(1,)][1][p], +D)
-            nose.tools.assert_almost_equal(tab[(2,)][0][p], 0.0)
-            nose.tools.assert_almost_equal(tab[(2,)][1][p], 0.0)
+            assert np.isclose(tab[(1,)][0][p], -D)
+            assert np.isclose(tab[(1,)][1][p], +D)
+            assert np.isclose(tab[(2,)][0][p], 0.0)
+            assert np.isclose(tab[(2,)][1][p], 0.0)
 
 
-if __name__ == "__main__":
-    nose.main()
+if __name__ == '__main__':
+    import os
+    pytest.main(os.path.abspath(__file__))

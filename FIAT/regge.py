@@ -15,51 +15,49 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import numpy
 
-from .finite_element import FiniteElement
-from .dual_set import DualSet
-from .polynomial_set import ONSymTensorPolynomialSet
-from .functional import PointwiseInnerProductEvaluation as InnerProduct
-from .functional import index_iterator
-from .reference_element import UFCTriangle, UFCTetrahedron
+from FIAT.finite_element import FiniteElement
+from FIAT.dual_set import DualSet
+from FIAT.polynomial_set import ONSymTensorPolynomialSet
+from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct
+from FIAT.functional import index_iterator
+
 
 class ReggeDual(DualSet):
-    """TODO: Document class
 
-    """
-
-    def __init__ (self, cell, degree):
+    def __init__(self, cell, degree):
         (dofs, ids) = self.generate_degrees_of_freedom(cell, degree)
-        DualSet.__init__(self, dofs, cell, ids)
+        super(ReggeDual, self).__init__(dofs, cell, ids)
 
     def generate_degrees_of_freedom(self, cell, degree):
-        """Suppose f is a k-face of the reference n-cell. Let t1,...,tk be a
-        basis for the tangent space of f as n-vectors. Given a
-        symmetric 2-tensor field u on Rn. One set of dofs for Regge(r)
-        on f is the moment of each of the (k+1)k/2 scalar functions
-        [u(t1,t1),u(t1,t2),...,u(t1,tk), u(t2,t2), u(t2,t3),...,...,
-        u(tk,tk)] aginst scalar polynomials of degrees (r-k+1). Here
-        this is implemented as pointwise evaluations of those scalar
-        functions.
+        """
+        Suppose f is a k-face of the reference n-cell. Let t1,...,tk be a
+        basis for the tangent space of f as n-vectors. Given a symmetric
+        2-tensor field u on Rn. One set of dofs for Regge(r) on f is
+        the moment of each of the (k+1)k/2 scalar functions
+          [u(t1,t1),u(t1,t2),...,u(t1,tk),
+           u(t2,t2), u(t2,t3),...,..., u(tk,tk)]
+        aginst scalar polynomials of degrees (r-k+1). Here this is
+        implemented as pointwise evaluations of those scalar functions.
 
         Below is an implementation for dimension 2--3. In dimension 1,
-        Regge(r)=DG(r). It is awkward in the current FEniCS interface
-        to implement the element uniformly for all dimensions due to
-        its edge, facet=trig, cell style.
-
+        Regge(r)=DG(r). It is awkward in the current FEniCS interface to
+        implement the element uniformly for all dimensions due to its edge,
+        facet=trig, cell style.
         """
 
         dofs = []
         ids = {}
 
-        top = cell.get_topology()
         d = cell.get_spatial_dimension()
         if (d < 2) or (d > 3):
-            raise("Regge elements only implemented for dimension 2--3.")
+            raise ValueError("Regge elements only implemented for dimension 2--3.")
 
         # No vertex dof
-        ids[0] = dict(list(zip(list(range(d+1)), ([] for i in range(d+1)))))
+        ids[0] = dict(list(zip(list(range(d + 1)), ([] for i in range(d + 1)))))
         # edge dofs
         (_dofs, _ids) = self._generate_edge_dofs(cell, degree, 0)
         dofs.extend(_dofs)
@@ -95,7 +93,6 @@ class ReggeDual(DualSet):
         """Generate dofs on facets in 3D."""
         # Return empty if there is no such dofs
         dofs = []
-        d = cell.get_spatial_dimension()
         ids = dict(list(zip(list(range(4)), ([] for i in range(4)))))
         if degree == 0:
             return (dofs, ids)
@@ -133,11 +130,11 @@ class ReggeDual(DualSet):
         # Fill dofs
         for p in pts:
             dofs += [InnerProduct(cell, e[i], e[j], p)
-                     for [i,j] in index_iterator((d, d)) if i <= j]
+                     for [i, j] in index_iterator((d, d)) if i <= j]
         # Fill ids
-        ids = {0 :
-               list(range(offset, offset + len(pts) * d * (d + 1) // 2))}
+        ids = {0: list(range(offset, offset + len(pts) * d * (d + 1) // 2))}
         return (dofs, ids)
+
 
 class Regge(FiniteElement):
     """The Regge elements on triangles and tetrahedra: the polynomial
@@ -149,9 +146,7 @@ class Regge(FiniteElement):
 
     def __init__(self, cell, degree):
         # Check degree
-        assert(degree >= 0), "Regge start at degree 0!"
-        # Get dimension
-        d = cell.get_spatial_dimension()
+        assert degree >= 0, "Regge start at degree 0!"
         # Construct polynomial basis for d-vector fields
         Ps = ONSymTensorPolynomialSet(cell, degree)
         # Construct dual space
@@ -159,62 +154,4 @@ class Regge(FiniteElement):
         # Set mapping
         mapping = "pullback as metric"
         # Call init of super-class
-        FiniteElement.__init__(self, Ps, Ls, degree, mapping=mapping)
-
-if __name__=="__main__":
-    print("Test 0: Regge degree 0 in 2D.")
-    T = UFCTriangle()
-    R = Regge(T, 0)
-    print("-----")
-    pts = numpy.array([[0.0, 0.0]])
-    ts = numpy.array([[0.0, 1.0],
-                      [1.0, 0.0],
-                      [-1.0, 1.0]])
-    vals = R.tabulate(0, pts)[(0, 0)]
-    for i in range(R.space_dimension()):
-        print("Basis #{}:".format(i))
-        for j in range(len(pts)):
-            tut = [t.dot(vals[i, :, :, j].dot(t)) for t in ts]
-            print("u(t,t) for edge tagents t at {} are: {}".format(
-                pts[j], tut))
-    print("-----")
-    print("Expected result: a single 1 for each basis and zeros for others.")
-    print("")
-
-    print("Test 1: Regge degree 0 in 3D.")
-    T = UFCTetrahedron()
-    R = Regge(T, 0)
-    print("-----")
-    pts = numpy.array([[0.0, 0.0, 0.0]])
-    ts = numpy.array([[1.0, 0.0, 0.0],
-                      [0.0, 1.0, 0.0],
-                      [0.0, 0.0, 1.0],
-                      [1.0, -1.0, 0.0],
-                      [1.0, 0.0, -1.0],
-                      [0.0, 1.0, -1.0]])
-    vals = R.tabulate(0, pts)[(0, 0, 0)]
-    for i in range(R.space_dimension()):
-        print("Basis #{}:".format(i))
-        for j in range(len(pts)):
-            tut = [t.dot(vals[i, :, :, j].dot(t)) for t in ts]
-            print("u(t,t) for edge tagents t at {} are: {}".format(
-                pts[j], tut))
-    print("-----")
-    print("Expected result: a single 1 for each basis and zeros for others.")
-    print("")
-
-    print("Test 2: association of dofs to mesh entities.")
-    print("------")
-    for k in range(0, 3):
-        print("Degree {} in 2D:".format(k))
-        T = UFCTriangle()
-        R = Regge(T, k)
-        print(R.entity_dofs())
-        print("")
-
-    for k in range(0, 3):
-        print("Degree {} in 3D:".format(k))
-        T = UFCTetrahedron()
-        R = Regge(T, k)
-        print(R.entity_dofs())
-        print("")
+        super(Regge, self).__init__(Ps, Ls, degree, mapping=mapping)

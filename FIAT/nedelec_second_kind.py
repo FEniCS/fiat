@@ -1,4 +1,5 @@
 # Copyright (C) 2010-2012 Marie E. Rognes
+# Modified by Andrew T. T. McRae (Imperial College London)
 #
 # This file is part of FIAT.
 #
@@ -15,16 +16,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import numpy
 
-from .finite_element import FiniteElement
-from .dual_set import DualSet
-from .polynomial_set import ONPolynomialSet
-from .functional import PointEdgeTangentEvaluation as Tangent
-from .functional import FrobeniusIntegralMoment as IntegralMoment
-from .raviart_thomas import RaviartThomas
-from .quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
-from .reference_element import UFCTriangle, UFCTetrahedron
+from FIAT.finite_element import FiniteElement
+from FIAT.dual_set import DualSet
+from FIAT.polynomial_set import ONPolynomialSet
+from FIAT.functional import PointEdgeTangentEvaluation as Tangent
+from FIAT.functional import FrobeniusIntegralMoment as IntegralMoment
+from FIAT.raviart_thomas import RaviartThomas
+from FIAT.quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
+from FIAT.reference_element import UFCTetrahedron
+
 
 class NedelecSecondKindDual(DualSet):
     """
@@ -55,13 +59,13 @@ class NedelecSecondKindDual(DualSet):
     these elements coincide with the CG_k elements.)
     """
 
-    def __init__ (self, cell, degree):
+    def __init__(self, cell, degree):
 
         # Define degrees of freedom
         (dofs, ids) = self.generate_degrees_of_freedom(cell, degree)
 
         # Call init of super-class
-        DualSet.__init__(self, dofs, cell, ids)
+        super(NedelecSecondKindDual, self).__init__(dofs, cell, ids)
 
     def generate_degrees_of_freedom(self, cell, degree):
         "Generate dofs and geometry-to-dof maps (ids)."
@@ -72,10 +76,9 @@ class NedelecSecondKindDual(DualSet):
         # Extract spatial dimension and topology
         d = cell.get_spatial_dimension()
         assert (d in (2, 3)), "Second kind Nedelecs only implemented in 2/3D."
-        topology = cell.get_topology()
 
         # Zero vertex-based degrees of freedom (d+1 of these)
-        ids[0] = dict(list(zip(list(range(d+1)), ([] for i in range(d+1)))))
+        ids[0] = dict(list(zip(list(range(d + 1)), ([] for i in range(d + 1)))))
 
         # (d+1) degrees of freedom per entity of codimension 1 (edges)
         (edge_dofs, edge_ids) = self._generate_edge_dofs(cell, degree, 0)
@@ -113,7 +116,7 @@ class NedelecSecondKindDual(DualSet):
             dofs += [Tangent(cell, edge, point) for point in points]
 
             # Associate these dofs with this edge
-            i = len(points)*edge
+            i = len(points) * edge
             ids[edge] = list(range(offset + i, offset + i + len(points)))
 
         return (dofs, ids)
@@ -131,16 +134,15 @@ class NedelecSecondKindDual(DualSet):
             return (dofs, ids)
 
         msg = "2nd kind Nedelec face dofs only available with UFC convention"
-        assert isinstance(cell, UFCTetrahedron),  msg
+        assert isinstance(cell, UFCTetrahedron), msg
 
         # Iterate over the faces of the tet
         num_faces = len(cell.get_topology()[2])
         for face in range(num_faces):
 
             # Construct quadrature scheme for this face
-            m = 2*(degree + 1)
+            m = 2 * (degree + 1)
             Q_face = UFCTetrahedronFaceQuadratureRule(face, m)
-            quad_points = Q_face.get_points()
 
             # Construct Raviart-Thomas of (degree - 1) on the
             # reference face
@@ -160,11 +162,11 @@ class NedelecSecondKindDual(DualSet):
 
             # Map Phis -> phis (reference values to physical values)
             J = Q_face.jacobian()
-            scale = 1.0/numpy.sqrt(numpy.linalg.det(J.transpose()*J))
+            scale = 1.0 / numpy.sqrt(numpy.linalg.det(J.transpose() * J))
             phis = numpy.ndarray((d, num_quad_points))
             for i in range(num_rts):
                 for q in range(num_quad_points):
-                    phi_i_q = scale*J*numpy.matrix(Phis[i,:, q]).transpose()
+                    phi_i_q = scale * J * numpy.matrix(Phis[i, :, q]).transpose()
                     for j in range(d):
                         phis[j, q] = phi_i_q[j]
 
@@ -175,7 +177,7 @@ class NedelecSecondKindDual(DualSet):
                 dofs += [IntegralMoment(cell, Q_face, phis)]
 
             # Assign identifiers (num RTs per face + previous edge dofs)
-            ids[face] = list(range(offset + num_rts*face, offset + num_rts*(face+1)))
+            ids[face] = list(range(offset + num_rts*face, offset + num_rts*(face + 1)))
 
         return (dofs, ids)
 
@@ -189,7 +191,7 @@ class NedelecSecondKindDual(DualSet):
             return ([], {0: []})
 
         # Create quadrature points
-        Q = make_quadrature(cell, 2*(degree+1))
+        Q = make_quadrature(cell, 2 * (degree + 1))
         qs = Q.get_points()
 
         # Create Raviart-Thomas nodal basis
@@ -197,15 +199,16 @@ class NedelecSecondKindDual(DualSet):
         phi = RT.get_nodal_basis()
 
         # Evaluate Raviart-Thomas basis at quadrature points
-        phi_at_qs = phi.tabulate(qs)[(0,)*d]
+        phi_at_qs = phi.tabulate(qs)[(0,) * d]
 
         # Use (Frobenius) integral moments against RTs as dofs
-        dofs = [IntegralMoment(cell, Q, phi_at_qs[i,:])
+        dofs = [IntegralMoment(cell, Q, phi_at_qs[i, :])
                 for i in range(len(phi_at_qs))]
 
         # Associate these dofs with the interior
         ids = {0: list(range(offset, offset + len(dofs)))}
         return (dofs, ids)
+
 
 class NedelecSecondKind(FiniteElement):
     """
@@ -218,7 +221,7 @@ class NedelecSecondKind(FiniteElement):
     def __init__(self, cell, degree):
 
         # Check degree
-        assert(degree >= 1), "Second kind Nedelecs start at 1!"
+        assert degree >= 1, "Second kind Nedelecs start at 1!"
 
         # Get dimension
         d = cell.get_spatial_dimension()
@@ -229,23 +232,11 @@ class NedelecSecondKind(FiniteElement):
         # Construct dual space
         Ls = NedelecSecondKindDual(cell, degree)
 
+        # Set form degree
+        formdegree = 1  # 1-form
+
         # Set mapping
         mapping = "covariant piola"
 
         # Call init of super-class
-        FiniteElement.__init__(self, Ps, Ls, degree, mapping=mapping)
-
-
-if __name__=="__main__":
-
-    for k in range(1, 4):
-        T = UFCTriangle()
-        N2curl = NedelecSecondKind(T, k)
-
-    for k in range(1, 4):
-        T = UFCTetrahedron()
-        N2curl = NedelecSecondKind(T, k)
-        Nfs = N2curl.get_nodal_basis()
-        pts = T.make_lattice( 1 )
-        vals = Nfs.tabulate( pts, 1 )
-
+        super(NedelecSecondKind, self).__init__(Ps, Ls, degree, formdegree, mapping=mapping)

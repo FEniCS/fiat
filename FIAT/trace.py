@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
 from __future__ import print_function
 
 import numpy
@@ -26,6 +27,7 @@ from FIAT.polynomial_set import mis
 
 # Tolerance for geometry identifications
 epsilon = 1.e-8
+
 
 def extract_unique_facet(coordinates, tolerance=epsilon):
     """Determine whether a set of points, each point described by its
@@ -49,6 +51,7 @@ def extract_unique_facet(coordinates, tolerance=epsilon):
     # If we have a unique facet, return it and success
     return (unique_facet.pop(), True)
 
+
 def barycentric_coordinates(points, vertices):
     """Compute barycentric coordinates for a set of points ('points'),
     relative to a simplex defined by a set of vertices ('vertices').
@@ -57,7 +60,6 @@ def barycentric_coordinates(points, vertices):
     # Form map matrix
     last = numpy.asarray(vertices[-1])
     T = numpy.matrix([numpy.array(v) - last for v in vertices[:-1]]).T
-    detT = numpy.linalg.det(T)
     invT = numpy.linalg.inv(T)
 
     # Compute barycentric coordinates for all points
@@ -70,6 +72,7 @@ def barycentric_coordinates(points, vertices):
         coords.append(lam)
     return coords
 
+
 def map_from_reference_facet(point, vertices):
     """
     Input:
@@ -77,14 +80,15 @@ def map_from_reference_facet(point, vertices):
       point: the reference point to be mapped to the facet
     """
     # Compute barycentric coordinates of point relative to reference facet:
-    reference_simplex = ufc_simplex(len(vertices)-1)
+    reference_simplex = ufc_simplex(len(vertices) - 1)
     reference_vertices = reference_simplex.get_vertices()
-    coords = barycentric_coordinates([point,], reference_vertices)[0]
+    coords = barycentric_coordinates([point, ], reference_vertices)[0]
 
     # Evaluate physical coordinate of point using barycentric coordinates
-    point = sum(vertices[j]*coords[j] for j in range(len(coords)))
+    point = sum(vertices[j] * coords[j] for j in range(len(coords)))
 
     return tuple(point)
+
 
 def map_to_reference_facet(points, vertices, facet):
     """Given a set of points in n D and a set of vertices describing a
@@ -97,7 +101,7 @@ def map_to_reference_facet(points, vertices, facet):
     all_coords = barycentric_coordinates(points, vertices)
 
     # Extract vertices of reference facet simplex
-    reference_facet_simplex = ufc_simplex(len(vertices)-2)
+    reference_facet_simplex = ufc_simplex(len(vertices) - 2)
     ref_vertices = reference_facet_simplex.get_vertices()
 
     reference_points = []
@@ -108,14 +112,16 @@ def map_to_reference_facet(points, vertices, facet):
 
         # Evaluate reference coordinate of point using revised
         # barycentric coordinates
-        reference_pt = sum(numpy.asarray(ref_vertices[j])*new_coords[j]
+        reference_pt = sum(numpy.asarray(ref_vertices[j]) * new_coords[j]
                            for j in range(len(new_coords)))
 
         reference_points += [reference_pt]
     return reference_points
 
+
 class DiscontinuousLagrangeTrace(object):
     ""
+
     def __init__(self, cell, k):
 
         tdim = cell.get_spatial_dimension()
@@ -145,7 +151,7 @@ class DiscontinuousLagrangeTrace(object):
         # For each facet, we have dim(DG_k on that facet) number of dofs
         n = self.DG.space_dimension()
         for i in range(self.num_facets):
-            self.entity_ids[tdim-1][i] = range(i*n, (i+1)*n)
+            self.entity_ids[tdim - 1][i] = range(i * n, (i + 1) * n)
 
     def degree(self):
         return self.k
@@ -156,7 +162,7 @@ class DiscontinuousLagrangeTrace(object):
     def space_dimension(self):
         """The space dimension of the trace space corresponds to the
         DG space dimesion on each facet times the number of facets."""
-        return self.DG.space_dimension()*self.num_facets
+        return self.DG.space_dimension() * self.num_facets
 
     def entity_dofs(self):
         return self.entity_ids
@@ -183,7 +189,7 @@ class DiscontinuousLagrangeTrace(object):
             for dof in DG_k_dual_basis:
                 # PointEvaluation only carries one point
                 point = list(dof.get_point_dict().keys())[0]
-                pt = map_from_reference_facet([point,], vertices)
+                pt = map_from_reference_facet([point, ], vertices)
                 points.append(pt)
 
         # One degree of freedom per point:
@@ -226,7 +232,7 @@ class DiscontinuousLagrangeTrace(object):
             non_zeros = list(self.DG.tabulate(order, new_points).values())[0]
             m = non_zeros.shape[0]
             dg_dim = self.DG.space_dimension()
-            values[dg_dim*unique_facet:dg_dim*unique_facet+m, :] = non_zeros
+            values[dg_dim*unique_facet:dg_dim*unique_facet + m, :] = non_zeros
 
         # Return expected dictionary
         tdim = self.cell.get_spatial_dimension()
@@ -253,17 +259,3 @@ class DiscontinuousLagrangeTrace(object):
 
     def __str__(self):
         return "DiscontinuousLagrangeTrace(%s, %s)" % (self.cell, self.k)
-
-if __name__ == "__main__":
-
-    print("\n2D ----------------")
-    T = ufc_simplex(2)
-    element = DiscontinuousLagrangeTrace(T, 1)
-    pts = [(0.0, 1.0), (1.0, 0.0)]
-    print("values = ", element.tabulate(0, pts))
-
-    print("\n3D ----------------")
-    T = ufc_simplex(3)
-    element = DiscontinuousLagrangeTrace(T, 1)
-    pts = [(0.1, 0.0, 0.0), (0.0, 1.0, 0.0)]
-    print("values = ", element.tabulate(0, pts))

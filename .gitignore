@@ -1,5 +1,7 @@
 *.pyc
 
-build/
-dist/
-FIAT.egg-info/
+/build/
+/dist/
+/FIAT.egg-info/
+
+/.cache/

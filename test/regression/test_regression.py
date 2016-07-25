@@ -18,8 +18,14 @@
 # First added:  2010-01-31
 # Last changed: 2014-06-30
 
+from __future__ import absolute_import
 from __future__ import print_function
-import nose, json, numpy, warnings, os, sys
+
+import pytest
+import json
+import numpy
+import warnings
+import os
 
 from FIAT import supported_elements, make_quadrature, ufc_simplex, \
     newdubiner, expansions, reference_element, polynomial_set
@@ -27,11 +33,14 @@ from FIAT import supported_elements, make_quadrature, ufc_simplex, \
 # Parameters
 tolerance = 1e-8
 
-# Directory with reference data
-prefix = 'fiat-reference-data'
+# Directories
+path = os.path.dirname(os.path.abspath(__file__))
+ref_path = os.path.join(path, 'fiat-reference-data')
+download_script = os.path.join(path, 'scripts', 'download')
 
 
 class NumpyEncoder(json.JSONEncoder):
+
     def default(self, obj):
         # If numpy array, convert it to a list and store it in a dict.
         if isinstance(obj, numpy.ndarray):
@@ -50,57 +59,62 @@ def json_numpy_obj_hook(dct):
     return dct
 
 
-def test_polynomials():
-    def create_data():
-        ps = polynomial_set.ONPolynomialSet(
-            ref_el=reference_element.DefaultTetrahedron(),
-            degree=3
-            )
-        return ps.dmats
-
-    # Try reading reference values
-    filename = os.path.join(prefix, "reference-polynomials.json")
+def load_reference(filename, create_data):
+    """Load reference from file. On failure create new file using supplied
+    function.
+    """
     try:
+        # Try loading the reference
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
     except IOError:
         warnings.warn('Reference file "%s" could not be loaded! '
                       'Creating a new reference file!' % filename,
                       RuntimeWarning)
+
+        # Generate data and store for the future
         reference = create_data()
-        # Store the data for the future
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
+
+        # Report failure
+        pytest.fail('Comparison to "%s" failed!' % filename)
+
+    return reference
+
+
+def test_polynomials():
+    def create_data():
+        ps = polynomial_set.ONPolynomialSet(
+            ref_el=reference_element.DefaultTetrahedron(),
+            degree=3
+        )
+        return ps.dmats
+
+    # Try reading reference values
+    filename = os.path.join(ref_path, "reference-polynomials.json")
+    reference = load_reference(filename, create_data)
 
     dmats = create_data()
 
     for dmat, reference_dmat in zip(dmats, reference):
         assert (abs(dmat - reference_dmat) < tolerance).all()
-    return
+
 
 def test_polynomials_1D():
     def create_data():
         ps = polynomial_set.ONPolynomialSet(
             ref_el=reference_element.DefaultLine(),
             degree=3
-            )
+        )
         return ps.dmats
 
     # Try reading reference values
-    filename = os.path.join(prefix, "reference-polynomials_1D.json")
-    try:
-        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                      RuntimeWarning)
-        reference = create_data()
-        # Store the data for the future
-        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
+    filename = os.path.join(ref_path, "reference-polynomials_1D.json")
+    reference = load_reference(filename, create_data)
 
     dmats = create_data()
 
     for dmat, reference_dmat in zip(dmats, reference):
         assert (abs(dmat - reference_dmat) < tolerance).all()
-    return
 
 
 def test_expansions():
@@ -114,16 +128,8 @@ def test_expansions():
         return phis, dphis
 
     # Try reading reference values
-    filename = os.path.join(prefix, "reference-expansions.json")
-    try:
-        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                       RuntimeWarning)
-        reference = create_data()
-        # Convert reference to list of int
-        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
+    filename = os.path.join(ref_path, "reference-expansions.json")
+    reference = load_reference(filename, create_data)
 
     table_phi, table_dphi = create_data()
     reference_table_phi, reference_table_dphi = reference
@@ -141,7 +147,6 @@ def test_expansions():
             assert abs(value - reference_value) < tolerance
             diff = numpy.array(gradient) - numpy.array(reference_gradient)
             assert (abs(diff) < tolerance).all()
-    return
 
 
 def test_expansions_jet():
@@ -154,25 +159,14 @@ def test_expansions_jet():
         F = expansions.TetrahedronExpansionSet(E)
         return F.tabulate_jet(n, pts, order)
 
-    filename = os.path.join(prefix, "reference-expansions-jet.json")
-    try:
-        reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                       RuntimeWarning)
-        reference_jet = create_data()
-        # Store the data for the future
-        json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
+    filename = os.path.join(ref_path, "reference-expansions-jet.json")
+    reference = load_reference(filename, create_data)
 
     # Test jet data
     data = create_data()
-    reference_data = reference_jet
-    for datum, reference_datum in zip(data, reference_data):
+    for datum, reference_datum in zip(data, reference):
         diff = numpy.array(datum) - numpy.array(reference_datum)
         assert (abs(diff) < tolerance).all()
-
-    return
 
 
 def test_newdubiner():
@@ -183,26 +177,17 @@ def test_newdubiner():
         return newdubiner.tabulate_tetrahedron_derivatives(D, pts, float)
 
     # Try reading reference values
-    filename = os.path.join(prefix, "reference-newdubiner.json")
-    try:
-        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                       RuntimeWarning)
-        reference = create_data()
-        # Convert reference to list of int
-        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
+    filename = os.path.join(ref_path, "reference-newdubiner.json")
 
     # Actually perform the test
     table = create_data()
+    reference = load_reference(filename, create_data)
 
     for data, reference_data in zip(table, reference):
         for point, reference_point in zip(data, reference_data):
             for k in range(2):
                 diff = numpy.array(point[k]) - numpy.array(reference_point[k])
                 assert (abs(diff) < tolerance).all()
-    return
 
 
 def test_newdubiner_jet():
@@ -214,25 +199,15 @@ def test_newdubiner_jet():
         pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
         return newdubiner.tabulate_jet(D, n, pts, order, float)
 
-    filename = os.path.join(prefix, "reference-newdubiner-jet.json")
-    try:
-        reference_jet = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-    except IOError:
-        warnings.warn('Reference file "%s" could not be loaded! '
-                      'Creating a new reference file!' % filename,
-                       RuntimeWarning)
-        reference_jet = create_data()
-        # Store the data for the future
-        json.dump(reference_jet, open(filename, "w"), cls=NumpyEncoder)
+    filename = os.path.join(ref_path, "reference-newdubiner-jet.json")
+    reference = load_reference(filename, create_data)
 
     table_jet = create_data()
-    for datum, reference_datum in zip(table_jet, reference_jet):
+    for datum, reference_datum in zip(table_jet, reference):
         for entry, reference_entry in zip(datum, reference_datum):
             for k in range(3):
                 diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
                 assert (abs(diff) < tolerance).all()
-
-    return
 
 
 def test_quadrature():
@@ -258,6 +233,9 @@ def test_quadrature():
         ("Discontinuous Lagrange", 3, 0),
         ("Discontinuous Lagrange", 3, 1),
         ("Discontinuous Lagrange", 3, 2),
+        ("Discontinuous Taylor", 1, 0),
+        ("Discontinuous Taylor", 1, 1),
+        ("Discontinuous Taylor", 1, 2),
         ("Brezzi-Douglas-Marini", 2, 1),
         ("Brezzi-Douglas-Marini", 2, 2),
         ("Brezzi-Douglas-Marini", 2, 3),
@@ -297,8 +275,14 @@ def test_quadrature():
         ("Regge", 2, 2),
         ("Regge", 3, 0),
         ("Regge", 3, 1),
-        ("Regge", 3, 2)
-        )
+        ("Regge", 3, 2),
+        ("Bubble", 2, 3),
+        ("Bubble", 2, 4),
+        ("Bubble", 2, 5),
+        ("Bubble", 3, 4),
+        ("Bubble", 3, 5),
+        ("Bubble", 3, 6)
+    )
 
     def create_data(family, dim, degree):
         '''Create the reference data.
@@ -325,9 +309,8 @@ def test_quadrature():
             assert table[eval(dtuple)].shape == reference_table[dtuple].shape
             diff = table[eval(dtuple)] - reference_table[dtuple]
             assert (abs(diff) < tolerance).all()
-        return
 
-    filename = os.path.join(prefix, "reference.json")
+    filename = os.path.join(ref_path, "reference.json")
 
     # Try comparing against references
     try:
@@ -355,42 +338,9 @@ def test_quadrature():
         # Store the data for the future
         json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
 
+        # Report failure
+        pytest.fail('Comparison to "%s" failed!' % filename)
 
 
-def main(args):
-    # Download reference data
-    skip_download = "--skip-download" in args
-    if skip_download:
-        print("Skipping reference data download")
-        args.remove("--skip-download")
-        if not os.path.exists(prefix):
-            os.makedirs(prefix)
-    else:
-        failure = os.system("./scripts/download")
-        if failure:
-            print("Download reference data failed")
-            return 1
-        else:
-            print("Download reference data ok")
-
-    # Run the test
-    with warnings.catch_warnings(record=True) as warns:
-        result = nose.run()
-
-    # Handle failed test
-    if not result:
-        return 1
-
-    # Handle missing references
-    for w in warns:
-        warnings.showwarning(w.message, w.category, w.filename,
-                             w.lineno, w.line)
-    if len(warns) > 0:
-        print("References missing. New references stored into '%s'" % prefix)
-        return 1
-
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+if __name__ == '__main__':
+    pytest.main(os.path.abspath(__file__))
