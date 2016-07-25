@@ -70,6 +70,12 @@ def scheme(request):
     return request.param
 
 
+def test_invalid_quadrature_rule():
+    from FIAT.quadrature import QuadratureRule
+    with pytest.raises(ValueError):
+        QuadratureRule(UFCInterval(), [[0.5, 0.5]], [0.5, 0.5, 0.5])
+
+
 @pytest.mark.parametrize("degree", range(8))
 def test_create_quadrature_interval(interval, degree, scheme):
     q = FIAT.create_quadrature(interval, degree, scheme)

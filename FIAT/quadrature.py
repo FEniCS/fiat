@@ -34,6 +34,9 @@ class QuadratureRule(object):
     as the weighted sum of a function evaluated at a set of points."""
 
     def __init__(self, ref_el, pts, wts):
+        if len(wts) != len(pts):
+            raise ValueError("Have %d weights, but %d points" % (len(wts), len(pts)))
+
         self.ref_el = ref_el
         self.pts = pts
         self.wts = wts
