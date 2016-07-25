@@ -21,9 +21,10 @@
 from __future__ import absolute_import
 
 import numpy
+from six.moves import map
+
 from FIAT.polynomial_set import PolynomialSet
-from FIAT.quadrature import make_quadrature
-from FIAT.reference_element import TensorProductCell
+from FIAT.quadrature_schemes import create_quadrature
 
 
 class FiniteElement(object):
@@ -156,24 +157,34 @@ class FiniteElement(object):
         return self.get_nodal_basis().get_expansion_set().get_num_members(arg)
 
 
-def _facet_support_dofs(elem, quad, facet_transform, facets):
-    """Generic facet support dofs constructor.
+def entity_support_dofs(elem, entity_dim):
+    """Return the map of entity id to the degrees of freedom for which the
+    corresponding basis functions take non-zero values
 
     :arg elem: FIAT finite element
-    :arg quad: Quadrature rule on the facet
-    :arg facet_transform: A function mapping a facet number onto a function
-    which maps coordinates on the facet onto coordinates on the cell.
-    :arg facets: Facet numbers to loop over.
+    :arg entity_dim: Dimension of the cell subentity.
     """
-    eps = 1.e-8  # Is this a safe value?
+    if not hasattr(elem, "_entity_support_dofs"):
+        elem._entity_support_dofs = {}
+    cache = elem._entity_support_dofs
+    try:
+        return cache[entity_dim]
+    except KeyError:
+        pass
 
-    weights = quad.get_weights()
     ref_el = elem.get_reference_element()
     dim = ref_el.get_spatial_dimension()
 
+    entity_cell = elem.ref_el.construct_subelement(entity_dim)
+    quad = create_quadrature(entity_cell, max(2*elem.degree(), 1))
+    weights = quad.get_weights()
+
+    eps = 1.e-8  # Is this a safe value?
+
     result = {}
-    for f in facets:
-        points = map(facet_transform(f), quad.get_points())
+    for f in elem.entity_dofs()[entity_dim].keys():
+        entity_transform = elem.ref_el.get_entity_transform(entity_dim, f)
+        points = list(map(entity_transform, quad.get_points()))
 
         # Integrate the square of the basis functions on the facet.
         vals = numpy.double(elem.tabulate(0, points)[(0,) * dim])
@@ -187,20 +198,5 @@ def _facet_support_dofs(elem, quad, facet_transform, facets):
 
         result[f] = [dof for dof, i in enumerate(ints) if i > eps]
 
+    cache[entity_dim] = result
     return result
-
-
-def facet_support_dofs(elem):
-    """Return the map of facet id to the degrees of freedom for which the
-    corresponding basis functions take non-zero values."""
-    if not hasattr(elem, "_facet_support_dofs"):
-        # Non-extruded cells only
-        assert not isinstance(elem.ref_el, TensorProductCell)
-
-        q = make_quadrature(elem.ref_el.get_facet_element(), max(2*elem.degree(), 1))
-        ft = lambda f: elem.ref_el.get_facet_transform(f)
-        dim = elem.ref_el.get_spatial_dimension()
-        facets = elem.entity_dofs()[dim-1].keys()
-        elem._facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
-
-    return elem._facet_support_dofs

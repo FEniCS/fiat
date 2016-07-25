@@ -20,6 +20,7 @@
 
 from __future__ import absolute_import
 
+import itertools
 import math
 import numpy
 
@@ -33,6 +34,9 @@ class QuadratureRule(object):
     as the weighted sum of a function evaluated at a set of points."""
 
     def __init__(self, ref_el, pts, wts):
+        if len(wts) != len(pts):
+            raise ValueError("Have %d weights, but %d points" % (len(wts), len(pts)))
+
         self.ref_el = ref_el
         self.pts = pts
         self.wts = wts
@@ -220,28 +224,26 @@ def make_quadrature(ref_el, m):
     msg = "Expecting at least one (not %d) quadrature point per direction" % min_m
     assert (min_m > 0), msg
 
-    if ref_el.get_shape() == reference_element.LINE:
+    if ref_el.get_shape() == reference_element.POINT:
+        return QuadratureRule(ref_el, [()], [1])
+    elif ref_el.get_shape() == reference_element.LINE:
         return GaussJacobiQuadratureLineRule(ref_el, m)
     elif ref_el.get_shape() == reference_element.TRIANGLE:
         return CollapsedQuadratureTriangleRule(ref_el, m)
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule(ref_el, m)
-    elif ref_el.get_shape() == reference_element.QUADRILATERAL:
-        quad_line = make_quadrature(reference_element.UFCInterval(), m)
-        return make_tensor_product_quadrature(quad_line, quad_line)
-    elif ref_el.get_shape() == reference_element.TENSORPRODUCT:
-        quadA = make_quadrature(ref_el.A, m[0])
-        quadB = make_quadrature(ref_el.B, m[1])
-        return make_tensor_product_quadrature(quadA, quadB)
 
 
-def make_tensor_product_quadrature(quadA, quadB):
+def make_tensor_product_quadrature(*quad_rules):
     """Returns the quadrature rule for a TensorProduct cell, by combining
-    the quadrature rules of the two components."""
-    ref_el = reference_element.TensorProductCell(quadA.ref_el, quadB.ref_el)
+    the quadrature rules of the components."""
+    ref_el = reference_element.TensorProductCell(*[q.ref_el
+                                                   for q in quad_rules])
     # Coordinates are "concatenated", weights are multiplied
-    pts = tuple([tuple(pt_a) + tuple(pt_b) for pt_a in quadA.pts for pt_b in quadB.pts])
-    wts = tuple([wt_a * wt_b for wt_a in quadA.wts for wt_b in quadB.wts])
+    pts = [list(itertools.chain(*pt_tuple))
+           for pt_tuple in itertools.product(*[q.pts for q in quad_rules])]
+    wts = [numpy.prod(wt_tuple)
+           for wt_tuple in itertools.product(*[q.wts for q in quad_rules])]
     return QuadratureRule(ref_el, pts, wts)
 
 
