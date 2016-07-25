@@ -165,13 +165,33 @@ class Cell(object):
         contained in the iterable t."""
         return tuple([self.vertices[ti] for ti in t])
 
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell.  For tensor
+        product cells, this a tuple of dimensions for each cell in the
+        product.  For all other cells, this is the same as the spatial
+        dimension."""
+        raise NotImplementedError("Should be implemented in a subclass.")
+
+    def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: `tuple` for tensor product cells, `int` otherwise
+        """
+        raise NotImplementedError("Should be implemented in a subclass.")
+
+    def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: `tuple` for tensor product cells, `int` otherwise
+        :arg entity_i: entity number (integer)
+        """
+        raise NotImplementedError("Should be implemented in a subclass.")
+
 
 class Simplex(Cell):
     """Abstract class for a reference simplex."""
-
-    def get_dimension(self):
-        """Returns the subelement dimension of the cell."""
-        return self.get_spatial_dimension()
 
     def compute_normal(self, facet_i):
         """Returns the unit normal vector to facet i of codimension 1."""
@@ -387,7 +407,18 @@ class Simplex(Cell):
 
         return lambda x: offset + C.dot(x)
 
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell.  Same as the
+        spatial dimension."""
+        return self.get_spatial_dimension()
+
     def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: subentity dimension (integer)
+        :arg entity_i: entity number (integer)
+        """
         space_dim = self.get_spatial_dimension()
         if dim == space_dim:  # cell points
             assert entity_i == 0
@@ -409,6 +440,11 @@ class UFCSimplex(Simplex):
         return self.construct_subelement(dimension - 1)
 
     def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: subentity dimension (integer)
+        """
         return ufc_simplex(dimension)
 
     def contains_point(self, point, epsilon=0):
@@ -640,14 +676,26 @@ class TensorProductCell(Cell):
                 for i in range(n)]
 
     def get_dimension(self):
-        """Returns the subelement dimension of the cell."""
+        """Returns the subelement dimension of the cell, a tuple of
+        dimensions for each cell in the product."""
         return tuple(c.get_dimension() for c in self.cells)
 
     def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: dimension in each "direction" (tuple)
+        """
         return TensorProductCell(*[c.construct_subelement(d)
                                    for c, d in zip(self.cells, dimension)])
 
     def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: subelement dimension (tuple)
+        :arg entity_i: entity number (integer)
+        """
         # unravel entity_i
         shape = tuple(len(c.get_topology()[d])
                       for c, d in zip(self.cells, dim))
@@ -692,10 +740,16 @@ class FiredrakeQuadrilateral(Cell):
         self.product = product
 
     def get_dimension(self):
-        """Returns the subelement dimension of the cell."""
+        """Returns the subelement dimension of the cell.  Same as the
+        spatial dimension."""
         return self.get_spatial_dimension()
 
     def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: subentity dimension (integer)
+        """
         if dimension == 2:
             return self
         elif dimension == 1:
@@ -706,6 +760,12 @@ class FiredrakeQuadrilateral(Cell):
             raise ValueError("Invalid dimension: %d" % (dimension,))
 
     def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: entity dimension (integer)
+        :arg entity_i: entity number (integer)
+        """
         d, e = {0: lambda e: ((0, 0), e),
                 1: lambda e: {0: ((0, 1), 0),
                               1: ((0, 1), 1),
