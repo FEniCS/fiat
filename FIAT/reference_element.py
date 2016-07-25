@@ -33,7 +33,7 @@ from __future__ import absolute_import
 import itertools
 import operator
 
-from six import iteritems
+from six import iteritems, itervalues
 from six.moves import reduce
 import numpy
 
@@ -688,7 +688,7 @@ class FiredrakeQuadrilateral(Cell):
 
         verts = product.get_vertices()
         topology = {0: pt[(0, 0)],
-                    1: dict(enumerate(pt[(0, 1)].values() + pt[(1, 0)].values())),
+                    1: dict(enumerate(list(itervalues(pt[(0, 1)])) + list(itervalues(pt[(1, 0)])))),
                     2: pt[(1, 1)]}
         super(FiredrakeQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
         self.product = product

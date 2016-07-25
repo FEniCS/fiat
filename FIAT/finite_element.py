@@ -21,6 +21,8 @@
 from __future__ import absolute_import
 
 import numpy
+from six.moves import map
+
 from FIAT.polynomial_set import PolynomialSet
 from FIAT.quadrature_schemes import create_quadrature
 
@@ -182,7 +184,7 @@ def entity_support_dofs(elem, entity_dim):
     result = {}
     for f in elem.entity_dofs()[entity_dim].keys():
         entity_transform = elem.ref_el.get_entity_transform(entity_dim, f)
-        points = map(entity_transform, quad.get_points())
+        points = list(map(entity_transform, quad.get_points()))
 
         # Integrate the square of the basis functions on the facet.
         vals = numpy.double(elem.tabulate(0, points)[(0,) * dim])

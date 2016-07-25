@@ -18,6 +18,7 @@
 from __future__ import absolute_import
 
 import pytest
+from six.moves import range
 
 import FIAT
 from FIAT.reference_element import UFCInterval, UFCTriangle
@@ -105,10 +106,10 @@ def test_prism(base, extr, horiz_expected, vert_expected):
 @pytest.mark.parametrize(('space', 'degree', 'horiz_expected', 'vert_expected'),
                          [("Raviart-Thomas", 1,
                            {0: [0, 1, 2, 3], 1: [0, 1, 2, 4]},
-                           {0: range(5), 1: range(5), 2: range(5)}),
+                           {0: list(range(5)), 1: list(range(5)), 2: list(range(5))}),
                           ("Brezzi-Douglas-Marini", 1,
                            {0: [0, 1, 2, 3, 4, 5, 6], 1: [0, 1, 2, 3, 4, 5, 7]},
-                           {0: range(8), 1: range(8), 2: range(8)})])
+                           {0: list(range(8)), 1: list(range(8)), 2: list(range(8))})])
 def test_prism_hdiv(space, degree, horiz_expected, vert_expected):
     W0_h = FIAT.supported_elements[space](UFCTriangle(), degree)
     W1_h = FIAT.DiscontinuousLagrange(UFCTriangle(), degree - 1)
@@ -127,14 +128,15 @@ def test_prism_hdiv(space, degree, horiz_expected, vert_expected):
 @pytest.mark.parametrize(('space', 'degree', 'horiz_expected', 'vert_expected'),
                          [("Raviart-Thomas", 1,
                            {0: [0, 1, 2, 3, 5, 7], 1: [0, 1, 2, 4, 6, 8]},
-                           {0: [1, 2] + range(3, 9),
-                            1: [0, 2] + range(3, 9),
-                            2: [0, 1] + range(3, 9)}),
+                           {0: [1, 2] + list(range(3, 9)),
+                            1: [0, 2] + list(range(3, 9)),
+                            2: [0, 1] + list(range(3, 9))}),
                           ("Brezzi-Douglas-Marini", 1,
-                           {0: range(3) + range(3, 15, 2), 1: range(3) + range(4, 15, 2)},
-                           {0: [1, 2] + range(3, 15),
-                            1: [0, 2] + range(3, 15),
-                            2: [0, 1] + range(3, 15)})])
+                           {0: list(range(3)) + list(range(3, 15, 2)),
+                            1: list(range(3)) + list(range(4, 15, 2))},
+                           {0: [1, 2] + list(range(3, 15)),
+                            1: [0, 2] + list(range(3, 15)),
+                            2: [0, 1] + list(range(3, 15))})])
 def test_prism_hcurl(space, degree, horiz_expected, vert_expected):
     W0_h = FIAT.Lagrange(UFCTriangle(), degree)
     W1_h = FIAT.supported_elements[space](UFCTriangle(), degree)
