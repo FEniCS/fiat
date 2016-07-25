@@ -30,12 +30,13 @@ Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
 from __future__ import absolute_import
 
-import itertools
+from itertools import chain, product
 import operator
 
 from six import iteritems, itervalues
 from six.moves import reduce
 import numpy
+from numpy import ravel_multi_index, transpose
 
 POINT = 0
 LINE = 1
@@ -601,9 +602,6 @@ class TensorProductCell(Cell):
     """A cell that is the product of FIAT cells."""
 
     def __init__(self, *cells):
-        from itertools import chain, product
-        from numpy import ravel_multi_index, transpose
-
         # Vertices
         vertices = tuple(tuple(chain(*coords))
                          for coords in product(*[cell.get_vertices()
@@ -662,8 +660,8 @@ class TensorProductCell(Cell):
         slices = TensorProductCell._split_slices(dim)
 
         def transform(point):
-            return list(itertools.chain(*[t(point[s])
-                                          for t, s in zip(sct, slices)]))
+            return list(chain(*[t(point[s])
+                                for t, s in zip(sct, slices)]))
         return transform
 
     def contains_point(self, point, epsilon=0):
