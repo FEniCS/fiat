@@ -41,11 +41,10 @@ def matrix_to_array(mat, mat_name):
 
 if __name__ == '__main__':
 
-    lagclass = \
-    """class Lagrange%s%d: public FiniteElement {
+    lagclass = """class Lagrange%s%d: public FiniteElement {
 public:
-  Lagrange%s%d():FiniteElement(%d,%d,%d,%d,%d,%s) {}
-  virtual ~Lagrange%s%d(){}
+Lagrange%s%d():FiniteElement(%d,%d,%d,%d,%d,%s) {}
+virtual ~Lagrange%s%d(){}
 };"""
 
     T = reference_element.DefaultTriangle()

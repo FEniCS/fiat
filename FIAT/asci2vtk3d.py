@@ -34,7 +34,6 @@ if __name__ == '__main__':
         print("python asci2vtk3d.py foo")
         sys.exit(0)
 
-
     fin = open(filename, "r")
 
     coords = []
@@ -47,7 +46,6 @@ if __name__ == '__main__':
     n = len(coords)
 
     print("%s points" % (str(n),))
-
 
     fout = open(output, "w")
     fout.write("""# vtk DataFile Version 2.0
