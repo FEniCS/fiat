@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 import numpy as np
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
@@ -29,7 +29,6 @@ class TraceError(Exception):
     or the gradient of a trace element."""
 
     def __init__(self, msg, values, keys):
-
         super(TraceError, self).__init__(msg)
         self.msg = msg
         self.zeros = values
@@ -40,7 +39,6 @@ class TraceHDiv(FiniteElement):
     """Class implementing the trace of hdiv elements on general simplices."""
 
     def __init__(self, cell, degree):
-
         sd = cell.get_spatial_dimension()
 
         # Check to make sure spatial dim is sensible for trace

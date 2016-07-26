@@ -31,14 +31,14 @@ class GaussLegendreDualSet(dual_set.DualSet):
         l = quadrature.GaussLegendreQuadratureLineRule(ref_el, degree+1)
         nodes = [functional.PointEvaluation(ref_el, x) for x in l.pts]
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(GaussLegendreDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class GaussLegendre(finite_element.FiniteElement):
+class GaussLegendre(finite_element.CiarletElement):
     """1D discontinuous element with nodes at the Gauss-Legendre points."""
     def __init__(self, ref_el, degree):
         if ref_el.shape != LINE:
             raise ValueError("Gauss-Legendre elements are only defined in one dimension.")
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
         dual = GaussLegendreDualSet(ref_el, degree)
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree)
+        super(GaussLegendre, self).__init__(poly_set, dual, degree)

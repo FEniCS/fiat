@@ -19,20 +19,14 @@
 #
 # Thomas Gibson (t.gibson15@imperial.ac.uk)
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 import pytest
 import numpy as np
 
 
-@pytest.mark.parametrize(("degree", "facet_id"),
-                         [(0, 0), (0, 1), (0, 2),
-                          (1, 0), (1, 1), (1, 2),
-                          (2, 0), (2, 1), (2, 2),
-                          (3, 0), (3, 1), (3, 2),
-                          (4, 0), (4, 1), (4, 2),
-                          (5, 0), (5, 1), (5, 2),
-                          (6, 0), (6, 1), (6, 2)])
+@pytest.mark.parametrize("degree", range(7))
+@pytest.mark.parametrize("facet_id", range(3))
 def test_basis_values(degree, facet_id):
     """Ensure that integrating simple monomials produces the expected results
     for each facet entity of the reference triangle."""

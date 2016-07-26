@@ -32,7 +32,7 @@ class GaussLobattoLegendreDualSet(dual_set.DualSet):
         l = quadrature.GaussLobattoLegendreQuadratureLineRule(ref_el, degree+1)
         nodes = [functional.PointEvaluation(ref_el, x) for x in l.pts]
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(GaussLobattoLegendreDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 class GaussLobattoLegendre(finite_element.CiarletElement):
