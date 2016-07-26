@@ -18,7 +18,7 @@
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 import numpy
 from six.moves import map

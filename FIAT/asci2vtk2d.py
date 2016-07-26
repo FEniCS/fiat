@@ -18,8 +18,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 # 2d mode: x y z, z = f(x,y)
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import absolute_import, print_function, division
 import sys
 
 if __name__ == '__main__':

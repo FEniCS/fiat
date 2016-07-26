@@ -18,8 +18,7 @@
 # First added:  2010-01-31
 # Last changed: 2014-06-30
 
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import absolute_import, print_function, division
 
 import pytest
 import json

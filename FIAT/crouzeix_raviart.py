@@ -20,7 +20,7 @@
 #
 # Last changed: 2010-01-28
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
 

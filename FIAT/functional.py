@@ -21,7 +21,7 @@
 # - a reference element domain
 # - type information
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 from collections import OrderedDict
 from itertools import chain

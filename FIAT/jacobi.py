@@ -20,7 +20,7 @@ via Newton's method.  These mainly are used in defining the expansion
 functions over the simplices and in defining quadrature
 rules over each domain."""
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 import numpy
 

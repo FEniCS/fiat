@@ -18,7 +18,7 @@
 # Modified by Marie E. Rognes (meg@simula.no), 2012
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2015
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 import itertools
 import math

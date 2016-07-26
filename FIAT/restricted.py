@@ -17,7 +17,7 @@
 
 # Based on FFC file restrictedelement.py and Jan's own FIAT implementation
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 import numpy
 import six

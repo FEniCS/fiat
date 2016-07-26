@@ -2,7 +2,7 @@
 evaluating arbitrary order Lagrange and many other elements.
 Simplices in one, two, and three dimensions are supported."""
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 # Import finite element classes
 from FIAT.finite_element import FiniteElement  # noqa

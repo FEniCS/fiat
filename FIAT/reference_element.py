@@ -28,7 +28,7 @@ and orderings of entities have a single point of entry.
 
 Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 from itertools import chain, product
 import operator

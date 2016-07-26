@@ -26,7 +26,7 @@
 # we have an interface for defining sets of functionals (moments against
 # an entire set of polynomials)
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, division
 
 import numpy
 from FIAT import expansions
