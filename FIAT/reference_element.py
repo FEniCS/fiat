@@ -349,7 +349,7 @@ class Simplex(Cell):
             return image_pts
 
     def volume(self):
-        """Computes the volumne of the simplex in the appropriate
+        """Computes the volume of the simplex in the appropriate
         dimensional measure."""
         return volume(self.get_vertices())
 
@@ -714,6 +714,10 @@ class TensorProductCell(Cell):
                                 for t, s in zip(sct, slices)]))
         return transform
 
+    def volume(self):
+        """Computes the volume in the appropriate dimensional measure."""
+        return numpy.prod([c.volume() for c in self.cells])
+
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
@@ -775,6 +779,10 @@ class FiredrakeQuadrilateral(Cell):
                               3: ((1, 0), 1)}[e],
                 2: lambda e: ((1, 1), e)}[dim](entity_i)
         return self.product.get_entity_transform(d, e)
+
+    def volume(self):
+        """Computes the volume in the appropriate dimensional measure."""
+        return self.product.volume()
 
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
