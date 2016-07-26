@@ -303,7 +303,7 @@ class TensorProductElement(FiniteElement):
                         for j in range(npoints)])
                     assert temp.shape[1] % 2 == 0
                     temp2 = temp.reshape((temp.shape[0],
-                                          int(temp.shape[1]/2),
+                                          temp.shape[1]//2,
                                           2,
                                           temp.shape[2]))\
                         .transpose(0, 2, 1, 3)\
@@ -321,9 +321,9 @@ class TensorProductElement(FiniteElement):
                         Atab[alpha[0:Asdim]][..., j],
                         Btab[alpha[Asdim:Asdim+Bsdim]][..., j])
                         for j in range(len(Atab[alpha[0:Asdim]][0]))])
-
+                    assert temp.shape[2] % 2 == 0
                     temp2 = temp.reshape((temp.shape[0], temp.shape[1],
-                                          temp.shape[2]/2, 2))\
+                                          temp.shape[2]//2, 2))\
                         .reshape((temp.shape[0], -1, 2))\
                         .transpose(1, 2, 0)
                     result[alpha] = temp2
