@@ -27,6 +27,13 @@ from FIAT import reference_element
 from FIAT import jacobi
 
 
+def jrc(a, b, n):
+    an = (2*n+1+a+b)*(2*n+2+a+b) / (2*(n+1)*(n+1+a+b))
+    bn = (a*a-b*b) * (2*n+1+a+b) / (2*(n+1)*(2*n+a+b)*(n+1+a+b))
+    cn = (n+a)*(n+b)*(2*n+2+a+b) / ((n+1)*(n+1+a+b)*(2*n+a+b))
+    return an, bn, cn
+
+
 def _tabulate_dpts(tabulator, D, n, order, pts):
     X = sympy.DeferredVector('x')
 
@@ -208,15 +215,6 @@ class TriangleExpansionSet(object):
         def idx(p, q):
             return (p + q) * (p + q + 1) // 2 + q
 
-        def jrc(a, b, n):
-            an = float((2*n+1+a+b)*(2*n+2+a+b)) \
-                / float(2*(n+1)*(n+1+a+b))
-            bn = float((a*a-b*b) * (2*n+1+a+b)) \
-                / float(2*(n+1)*(2*n+a+b)*(n+1+a+b))
-            cn = float((n+a)*(n+b)*(2*n+2+a+b)) \
-                / float((n+1)*(n+1+a+b)*(2*n+a+b))
-            return an, bn, cn
-
         results = ((n + 1) * (n + 2) // 2) * [None]
 
         results[0] = 1.0 \
@@ -308,15 +306,6 @@ class TetrahedronExpansionSet(object):
 
         def idx(p, q, r):
             return (p + q + r)*(p + q + r + 1)*(p + q + r + 2)//6 + (q + r)*(q + r + 1)//2 + r
-
-        def jrc(a, b, n):
-            an = float((2*n+1+a+b)*(2*n+2+a+b)) \
-                / float(2*(n+1)*(n+1+a+b))
-            bn = float((a*a-b*b) * (2*n+1+a+b)) \
-                / float(2*(n+1)*(2*n+a+b)*(n+1+a+b))
-            cn = float((n+a)*(n+b)*(2*n+2+a+b)) \
-                / float((n+1)*(n+1+a+b)*(2*n+a+b))
-            return an, bn, cn
 
         results = ((n + 1) * (n + 2) * (n + 3) // 6) * [None]
         results[0] = 1.0 \
