@@ -7,8 +7,12 @@ pipelines:
           - apt-get update
           - apt-get install -y git python-minimal python-pip python-pytest python-setuptools python-wheel --no-install-recommends
           - apt-get install -y python3-minimal python3-pip python3-pytest python3-setuptools python3-wheel --no-install-recommends
+          - pip install flake8 flake8-future-import
+          - pip3 install flake8 flake8-future-import
           - pip install .
           - pip3 install .
           - cd test/
           - DATA_REPO_GIT="" py.test -v .
           - DATA_REPO_GIT="" py.test-3 -v .
+          - python -m flake8
+          - python3 -m flake8
