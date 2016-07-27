@@ -197,6 +197,11 @@ class Simplex(Cell):
 
     def compute_normal(self, facet_i):
         """Returns the unit normal vector to facet i of codimension 1."""
+        # Interval case
+        if self.get_shape() == LINE:
+            p, q = numpy.asarray(self.vertices)
+            return q - p
+
         # first, let's compute the span of the simplex
         # This is trivial if we have a d-simplex in R^d.
         # Not so otherwise.
@@ -880,6 +885,9 @@ def ufc_cell(cell):
 
 def volume(verts):
     """Constructs the volume of the simplex spanned by verts"""
+    if len(verts) == 1:
+        # One point streches a zero-dimensional simplex (point).
+        return 1
 
     # use fact that volume of UFC reference element is 1/n!
     sd = len(verts) - 1
