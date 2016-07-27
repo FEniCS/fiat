@@ -15,6 +15,9 @@
  - Finding non-vanishing DoFs on a facets
  - Add tensor product quadrature rule
  - Make regression tests working again after few years
+ - Prune modules having only __main__ code; mostly defunct or unclear purpose
+ - Remove newdubiner module
+ - Switch from homebrew factorial/gamma to math module (wraps C std lib)
 2016.1.0 [2016-06-23]
  - Minor fixes
 1.6.0 [2015-07-28]
