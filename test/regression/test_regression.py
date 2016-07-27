@@ -27,7 +27,7 @@ import warnings
 import os
 
 from FIAT import supported_elements, make_quadrature, ufc_simplex, \
-    newdubiner, expansions, reference_element, polynomial_set
+    expansions, reference_element, polynomial_set
 
 # Parameters
 tolerance = 1e-8
@@ -166,47 +166,6 @@ def test_expansions_jet():
     for datum, reference_datum in zip(data, reference):
         diff = numpy.array(datum) - numpy.array(reference_datum)
         assert (abs(diff) < tolerance).all()
-
-
-def test_newdubiner():
-    def create_data():
-        latticeK = 2
-        D = 3
-        pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
-        return newdubiner.tabulate_tetrahedron_derivatives(D, pts, float)
-
-    # Try reading reference values
-    filename = os.path.join(ref_path, "reference-newdubiner.json")
-
-    # Actually perform the test
-    table = create_data()
-    reference = load_reference(filename, create_data)
-
-    for data, reference_data in zip(table, reference):
-        for point, reference_point in zip(data, reference_data):
-            for k in range(2):
-                diff = numpy.array(point[k]) - numpy.array(reference_point[k])
-                assert (abs(diff) < tolerance).all()
-
-
-def test_newdubiner_jet():
-    def create_data():
-        latticeK = 2
-        D = 3
-        n = 1
-        order = 2
-        pts = newdubiner.make_tetrahedron_lattice(latticeK, float)
-        return newdubiner.tabulate_jet(D, n, pts, order, float)
-
-    filename = os.path.join(ref_path, "reference-newdubiner-jet.json")
-    reference = load_reference(filename, create_data)
-
-    table_jet = create_data()
-    for datum, reference_datum in zip(table_jet, reference):
-        for entry, reference_entry in zip(datum, reference_datum):
-            for k in range(3):
-                diff = numpy.array(entry[k]) - numpy.array(reference_entry[k])
-                assert (abs(diff) < tolerance).all()
 
 
 def test_quadrature():
