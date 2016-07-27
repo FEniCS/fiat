@@ -34,6 +34,7 @@ from FIAT.restricted import RestrictedElement  # noqa
 
 # Important functionality
 from FIAT.quadrature import make_quadrature  # noqa
+from FIAT.quadrature_schemes import create_quadrature  # noqa
 from FIAT.reference_element import ufc_cell, ufc_simplex  # noqa
 from FIAT.hdivcurl import Hdiv, Hcurl  # noqa
 

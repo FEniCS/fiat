@@ -19,10 +19,9 @@
 from __future__ import absolute_import
 
 import numpy
-from FIAT.finite_element import FiniteElement, _facet_support_dofs
-from FIAT.reference_element import TensorProductCell, LINE
+from FIAT.finite_element import FiniteElement
+from FIAT.reference_element import TensorProductCell
 from FIAT.polynomial_set import mis
-from FIAT.quadrature import make_quadrature
 from FIAT import dual_set
 from FIAT import functional
 
@@ -302,8 +301,9 @@ class TensorProductElement(FiniteElement):
                                        Atab[alpha[0:Asdim]][..., j],
                                        Btab[alpha[Asdim:Asdim+Bsdim]][..., j])
                         for j in range(npoints)])
+                    assert temp.shape[1] % 2 == 0
                     temp2 = temp.reshape((temp.shape[0],
-                                          temp.shape[1]/2,
+                                          int(temp.shape[1]/2),
                                           2,
                                           temp.shape[2]))\
                         .transpose(0, 2, 1, 3)\
@@ -348,45 +348,3 @@ class TensorProductElement(FiniteElement):
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented")
-
-
-def horiz_facet_support_dofs(elem):
-    """Return the map of facet id to the degrees of freedom for which the
-    corresponding basis functions take non-zero values."""
-    if not hasattr(elem, "_horiz_facet_support_dofs"):
-        # Extruded cells only
-        ref_el = elem.get_reference_element()
-        assert isinstance(ref_el, TensorProductCell)
-
-        q = make_quadrature(ref_el.A, max(2*elem.degree(), 1))
-        ft = lambda f: ref_el.get_horiz_facet_transform(f)
-        dim = ref_el.A.get_spatial_dimension()
-        facets = elem.entity_dofs()[(dim, 0)].keys()
-        elem._horiz_facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
-
-    return elem._horiz_facet_support_dofs
-
-
-def vert_facet_support_dofs(elem):
-    """Return the map of facet id to the degrees of freedom for which the
-    corresponding basis functions take non-zero values."""
-    if not hasattr(elem, "_vert_facet_support_dofs"):
-        # Extruded cells only
-        assert isinstance(elem.ref_el, TensorProductCell)
-
-        deg = max(2 * elem.degree(), 1)
-        if elem.ref_el.A.get_shape() == LINE:
-            # Cell is extruded interval, vertical facet is extruded point,
-            # but we cannot integrate on point reference cells,
-            # thus we need special treatment here.
-            q = make_quadrature(elem.ref_el.B, deg)
-        else:
-            vfacet_el = TensorProductCell(elem.ref_el.A.get_facet_element(),
-                                          elem.ref_el.B)
-            q = make_quadrature(vfacet_el, (deg, deg))
-        ft = lambda f: elem.ref_el.get_vert_facet_transform(f)
-        dim = elem.ref_el.A.get_spatial_dimension()
-        facets = elem.entity_dofs()[(dim - 1, 1)].keys()
-        elem._vert_facet_support_dofs = _facet_support_dofs(elem, q, ft, facets)
-
-    return elem._vert_facet_support_dofs

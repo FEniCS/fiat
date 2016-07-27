@@ -137,11 +137,11 @@ class ReggeDual(DualSet):
 
 
 class Regge(FiniteElement):
-    """
-    The Regge elements on triangles and tetrahedra: the polynomial space
-    described by the full polynomials of degree k with degrees of freedom
-    to ensure its pullback as a metric to each interior facet and edge is
-    single-valued.
+    """The Regge elements on triangles and tetrahedra: the polynomial
+    space described by the full polynomials of degree k with degrees
+    of freedom to ensure its pullback as a metric to each interior
+    facet and edge is single-valued.
+
     """
 
     def __init__(self, cell, degree):

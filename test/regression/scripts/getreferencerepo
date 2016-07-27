@@ -30,7 +30,9 @@ source ./scripts/parameters
 # Get reference repository
 if [ ! -d "$DATA_DIR" ]; then
     echo "Cloning reference data repository"
-    git clone $DATA_REPO_GIT
+    if [ -n "$DATA_REPO_GIT" ]; then
+        git clone $DATA_REPO_GIT
+    fi
     if [ ! -d "$DATA_DIR" ]; then
         git clone $DATA_REPO_HTTPS
     fi

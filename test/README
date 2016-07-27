@@ -1,0 +1,6 @@
+Run tests by::
+
+    py.test [--skip-download]
+    py.test [--skip-download] regression/
+    py.test unit/
+    py.test unit/foo.py

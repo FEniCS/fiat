@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2012 Robert C. Kirby (Texas Tech University)
+# Copyright (C) 2016 Jan Blechta
 #
 # This file is part of FIAT.
 #
@@ -16,21 +16,9 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
-from FIAT import shapes, Lagrange
+from __future__ import print_function
 
 
-if __name__ == '__main__':
-    shape = 3
-    degree = 3
-    lattice_size = 10 * degree
-
-    U = Lagrange.Lagrange(shape, degree)
-    pts = shapes.make_lattice(shape, lattice_size)
-
-    us = U.function_space().tabulate(pts)
-
-    fout = open("foo.dat", "w")
-    u0 = us[0]
-    for i in range(len(pts)):
-        fout.write("%s %s %s %s" % (pts[i][0], pts[i][1], pts[i][2], u0[i]))
-    fout.close()
+def pytest_addoption(parser):
+    parser.addoption("--skip-download", dest='download', action='store_false',
+                     help="do not download FIAT reference data")

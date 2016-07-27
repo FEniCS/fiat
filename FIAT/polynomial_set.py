@@ -67,7 +67,8 @@ class PolynomialSet(object):
          function.
     """
 
-    def __init__(self, ref_el, degree, embedded_degree, expansion_set, coeffs, dmats):
+    def __init__(self, ref_el, degree, embedded_degree, expansion_set, coeffs,
+                 dmats):
         self.ref_el = ref_el
         self.num_members = coeffs.shape[0]
         self.degree = degree
@@ -127,9 +128,11 @@ class PolynomialSet(object):
 
 
 class ONPolynomialSet(PolynomialSet):
-    """Constructs an orthonormal basis out of expansion set by having
-    an identity matrix of coefficients.  Can be used to specify ON
-    bases  for vector- and tensor-valued sets as well."""
+    """Constructs an orthonormal basis out of expansion set by having an
+    identity matrix of coefficients.  Can be used to specify ON bases
+    for vector- and tensor-valued sets as well.
+
+    """
 
     def __init__(self, ref_el, degree, shape=tuple()):
 
@@ -182,9 +185,11 @@ class ONPolynomialSet(PolynomialSet):
 
 
 def project(f, U, Q):
-    """Computes the expansion coefficients of f in terms of the
-    members of a polynomial set U.  Numerical integration is performed
-    by quadrature rule Q."""
+    """Computes the expansion coefficients of f in terms of the members of
+    a polynomial set U.  Numerical integration is performed by
+    quadrature rule Q.
+
+    """
     pts = Q.get_points()
     wts = Q.get_weights()
     f_at_qps = [f(x) for x in pts]
@@ -207,7 +212,9 @@ def polynomial_set_union_normalized(A, B):
     """Given polynomial sets A and B, constructs a new polynomial set
     whose span is the same as that of span(A) union span(B).  It may
     not contain any of the same members of the set, as we construct a
-    span via SVD."""
+    span via SVD.
+
+    """
     new_coeffs = numpy.array(list(A.coeffs) + list(B.coeffs))
     func_shape = new_coeffs.shape[1:]
     if len(func_shape) == 1:
@@ -233,9 +240,9 @@ def polynomial_set_union_normalized(A, B):
 
 
 class ONSymTensorPolynomialSet(PolynomialSet):
-    """
-    Constructs an orthonormal basis for symmetric-tensor-valued
+    """Constructs an orthonormal basis for symmetric-tensor-valued
     polynomials on a reference element.
+
     """
 
     def __init__(self, ref_el, degree, size=None):

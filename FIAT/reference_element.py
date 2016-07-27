@@ -30,9 +30,15 @@ Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
 from __future__ import absolute_import
 
-from six import iteritems
-import numpy
+from itertools import chain, product
+import operator
 
+from six import iteritems, itervalues
+from six.moves import reduce
+import numpy
+from numpy import ravel_multi_index, transpose
+
+POINT = 0
 LINE = 1
 TRIANGLE = 2
 TETRAHEDRON = 3
@@ -86,20 +92,19 @@ def lattice_iter(start, finish, depth):
                 yield [ii] + jj
 
 
-class ReferenceElement(object):
-    """Abstract class for a reference element simplex.  Provides
-    accessors for geometry (vertex coordinates) as well as topology
-    (orderings of vertices that make up edges, facecs, etc."""
+class Cell(object):
+    """Abstract class for a reference cell.  Provides accessors for
+    geometry (vertex coordinates) as well as topology (orderings of
+    vertices that make up edges, facecs, etc."""
 
     def __init__(self, shape, vertices, topology):
-        """The constructor takes a shape code,
-        the physical vertices expressed as a list of tuples
-        of numbers, and the topology of a simplex.
-        The topology is stored as a dictionary of dictionaries
-        t[i][j] where i is the spatial dimension and j is the
-        index of the facet of that dimension.  The result is
-        a list of the vertices comprising the facet.
-        """
+        """The constructor takes a shape code, the physical vertices expressed
+        as a list of tuples of numbers, and the topology of a cell.
+
+        The topology is stored as a dictionary of dictionaries t[i][j]
+        where i is the dimension and j is the index of the facet of
+        that dimension.  The result is a list of the vertices
+        comprising the facet."""
         self.shape = shape
         self.vertices = vertices
         self.topology = topology
@@ -121,24 +126,27 @@ class ReferenceElement(object):
 
                 self.sub_entities[dim][e] = sorted(sub_entities)
 
-    def __hash__(self):
-        """Since ReferenceElements are singleton classes, we can use the type."""
-
-        return hash(type(self))
+    def _key(self):
+        """Hashable object key data (excluding type)."""
+        # Default: only type matters
+        return None
 
     def __eq__(self, other):
-        """Since ReferenceElements are singleton classes, we can use the class
-        itself for equality."""
+        return type(self) == type(other) and self._key() == other._key()
 
-        return type(self) == type(other)
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((type(self), self._key()))
 
     def get_shape(self):
         """Returns the code for the element's shape."""
         return self.shape
 
     def get_vertices(self):
-        """Returns an iterable of the element's vertices, each stored
-        as a tuple."""
+        """Returns an iterable of the element's vertices, each stored as a
+        tuple."""
         return self.vertices
 
     def get_spatial_dimension(self):
@@ -147,15 +155,43 @@ class ReferenceElement(object):
 
     def get_topology(self):
         """Returns a dictionary encoding the topology of the element.
-        The dictionary's keys are the spatial dimensions (0,1,...)
-        and each value is a dictionary mapping
-        """
+
+        The dictionary's keys are the spatial dimensions (0, 1, ...)
+        and each value is a dictionary mapping."""
         return self.topology
 
     def get_vertices_of_subcomplex(self, t):
-        """Returns the tuple of vertex coordinates associated with the
-        labels contained in the iterable t."""
+        """Returns the tuple of vertex coordinates associated with the labels
+        contained in the iterable t."""
         return tuple([self.vertices[ti] for ti in t])
+
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell.  For tensor
+        product cells, this a tuple of dimensions for each cell in the
+        product.  For all other cells, this is the same as the spatial
+        dimension."""
+        raise NotImplementedError("Should be implemented in a subclass.")
+
+    def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: `tuple` for tensor product cells, `int` otherwise
+        """
+        raise NotImplementedError("Should be implemented in a subclass.")
+
+    def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: `tuple` for tensor product cells, `int` otherwise
+        :arg entity_i: entity number (integer)
+        """
+        raise NotImplementedError("Should be implemented in a subclass.")
+
+
+class Simplex(Cell):
+    """Abstract class for a reference simplex."""
 
     def compute_normal(self, facet_i):
         """Returns the unit normal vector to facet i of codimension 1."""
@@ -371,8 +407,46 @@ class ReferenceElement(object):
 
         return lambda x: offset + C.dot(x)
 
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell.  Same as the
+        spatial dimension."""
+        return self.get_spatial_dimension()
 
-class UFCReferenceElement(ReferenceElement):
+    def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: subentity dimension (integer)
+        :arg entity_i: entity number (integer)
+        """
+        space_dim = self.get_spatial_dimension()
+        if dim == space_dim:  # cell points
+            assert entity_i == 0
+            return lambda point: point
+        elif dim == space_dim - 1:  # facet points
+            return self.get_facet_transform(entity_i)
+        else:
+            raise NotImplementedError("Co-dimension >1 not implemented.")
+
+
+# Backwards compatible name
+ReferenceElement = Simplex
+
+
+class UFCSimplex(Simplex):
+
+    def get_facet_element(self):
+        dimension = self.get_spatial_dimension()
+        return self.construct_subelement(dimension - 1)
+
+    def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: subentity dimension (integer)
+        """
+        return ufc_simplex(dimension)
+
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
@@ -382,7 +456,16 @@ class UFCReferenceElement(ReferenceElement):
         return result
 
 
-class DefaultLine(ReferenceElement):
+class Point(Simplex):
+    """This is the reference point."""
+
+    def __init__(self):
+        verts = ((),)
+        topology = {0: {0: (0,)}}
+        super(Point, self).__init__(POINT, verts, topology)
+
+
+class DefaultLine(Simplex):
     """This is the reference line with vertices (-1.0,) and (1.0,)."""
 
     def __init__(self):
@@ -396,7 +479,7 @@ class DefaultLine(ReferenceElement):
         raise NotImplementedError()
 
 
-class UFCInterval(UFCReferenceElement):
+class UFCInterval(UFCSimplex):
     """This is the reference interval with vertices (0.0,) and (1.0,)."""
 
     def __init__(self):
@@ -406,17 +489,8 @@ class UFCInterval(UFCReferenceElement):
                     1: edges}
         super(UFCInterval, self).__init__(LINE, verts, topology)
 
-    def __eq__(self, other):
-        if isinstance(other, UFCInterval):
-            return True
-        else:
-            return False
 
-    def get_facet_element(self):
-        raise NotImplementedError()
-
-
-class DefaultTriangle(ReferenceElement):
+class DefaultTriangle(Simplex):
     """This is the reference triangle with vertices (-1.0,-1.0),
     (1.0,-1.0), and (-1.0,1.0)."""
 
@@ -434,7 +508,7 @@ class DefaultTriangle(ReferenceElement):
         return DefaultLine()
 
 
-class UFCTriangle(UFCReferenceElement):
+class UFCTriangle(UFCSimplex):
     """This is the reference triangle with vertices (0.0,0.0),
     (1.0,0.0), and (0.0,1.0)."""
 
@@ -452,17 +526,8 @@ class UFCTriangle(UFCReferenceElement):
         n = numpy.array((t[1], -t[0]))
         return n / numpy.linalg.norm(n)
 
-    def __eq__(self, other):
-        if isinstance(other, UFCTriangle):
-            return True
-        else:
-            return False
 
-    def get_facet_element(self):
-        return UFCInterval()
-
-
-class IntrepidTriangle(ReferenceElement):
+class IntrepidTriangle(Simplex):
     """This is the Intrepid triangle with vertices (0,0),(1,0),(0,1)"""
 
     def __init__(self):
@@ -481,7 +546,7 @@ class IntrepidTriangle(ReferenceElement):
         return UFCInterval()
 
 
-class DefaultTetrahedron(ReferenceElement):
+class DefaultTetrahedron(Simplex):
     """This is the reference tetrahedron with vertices (-1,-1,-1),
     (1,-1,-1),(-1,1,-1), and (-1,-1,1)."""
 
@@ -510,7 +575,7 @@ class DefaultTetrahedron(ReferenceElement):
         return DefaultTriangle()
 
 
-class IntrepidTetrahedron(ReferenceElement):
+class IntrepidTetrahedron(Simplex):
     """This is the reference tetrahedron with vertices (0,0,0),
     (1,0,0),(0,1,0), and (0,0,1) used in the Intrepid project."""
 
@@ -538,7 +603,7 @@ class IntrepidTetrahedron(ReferenceElement):
         return IntrepidTriangle()
 
 
-class UFCTetrahedron(UFCReferenceElement):
+class UFCTetrahedron(UFCSimplex):
     """This is the reference tetrahedron with vertices (0,0,0),
     (1,0,0),(0,1,0), and (0,0,1)."""
 
@@ -568,110 +633,151 @@ class UFCTetrahedron(UFCReferenceElement):
         n = numpy.cross(t[0], t[1])
         return -2.0 * n / numpy.linalg.norm(n)
 
-    def __eq__(self, other):
-        if isinstance(other, UFCTetrahedron):
-            return True
-        else:
-            return False
 
-    def get_facet_element(self):
-        return UFCTriangle()
+class TensorProductCell(Cell):
+    """A cell that is the product of FIAT cells."""
+
+    def __init__(self, *cells):
+        # Vertices
+        vertices = tuple(tuple(chain(*coords))
+                         for coords in product(*[cell.get_vertices()
+                                                 for cell in cells]))
+
+        # Topology
+        shape = tuple(len(c.get_vertices()) for c in cells)
+        topology = {}
+        for dim in product(*[cell.get_topology().keys()
+                             for cell in cells]):
+            topology[dim] = {}
+            topds = [cell.get_topology()[d]
+                     for cell, d in zip(cells, dim)]
+            for tuple_ei in product(*[sorted(topd)for topd in topds]):
+                tuple_vs = list(product(*[topd[ei]
+                                          for topd, ei in zip(topds, tuple_ei)]))
+                vs = tuple(ravel_multi_index(transpose(tuple_vs), shape))
+                topology[dim][tuple_ei] = vs
+            # flatten entity numbers
+            topology[dim] = dict(enumerate(topology[dim][key]
+                                           for key in sorted(topology[dim])))
+
+        super(TensorProductCell, self).__init__(TENSORPRODUCT, vertices, topology)
+        self.cells = tuple(cells)
+
+    def _key(self):
+        return self.cells
+
+    @staticmethod
+    def _split_slices(lengths):
+        n = len(lengths)
+        delimiter = [0] * (n + 1)
+        for i in range(n):
+            delimiter[i + 1] = delimiter[i] + lengths[i]
+        return [slice(delimiter[i], delimiter[i+1])
+                for i in range(n)]
+
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell, a tuple of
+        dimensions for each cell in the product."""
+        return tuple(c.get_dimension() for c in self.cells)
+
+    def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: dimension in each "direction" (tuple)
+        """
+        return TensorProductCell(*[c.construct_subelement(d)
+                                   for c, d in zip(self.cells, dimension)])
+
+    def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: subelement dimension (tuple)
+        :arg entity_i: entity number (integer)
+        """
+        # unravel entity_i
+        shape = tuple(len(c.get_topology()[d])
+                      for c, d in zip(self.cells, dim))
+        alpha = numpy.unravel_index(entity_i, shape)
+
+        # entity transform on each subcell
+        sct = [c.get_entity_transform(d, i)
+               for c, d, i in zip(self.cells, dim, alpha)]
+
+        slices = TensorProductCell._split_slices(dim)
+
+        def transform(point):
+            return list(chain(*[t(point[s])
+                                for t, s in zip(sct, slices)]))
+        return transform
+
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        lengths = [c.get_spatial_dimension() for c in self.cells]
+        assert len(point) == sum(lengths)
+        slices = TensorProductCell._split_slices(lengths)
+        return reduce(operator.and_,
+                      (c.contains_point(point[s], epsilon=epsilon)
+                       for c, s in zip(self.cells, slices)),
+                      True)
 
 
-class FiredrakeQuadrilateral(ReferenceElement):
+class FiredrakeQuadrilateral(Cell):
     """This is the reference quadrilateral with vertices
     (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
 
     def __init__(self):
-        verts = ((0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0))
-        edges = {0: (0, 1), 1: (2, 3), 2: (0, 2), 3: (1, 3)}
-        faces = {0: (0, 1, 2, 3)}
-        topology = {0: {0: (0,), 1: (1,), 2: (2,), 3: (3,)},
-                    1: edges, 2: faces}
+        product = TensorProductCell(UFCInterval(), UFCInterval())
+        pt = product.get_topology()
+
+        verts = product.get_vertices()
+        topology = {0: pt[(0, 0)],
+                    1: dict(enumerate(list(itervalues(pt[(0, 1)])) + list(itervalues(pt[(1, 0)])))),
+                    2: pt[(1, 1)]}
         super(FiredrakeQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
+        self.product = product
 
-        self.A = UFCInterval()
-        self.B = UFCInterval()
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell.  Same as the
+        spatial dimension."""
+        return self.get_spatial_dimension()
 
-    def __eq__(self, other):
-        return isinstance(other, FiredrakeQuadrilateral)
+    def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
 
-    def get_facet_element(self):
-        return UFCInterval()
-
-    def get_facet_transform(self, facet_i):
-        """Return a function f such that for a point with facet coordinates
-        x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
+        :arg dimension: subentity dimension (integer)
         """
-        if facet_i == 0:
-            return lambda p: numpy.array([0.0, float(p)])
-        elif facet_i == 1:
-            return lambda p: numpy.array([1.0, float(p)])
-        elif facet_i == 2:
-            return lambda p: numpy.array([float(p), 0.0])
-        elif facet_i == 3:
-            return lambda p: numpy.array([float(p), 1.0])
+        if dimension == 2:
+            return self
+        elif dimension == 1:
+            return UFCInterval()
+        elif dimension == 0:
+            return Point()
         else:
-            raise RuntimeError("Illegal quadrilateral facet number.")
+            raise ValueError("Invalid dimension: %d" % (dimension,))
+
+    def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: entity dimension (integer)
+        :arg entity_i: entity number (integer)
+        """
+        d, e = {0: lambda e: ((0, 0), e),
+                1: lambda e: {0: ((0, 1), 0),
+                              1: ((0, 1), 1),
+                              2: ((1, 0), 0),
+                              3: ((1, 0), 1)}[e],
+                2: lambda e: ((1, 1), e)}[dim](entity_i)
+        return self.product.get_entity_transform(d, e)
 
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
-        result = True
-        for c in point:
-            result &= (c + epsilon >= 0)
-            result &= (c - epsilon <= 1)
-        return result
-
-
-class TensorProductCell(ReferenceElement):
-    """A cell that is the product of FIAT cells A and B"""
-
-    def __init__(self, A, B):
-        self.A = A
-        self.B = B
-        # vertices
-        verts = tuple([a_coord + b_coord
-                       for a_coord in A.get_vertices()
-                       for b_coord in B.get_vertices()])
-        # topology
-        Atop = A.get_topology()
-        Btop = B.get_topology()
-        Bvcount = len(B.get_vertices())
-        topology = {}
-        for curAdim in Atop:
-            for curBdim in Btop:
-                topology[(curAdim, curBdim)] = {}
-                dim_cur = 0
-                for thingA in Atop[curAdim]:
-                    for thingB in Btop[curBdim]:
-                        topology[(curAdim, curBdim)][dim_cur] = \
-                            [x*Bvcount + y for x in Atop[curAdim][thingA]
-                             for y in Btop[curBdim][thingB]]
-                        dim_cur += 1
-
-        super(TensorProductCell, self).__init__(TENSORPRODUCT, verts, topology)
-
-    def __eq__(self, other):
-        return self.A == other.A and self.B == other.B
-
-    def get_horiz_facet_transform(self, facet_i):
-        assert isinstance(self.B, UFCInterval)
-        assert facet_i in (0, 1)
-        return lambda p: numpy.hstack([p, float(facet_i)])
-
-    def get_vert_facet_transform(self, facet_i):
-        assert isinstance(self.B, UFCInterval)
-        vf = self.A.get_facet_transform(facet_i)
-        return lambda p: numpy.hstack([vf(p[:-1]), p[-1]])
-
-    def contains_point(self, point, epsilon=0):
-        """Checks if reference cell contains given point
-        (with numerical tolerance)."""
-        dim_A = self.A.get_spatial_dimension()
-        dim_B = self.B.get_spatial_dimension()
-        assert len(point) == dim_A + dim_B
-        return self.A.contains_point(point[:dim_A], epsilon=epsilon) & self.B.contains_point(point[dim_A:], epsilon=epsilon)
+        return self.product.contains_point(point, epsilon=epsilon)
 
 
 def make_affine_mapping(xs, ys):
@@ -726,7 +832,9 @@ def default_simplex(spatial_dim):
 def ufc_simplex(spatial_dim):
     """Factory function that maps spatial dimension to an instance of
     the UFC reference simplex of that dimension."""
-    if spatial_dim == 1:
+    if spatial_dim == 0:
+        return Point()
+    elif spatial_dim == 1:
         return UFCInterval()
     elif spatial_dim == 2:
         return UFCTriangle()
