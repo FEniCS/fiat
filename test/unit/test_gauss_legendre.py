@@ -26,14 +26,14 @@ import numpy as np
 
 
 @pytest.mark.parametrize("degree", range(1, 7))
-def test_gll_basis_values(degree):
+def test_gl_basis_values(degree):
     """Ensure that integrating a simple monomial produces the expected results."""
-    from FIAT import ufc_simplex, GaussLobattoLegendre, make_quadrature
+    from FIAT import ufc_simplex, GaussLegendre, make_quadrature
 
     s = ufc_simplex(1)
     q = make_quadrature(s, degree + 1)
 
-    fe = GaussLobattoLegendre(s, degree)
+    fe = GaussLegendre(s, degree)
     tab = fe.tabulate(0, q.pts)[(0,)]
 
     for test_degree in range(degree + 1):

@@ -111,6 +111,33 @@ class GaussLobattoLegendreQuadratureLineRule(QuadratureRule):
         QuadratureRule.__init__(self, ref_el, xs, ws)
 
 
+class GaussLegendreQuadratureLineRule(QuadratureRule):
+    """Produce the Gauss--Legendre quadrature rules on the interval using
+    the implementation in numpy. This facilitates implementing
+    discontinuous spectral elements.
+
+    The quadrature rule uses m points for a degree of precision of 2m-1.
+    """
+    def __init__(self, ref_el, m):
+        if m < 1:
+            raise ValueError(
+                "Gauss-Legendre quadrature invalid for fewer than 2 points")
+
+        xs_ref, ws_ref = numpy.polynomial.legendre.leggauss(m)
+
+        A, b = reference_element.make_affine_mapping(((-1.,), (1.)),
+                                                     ref_el.get_vertices())
+
+        mapping = lambda x: numpy.dot(A, x) + b
+
+        scale = numpy.linalg.det(A)
+
+        xs = tuple([tuple(mapping(x_ref)[0]) for x_ref in xs_ref])
+        ws = tuple([scale * w for w in ws_ref])
+
+        QuadratureRule.__init__(self, ref_el, xs, ws)
+
+
 class CollapsedQuadratureTriangleRule(QuadratureRule):
     """Implements the collapsed quadrature rules defined in
     Karniadakis & Sherwin by mapping products of Gauss-Jacobi rules
