@@ -821,6 +821,16 @@ class FiredrakeQuadrilateral(Cell):
         """Computes the volume in the appropriate dimensional measure."""
         return self.product.volume()
 
+    def compute_scaled_outward_normal(self, facet_dim, facet_i):
+        """Returns the outward pointing unit normal to facet_i scaled
+        by the volume of that facet."""
+        assert facet_dim == 1
+        d, i = {0: ((0, 1), 0),
+                1: ((0, 1), 1),
+                2: ((1, 0), 0),
+                3: ((1, 0), 1)}[facet_i]
+        return self.product.compute_scaled_outward_normal(d, i)
+
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
