@@ -374,6 +374,22 @@ class Simplex(Cell):
 
         return self.compute_normal(facet_i) * v
 
+    def compute_scaled_outward_normal(self, facet_dim, facet_i):
+        """Returns the outward pointing unit normal to facet_i scaled
+        by the volume of that facet."""
+        assert facet_dim == self.get_spatial_dimension() - 1
+        facet_verts_ids = self.get_topology()[facet_dim][facet_i]
+        facet_verts_coords = self.get_vertices_of_subcomplex(facet_verts_ids)
+
+        centroid = numpy.average(self.get_vertices(), axis=0)
+        facet_centroid = numpy.average(facet_verts_coords, axis=0)
+
+        n = self.compute_scaled_normal(facet_i)
+        if numpy.dot(n, facet_centroid - centroid) > 0:
+            return n
+        else:
+            return -n
+
     def get_facet_transform(self, facet_i):
         """Return a function f such that for a point with facet coordinates
         x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
