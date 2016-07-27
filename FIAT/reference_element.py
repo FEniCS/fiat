@@ -739,6 +739,22 @@ class TensorProductCell(Cell):
         """Computes the volume in the appropriate dimensional measure."""
         return numpy.prod([c.volume() for c in self.cells])
 
+    def compute_scaled_outward_normal(self, facet_dim, facet_i):
+        """Returns the outward pointing unit normal to facet_i of
+        subelement dimension facet_dim scaled by the volume of that
+        facet."""
+        assert len(facet_dim) == len(self.get_dimension())
+        indicator = numpy.array(self.get_dimension()) - numpy.array(facet_dim)
+        (cell_i,), = numpy.nonzero(indicator)
+
+        n = []
+        for i, c in enumerate(self.cells):
+            if cell_i == i:
+                n.extend(c.compute_scaled_outward_normal(facet_dim[i], facet_i))
+            else:
+                n.extend([0] * c.get_spatial_dimension())
+        return numpy.asarray(n)
+
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
