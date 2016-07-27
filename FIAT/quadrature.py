@@ -25,8 +25,6 @@ import math
 import numpy
 
 from FIAT import reference_element, expansions, jacobi, orthopoly
-from FIAT.factorial import factorial
-from FIAT.gamma import gamma
 
 
 class QuadratureRule(object):
@@ -285,10 +283,10 @@ def compute_gauss_jacobi_rule(a, b, m):
     xs = compute_gauss_jacobi_points(a, b, m)
 
     a1 = math.pow(2, a + b + 1)
-    a2 = gamma(a + m + 1)
-    a3 = gamma(b + m + 1)
-    a4 = gamma(a + b + m + 1)
-    a5 = factorial(m)
+    a2 = math.gamma(a + m + 1)
+    a3 = math.gamma(b + m + 1)
+    a4 = math.gamma(a + b + m + 1)
+    a5 = math.factorial(m)
     a6 = a1 * a2 * a3 / a4 / a5
 
     ws = [a6 / (1.0 - x**2.0) / jacobi.eval_jacobi_deriv(a, b, m, x)**2.0

@@ -32,13 +32,12 @@ from __future__ import absolute_import, print_function, division
 
 from itertools import chain, product
 import operator
+from math import factorial
 
 from six import iteritems, itervalues
 from six.moves import reduce
 import numpy
 from numpy import ravel_multi_index, transpose
-
-from FIAT.factorial import factorial
 
 
 POINT = 0
