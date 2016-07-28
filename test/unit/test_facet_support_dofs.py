@@ -59,7 +59,7 @@ def test_quad_rtce():
     W1_v = FIAT.Lagrange(UFCInterval(), 1)
     W1 = FIAT.Hcurl(FIAT.TensorProductElement(W1_h, W1_v))
 
-    elem = FIAT.EnrichedElement(W0, W1)
+    elem = FIAT.EnrichedElement((W0, W1))
     assert {0: [0, 1, 2], 1: [0, 1, 3]} == entity_support_dofs(elem, (1, 0))
     assert {0: [0, 2, 3], 1: [1, 2, 3]} == entity_support_dofs(elem, (0, 1))
 
@@ -74,7 +74,7 @@ def test_quad_rtcf():
     W1_v = FIAT.Lagrange(UFCInterval(), 1)
     W1 = FIAT.Hdiv(FIAT.TensorProductElement(W1_h, W1_v))
 
-    elem = FIAT.EnrichedElement(W0, W1)
+    elem = FIAT.EnrichedElement((W0, W1))
     assert {0: [0, 1, 2], 1: [0, 1, 3]} == entity_support_dofs(elem, (1, 0))
     assert {0: [0, 2, 3], 1: [1, 2, 3]} == entity_support_dofs(elem, (0, 1))
 
@@ -120,7 +120,7 @@ def test_prism_hdiv(space, degree, horiz_expected, vert_expected):
     W1_v = FIAT.Lagrange(UFCInterval(), degree)
     W1 = FIAT.Hdiv(FIAT.TensorProductElement(W1_h, W1_v))
 
-    elem = FIAT.EnrichedElement(W0, W1)
+    elem = FIAT.EnrichedElement((W0, W1))
     assert horiz_expected == entity_support_dofs(elem, (2, 0))
     assert vert_expected == entity_support_dofs(elem, (1, 1))
 
@@ -147,7 +147,7 @@ def test_prism_hcurl(space, degree, horiz_expected, vert_expected):
     W1_v = FIAT.Lagrange(UFCInterval(), degree)
     W1 = FIAT.Hcurl(FIAT.TensorProductElement(W1_h, W1_v))
 
-    elem = FIAT.EnrichedElement(W0, W1)
+    elem = FIAT.EnrichedElement((W0, W1))
     assert horiz_expected == entity_support_dofs(elem, (2, 0))
     assert vert_expected == entity_support_dofs(elem, (1, 1))
 

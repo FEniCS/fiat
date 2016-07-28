@@ -441,7 +441,7 @@ def test_TFE_2Dx1D_vector_quad_hdiv():
 
     P1P0 = Hdiv(TensorProductElement(P1, P0))
     P0P1 = Hdiv(TensorProductElement(P0, P1))
-    horiz_elt = EnrichedElement(P1P0, P0P1)
+    horiz_elt = EnrichedElement((P1P0, P0P1))
     elt = Hdiv(TensorProductElement(horiz_elt, P1_DG))
     assert elt.value_shape() == (3,)
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
@@ -485,7 +485,7 @@ def test_TFE_2Dx1D_vector_quad_hcurl():
 
     P1P0 = Hcurl(TensorProductElement(P1, P0))
     P0P1 = Hcurl(TensorProductElement(P0, P1))
-    horiz_elt = EnrichedElement(P1P0, P0P1)
+    horiz_elt = EnrichedElement((P1P0, P0P1))
     elt = Hcurl(TensorProductElement(horiz_elt, P1))
     assert elt.value_shape() == (3,)
     tab = elt.tabulate(1, [(0.1, 0.2, 0.3)])
