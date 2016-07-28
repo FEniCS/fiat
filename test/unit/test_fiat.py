@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Jan Blechta
+# Copyright (C) 2015-2016 Jan Blechta
 #
 # This file is part of FIAT.
 #
@@ -21,7 +21,7 @@ import random
 import numpy as np
 import pytest
 
-from FIAT.reference_element import LINE, ReferenceElement
+from FIAT.reference_element import LINE, ReferenceElement, UFCInterval
 from FIAT.lagrange import Lagrange
 
 
@@ -63,6 +63,21 @@ def test_basis_derivatives_scaling():
             assert np.isclose(tab[(1,)][1][p], +D)
             assert np.isclose(tab[(2,)][0][p], 0.0)
             assert np.isclose(tab[(2,)][1][p], 0.0)
+
+
+@pytest.mark.parametrize(('element',), [(Lagrange(UFCInterval(), 1),)])
+def test_nodality(element):
+    poly_set = element.get_nodal_basis()
+    dual_set = element.get_dual_set()
+    assert poly_set.get_reference_element() == dual_set.get_reference_element()
+
+    coeffs_poly = poly_set.get_coeffs()
+    coeffs_dual = dual_set.to_riesz(poly_set)
+    assert coeffs_poly.shape == coeffs_dual.shape
+
+    for i in range(coeffs_dual.shape[0]):
+        for j in range(coeffs_poly.shape[0]):
+            assert coeffs_dual[i].dot(coeffs_poly[j]) == (1.0 if i==j else 0.0)
 
 
 if __name__ == '__main__':
