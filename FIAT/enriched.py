@@ -1,5 +1,4 @@
-# Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
-# Copyright (C) 2013 Andrew T. T. McRae
+# Copyright (C) 2015 Jan Blechta
 #
 # This file is part of FIAT.
 #
@@ -18,144 +17,140 @@
 
 from __future__ import absolute_import, print_function, division
 
-import numpy
-from FIAT.finite_element import FiniteElement
-from FIAT import dual_set
-from copy import copy
+import numpy as np
 
+from FIAT.polynomial_set import PolynomialSet
+from FIAT.dual_set import DualSet
+from FIAT.finite_element import FiniteElement
+
+__all__ = ['EnrichedElement']
 
 class EnrichedElement(FiniteElement):
-    """Class implementing a finite element that combined the degrees of freedom
-    of two existing finite elements."""
+    """Enriched element is a direct sum of a sequence of finite elements.
+    Dual basis is reorthogonalized to the primal basis for nodality.
 
-    def __init__(self, A, B):
+    The following is equivalent:
+        * the constructor is well-defined,
+        * the resulting element is unisolvent and its basis is nodal,
+        * the supplied elements are unisolvent with nodal basis and
+          their primal bases are mutually linearly independent,
+        * the supplied elements are unisolvent with nodal basis and
+          their dual bases are mutually linearly independent.
+    """
 
-        # Firstly, check it makes sense to enrich.  Elements must have:
-        # - same reference element
-        # - same mapping
-        # - same value shape
-        if not A.get_reference_element() == B.get_reference_element():
-            raise ValueError("Elements must be defined on the same reference element")
-        if not A.mapping()[0] == B.mapping()[0]:
-            raise ValueError("Elements must have same mapping")
-        if not A.value_shape() == B.value_shape():
-            raise ValueError("Elements must have the same value shape")
+    def __init__(self, elements):
+        # Extract common data
+        ref_el = elements[0].get_reference_element()
+        expansion_set = elements[0].get_nodal_basis().get_expansion_set()
+        #FIXME: What is correct degree?
+        degree = max(e.get_nodal_basis().get_degree() for e in elements)
+        embedded_degree = max(e.get_nodal_basis().get_embedded_degree()
+                              for e in elements)
+        order = max(e.get_order() for e in elements)
+        mapping = elements[0].mapping()[0]
+        formdegree = None if any(e.get_formdegree() is None for e in elements) \
+                else max(e.get_formdegree() for e in elements)
+        value_shape = elements[0].value_shape()
 
-        # Set up constituent elements
-        self.A = A
-        self.B = B
+        # Sanity check
+        assert all(e.get_nodal_basis().get_reference_element()
+                   == ref_el for e in elements)
+        assert all(type(e.get_nodal_basis().get_expansion_set())
+                   == type(expansion_set) for e in elements)
+        assert all(e_mapping == mapping for e in elements
+                   for e_mapping in e.mapping())
+        assert all(e.value_shape() == value_shape for e in elements)
 
-        # required degree (for quadrature) is definitely max
-        self.polydegree = max(A.degree(), B.degree())
-        # order is at least max, possibly more, though getting this
-        # right isn't important AFAIK
-        self.order = max(A.get_order(), B.get_order())
-        # form degree is essentially max (not true for Hdiv/Hcurl,
-        # but this will raise an error above anyway).
-        # E.g. an H^1 function enriched with an L^2 is now just L^2.
-        if A.get_formdegree() is None or B.get_formdegree() is None:
-            self.formdegree = None
-        else:
-            self.formdegree = max(A.get_formdegree(), B.get_formdegree())
+        # Merge polynomial sets
+        coeffs = _merge_coeffs([e.get_coeffs() for e in elements])
+        dmats = _merge_dmats([e.dmats() for e in elements])
+        poly_set = PolynomialSet(ref_el,
+                                 degree,
+                                 embedded_degree,
+                                 expansion_set,
+                                 coeffs,
+                                 dmats)
 
-        # set up reference element and mapping, following checks above
-        self.ref_el = A.get_reference_element()
-        self._mapping = A.mapping()[0]
 
-        # set up entity_ids - for each geometric entity, just concatenate
-        # the entities of the constituent elements
-        Adofs = A.entity_dofs()
-        Bdofs = B.entity_dofs()
-        offset = A.space_dimension()  # number of entities belonging to A
-        entity_ids = {}
+        # Renumber dof numbers
+        dims = [e.space_dimension() for e in elements]
+        offsets = _compute_offsets(dims)
+        entity_ids = _merge_entity_ids((e.entity_dofs() for e in elements),
+                                       offsets)
 
-        for ent_dim in Adofs:
-            entity_ids[ent_dim] = {}
-            for ent_dim_index in Adofs[ent_dim]:
-                entlist = copy(Adofs[ent_dim][ent_dim_index])
-                entlist += [c + offset for c in Bdofs[ent_dim][ent_dim_index]]
-                entity_ids[ent_dim][ent_dim_index] = entlist
+        # Merge dual bases
+        nodes = [node for e in elements for node in e.dual_basis()]
+        dual_set = DualSet(nodes, ref_el, entity_ids)
 
-        # set up dual basis - just concatenation
-        nodes = A.dual_basis() + B.dual_basis()
-        self.dual = dual_set.DualSet(nodes, self.ref_el, entity_ids)
+        # FiniteElement constructor adjusts poly_set coefficients s.t.
+        # dual_set is really dual to poly_set
+        FiniteElement.__init__(self, poly_set, dual_set, order,
+                formdegree=formdegree, mapping=mapping)
 
-    def degree(self):
-        """Return the degree of the (embedding) polynomial space."""
-        return self.polydegree
 
-    def get_nodal_basis(self):
-        """Return the nodal basis, encoded as a PolynomialSet object,
-        for the finite element."""
-        raise NotImplementedError("get_nodal_basis not implemented")
+def _merge_coeffs(coeffss):
+    shape0 = sum(c.shape[0] for c in coeffss)
+    shape1 = max(c.shape[1] for c in coeffss)
+    new_coeffs = np.zeros((shape0, shape1), dtype=coeffss[0].dtype)
+    counter = 0
+    for c in coeffss:
+        rows = c.shape[0]
+        cols = c.shape[1]
+        new_coeffs[counter:counter+rows, :cols] = c
+        counter += rows
+    assert counter == shape0
+    return new_coeffs
 
-    def get_coeffs(self):
-        """Return the expansion coefficients for the basis of the
-        finite element."""
-        raise NotImplementedError("get_coeffs not implemented")
+def _merge_dmats(dmatss):
+    shape, arg = max((dmats[0].shape, args) for args, dmats in enumerate(dmatss))
+    assert shape[0] == shape[1]
+    new_dmats = []
+    for dim in range(len(dmatss[arg])):
+        new_dmats.append(dmatss[arg][dim].copy())
+        for dmats in dmatss:
+            sl = slice(0, dmats[dim].shape[0]), slice(0, dmats[dim].shape[1])
+            assert np.allclose(dmats[dim], new_dmats[dim][sl]), \
+                    "dmats of elements to be directly summed are not matching!"
+    return new_dmats
 
-    def space_dimension(self):
-        """Return the dimension of the finite element space."""
-        # number of dofs just adds
-        return self.A.space_dimension() + self.B.space_dimension()
+def _compute_offsets(dimensions):
+    offsets = np.zeros(len(dimensions))
+    for i, dim in enumerate(dimensions):
+        offsets[i+1:] += dim
+    return offsets
 
-    def tabulate(self, order, points):
-        """Return tabulated values of derivatives up to given order of
-        basis functions at given points."""
+def _merge_entity_ids(entity_ids, offsets):
+    ret = {}
+    for i, ids in enumerate(entity_ids):
+        for dim in ids:
+            if not ret.get(dim):
+                ret[dim] = {}
+            for entity in ids[dim]:
+                if not ret[dim].get(entity):
+                    ret[dim][entity] = []
+                ret[dim][entity] += (np.array(ids[dim][entity]) + offsets[i]).tolist()
+    return ret
 
-        # Again, simply concatenate at the basis-function level
-        # Number of array dimensions depends on whether the space
-        # is scalar- or vector-valued, so treat these separately.
 
-        Asd = self.A.space_dimension()
-        Bsd = self.B.space_dimension()
-        Atab = self.A.tabulate(order, points)
-        Btab = self.B.tabulate(order, points)
-        npoints = len(points)
-        vs = self.A.value_shape()
-        rank = len(vs)  # scalar: 0, vector: 1
+if __name__ == '__main__':
+    # TODO: Write a proper test, especially for nodality of basis
+    from FIAT.lagrange import Lagrange
+    from FIAT.bubble import Bubble
+    from FIAT.reference_element import UFCTriangle
 
-        result = {}
-        for index in Atab:
-            if rank == 0:
-                # scalar valued
-                # Atab[index] and Btab[index] look like
-                # array[basis_fn][point]
-                # We build a new array, which will be the concatenation
-                # of the two subarrays, in the first index.
+    T = UFCTriangle()
 
-                temp = numpy.zeros((Asd + Bsd, npoints),
-                                   dtype=Atab[index].dtype)
-                temp[:Asd, :] = Atab[index][:, :]
-                temp[Asd:, :] = Btab[index][:, :]
+    # Non-unisolvent case, should fail
+    p3 = Lagrange(T, 3)
+    p4 = Lagrange(T, 4)
+    try:
+        e = EnrichedElement((p3, p4))
+    except np.linalg.LinAlgError:
+        pass
+    else:
+        assert False
 
-                result[index] = temp
-            elif rank == 1:
-                # vector valued
-                # Atab[index] and Btab[index] look like
-                # array[basis_fn][x/y/z][point]
-                # We build a new array, which will be the concatenation
-                # of the two subarrays, in the first index.
-
-                temp = numpy.zeros((Asd + Bsd, vs[0], npoints),
-                                   dtype=Atab[index].dtype)
-                temp[:Asd, :, :] = Atab[index][:, :, :]
-                temp[Asd:, :, :] = Btab[index][:, :, :]
-
-                result[index] = temp
-            else:
-                raise NotImplementedError("must be scalar- or vector-valued")
-        return result
-
-    def value_shape(self):
-        """Return the value shape of the finite element functions."""
-        return self.A.value_shape()
-
-    def dmats(self):
-        """Return dmats: expansion coefficients for basis function
-        derivatives."""
-        raise NotImplementedError("dmats not implemented")
-
-    def get_num_members(self, arg):
-        """Return number of members of the expansion set."""
-        raise NotImplementedError("get_num_members not implemented")
+    # Unisolvent case
+    p1 = Lagrange(T, 1)
+    b3 = Bubble(T, 3)
+    e = EnrichedElement((p1, b3))
