@@ -40,3 +40,10 @@ and run the following command:
 .. code-block:: console
 
     pip install .
+
+To install to a specific location, add the ``--prefix`` flag
+to the installation command:
+
+.. code-block:: console
+
+    pip install --prefix=<some directory> .
