@@ -17,14 +17,13 @@ For more information, visit http://www.fenicsproject.org
 Documentation
 =============
 
-The FIAT documentation can be viewed at
-http://fenics.readthedocs.io/projects/fiat/
+The FIAT documentation can be viewed at Read the Docs:
 
-Current documentation status:
-
-.. image:: https://readthedocs.org/projects/fenics-fiat/badge/?version=latest
-   :target: http://fenics.readthedocs.io/projects/fiat/en/latest/?badge=latest
-   :alt: Documentation Status
++--------+-------------------------------------------------------------------------------------+
+|FIAT     |  .. image:: https://readthedocs.org/projects/fenics-fiat/badge/?version=latest       |
+|        |     :target: http://fenics.readthedocs.io/projects/fiat/en/latest/?badge=latest      |
+|        |     :alt: Documentation Status                                                      |
++--------+-------------------------------------------------------------------------------------+
 
 
 License
