@@ -1,44 +1,10 @@
-\documentclass{fenicsmanual}
-\usepackage{graphicx}
-\usepackage{amssymb}
-\usepackage{amsmath}
-\usepackage{url}
+.. title:: User manual
 
-\textwidth = 6.5in
-\textheight = 9in
-\oddsidemargin = 0in
-\evensidemargin = 0in
-\topmargin = 0.0 in
-\headheight = 0.0 in
-\headsep = 0.0 in
-\parskip = 0.2in
-\parindent = 0.0in
 
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{definition}{Definition}
-\newtheorem{remark}{Remark}
-\newtheorem{example}{Example}
-\newcommand{\tuple}[2]{<\!#1,#2\!>}
-\newcommand{\meet}{\wedge}
-\newcommand{\bigmeet}{\bigwedge}
-\def\proof{\par{\it Proof}. \ignorespaces}
+===========
+User manual
+===========
 
-\def\endproof{\vbox{\hrule height0.6pt\hbox{%
-   \vrule height1.3ex width0.6pt\hskip0.8ex
-   \vrule width0.6pt}\hrule height0.6pt
-  }}
-
-\newcommand{\N}{{\sf
-    N\hspace*{-1.0ex}\rule{0.15ex}{1.3ex}\hspace*{1.0ex}}}
-
-\title{FIAT 0.2.4 Users' Manual}
-\author{Robert C. Kirby}
-\begin{document}
-\maketitle
-
-\chapter{Introduction}
 FIAT (FInite element Automatic Tabulator) is a Python package for
 defining and evaluating a wide range of different finite element basis
 functions for numerical partial differential equations.  It is
@@ -70,18 +36,6 @@ element on a reference domain and evaluate its basis functions and
 derivatives at some quadrature points.  Then, I will explain some of
 the underlying infrastructure so as to demonstrate how to add new
 elements.
-
-\chapter{Installation}
-FIAT uses the standard Python \texttt{distutils} tools.  From the top
-directory, one executes \texttt{python setup.py install}.  This will
-put FIAT into the \texttt{site-packages} directory.  Super-user
-permission (such as \texttt{su} or \texttt{sudo}) may be required to
-write to this directory.  For more configuration options, one may type
-\texttt{python setup.py --help} or consult the online Python
-documentation at \texttt{http://docs.python.org/inst/inst.html}
-
-FIAT requires the commonly used \verb.Numeric. package.
-
 
 \chapter{Using FIAT: A tutorial with Lagrange elements}
 \section{Importing FIAT}
@@ -126,7 +80,7 @@ abstract definition of Ciarlet.  These methods are
 The first of these returns the code for the shape and the second
 returns the nodes of the finite element (including information related
 to topological association of nodes with mesh entities, needed for
-creating degree of freedom orderings).  
+creating degree of freedom orderings).
 
 \section{Quadrature rules}
 FIAT implements arbitrary-order collapsed quadrature, as discussed in
@@ -198,7 +152,7 @@ array([[-0.83278049, -0.06003983,  0.14288254,  0.34993778],
        [ 0.31010205,  1.28989795,  0.31010205,  1.28989795],
        [-0.31010205, -1.28989795, -0.31010205, -1.28989795],
        [ 0.97566304,  0.40997761, -0.97566304, -0.40997761]])
->>> Ufs_jet[1][(0,1)] 
+>>> Ufs_jet[1][(0,1)]
 array([[ -8.32780492e-01,  -6.00398310e-02,   1.42882543e-01,   3.49937780e-01],
        [  7.39494156e-17,   4.29608279e-17,   4.38075188e-17,   7.47961065e-17],
        [ -1.89897949e-01,   7.89897949e-01,  -1.89897949e-01,   7.89897949e-01],
@@ -283,24 +237,4 @@ polynomials and finite element spaces.
 
 \subsection{\texttt{PolynomialSet}}
 The \texttt{PolynomialSet} function is a factory function interface into
-the hierarchy 
-
-
-
-
-\chapter{Wish list and open problems}
-While FIAT is highly functional as a tool for tabulating basis
-functions at quadrature points, there are a lot of interesting
-things to do.  In case anybody wants to help out, I have
-chosen to describe some of these issues here.
-
-\section{Stable/fast VDM inversion}
-
-\section{Symmetric quadrature rules}
-
-\section{Declarative top-level language}
-
-\section{Integration with SMART-type tools}
-
-
-\end{document}
+the hierarchy

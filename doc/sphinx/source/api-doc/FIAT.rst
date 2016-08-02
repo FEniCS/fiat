@@ -20,22 +20,6 @@ FIAT.argyris module
     :undoc-members:
     :show-inheritance:
 
-FIAT.asci2vtk2d module
-----------------------
-
-.. automodule:: FIAT.asci2vtk2d
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-FIAT.asci2vtk3d module
-----------------------
-
-.. automodule:: FIAT.asci2vtk3d
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 FIAT.brezzi_douglas_fortin_marini module
 ----------------------------------------
 
@@ -52,10 +36,26 @@ FIAT.brezzi_douglas_marini module
     :undoc-members:
     :show-inheritance:
 
+FIAT.bubble module
+------------------
+
+.. automodule:: FIAT.bubble
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 FIAT.crouzeix_raviart module
 ----------------------------
 
 .. automodule:: FIAT.crouzeix_raviart
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+FIAT.discontinuous module
+-------------------------
+
+.. automodule:: FIAT.discontinuous
     :members:
     :undoc-members:
     :show-inheritance:
@@ -76,6 +76,14 @@ FIAT.discontinuous_raviart_thomas module
     :undoc-members:
     :show-inheritance:
 
+FIAT.discontinuous_taylor module
+--------------------------------
+
+.. automodule:: FIAT.discontinuous_taylor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 FIAT.dual_set module
 --------------------
 
@@ -84,18 +92,18 @@ FIAT.dual_set module
     :undoc-members:
     :show-inheritance:
 
-FIAT.expansions module
-----------------------
+FIAT.enriched module
+--------------------
 
-.. automodule:: FIAT.expansions
+.. automodule:: FIAT.enriched
     :members:
     :undoc-members:
     :show-inheritance:
 
-FIAT.factorial module
----------------------
+FIAT.expansions module
+----------------------
 
-.. automodule:: FIAT.factorial
+.. automodule:: FIAT.expansions
     :members:
     :undoc-members:
     :show-inheritance:
@@ -112,6 +120,30 @@ FIAT.functional module
 ----------------------
 
 .. automodule:: FIAT.functional
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+FIAT.gauss_legendre module
+--------------------------
+
+.. automodule:: FIAT.gauss_legendre
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+FIAT.gauss_lobatto_legendre module
+----------------------------------
+
+.. automodule:: FIAT.gauss_lobatto_legendre
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+FIAT.hdivcurl module
+--------------------
+
+.. automodule:: FIAT.hdivcurl
     :members:
     :undoc-members:
     :show-inheritance:
@@ -140,14 +172,6 @@ FIAT.lagrange module
     :undoc-members:
     :show-inheritance:
 
-FIAT.makelags module
---------------------
-
-.. automodule:: FIAT.makelags
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 FIAT.morley module
 ------------------
 
@@ -172,10 +196,10 @@ FIAT.nedelec_second_kind module
     :undoc-members:
     :show-inheritance:
 
-FIAT.newdubiner module
-----------------------
+FIAT.orthopoly module
+---------------------
 
-.. automodule:: FIAT.newdubiner
+.. automodule:: FIAT.orthopoly
     :members:
     :undoc-members:
     :show-inheritance:
@@ -192,6 +216,14 @@ FIAT.quadrature module
 ----------------------
 
 .. automodule:: FIAT.quadrature
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+FIAT.quadrature_schemes module
+------------------------------
+
+.. automodule:: FIAT.quadrature_schemes
     :members:
     :undoc-members:
     :show-inheritance:
@@ -220,18 +252,18 @@ FIAT.regge module
     :undoc-members:
     :show-inheritance:
 
-FIAT.tabarg module
-------------------
+FIAT.restricted module
+----------------------
 
-.. automodule:: FIAT.tabarg
+.. automodule:: FIAT.restricted
     :members:
     :undoc-members:
     :show-inheritance:
 
-FIAT.tablag module
-------------------
+FIAT.tensor_product module
+--------------------------
 
-.. automodule:: FIAT.tablag
+.. automodule:: FIAT.tensor_product
     :members:
     :undoc-members:
     :show-inheritance:
@@ -244,18 +276,10 @@ FIAT.trace module
     :undoc-members:
     :show-inheritance:
 
-FIAT.transform_hermite module
------------------------------
+FIAT.trace_hdiv module
+----------------------
 
-.. automodule:: FIAT.transform_hermite
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-FIAT.transform_morley module
-----------------------------
-
-.. automodule:: FIAT.transform_morley
+.. automodule:: FIAT.trace_hdiv
     :members:
     :undoc-members:
     :show-inheritance:
