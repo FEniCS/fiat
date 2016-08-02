@@ -11,6 +11,8 @@ such as the families of Raviart-Thomas, Brezzi-Douglas-Marini and
 Nedelec are supported on triangles and tetrahedra. Upcoming versions
 will also support Hermite and nonconforming elements.
 
+FIAT is part of the FEniCS Project.
+
 For more information, visit http://www.fenicsproject.org
 
 
