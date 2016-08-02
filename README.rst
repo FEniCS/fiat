@@ -18,7 +18,7 @@ Documentation
 =============
 
 The FIAT documentation can be viewed at
-http://fenics-fiat.readthedocs.org/.
+http://fenics.readthedocs.io/projects/fiat/
 
 .. image:: https://readthedocs.org/projects/fenics-fiat/badge/?version=latest
    :target: http://fenics.readthedocs.io/projects/fiat/en/latest/?badge=latest
@@ -40,10 +40,3 @@ License
 
   You should have received a copy of the GNU Lesser General Public License
   along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-
-Dependencies
-============
-
-#. Python 2.7 or later
-#. The Python modules NumPy, SymPy and six
