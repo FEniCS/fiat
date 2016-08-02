@@ -20,6 +20,7 @@ Documentation
 The FIAT documentation can be viewed at
 http://fenics.readthedocs.io/projects/fiat/
 
+Current documentation status:
 .. image:: https://readthedocs.org/projects/fenics-fiat/badge/?version=latest
    :target: http://fenics.readthedocs.io/projects/fiat/en/latest/?badge=latest
    :alt: Documentation Status
