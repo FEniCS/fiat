@@ -5,7 +5,7 @@
 User manual
 ===========
 
-[FIXME: Work in progress, needs substantial editing...]
+.. note:: This page is work in progress and needs substantial editing.
 
 FIAT (FInite element Automatic Tabulator) is a Python package for
 defining and evaluating a wide range of different finite element basis
