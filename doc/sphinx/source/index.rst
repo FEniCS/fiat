@@ -30,5 +30,7 @@ Documentation
    API reference <api-doc/FIAT>
    releases
 
+[FIXME: These links don't belong here, should go under API reference somehow.]
+
 * :ref:`genindex`
 * :ref:`modindex`
