@@ -271,3 +271,22 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+
+def run_apidoc(_):
+    modules = ['FIAT']
+
+    # Get location of Sphinx files
+    sphinx_source_dir = os.path.abspath(os.path.dirname(__file__))
+    repo_dir = os.path.abspath(os.path.join(sphinx_source_dir, os.path.pardir,
+                                            os.path.pardir, os.path.pardir))
+    apidoc_dir = os.path.join(sphinx_source_dir, "api-doc")
+
+    from sphinx.apidoc import main
+    for module in modules:
+        # Generate .rst files ready for autodoc
+        module_dir = os.path.join(repo_dir, module)
+        main(["-f", "-d", "1", "-o", apidoc_dir, module_dir])
+
+def setup(app):
+    app.connect('builder-inited', run_apidoc)
