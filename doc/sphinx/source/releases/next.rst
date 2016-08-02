@@ -12,8 +12,8 @@ Summary of changes
           changes in the new release.
 
 
-Detailed ChangeLog
-==================
+Detailed changes
+================
 
 .. note:: At the time of release, make a verbatim copy of the
           ChangeLog here (and remove this note).
