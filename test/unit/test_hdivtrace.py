@@ -30,11 +30,11 @@ import numpy as np
 def test_basis_values(degree, facet_id):
     """Ensure that integrating simple monomials produces the expected results
     for each facet entity of the reference triangle."""
-    from FIAT import ufc_simplex, TraceHDiv, make_quadrature
+    from FIAT import ufc_simplex, HDivTrace, make_quadrature
 
     ref_el = ufc_simplex(2)
     quadrule = make_quadrature(ufc_simplex(1), degree + 1)
-    fiat_element = TraceHDiv(ref_el, degree)
+    fiat_element = HDivTrace(ref_el, degree)
 
     nf = fiat_element.trace.space_dimension()
     entity = (ref_el.get_spatial_dimension() - 1, facet_id)

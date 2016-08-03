@@ -29,7 +29,7 @@ from FIAT.bubble import Bubble
 from FIAT.tensor_product import TensorProductElement
 from FIAT.enriched import EnrichedElement
 from FIAT.discontinuous import DiscontinuousElement
-from FIAT.hdiv_trace import TraceHDiv
+from FIAT.hdiv_trace import HDivTrace
 from FIAT.restricted import RestrictedElement  # noqa
 from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson
 
@@ -63,7 +63,7 @@ supported_elements = {"Argyris": Argyris,
                       "EnrichedElement": EnrichedElement,
                       "TensorProductElement": TensorProductElement,
                       "BrokenElement": DiscontinuousElement,
-                      "TraceElement": TraceHDiv,
+                      "HDiv Trace": HDivTrace,
                       "Hellan-Herrmann-Johnson": HellanHerrmannJohnson}
 
 # List of extra elements

@@ -35,7 +35,7 @@ class TraceError(Exception):
         self.D = keys
 
 
-class TraceHDiv(FiniteElement):
+class HDivTrace(FiniteElement):
     """Class implementing the trace of hdiv elements on general simplices."""
 
     def __init__(self, cell, degree):

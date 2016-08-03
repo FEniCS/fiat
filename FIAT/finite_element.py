@@ -35,11 +35,7 @@ class FiniteElement(object):
     by the special element in its module.
 
     Examples of special elements that inherit from this class include
-    the following:
-
-    EnrichedElement: The direct sum of two finite elements;
-    TensorProductElement: The direct product of two finite elements;
-    TraceHDiv: The trace of a finite element."""
+    the following: EnrichedElement, TensorElement and HDivTrace."""
 
     def __init__(self, ref_el, order, formdegree=None):
         self.order = order
