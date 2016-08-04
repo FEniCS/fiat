@@ -106,6 +106,6 @@ class Regge(FiniteElement):
         # degrees of freedom
         Ls = ReggeDual(cell, degree)
         # mapping under affine transformation
-        mapping = "pullback as metric"
+        mapping = "pullback as covariant 2-tensor"
 
         super(Regge, self).__init__(Ps, Ls, degree, mapping = mapping)
