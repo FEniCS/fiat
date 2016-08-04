@@ -16,6 +16,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
+# Modified by Lizao Li (lzlarryli@gmail.com), 2016
 """
 Abstract class and particular implementations of finite element
 reference simplex geometry/topology.
