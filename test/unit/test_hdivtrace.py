@@ -36,14 +36,14 @@ def test_basis_values(degree, facet_id):
     quadrule = make_quadrature(ufc_simplex(1), degree + 1)
     fiat_element = HDivTrace(ref_el, degree)
 
-    nf = fiat_element.trace.space_dimension()
+    nf = fiat_element.dclagrange.space_dimension()
     entity = (ref_el.get_spatial_dimension() - 1, facet_id)
     tab = fiat_element.tabulate(0, quadrule.pts,
                                 entity)[(0, 0)][nf*facet_id:nf*(facet_id + 1)]
 
     for test_degree in range(degree + 1):
         coeffs = [n(lambda x: x[0]**test_degree)
-                  for n in fiat_element.trace.dual.nodes]
+                  for n in fiat_element.dclagrange.dual.nodes]
         integral = np.dot(coeffs, np.dot(tab, quadrule.wts))
         reference = np.dot([x[0]**test_degree
                             for x in quadrule.pts], quadrule.wts)
