@@ -298,6 +298,20 @@ class Simplex(Cell):
                                 self.get_vertices_of_subcomplex(t[2][face_i])))
         return (v1 - v0, v2 - v0)
 
+    def compute_face_edge_tangents(self, dim, entity_id):
+        """Computes all the edge tangents of any k-face with k>=1.
+        The result is a array of binom(dim+1,2) vectors.
+        This agrees with `compute_edge_tangent` when dim=1.
+        """
+        vert_ids = self.get_topology()[dim][entity_id]
+        vert_coords = [numpy.array(x)
+                       for x in self.get_vertices_of_subcomplex(vert_ids)]
+        edge_ts = []
+        for source in range(dim):
+            for dest in range(source + 1, dim + 1):
+                edge_ts.append(vert_coords[dest] - vert_coords[source])
+        return edge_ts
+
     def make_lattice(self, n, interior=0):
         """Constructs a lattice of points on the simplex.  For
         example, the 1:st order lattice will be just the vertices.
