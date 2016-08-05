@@ -17,20 +17,16 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
-
-
-
 from __future__ import absolute_import, print_function, division
 
-import numpy
 from FIAT.finite_element import FiniteElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONSymTensorPolynomialSet
 from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct
-from FIAT.functional import index_iterator
+
 
 class ReggeDual(DualSet):
-
+    """Degrees of freedom for generalized Regge finite elements."""
     def __init__(self, cell, degree):
         dim = cell.get_spatial_dimension()
         if (dim < 2) or (dim > 3):
@@ -39,11 +35,12 @@ class ReggeDual(DualSet):
 
         # construct the degrees of freedoms
         dofs = []               # list of functionals
-        dof_ids = {}            # dof_ids[i][j] contains the indices of dofs
-                                # that are associated with entity j in dim i.
+        # dof_ids[i][j] contains the indices of dofs that are associated with
+        # entity j in dim i
+        dof_ids = {}
 
         # no vertex dof
-        dof_ids[0] = {i:[] for i in range(dim + 1)}
+        dof_ids[0] = {i: [] for i in range(dim + 1)}
         # edge dofs
         (_dofs, _dof_ids) = self._generate_dofs(cell, 1, degree, 0)
         dofs.extend(_dofs)
@@ -108,4 +105,4 @@ class Regge(FiniteElement):
         # mapping under affine transformation
         mapping = "pullback as covariant 2-tensor"
 
-        super(Regge, self).__init__(Ps, Ls, degree, mapping = mapping)
+        super(Regge, self).__init__(Ps, Ls, degree, mapping=mapping)
