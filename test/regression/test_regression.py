@@ -267,7 +267,7 @@ def test_quadrature():
             assert table[eval(dtuple)].shape == reference_table[dtuple].shape
             diff = table[eval(dtuple)] - reference_table[dtuple]
             assert (abs(diff) < tolerance).all(), \
-                    "quadrature case %s %s %s failed!" % (family, dim, degree)
+                "quadrature case %s %s %s failed!" % (family, dim, degree)
 
     filename = os.path.join(ref_path, "reference.json")
 
