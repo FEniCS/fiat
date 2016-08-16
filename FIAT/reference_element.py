@@ -197,6 +197,13 @@ class Simplex(Cell):
 
     def compute_normal(self, facet_i):
         """Returns the unit normal vector to facet i of codimension 1."""
+        # Interval case
+        if self.get_shape() == LINE:
+            verts = numpy.asarray(self.vertices)
+            v_i, = self.get_topology()[0][facet_i]
+            n = verts[v_i] - verts[[1, 0][v_i]]
+            return n / numpy.linalg.norm(n)
+
         # first, let's compute the span of the simplex
         # This is trivial if we have a d-simplex in R^d.
         # Not so otherwise.
@@ -349,7 +356,7 @@ class Simplex(Cell):
             return image_pts
 
     def volume(self):
-        """Computes the volumne of the simplex in the appropriate
+        """Computes the volume of the simplex in the appropriate
         dimensional measure."""
         return volume(self.get_vertices())
 
@@ -360,14 +367,15 @@ class Simplex(Cell):
     def compute_scaled_normal(self, facet_i):
         """Returns the unit normal to facet_i of scaled by the
         volume of that facet."""
-        t = self.get_topology()
-        sd = self.get_spatial_dimension()
-        facet_verts_ids = t[sd - 1][facet_i]
-        facet_verts_coords = self.get_vertices_of_subcomplex(facet_verts_ids)
-
-        v = volume(facet_verts_coords)
-
+        dim = self.get_spatial_dimension()
+        v = self.volume_of_subcomplex(dim - 1, facet_i)
         return self.compute_normal(facet_i) * v
+
+    def compute_reference_normal(self, facet_dim, facet_i):
+        """Returns the unit normal in infinity norm to facet_i."""
+        assert facet_dim == self.get_spatial_dimension() - 1
+        n = Simplex.compute_normal(self, facet_i)  # skip UFC overrides
+        return n / numpy.linalg.norm(n, numpy.inf)
 
     def get_facet_transform(self, facet_i):
         """Return a function f such that for a point with facet coordinates
@@ -714,6 +722,25 @@ class TensorProductCell(Cell):
                                 for t, s in zip(sct, slices)]))
         return transform
 
+    def volume(self):
+        """Computes the volume in the appropriate dimensional measure."""
+        return numpy.prod([c.volume() for c in self.cells])
+
+    def compute_reference_normal(self, facet_dim, facet_i):
+        """Returns the unit normal in infinity norm to facet_i of
+        subelement dimension facet_dim."""
+        assert len(facet_dim) == len(self.get_dimension())
+        indicator = numpy.array(self.get_dimension()) - numpy.array(facet_dim)
+        (cell_i,), = numpy.nonzero(indicator)
+
+        n = []
+        for i, c in enumerate(self.cells):
+            if cell_i == i:
+                n.extend(c.compute_reference_normal(facet_dim[i], facet_i))
+            else:
+                n.extend([0] * c.get_spatial_dimension())
+        return numpy.asarray(n)
+
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
@@ -775,6 +802,19 @@ class FiredrakeQuadrilateral(Cell):
                               3: ((1, 0), 1)}[e],
                 2: lambda e: ((1, 1), e)}[dim](entity_i)
         return self.product.get_entity_transform(d, e)
+
+    def volume(self):
+        """Computes the volume in the appropriate dimensional measure."""
+        return self.product.volume()
+
+    def compute_reference_normal(self, facet_dim, facet_i):
+        """Returns the unit normal in infinity norm to facet_i."""
+        assert facet_dim == 1
+        d, i = {0: ((0, 1), 0),
+                1: ((0, 1), 1),
+                2: ((1, 0), 0),
+                3: ((1, 0), 1)}[facet_i]
+        return self.product.compute_reference_normal(d, i)
 
     def contains_point(self, point, epsilon=0):
         """Checks if reference cell contains given point
