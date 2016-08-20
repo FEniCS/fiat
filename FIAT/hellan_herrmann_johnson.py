@@ -93,9 +93,9 @@ class HellanHerrmannJohnsonDual(DualSet):
 
 
 class HellanHerrmannJohnson(FiniteElement):
-    """The generalized Regge elements for symmetric-matrix-valued functions.
-       REG(r) in dimension n is the space of polynomial symmetric-matrix-valued
-       functions of degree r or less with tangential-tangential continuity.
+    """The definition of Hellan-Herrmann-Johnson element. It is defined only in
+       dimension 2. It consists of piecewise polynomial symmetric-matrix-valued
+       functions of degree r or less with normal-normal continuity.
     """
     def __init__(self, cell, degree):
         assert degree >= 0, "Hellan-Herrmann-Johnson starts at degree 0!"
