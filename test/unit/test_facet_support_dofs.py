@@ -152,6 +152,13 @@ def test_prism_hcurl(space, degree, horiz_expected, vert_expected):
     assert vert_expected == entity_support_dofs(elem, (1, 1))
 
 
+def test_discontinuous_element():
+    elem = FIAT.DiscontinuousElement(FIAT.Lagrange(UFCTriangle(), 3))
+    assert entity_support_dofs(elem, 1) == {0: [1, 2, 3, 4],
+                                            1: [0, 2, 5, 6],
+                                            2: [0, 1, 7, 8]}
+
+
 if __name__ == '__main__':
     import os
     pytest.main(os.path.abspath(__file__))
