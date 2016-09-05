@@ -240,9 +240,9 @@ def test_quadrature():
         ("Bubble", 3, 4),
         ("Bubble", 3, 5),
         ("Bubble", 3, 6),
-        ("HHJ", 2, 0),
-        ("HHJ", 2, 1),
-        ("HHJ", 2, 2)
+        ("Hellan-Herrmann-Johnson", 2, 0),
+        ("Hellan-Herrmann-Johnson", 2, 1),
+        ("Hellan-Herrmann-Johnson", 2, 2),
     )
 
     def create_data(family, dim, degree):
