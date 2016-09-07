@@ -22,6 +22,8 @@ Summary of changes
   thus called "double covariant piola". This change causes multiple internal
   changes downstream in UFL and FFC. But this change should not be visible to
   the end-user.
+- Added support for the Hellan-Herrmann-Johnson element (symmetric matrix
+  fields with normal-normal continuity in 2D).
 
 Detailed changes
 ================
