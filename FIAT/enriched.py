@@ -297,27 +297,3 @@ class NodelessEnrichedElement(FiniteElement):
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented")
-
-
-if __name__ == '__main__':
-    # TODO: Write a proper test, especially for nodality of basis
-    from FIAT.lagrange import Lagrange
-    from FIAT.bubble import Bubble
-    from FIAT.reference_element import UFCTriangle
-
-    T = UFCTriangle()
-
-    # Non-unisolvent case, should fail
-    p3 = Lagrange(T, 3)
-    p4 = Lagrange(T, 4)
-    try:
-        e = EnrichedElement(p3, p4)
-    except np.linalg.LinAlgError:
-        pass
-    else:
-        assert False
-
-    # Unisolvent case
-    p1 = Lagrange(T, 1)
-    b3 = Bubble(T, 3)
-    e = EnrichedElement(p1, b3)

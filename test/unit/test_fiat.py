@@ -21,8 +21,13 @@ import random
 import numpy as np
 import pytest
 
-from FIAT.reference_element import LINE, ReferenceElement, UFCInterval
+from FIAT.reference_element import LINE, ReferenceElement
+from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.lagrange import Lagrange
+from FIAT.discontinuous_lagrange import DiscontinuousLagrange
+from FIAT.crouzeix_raviart import CrouzeixRaviart
+from FIAT.enriched import EnrichedElement
+from FIAT.bubble import Bubble
 
 
 def test_basis_derivatives_scaling():
@@ -65,7 +70,42 @@ def test_basis_derivatives_scaling():
             assert np.isclose(tab[(2,)][1][p], 0.0)
 
 
-@pytest.mark.parametrize(('element',), [(Lagrange(UFCInterval(), 1),)])
+@pytest.mark.parametrize(('element',), [
+    # Basic elements
+    (Lagrange(UFCInterval(), 1),),
+    (Lagrange(UFCInterval(), 2),),
+    (Lagrange(UFCInterval(), 3),),
+    (Lagrange(UFCTriangle(), 1),),
+    (Lagrange(UFCTriangle(), 2),),
+    (Lagrange(UFCTriangle(), 3),),
+    (Lagrange(UFCTetrahedron(), 1),),
+    (Lagrange(UFCTetrahedron(), 2),),
+    (Lagrange(UFCTetrahedron(), 3),),
+    (DiscontinuousLagrange(UFCInterval(), 0),),
+    (DiscontinuousLagrange(UFCInterval(), 1),),
+    (DiscontinuousLagrange(UFCInterval(), 2),),
+    (DiscontinuousLagrange(UFCTriangle(), 0),),
+    (DiscontinuousLagrange(UFCTriangle(), 1),),
+    (DiscontinuousLagrange(UFCTriangle(), 2),),
+    (DiscontinuousLagrange(UFCTetrahedron(), 0),),
+    (DiscontinuousLagrange(UFCTetrahedron(), 1),),
+    (DiscontinuousLagrange(UFCTetrahedron(), 2),),
+    (CrouzeixRaviart(UFCInterval(), 1),),
+    (CrouzeixRaviart(UFCTriangle(), 1),),
+    (CrouzeixRaviart(UFCTetrahedron(), 1),),
+
+    # FIXME: for non-affine mapped elements test does not work
+    #(RaviartThomas(UFCTriangle(), 1),),
+    #(BrezziDouglasMarini(UFCTriangle(), 1),),
+    #(Nedelec(UFCTriangle(), 1),),
+    #(NedelecSecondKind(UFCTriangle(), 1),),
+    #(Regge(UFCTriangle(), 1),),
+    #(HHJ(UFCTriangle(), 1),),
+
+    # Compound elements
+    (EnrichedElement(Lagrange(UFCTriangle(), 1), Bubble(UFCTriangle(), 3)),),
+    (EnrichedElement(Lagrange(UFCTetrahedron(), 1), Bubble(UFCTetrahedron(), 4)),),
+    ])
 def test_nodality(element):
     poly_set = element.get_nodal_basis()
     dual_set = element.get_dual_set()
@@ -77,7 +117,28 @@ def test_nodality(element):
 
     for i in range(coeffs_dual.shape[0]):
         for j in range(coeffs_poly.shape[0]):
-            assert coeffs_dual[i].dot(coeffs_poly[j]) == (1.0 if i==j else 0.0)
+            assert np.isclose(coeffs_dual[i].dot(coeffs_poly[j]), 1.0 if i==j else 0.0)
+
+
+@pytest.mark.parametrize(('elements',), [
+    ((Lagrange(UFCInterval(), 2), Bubble(UFCInterval(), 2)),),
+    ((Lagrange(UFCTriangle(), 3), Bubble(UFCTriangle(), 3)),),
+    ((Lagrange(UFCTetrahedron(), 4), Bubble(UFCTetrahedron(), 4)),),
+    ((Lagrange(UFCInterval(), 1), Lagrange(UFCInterval(), 1)),),
+    ((Lagrange(UFCInterval(), 1), Bubble(UFCInterval(), 2), Bubble(UFCInterval(), 2)),),
+    ])
+def test_illposed_enriched(elements):
+    with pytest.raises(np.linalg.LinAlgError):
+        EnrichedElement(*elements)
+
+
+def test_empty_bubble():
+    with pytest.raises(RuntimeError):
+        Bubble(UFCInterval(), 1)
+    with pytest.raises(RuntimeError):
+        Bubble(UFCTriangle(), 2)
+    with pytest.raises(RuntimeError):
+        Bubble(UFCTetrahedron(), 3)
 
 
 if __name__ == '__main__':
