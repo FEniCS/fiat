@@ -26,6 +26,7 @@ from FIAT.finite_element import FiniteElement
 
 __all__ = ['EnrichedElement']
 
+
 class EnrichedElement(FiniteElement):
     """Enriched element is a direct sum of a sequence of finite elements.
     Dual basis is reorthogonalized to the primal basis for nodality.
@@ -51,26 +52,25 @@ class EnrichedElement(FiniteElement):
             # Normal case; this class is used
             return object.__new__(cls)
 
-
     def __init__(self, *elements):
         # Extract common data
         ref_el = elements[0].get_reference_element()
         expansion_set = elements[0].get_nodal_basis().get_expansion_set()
-        #FIXME: What is correct degree?
+        # FIXME: What is correct degree?
         degree = max(e.get_nodal_basis().get_degree() for e in elements)
         embedded_degree = max(e.get_nodal_basis().get_embedded_degree()
                               for e in elements)
         order = max(e.get_order() for e in elements)
         mapping = elements[0].mapping()[0]
         formdegree = None if any(e.get_formdegree() is None for e in elements) \
-                else max(e.get_formdegree() for e in elements)
+            else max(e.get_formdegree() for e in elements)
         value_shape = elements[0].value_shape()
 
         # Sanity check
-        assert all(e.get_nodal_basis().get_reference_element()
-                   == ref_el for e in elements)
-        assert all(type(e.get_nodal_basis().get_expansion_set())
-                   == type(expansion_set) for e in elements)
+        assert all(e.get_nodal_basis().get_reference_element() ==
+                   ref_el for e in elements)
+        assert all(type(e.get_nodal_basis().get_expansion_set()) ==
+                   type(expansion_set) for e in elements)
         assert all(e_mapping == mapping for e in elements
                    for e_mapping in e.mapping())
         assert all(e.value_shape() == value_shape for e in elements)
@@ -85,7 +85,6 @@ class EnrichedElement(FiniteElement):
                                  coeffs,
                                  dmats)
 
-
         # Renumber dof numbers
         dims = [e.space_dimension() for e in elements]
         offsets = _compute_offsets(dims)
@@ -99,7 +98,7 @@ class EnrichedElement(FiniteElement):
         # FiniteElement constructor adjusts poly_set coefficients s.t.
         # dual_set is really dual to poly_set
         FiniteElement.__init__(self, poly_set, dual_set, order,
-                formdegree=formdegree, mapping=mapping)
+                               formdegree=formdegree, mapping=mapping)
 
 
 def _merge_coeffs(coeffss):
@@ -115,6 +114,7 @@ def _merge_coeffs(coeffss):
     assert counter == shape0
     return new_coeffs
 
+
 def _merge_dmats(dmatss):
     shape, arg = max((dmats[0].shape, args) for args, dmats in enumerate(dmatss))
     assert shape[0] == shape[1]
@@ -124,14 +124,16 @@ def _merge_dmats(dmatss):
         for dmats in dmatss:
             sl = slice(0, dmats[dim].shape[0]), slice(0, dmats[dim].shape[1])
             assert np.allclose(dmats[dim], new_dmats[dim][sl]), \
-                    "dmats of elements to be directly summed are not matching!"
+                "dmats of elements to be directly summed are not matching!"
     return new_dmats
+
 
 def _compute_offsets(dimensions):
     offsets = np.zeros(len(dimensions))
     for i, dim in enumerate(dimensions):
         offsets[i+1:] += dim
     return offsets
+
 
 def _merge_entity_ids(entity_ids, offsets):
     ret = {}
