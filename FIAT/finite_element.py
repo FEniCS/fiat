@@ -155,6 +155,15 @@ class FiniteElement(object):
         "Return number of members of the expansion set."
         return self.get_nodal_basis().get_expansion_set().get_num_members(arg)
 
+    @staticmethod
+    def is_nodal():
+        """True if primal and dual bases are orthogonal. If false,
+        dual basis is not implemented or is undefined.
+
+        Most implementations/subclasses are nodal including this one.
+        """
+        return True
+
 
 def entity_support_dofs(elem, entity_dim):
     """Return the map of entity id to the degrees of freedom for which the

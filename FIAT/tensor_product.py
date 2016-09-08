@@ -221,6 +221,15 @@ class TensorProductElement(FiniteElement):
 
         self.dual = dual_set.DualSet(nodes, self.ref_el, entity_ids)
 
+    @staticmethod
+    def is_nodal():
+        """True if primal and dual bases are orthogonal. If false,
+        dual basis is not implemented or is undefined.
+
+        This implementation returns False!
+        """
+        return False
+
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
