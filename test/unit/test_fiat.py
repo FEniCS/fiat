@@ -26,8 +26,19 @@ from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.lagrange import Lagrange
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.crouzeix_raviart import CrouzeixRaviart
-from FIAT.enriched import EnrichedElement
+from FIAT.raviart_thomas import RaviartThomas
+from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
+from FIAT.nedelec import Nedelec
+from FIAT.nedelec_second_kind import NedelecSecondKind
+from FIAT.regge import Regge
 from FIAT.bubble import Bubble
+from FIAT.enriched import EnrichedElement
+from FIAT.tensor_product import TensorProductElement
+
+
+I = UFCInterval()
+T = UFCTriangle()
+S = UFCTetrahedron()
 
 
 def test_basis_derivatives_scaling():
@@ -72,39 +83,69 @@ def test_basis_derivatives_scaling():
 
 @pytest.mark.parametrize(('element',), [
     # Basic elements
-    (Lagrange(UFCInterval(), 1),),
-    (Lagrange(UFCInterval(), 2),),
-    (Lagrange(UFCInterval(), 3),),
-    (Lagrange(UFCTriangle(), 1),),
-    (Lagrange(UFCTriangle(), 2),),
-    (Lagrange(UFCTriangle(), 3),),
-    (Lagrange(UFCTetrahedron(), 1),),
-    (Lagrange(UFCTetrahedron(), 2),),
-    (Lagrange(UFCTetrahedron(), 3),),
-    (DiscontinuousLagrange(UFCInterval(), 0),),
-    (DiscontinuousLagrange(UFCInterval(), 1),),
-    (DiscontinuousLagrange(UFCInterval(), 2),),
-    (DiscontinuousLagrange(UFCTriangle(), 0),),
-    (DiscontinuousLagrange(UFCTriangle(), 1),),
-    (DiscontinuousLagrange(UFCTriangle(), 2),),
-    (DiscontinuousLagrange(UFCTetrahedron(), 0),),
-    (DiscontinuousLagrange(UFCTetrahedron(), 1),),
-    (DiscontinuousLagrange(UFCTetrahedron(), 2),),
-    (CrouzeixRaviart(UFCInterval(), 1),),
-    (CrouzeixRaviart(UFCTriangle(), 1),),
-    (CrouzeixRaviart(UFCTetrahedron(), 1),),
-
-    # FIXME: for non-affine mapped elements test does not work
-    # (RaviartThomas(UFCTriangle(), 1),),
-    # (BrezziDouglasMarini(UFCTriangle(), 1),),
-    # (Nedelec(UFCTriangle(), 1),),
-    # (NedelecSecondKind(UFCTriangle(), 1),),
-    # (Regge(UFCTriangle(), 1),),
-    # (HHJ(UFCTriangle(), 1),),
-
-    # Compound elements
-    (EnrichedElement(Lagrange(UFCTriangle(), 1), Bubble(UFCTriangle(), 3)),),
-    (EnrichedElement(Lagrange(UFCTetrahedron(), 1), Bubble(UFCTetrahedron(), 4)),),
+    (Lagrange(I, 1),),
+    (Lagrange(I, 2),),
+    (Lagrange(I, 3),),
+    (Lagrange(T, 1),),
+    (Lagrange(T, 2),),
+    (Lagrange(T, 3),),
+    (Lagrange(S, 1),),
+    (Lagrange(S, 2),),
+    (Lagrange(S, 3),),
+    (DiscontinuousLagrange(I, 0),),
+    (DiscontinuousLagrange(I, 1),),
+    (DiscontinuousLagrange(I, 2),),
+    (DiscontinuousLagrange(T, 0),),
+    (DiscontinuousLagrange(T, 1),),
+    (DiscontinuousLagrange(T, 2),),
+    (DiscontinuousLagrange(S, 0),),
+    (DiscontinuousLagrange(S, 1),),
+    (DiscontinuousLagrange(S, 2),),
+    (CrouzeixRaviart(I, 1),),
+    (CrouzeixRaviart(T, 1),),
+    (CrouzeixRaviart(S, 1),),
+    (RaviartThomas(T, 1),),
+    (RaviartThomas(T, 2),),
+    (RaviartThomas(T, 3),),
+    (RaviartThomas(S, 1),),
+    (RaviartThomas(S, 2),),
+    (RaviartThomas(S, 3),),
+    (BrezziDouglasMarini(T, 1),),
+    (BrezziDouglasMarini(T, 2),),
+    (BrezziDouglasMarini(T, 3),),
+    (BrezziDouglasMarini(S, 1),),
+    (BrezziDouglasMarini(S, 2),),
+    (BrezziDouglasMarini(S, 3),),
+    (Nedelec(T, 1),),
+    (Nedelec(T, 2),),
+    (Nedelec(T, 3),),
+    (Nedelec(S, 1),),
+    (Nedelec(S, 2),),
+    (Nedelec(S, 3),),
+    (NedelecSecondKind(T, 1),),
+    (NedelecSecondKind(T, 2),),
+    (NedelecSecondKind(T, 3),),
+    (NedelecSecondKind(S, 1),),
+    (NedelecSecondKind(S, 2),),
+    (NedelecSecondKind(S, 3),),
+    (Regge(T, 0),),
+    (Regge(T, 1),),
+    (Regge(T, 2),),
+    (Regge(S, 0),),
+    (Regge(S, 1),),
+    (Regge(S, 2),),
+    # (HellanHerrmannJohnson(T, 0),),
+    # (HellanHerrmannJohnson(T, 1),),
+    # (HellanHerrmannJohnson(T, 2),),
+    (Bubble(I, 2),),
+    (Bubble(T, 3),),
+    (Bubble(S, 4),),
+    (EnrichedElement(Lagrange(I, 1), Bubble(I, 2)),),
+    (EnrichedElement(Lagrange(T, 1), Bubble(T, 3)),),
+    (EnrichedElement(Lagrange(S, 1), Bubble(S, 4)),),
+    pytest.mark.xfail(reason="nodal dual basis not implemented", strict=True)(
+        (TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)),)
+    ),
 ])
 def test_nodality(element):
     poly_set = element.get_nodal_basis()
@@ -117,15 +158,18 @@ def test_nodality(element):
 
     for i in range(coeffs_dual.shape[0]):
         for j in range(coeffs_poly.shape[0]):
-            assert np.isclose(coeffs_dual[i].dot(coeffs_poly[j]), 1.0 if i == j else 0.0)
+            assert np.isclose(
+                coeffs_dual[i].flatten().dot(coeffs_poly[j].flatten()),
+                1.0 if i == j else 0.0
+            )
 
 
 @pytest.mark.parametrize(('elements',), [
-    ((Lagrange(UFCInterval(), 2), Bubble(UFCInterval(), 2)),),
-    ((Lagrange(UFCTriangle(), 3), Bubble(UFCTriangle(), 3)),),
-    ((Lagrange(UFCTetrahedron(), 4), Bubble(UFCTetrahedron(), 4)),),
-    ((Lagrange(UFCInterval(), 1), Lagrange(UFCInterval(), 1)),),
-    ((Lagrange(UFCInterval(), 1), Bubble(UFCInterval(), 2), Bubble(UFCInterval(), 2)),),
+    ((Lagrange(I, 2), Bubble(I, 2)),),
+    ((Lagrange(T, 3), Bubble(T, 3)),),
+    ((Lagrange(S, 4), Bubble(S, 4)),),
+    ((Lagrange(I, 1), Lagrange(I, 1)),),
+    ((Lagrange(I, 1), Bubble(I, 2), Bubble(I, 2)),),
 ])
 def test_illposed_enriched(elements):
     with pytest.raises(np.linalg.LinAlgError):
@@ -134,11 +178,11 @@ def test_illposed_enriched(elements):
 
 def test_empty_bubble():
     with pytest.raises(RuntimeError):
-        Bubble(UFCInterval(), 1)
+        Bubble(I, 1)
     with pytest.raises(RuntimeError):
-        Bubble(UFCTriangle(), 2)
+        Bubble(T, 2)
     with pytest.raises(RuntimeError):
-        Bubble(UFCTetrahedron(), 3)
+        Bubble(S, 3)
 
 
 if __name__ == '__main__':
