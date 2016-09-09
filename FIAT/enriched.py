@@ -56,8 +56,7 @@ class EnrichedElement(FiniteElement):
         # Extract common data
         ref_el = elements[0].get_reference_element()
         expansion_set = elements[0].get_nodal_basis().get_expansion_set()
-        # FIXME: What is correct degree?
-        degree = max(e.get_nodal_basis().get_degree() for e in elements)
+        degree = min(e.get_nodal_basis().get_degree() for e in elements)
         embedded_degree = max(e.get_nodal_basis().get_embedded_degree()
                               for e in elements)
         order = max(e.get_order() for e in elements)
