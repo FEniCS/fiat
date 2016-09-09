@@ -24,14 +24,15 @@ import pytest
 from FIAT.reference_element import LINE, ReferenceElement
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.lagrange import Lagrange
-from FIAT.discontinuous_lagrange import DiscontinuousLagrange  # noqa: F401
-from FIAT.crouzeix_raviart import CrouzeixRaviart              # noqa: F401
-from FIAT.raviart_thomas import RaviartThomas                  # noqa: F401
-from FIAT.brezzi_douglas_marini import BrezziDouglasMarini     # noqa: F401
-from FIAT.nedelec import Nedelec                               # noqa: F401
-from FIAT.nedelec_second_kind import NedelecSecondKind         # noqa: F401
-from FIAT.regge import Regge                                   # noqa: F401
-from FIAT.tensor_product import TensorProductElement           # noqa: F401
+from FIAT.discontinuous_lagrange import DiscontinuousLagrange   # noqa: F401
+from FIAT.crouzeix_raviart import CrouzeixRaviart               # noqa: F401
+from FIAT.raviart_thomas import RaviartThomas                   # noqa: F401
+from FIAT.brezzi_douglas_marini import BrezziDouglasMarini      # noqa: F401
+from FIAT.nedelec import Nedelec                                # noqa: F401
+from FIAT.nedelec_second_kind import NedelecSecondKind          # noqa: F401
+from FIAT.regge import Regge                                    # noqa: F401
+from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson  # noqa: F401
+from FIAT.tensor_product import TensorProductElement            # noqa: F401
 from FIAT.bubble import Bubble
 from FIAT.enriched import EnrichedElement
 
@@ -134,9 +135,9 @@ def test_basis_derivatives_scaling():
     "Regge(S, 0)",
     "Regge(S, 1)",
     "Regge(S, 2)",
-    # "HellanHerrmannJohnson(T, 0),)",
-    # "HellanHerrmannJohnson(T, 1),)",
-    # "HellanHerrmannJohnson(T, 2),)",
+    "HellanHerrmannJohnson(T, 0)",
+    "HellanHerrmannJohnson(T, 1)",
+    "HellanHerrmannJohnson(T, 2)",
     "Bubble(I, 2)",
     "Bubble(T, 3)",
     "Bubble(S, 4)",
