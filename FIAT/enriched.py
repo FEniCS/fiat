@@ -96,6 +96,13 @@ class EnrichedElement(FiniteElement):
         FiniteElement.__init__(self, poly_set, dual_set, order,
                                formdegree=formdegree, mapping=mapping)
 
+        # Store subelements
+        self._elements = elements
+
+    def elements(self):
+        "Return reference to original subelements"
+        return self._elements
+
 
 def _merge_coeffs(coeffss):
     shape0 = sum(c.shape[0] for c in coeffss)
@@ -199,6 +206,13 @@ class NodelessEnrichedElement(FiniteElement):
         # set up dual basis - just concatenation
         nodes = A.dual_basis() + B.dual_basis()
         self.dual = DualSet(nodes, self.ref_el, entity_ids)
+
+        # Store subelements
+        self._elements = elements
+
+    def elements(self):
+        "Return reference to original subelements"
+        return self._elements
 
     @staticmethod
     def is_nodal():
