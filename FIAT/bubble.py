@@ -29,7 +29,7 @@ class Bubble(RestrictedElement):
         element = Lagrange(ref_el, degree)
 
         cell_dim = ref_el.get_dimension()
-        assert(cell_dim, max(element.entity_dofs().keys()))
+        assert cell_dim == max(element.entity_dofs().keys())
         cell_entity_dofs = element.entity_dofs()[cell_dim][0]
         if len(cell_entity_dofs) == 0:
             raise RuntimeError('Bubble element of degree %d has no dofs' % degree)
