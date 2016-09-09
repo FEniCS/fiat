@@ -183,7 +183,7 @@ def entity_support_dofs(elem, entity_dim):
     ref_el = elem.get_reference_element()
     dim = ref_el.get_spatial_dimension()
 
-    entity_cell = elem.ref_el.construct_subelement(entity_dim)
+    entity_cell = ref_el.construct_subelement(entity_dim)
     quad = create_quadrature(entity_cell, max(2*elem.degree(), 1))
     weights = quad.get_weights()
 
@@ -191,7 +191,7 @@ def entity_support_dofs(elem, entity_dim):
 
     result = {}
     for f in elem.entity_dofs()[entity_dim].keys():
-        entity_transform = elem.ref_el.get_entity_transform(entity_dim, f)
+        entity_transform = ref_el.get_entity_transform(entity_dim, f)
         points = list(map(entity_transform, quad.get_points()))
 
         # Integrate the square of the basis functions on the facet.

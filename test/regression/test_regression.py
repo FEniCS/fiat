@@ -239,7 +239,10 @@ def test_quadrature():
         ("Bubble", 2, 5),
         ("Bubble", 3, 4),
         ("Bubble", 3, 5),
-        ("Bubble", 3, 6)
+        ("Bubble", 3, 6),
+        ("Hellan-Herrmann-Johnson", 2, 0),
+        ("Hellan-Herrmann-Johnson", 2, 1),
+        ("Hellan-Herrmann-Johnson", 2, 2),
     )
 
     def create_data(family, dim, degree):
@@ -266,7 +269,8 @@ def test_quadrature():
             assert eval(dtuple) in table
             assert table[eval(dtuple)].shape == reference_table[dtuple].shape
             diff = table[eval(dtuple)] - reference_table[dtuple]
-            assert (abs(diff) < tolerance).all()
+            assert (abs(diff) < tolerance).all(), \
+                "quadrature case %s %s %s failed!" % (family, dim, degree)
 
     filename = os.path.join(ref_path, "reference.json")
 

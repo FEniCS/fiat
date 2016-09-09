@@ -31,6 +31,7 @@ from FIAT.enriched import EnrichedElement
 from FIAT.discontinuous import DiscontinuousElement
 from FIAT.trace_hdiv import HDivTrace
 from FIAT.restricted import RestrictedElement  # noqa
+from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson
 
 # Important functionality
 from FIAT.quadrature import make_quadrature  # noqa
@@ -62,7 +63,8 @@ supported_elements = {"Argyris": Argyris,
                       "EnrichedElement": EnrichedElement,
                       "TensorProductElement": TensorProductElement,
                       "BrokenElement": DiscontinuousElement,
-                      "TraceElement": HDivTrace}
+                      "TraceElement": HDivTrace,
+                      "Hellan-Herrmann-Johnson": HellanHerrmannJohnson}
 
 # List of extra elements
 extra_elements = {"P0": P0,
