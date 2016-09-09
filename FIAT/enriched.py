@@ -44,12 +44,10 @@ class EnrichedElement(FiniteElement):
     """
     def __new__(cls, *elements):
         if not all(e.is_nodal() for e in elements):
-            # Use old NodelessEnrichedElement instead
-            self = object.__new__(NodelessEnrichedElement)
-            self.__init__(*elements)
-            return self
+            # Non-nodal case; use old NodelessEnrichedElement instead
+            return NodelessEnrichedElement(*elements)
         else:
-            # Normal case; this class is used
+            # Nodal case; this class is used
             return object.__new__(cls)
 
     def __init__(self, *elements):
@@ -85,7 +83,6 @@ class EnrichedElement(FiniteElement):
                                  dmats)
 
         # Renumber dof numbers
-        dims = [e.space_dimension() for e in elements]
         offsets = np.cumsum([0] + [e.space_dimension() for e in elements[:-1]])
         entity_ids = _merge_entity_ids((e.entity_dofs() for e in elements),
                                        offsets)
