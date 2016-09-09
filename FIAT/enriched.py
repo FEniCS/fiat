@@ -86,7 +86,7 @@ class EnrichedElement(FiniteElement):
 
         # Renumber dof numbers
         dims = [e.space_dimension() for e in elements]
-        offsets = _compute_offsets(dims)
+        offsets = np.cumsum([0] + [e.space_dimension() for e in elements[:-1]])
         entity_ids = _merge_entity_ids((e.entity_dofs() for e in elements),
                                        offsets)
 
@@ -125,13 +125,6 @@ def _merge_dmats(dmatss):
             assert np.allclose(dmats[dim], new_dmats[dim][sl]), \
                 "dmats of elements to be directly summed are not matching!"
     return new_dmats
-
-
-def _compute_offsets(dimensions):
-    offsets = np.zeros(len(dimensions))
-    for i, dim in enumerate(dimensions):
-        offsets[i+1:] += dim
-    return offsets
 
 
 def _merge_entity_ids(entity_ids, offsets):
