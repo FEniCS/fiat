@@ -73,9 +73,9 @@ class Bubble(FiniteElement):
     def space_dimension(self):
         return self.fsdim
 
-    def tabulate(self, order, points):
+    def tabulate(self, order, points, entity=None):
         return dict((k, v[self.first_node_index:, :])
-                    for k, v in self._element.tabulate(order, points).items())
+                    for k, v in self._element.tabulate(order, points, entity).items())
 
     def value_shape(self):
         return self._element.value_shape()

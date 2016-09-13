@@ -17,6 +17,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
+# Modified by Thomas H. Gibson (t.gibson15@imperial.ac.uk), 2016
 
 from __future__ import absolute_import, print_function, division
 
@@ -138,10 +139,22 @@ class FiniteElement(object):
         "Return the dimension of the finite element space."
         return self.poly_set.get_num_members()
 
-    def tabulate(self, order, points):
+    def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
-        basis functions at given points."""
-        return self.poly_set.tabulate(points, order)
+        basis functions at given points.
+
+        :arg order: The maximum order of derivative.
+        :arg points: An iterable of points.
+        :arg entity: Optional entity indicating which topological entity
+        of the reference element to tabulate on. If "None", default
+        cell-wise tabulation is performed.
+        """
+        if entity is None:
+            entity = (self.ref_el.get_spatial_dimension(), 0)
+
+        entity_dim, entity_id = entity
+        transform = self.ref_el.get_entity_transform(entity_dim, entity_id)
+        return self.poly_set.tabulate(list(map(transform, points)), order)
 
     def value_shape(self):
         "Return the value shape of the finite element functions."
