@@ -25,14 +25,27 @@ from FIAT.reference_element import LINE, ReferenceElement
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.lagrange import Lagrange
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange   # noqa: F401
+from FIAT.discontinuous_taylor import DiscontinuousTaylor       # noqa: F401
+from FIAT.P0 import P0                                          # noqa: F401
 from FIAT.crouzeix_raviart import CrouzeixRaviart               # noqa: F401
 from FIAT.raviart_thomas import RaviartThomas                   # noqa: F401
+from FIAT.discontinuous_raviart_thomas import DiscontinuousRaviartThomas  # noqa: F401
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini      # noqa: F401
 from FIAT.nedelec import Nedelec                                # noqa: F401
 from FIAT.nedelec_second_kind import NedelecSecondKind          # noqa: F401
 from FIAT.regge import Regge                                    # noqa: F401
 from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson  # noqa: F401
+from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini  # noqa: F401
+from FIAT.gauss_legendre import GaussLegendre                   # noqa: F401
+from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre    # noqa: F401
+from FIAT.restricted import RestrictedElement                   # noqa: F401
 from FIAT.tensor_product import TensorProductElement            # noqa: F401
+from FIAT.hdivcurl import Hdiv, Hcurl                           # noqa: F401
+from FIAT.trace import DiscontinuousLagrangeTrace               # noqa: F401
+from FIAT.trace_hdiv import HDivTrace                           # noqa: F401
+from FIAT.argyris import Argyris, QuinticArgyris                # noqa: F401
+from FIAT.hermite import CubicHermite                           # noqa: F401
+from FIAT.morley import Morley                                  # noqa: F401
 from FIAT.bubble import Bubble
 from FIAT.enriched import EnrichedElement
 
@@ -83,7 +96,9 @@ def test_basis_derivatives_scaling():
             assert np.isclose(tab[(2,)][1][p], 0.0)
 
 
-@pytest.mark.parametrize('element', [
+xfail_impl = pytest.mark.xfail(strict=True, raises=NotImplementedError)
+xfail_key = pytest.mark.xfail(strict=True, raises=KeyError)
+elements = [
     "Lagrange(I, 1)",
     "Lagrange(I, 2)",
     "Lagrange(I, 3)",
@@ -93,6 +108,9 @@ def test_basis_derivatives_scaling():
     "Lagrange(S, 1)",
     "Lagrange(S, 2)",
     "Lagrange(S, 3)",
+    "P0(I)",
+    "P0(T)",
+    "P0(S)",
     "DiscontinuousLagrange(I, 0)",
     "DiscontinuousLagrange(I, 1)",
     "DiscontinuousLagrange(I, 2)",
@@ -102,6 +120,15 @@ def test_basis_derivatives_scaling():
     "DiscontinuousLagrange(S, 0)",
     "DiscontinuousLagrange(S, 1)",
     "DiscontinuousLagrange(S, 2)",
+    "DiscontinuousTaylor(I, 0)",
+    "DiscontinuousTaylor(I, 1)",
+    "DiscontinuousTaylor(I, 2)",
+    "DiscontinuousTaylor(T, 0)",
+    "DiscontinuousTaylor(T, 1)",
+    "DiscontinuousTaylor(T, 2)",
+    "DiscontinuousTaylor(S, 0)",
+    "DiscontinuousTaylor(S, 1)",
+    "DiscontinuousTaylor(S, 2)",
     "CrouzeixRaviart(I, 1)",
     "CrouzeixRaviart(T, 1)",
     "CrouzeixRaviart(S, 1)",
@@ -111,6 +138,12 @@ def test_basis_derivatives_scaling():
     "RaviartThomas(S, 1)",
     "RaviartThomas(S, 2)",
     "RaviartThomas(S, 3)",
+    "DiscontinuousRaviartThomas(T, 1)",
+    "DiscontinuousRaviartThomas(T, 2)",
+    "DiscontinuousRaviartThomas(T, 3)",
+    "DiscontinuousRaviartThomas(S, 1)",
+    "DiscontinuousRaviartThomas(S, 2)",
+    "DiscontinuousRaviartThomas(S, 3)",
     "BrezziDouglasMarini(T, 1)",
     "BrezziDouglasMarini(T, 2)",
     "BrezziDouglasMarini(T, 3)",
@@ -138,16 +171,50 @@ def test_basis_derivatives_scaling():
     "HellanHerrmannJohnson(T, 0)",
     "HellanHerrmannJohnson(T, 1)",
     "HellanHerrmannJohnson(T, 2)",
+    "BrezziDouglasFortinMarini(T, 2)",
+    "GaussLegendre(I, 0)",
+    "GaussLegendre(I, 1)",
+    "GaussLegendre(I, 2)",
+    "GaussLobattoLegendre(I, 1)",
+    "GaussLobattoLegendre(I, 2)",
+    "GaussLobattoLegendre(I, 3)",
     "Bubble(I, 2)",
     "Bubble(T, 3)",
     "Bubble(S, 4)",
+    "RestrictedElement(Lagrange(I, 2), restriction_domain='facet')",
+    "RestrictedElement(Lagrange(T, 2), restriction_domain='vertex')",
+    "RestrictedElement(Lagrange(T, 3), restriction_domain='facet')",
     "EnrichedElement(Lagrange(I, 1), Bubble(I, 2))",
     "EnrichedElement(Lagrange(T, 1), Bubble(T, 3))",
     "EnrichedElement(Lagrange(S, 1), Bubble(S, 4))",
-    pytest.mark.xfail(strict=True)(
-        "TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2))"
-    ),
-])
+
+    # Following element do not bother implementing get_nodal_basis
+    # so the test would need to be rewritten using tabulate
+    xfail_impl("TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2))"),
+    xfail_impl("Hdiv(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))"),
+    xfail_impl("Hcurl(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))"),
+    xfail_impl("DiscontinuousLagrangeTrace(T, 1)"),
+    xfail_impl("HDivTrace(RaviartThomas(T, 1))"),
+    xfail_impl("EnrichedElement("
+               "Hdiv(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
+               "Hdiv(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
+               ")"),
+    xfail_impl("EnrichedElement("
+               "Hcurl(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
+               "Hcurl(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
+               ")"),
+
+    # These elements have broken constructor
+    xfail_key("Argyris(T, 1)",),
+    xfail_key("QuinticArgyris(T)",),
+    xfail_key("CubicHermite(I)",),
+    xfail_key("CubicHermite(T)",),
+    xfail_key("CubicHermite(S)",),
+    xfail_key("Morley(T)",),
+]
+
+
+@pytest.mark.parametrize('element', elements)
 def test_nodality(element):
     """Check that generated elements are nodal, i.e. nodes evaluated
     on basis functions give Kronecker delta

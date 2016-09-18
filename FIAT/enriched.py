@@ -111,13 +111,13 @@ def _merge_coeffs(coeffss):
     #        first index is basis member label, last index is
     #        expansion set label, middle ones are value component
     shape0 = sum(c.shape[0] for c in coeffss)
-    shape1 = max(c.shape[1] for c in coeffss) # FIXME: Why not -1 ?
-    new_coeffs = np.zeros((shape0, shape1), dtype=coeffss[0].dtype) # FIXME: middle dimensions?
+    shape1 = max(c.shape[1] for c in coeffss)  # FIXME: Why not -1 ?
+    new_coeffs = np.zeros((shape0, shape1), dtype=coeffss[0].dtype)  # FIXME: middle dimensions?
     counter = 0
     for c in coeffss:
         rows = c.shape[0]
-        cols = c.shape[1] # FIXME: Why not -1 ?
-        new_coeffs[counter:counter+rows, :cols] = c # FIXME: ellipsis?
+        cols = c.shape[1]  # FIXME: Why not -1 ?
+        new_coeffs[counter:counter+rows, :cols] = c  # FIXME: ellipsis?
         counter += rows
     assert counter == shape0
     return new_coeffs

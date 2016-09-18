@@ -88,10 +88,6 @@ class ArgyrisDualSet(dual_set.DualSet):
 
 
 class QuinticArgyrisDualSet(dual_set.DualSet):
-    """The dual basis for Lagrange elements.  This class works for
-    simplices of any dimension.  Nodes are point evaluation at
-    equispaced points."""
-
     def __init__(self, ref_el):
         entity_ids = {}
         nodes = []

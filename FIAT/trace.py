@@ -169,6 +169,11 @@ class DiscontinuousLagrangeTrace(object):
     def mapping(self):
         return ["affine" for i in range(self.space_dimension())]
 
+    def get_nodal_basis(self):
+        """Return the nodal basis, encoded as a PolynomialSet object,
+        for the finite element."""
+        raise NotImplementedError("get_nodal_basis not implemented")
+
     def dual_basis(self):
 
         # First create the points
