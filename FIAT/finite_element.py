@@ -145,9 +145,10 @@ class FiniteElement(object):
 
         :arg order: The maximum order of derivative.
         :arg points: An iterable of points.
-        :arg entity: Optional entity indicating which topological entity
-        of the reference element to tabulate on. If "None", default
-        cell-wise tabulation is performed.
+        :arg entity: Optional (dimension, entity number) pair
+                     indicating which topological entity of the
+                     reference element to tabulate on.  If ``None``,
+                     default cell-wise tabulation is performed.
         """
         if entity is None:
             entity = (self.ref_el.get_spatial_dimension(), 0)

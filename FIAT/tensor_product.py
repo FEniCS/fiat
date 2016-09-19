@@ -244,44 +244,31 @@ class TensorProductElement(FiniteElement):
     def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
-        Adim = self.A.ref_el.get_spatial_dimension()
-        Bdim = self.B.ref_el.get_spatial_dimension()
-
         if entity is None:
             entity = (self.ref_el.get_dimension(), 0)
+        entity_dim, entity_id = entity
 
         shape = tuple(len(c.get_topology()[d])
-                      for c, d in zip(self.ref_el.cells, entity[0]))
-        idA, idB = numpy.unravel_index(entity[1], shape)
+                      for c, d in zip(self.ref_el.cells, entity_dim))
+        idA, idB = numpy.unravel_index(entity_id, shape)
 
         # Factor the entity argument to get entities of the component elements
-        entityA_dim, entityB_dim = entity[0]
+        entityA_dim, entityB_dim = entity_dim
         entityA = (entityA_dim, idA)
         entityB = (entityB_dim, idB)
 
-        pointsAdim, pointsBdim = [c.get_spatial_dimension() for c in self.ref_el.construct_subelement(entity[0]).cells]
-        # Sum dimensions in case the sub-elements are themselves tensor products.
-        Aslice = slice(Adim)
-        Bslice = slice(Adim, Adim + Bdim)
+        pointsAdim, pointsBdim = [c.get_spatial_dimension()
+                                  for c in self.ref_el.construct_subelement(entity_dim).cells]
         pointsA = [point[:pointsAdim] for point in points]
         pointsB = [point[pointsAdim:pointsAdim + pointsBdim] for point in points]
+
+        Asdim = self.A.ref_el.get_spatial_dimension()
+        Bsdim = self.B.ref_el.get_spatial_dimension()
         # Note that for entities other than cells, the following
         # tabulations are already appropriately zero-padded so no
         # additional zero padding is required.
-        try:
-            Atab = self.A.tabulate(order, pointsA, entityA)
-        except TraceError as e:
-            if self.ref_el.get_spatial_dimension() == entityA[0] + entityB[0]:
-                raise
-            Atab = e.zeros
-
-        try:
-            Btab = self.B.tabulate(order, pointsB, entityB)
-        except TraceError as e:
-            if self.ref_el.get_spatial_dimension() == entityA[0] + entityB[0]:
-                raise
-            Btab = e.zeros
-
+        Atab = self.A.tabulate(order, pointsA, entityA)
+        Btab = self.B.tabulate(order, pointsB, entityB)
         npoints = len(points)
 
         # allow 2 scalar-valued FE spaces, or 1 scalar-valued,
@@ -298,7 +285,7 @@ class TensorProductElement(FiniteElement):
             raise NotImplementedError("tabulate does not support two vector-valued inputs")
         result = {}
         for i in range(order + 1):
-            alphas = mis(self.ref_el.get_spatial_dimension(), i)  # thanks, Rob!
+            alphas = mis(Asdim+Bsdim, i)  # thanks, Rob!
             for alpha in alphas:
                 if A_valuedim == 0 and B_valuedim == 0:
                     # for each point, get outer product of (A's basis
@@ -312,8 +299,8 @@ class TensorProductElement(FiniteElement):
                     # Transpose this to get temp[bf][point],
                     # and we are done.
                     temp = numpy.array([numpy.outer(
-                                       Atab[alpha[Aslice]][..., j],
-                                       Btab[alpha[Bslice]][..., j])
+                                       Atab[alpha[0:Asdim]][..., j],
+                                       Btab[alpha[Asdim:Asdim+Bsdim]][..., j])
                         .ravel() for j in range(npoints)])
                     result[alpha] = temp.transpose()
                 elif A_valuedim == 1 and B_valuedim == 0:
@@ -330,8 +317,8 @@ class TensorProductElement(FiniteElement):
                     # finally, transpose the first and last indices
                     # to get temp[bf_i][x/y][point], and we are done.
                     temp = numpy.array([numpy.outer(
-                                       Atab[alpha[Aslice]][..., j],
-                                       Btab[alpha[Bslice]][..., j])
+                                       Atab[alpha[0:Asdim]][..., j],
+                                       Btab[alpha[Asdim:Asdim+Bsdim]][..., j])
                         for j in range(npoints)])
                     assert temp.shape[1] % 2 == 0
                     temp2 = temp.reshape((temp.shape[0],
@@ -350,10 +337,10 @@ class TensorProductElement(FiniteElement):
                     # flatten middle: temp[point][full bf_i][x/y]
                     # transpose to temp[bf_i][x/y][point]
                     temp = numpy.array([numpy.outer(
-                        Atab[alpha[Aslice]][..., j],
-                        Btab[alpha[Bslice]][..., j])
-                        for j in range(len(Atab[alpha[Aslice]][0]))])
-
+                        Atab[alpha[0:Asdim]][..., j],
+                        Btab[alpha[Asdim:Asdim+Bsdim]][..., j])
+                        for j in range(len(Atab[alpha[0:Asdim]][0]))])
+                    assert temp.shape[2] % 2 == 0
                     temp2 = temp.reshape((temp.shape[0], temp.shape[1],
                                           temp.shape[2]//2, 2))\
                         .reshape((temp.shape[0], -1, 2))\
