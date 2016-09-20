@@ -20,7 +20,7 @@
 
 from __future__ import absolute_import, print_function, division
 
-from FIAT.finite_element import FiniteElement
+from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONSymTensorPolynomialSet
 from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct
@@ -92,7 +92,7 @@ class HellanHerrmannJohnsonDual(DualSet):
         return (dofs, dof_ids)
 
 
-class HellanHerrmannJohnson(FiniteElement):
+class HellanHerrmannJohnson(CiarletElement):
     """The definition of Hellan-Herrmann-Johnson element. It is defined only in
        dimension 2. It consists of piecewise polynomial symmetric-matrix-valued
        functions of degree r or less with normal-normal continuity.
