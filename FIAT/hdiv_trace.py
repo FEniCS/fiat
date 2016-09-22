@@ -25,6 +25,9 @@ from FIAT.polynomial_set import mis
 from FIAT import FiniteElement
 from FIAT import dual_set
 
+# Numerical tolerance for facet-entity identifications
+epsilon = 1e-10
+
 
 class TraceError(Exception):
     """Exception caused by tabulating a trace element on the interior of a cell,
@@ -47,7 +50,7 @@ class HDivTrace(FiniteElement):
         self.ref_el = ref_el
         self.polydegree = degree
 
-        # Constructing facet as a discontinuous Lagrange element
+        # Constructing facet element as a discontinuous Lagrange element
         self.dclagrange = DiscontinuousLagrange(ufc_simplex(sd - 1), degree)
 
         # Construct entity ids (assigning top. dim. and initializing as empty)
@@ -134,6 +137,7 @@ class HDivTrace(FiniteElement):
 
         facet_dim = self.ref_el.get_spatial_dimension() - 1
         sdim = self.space_dimension()
+        nf = self.dclagrange.space_dimension()
 
         # Initializing dictionary with zeros
         phivals = {}
@@ -142,26 +146,47 @@ class HDivTrace(FiniteElement):
             for alpha in alphas:
                 phivals[alpha] = np.zeros(shape=(sdim, len(points)))
         key = phivals.keys()
+        evalkey = list(key)[-1]
 
-        # If doing cell-wise tabulation, raise TraceError and return zeros
-        if (entity is None) or entity[0] != facet_dim:
+        # If entity is None, identify facet using numerical tolerance and
+        # return the tabulated values
+        if entity is None:
+
+            # Attempt to identify which facet (if any) the given points are on
+            vertices = self.ref_el.vertices
+            coordinates = barycentric_coordinates(points, vertices)
+            (unique_facet, success) = extract_unique_facet(coordinates)
+
+            # If we are successful in finding a unique facet, we fill in the non-zero values
+            if success:
+
+                # Map points to the reference facet
+                new_points = map_to_reference_facet(points, vertices, unique_facet)
+
+                # Retrieve values by tabulating the DiscontinuousLagrange element
+                nonzerovals = list(self.dclagrange.tabulate(order, new_points).values())[0]
+                phivals[evalkey][nf*unique_facet:nf*(unique_facet + 1), :] = nonzerovals
+
+                return phivals
+
+        # If the user is directly specifying cell-wise tabulation,
+        # raise TraceError and return zeros
+        elif entity[0] != facet_dim:
             raise TraceError("Trace elements can only be tabulated on facet entities.",
                              phivals, key)
+        else:
+            # Retrieve function evaluations (order = 0 case)
+            facet_id = entity[1]
+            nonzerovals = list(self.dclagrange.tabulate(0, points).values())[0]
+            phivals[evalkey][nf*facet_id:nf*(facet_id + 1), :] = nonzerovals
 
-        # Retrieve function evaluations (order = 0 case)
-        nf = self.dclagrange.space_dimension()
-        facet_id = entity[1]
-        nonzerovals = list(self.dclagrange.tabulate(0, points).values())[0]
-        evalkey = list(key)[-1]
-        phivals[evalkey][nf*facet_id:nf*(facet_id + 1), :] = nonzerovals
+            # If asking for gradient evaluations, raise TraceError
+            # but return functon evaluations, and zeros for the gradient.
+            if order > 0:
+                raise TraceError("No gradient evaluations on trace elements.",
+                                 phivals, key)
 
-        # If asking for gradient evaluations, raise TraceError
-        # but return functon evaluations, and zeros for the gradient.
-        if order > 0:
-            raise TraceError("No gradient evaluations on trace elements.",
-                             phivals, key)
-
-        return phivals
+            return phivals
 
     def value_shape(self):
         """Return the value shape of the finite element functions."""
@@ -175,3 +200,103 @@ class HDivTrace(FiniteElement):
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented for the trace element.")
+
+
+# The following functions are credited to Marie E. Rognes:
+def extract_unique_facet(coordinates, tolerance=epsilon):
+    """Determines whether a set of points (described in its barycentric coordinates)
+    are all on one of the facet sub-entities, and return the particular facet and
+    whether the search has been successful.
+
+    :arg coordinates: A set of points described in barycentric coordinates.
+    :arg tolerance: A fixed tolerance for geometric identifications.
+    """
+    facets = []
+    for c in coordinates:
+        on_facet = set([i for (i, l) in enumerate(c) if abs(l) < tolerance])
+        facets += [on_facet]
+
+    unique_facet = facets[0]
+    for f in facets:
+        unique_facet = unique_facet & f
+
+    # Handle coordinates not on facets
+    if len(unique_facet) != 1:
+        return (None, False)
+
+    # If we have a unique facet, return it and success
+    return (unique_facet.pop(), True)
+
+
+def barycentric_coordinates(points, vertices):
+    """Computes the barycentric coordinates for a set of points relative to a
+    simplex defined by a set of vertices.
+
+    :arg points: A set of points.
+    :arg vertices: A set of vertices that define the simplex.
+    """
+
+    # Form mapping matrix
+    last = np.asarray(vertices[-1])
+    T = np.matrix([np.array(v) - last for v in vertices[:-1]]).T
+    invT = np.linalg.inv(T)
+
+    # Compute the barycentric coordinates for all points
+    coords = []
+    for p in points:
+        y = np.asarray(p) - last
+        bary = invT.dot(y, T)
+        bary = [bary[(0, i)] for i in range(len(y))]
+        bary += [1.0 - sum(bary)]
+        coords.append(bary)
+    return coords
+
+
+def map_from_reference_facet(point, vertices):
+    """Evaluates the physical coordinate of a point using barycentric
+    coordinates.
+
+    :arg point: The reference points to be mapped to the facet.
+    :arg vertices: The vertices defining the physical element.
+    """
+
+    # Compute the barycentric coordinates of the point relative to the reference facet
+    reference_simplex = ufc_simplex(len(vertices) - 1)
+    reference_vertices = reference_simplex.get_vertices()
+    coords = barycentric_coordinates([point, ], reference_vertices)[0]
+
+    # Evaluates the physical coordinate of the point using barycentric coordinates
+    point = sum(vertices[j] * coords[j] for j in range(len(coords)))
+    return tuple(point)
+
+
+def map_to_reference_facet(points, vertices, facet):
+    """Given a set of points and vertices describing a facet of a simplex in n-dimensional
+    coordinates (where the points lie on the facet), map the points to the reference simplex
+    of dimension (n-1).
+
+    :arg points: A set of points in n-D.
+    :arg vertices: A set of vertices describing a facet of a simplex in n-D.
+    :arg facet: Integer representing the facet number.
+    """
+
+    # Compute the barycentric coordinates of the points with respect to the
+    # full physical simplex
+    all_coords = barycentric_coordinates(points, vertices)
+
+    # Extract vertices of the reference facet
+    reference_facet_simplex = ufc_simplex(len(vertices) - 2)
+    reference_vertices = reference_facet_simplex.get_vertices()
+
+    reference_points = []
+    for (i, coords) in enumerate(all_coords):
+        # Extract the correct subset of barycentric coordinates since we know
+        # which facet we are on
+        new_coords = [coords[j] for j in range(len(coords)) if j != facet]
+
+        # Evaluate the reference coordinate of a point in barycentric coordinates
+        reference_pt = sum(np.asarray(reference_vertices[j]) * new_coords[j]
+                           for j in range(len(new_coords)))
+
+        reference_points += [reference_pt]
+    return reference_points
