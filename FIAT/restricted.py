@@ -85,8 +85,8 @@ class RestrictedElement(FiniteElement):
         mappings = self._element.mapping()
         return [mappings[i] for i in self._indices]
 
-    def tabulate(self, order, points):
-        result = self._element.tabulate(order, points)
+    def tabulate(self, order, points, entity=None):
+        result = self._element.tabulate(order, points, entity)
         extracted = {}
         for (dtuple, values) in sorted_by_key(result):
             extracted[dtuple] = numpy.array([values[i] for i in self._indices])

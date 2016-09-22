@@ -1,5 +1,6 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
 # Copyright (C) 2013 Andrew T. T. McRae
+# Modified by Thomas H. Gibson, 2016
 #
 # This file is part of FIAT.
 #
@@ -99,7 +100,7 @@ class EnrichedElement(FiniteElement):
         # number of dofs just adds
         return self.A.space_dimension() + self.B.space_dimension()
 
-    def tabulate(self, order, points):
+    def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
 
@@ -109,8 +110,8 @@ class EnrichedElement(FiniteElement):
 
         Asd = self.A.space_dimension()
         Bsd = self.B.space_dimension()
-        Atab = self.A.tabulate(order, points)
-        Btab = self.B.tabulate(order, points)
+        Atab = self.A.tabulate(order, points, entity)
+        Btab = self.B.tabulate(order, points, entity)
         npoints = len(points)
         vs = self.A.value_shape()
         rank = len(vs)  # scalar: 0, vector: 1
