@@ -132,7 +132,7 @@ class HDivTrace(FiniteElement):
         finite element."""
         raise NotImplementedError("get_coeffs not implemented for the trace element.")
 
-    def tabulate(self, order, points, entity):
+    def tabulate(self, order, points, entity=None):
         """Return tabulated values of basis functions at given points."""
 
         facet_dim = self.ref_el.get_spatial_dimension() - 1
@@ -245,7 +245,7 @@ def barycentric_coordinates(points, vertices):
     coords = []
     for p in points:
         y = np.asarray(p) - last
-        bary = invT.dot(y, T)
+        bary = invT.dot(y.T)
         bary = [bary[(0, i)] for i in range(len(y))]
         bary += [1.0 - sum(bary)]
         coords.append(bary)
