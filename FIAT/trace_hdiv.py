@@ -18,6 +18,8 @@
 from __future__ import absolute_import, print_function, division
 
 import numpy as np
+import six
+
 from FIAT.finite_element import FiniteElement
 from FIAT import functional
 from FIAT import dual_set
@@ -74,7 +76,10 @@ class HDivTrace(FiniteElement):
             if not isinstance(elt_nodes[i], functional.PointScaledNormalEvaluation) or isinstance(elt_nodes[i], functional.PointNormalEvaluation):
                 raise RuntimeError("Not a PointNormalEvaluation dof, exiting")
             # create a PointEvaluation from each existing dof
-            nodes.append(functional.PointEvaluation(self.ref_el, elt_nodes[i].get_point_dict().keys()[0]))
+            nodes.append(functional.PointEvaluation(
+                self.ref_el,
+                six.next(six.iterkeys(elt_nodes[i].get_point_dict()))
+            ))
         self.dual = dual_set.DualSet(nodes, self.ref_el, self.entity_ids)
 
     def degree(self):
