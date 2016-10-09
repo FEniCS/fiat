@@ -1,5 +1,6 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
 # Copyright (C) 2013 Andrew T. T. McRae
+# Modified by Thomas H. Gibson, 2016
 #
 # This file is part of FIAT.
 #
@@ -249,16 +250,34 @@ class TensorProductElement(FiniteElement):
         # number of dofs just multiplies
         return self.A.space_dimension() * self.B.space_dimension()
 
-    def tabulate(self, order, points):
+    def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
+        if entity is None:
+            entity = (self.ref_el.get_dimension(), 0)
+        entity_dim, entity_id = entity
 
-        Asdim = self.A.get_reference_element().get_spatial_dimension()
-        Bsdim = self.B.get_reference_element().get_spatial_dimension()
-        pointsA = [point[0:Asdim] for point in points]
-        pointsB = [point[Asdim:Asdim + Bsdim] for point in points]
-        Atab = self.A.tabulate(order, pointsA)
-        Btab = self.B.tabulate(order, pointsB)
+        shape = tuple(len(c.get_topology()[d])
+                      for c, d in zip(self.ref_el.cells, entity_dim))
+        idA, idB = numpy.unravel_index(entity_id, shape)
+
+        # Factor the entity argument to get entities of the component elements
+        entityA_dim, entityB_dim = entity_dim
+        entityA = (entityA_dim, idA)
+        entityB = (entityB_dim, idB)
+
+        pointsAdim, pointsBdim = [c.get_spatial_dimension()
+                                  for c in self.ref_el.construct_subelement(entity_dim).cells]
+        pointsA = [point[:pointsAdim] for point in points]
+        pointsB = [point[pointsAdim:pointsAdim + pointsBdim] for point in points]
+
+        Asdim = self.A.ref_el.get_spatial_dimension()
+        Bsdim = self.B.ref_el.get_spatial_dimension()
+        # Note that for entities other than cells, the following
+        # tabulations are already appropriately zero-padded so no
+        # additional zero padding is required.
+        Atab = self.A.tabulate(order, pointsA, entityA)
+        Btab = self.B.tabulate(order, pointsB, entityB)
         npoints = len(points)
 
         # allow 2 scalar-valued FE spaces, or 1 scalar-valued,

@@ -53,12 +53,12 @@ def Hdiv(element):
     # redefine tabulate
     newelement.old_tabulate = newelement.tabulate
 
-    def tabulate(self, order, points):
+    def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
 
         # don't duplicate what the old function does fine...
-        old_result = self.old_tabulate(order, points)
+        old_result = self.old_tabulate(order, points, entity)
         new_result = {}
         sd = self.get_reference_element().get_spatial_dimension()
         for alpha in old_result.keys():
@@ -175,12 +175,12 @@ def Hcurl(element):
     # redefine tabulate
     newelement.old_tabulate = newelement.tabulate
 
-    def tabulate(self, order, points):
+    def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
 
         # don't duplicate what the old function does fine...
-        old_result = self.old_tabulate(order, points)
+        old_result = self.old_tabulate(order, points, entity)
         new_result = {}
         sd = self.get_reference_element().get_spatial_dimension()
         for alpha in old_result.keys():

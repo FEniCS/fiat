@@ -36,6 +36,7 @@ import operator
 from math import factorial
 
 from six import iteritems, itervalues
+from six import string_types
 from six.moves import reduce
 import numpy
 from numpy import ravel_multi_index, transpose
@@ -905,7 +906,7 @@ def ufc_cell(cell):
     """Handle incoming calls from FFC."""
 
     # celltype could be a string or a cell.
-    if isinstance(cell, str):
+    if isinstance(cell, string_types):
         celltype = cell
     else:
         celltype = cell.cellname()

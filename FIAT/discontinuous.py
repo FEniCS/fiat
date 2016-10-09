@@ -76,10 +76,10 @@ class DiscontinuousElement(FiniteElement):
         "Return the dimension of the finite element space."
         return self._element.space_dimension()
 
-    def tabulate(self, order, points):
+    def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
-        return self._element.tabulate(order, points)
+        return self._element.tabulate(order, points, entity)
 
     def value_shape(self):
         "Return the value shape of the finite element functions."

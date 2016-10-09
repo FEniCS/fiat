@@ -19,6 +19,7 @@ from __future__ import absolute_import, print_function, division
 
 import numpy
 import six
+from six import string_types
 from six import iteritems
 from FIAT.dual_set import DualSet
 from FIAT.finite_element import FiniteElement
@@ -36,7 +37,7 @@ class RestrictedElement(FiniteElement):
         if not indices:
             indices = _get_indices(element, restriction_domain)
 
-        if isinstance(indices, str):
+        if isinstance(indices, string_types):
             raise RuntimeError("variable 'indices' was a string; did you forget to use a keyword?")
 
         if len(indices) == 0:
@@ -95,8 +96,8 @@ class RestrictedElement(FiniteElement):
     def mapping(self):
         return self._mapping
 
-    def tabulate(self, order, points):
-        result = self._element.tabulate(order, points)
+    def tabulate(self, order, points, entity=None):
+        result = self._element.tabulate(order, points, entity)
         extracted = {}
         for (dtuple, values) in sorted_by_key(result):
             extracted[dtuple] = numpy.array([values[i] for i in self._indices])
