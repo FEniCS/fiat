@@ -47,7 +47,8 @@ from FIAT.argyris import Argyris, QuinticArgyris                # noqa: F401
 from FIAT.hermite import CubicHermite                           # noqa: F401
 from FIAT.morley import Morley                                  # noqa: F401
 from FIAT.bubble import Bubble
-from FIAT.enriched import EnrichedElement
+from FIAT.enriched import EnrichedElement                       # noqa: F401
+from FIAT.nodal_enriched import NodalEnrichedElement
 
 
 I = UFCInterval()
@@ -184,9 +185,9 @@ elements = [
     "RestrictedElement(Lagrange(I, 2), restriction_domain='facet')",
     "RestrictedElement(Lagrange(T, 2), restriction_domain='vertex')",
     "RestrictedElement(Lagrange(T, 3), restriction_domain='facet')",
-    "EnrichedElement(Lagrange(I, 1), Bubble(I, 2))",
-    "EnrichedElement(Lagrange(T, 1), Bubble(T, 3))",
-    "EnrichedElement(Lagrange(S, 1), Bubble(S, 4))",
+    "NodalEnrichedElement(Lagrange(I, 1), Bubble(I, 2))",
+    "NodalEnrichedElement(Lagrange(T, 1), Bubble(T, 3))",
+    "NodalEnrichedElement(Lagrange(S, 1), Bubble(S, 4))",
 
     # Following element do not bother implementing get_nodal_basis
     # so the test would need to be rewritten using tabulate
@@ -248,12 +249,12 @@ def test_nodality(element):
     (Lagrange(I, 1), Lagrange(I, 1)),
     (Lagrange(I, 1), Bubble(I, 2), Bubble(I, 2)),
 ])
-def test_illposed_enriched(elements):
-    """Check that enriched element fails on ill-posed
+def test_illposed_nodal_enriched(elements):
+    """Check that nodal enriched element fails on ill-posed
     (non-unisolvent) case
     """
     with pytest.raises(np.linalg.LinAlgError):
-        EnrichedElement(*elements)
+        NodalEnrichedElement(*elements)
 
 
 def test_empty_bubble():
