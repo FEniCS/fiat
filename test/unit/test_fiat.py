@@ -188,6 +188,14 @@ elements = [
     "NodalEnrichedElement(Lagrange(I, 1), Bubble(I, 2))",
     "NodalEnrichedElement(Lagrange(T, 1), Bubble(T, 3))",
     "NodalEnrichedElement(Lagrange(S, 1), Bubble(S, 4))",
+    "NodalEnrichedElement("
+    "    RaviartThomas(T, 1),"
+    "    RestrictedElement(RaviartThomas(T, 2), restriction_domain='interior')"
+    ")",
+    "NodalEnrichedElement("
+    "    Regge(S, 1),"
+    "    RestrictedElement(Regge(S, 2), restriction_domain='interior')"
+    ")",
 
     # Following element do not bother implementing get_nodal_basis
     # so the test would need to be rewritten using tabulate
@@ -265,6 +273,36 @@ def test_empty_bubble():
         Bubble(T, 2)
     with pytest.raises(RuntimeError):
         Bubble(S, 3)
+
+
+def test_nodal_enriched_implementation():
+    """Following element pair should be the same.
+    This might be fragile to dof reordering but works now.
+    """
+
+    e0 = RaviartThomas(T, 2)
+
+    e1 = NodalEnrichedElement(
+        RestrictedElement(RaviartThomas(T, 2), restriction_domain='facet'),
+        RestrictedElement(RaviartThomas(T, 2), restriction_domain='interior')
+    )
+
+    for attr in ["degree",
+                 "get_reference_element",
+                 "entity_dofs",
+                 "entity_closure_dofs",
+                 "get_formdegree",
+                 "mapping",
+                 "num_sub_elements",
+                 "space_dimension",
+                 "value_shape",
+                 "is_nodal",
+                 ]:
+        assert getattr(e0, attr)() == getattr(e1, attr)()
+    assert np.allclose(e0.get_coeffs(), e1.get_coeffs())
+    assert np.allclose(e0.dmats(), e1.dmats())
+    assert np.allclose(e0.get_dual_set().to_riesz(e0.get_nodal_basis()),
+                       e1.get_dual_set().to_riesz(e1.get_nodal_basis()))
 
 
 if __name__ == '__main__':

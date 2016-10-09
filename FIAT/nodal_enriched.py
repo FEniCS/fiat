@@ -41,7 +41,6 @@ class NodalEnrichedElement(FiniteElement):
     """
 
     def __init__(self, *elements):
-        # FIXME: Did we test it for vector/tensor-valued elements?
 
         # Test elements are nodal
         if not all(e.is_nodal() for e in elements):
@@ -95,26 +94,32 @@ class NodalEnrichedElement(FiniteElement):
 
 
 def _merge_coeffs(coeffss):
-    # FIXME: Looks like it might not work for vector/tensor-valued
-    #        first index is basis member label, last index is
-    #        expansion set label, middle ones are value component
-    shape0 = sum(c.shape[0] for c in coeffss)
-    shape1 = max(c.shape[1] for c in coeffss)  # FIXME: Why not -1 ?
-    new_coeffs = np.zeros((shape0, shape1), dtype=coeffss[0].dtype)  # FIXME: middle dimensions?
+    # Number of bases members
+    total_dim = sum(c.shape[0] for c in coeffss)
+
+    # Value shape
+    value_shape = coeffss[0].shape[1:-1]
+    assert all(c.shape[1:-1] == value_shape for c in coeffss)
+
+    # Number of expansion polynomials
+    max_expansion_dim = max(c.shape[-1] for c in coeffss)
+
+    # Compose new coeffs
+    shape = (total_dim,) + value_shape + (max_expansion_dim,)
+    new_coeffs = np.zeros(shape, dtype=coeffss[0].dtype)
     counter = 0
     for c in coeffss:
-        rows = c.shape[0]
-        cols = c.shape[1]  # FIXME: Why not -1 ?
-        new_coeffs[counter:counter+rows, :cols] = c  # FIXME: ellipsis?
-        counter += rows
-    assert counter == shape0
+        dim = c.shape[0]
+        expansion_dim = c.shape[-1]
+        new_coeffs[counter:counter+dim, ..., :expansion_dim] = c
+        counter += dim
+    assert counter == total_dim
     return new_coeffs
 
 
 def _merge_dmats(dmatss):
-    # FIXME: Is correct for vectors/tensors?
     shape, arg = max((dmats[0].shape, args) for args, dmats in enumerate(dmatss))
-    assert shape[0] == shape[1]
+    assert len(shape) == 2 and shape[0] == shape[1]
     new_dmats = []
     for dim in range(len(dmatss[arg])):
         new_dmats.append(dmatss[arg][dim].copy())
