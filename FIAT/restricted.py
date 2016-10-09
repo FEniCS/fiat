@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Anders Logg, Marie Rognes, Jan Blechta, Andrew T T McRae
+# Copyright (C) 2015-2016 Jan Blechta, Andrew T T McRae, and others
 #
 # This file is part of FIAT.
 #
@@ -81,27 +81,8 @@ class RestrictedElement(FiniteElement):
         self.formdegree = element.get_formdegree()
         self.order = 0
 
-    def get_reference_element(self):
-        return self.ref_el
-
-    def space_dimension(self):
-        return len(self._indices)
-
-    def value_shape(self):
-        return self._element.value_shape()
-
-    def degree(self):
-        return self._element.degree()
-
     def mapping(self):
         return self._mapping
-
-    def tabulate(self, order, points, entity=None):
-        result = self._element.tabulate(order, points, entity)
-        extracted = {}
-        for (dtuple, values) in sorted_by_key(result):
-            extracted[dtuple] = numpy.array([values[i] for i in self._indices])
-        return extracted
 
 
 def sorted_by_key(mapping):
