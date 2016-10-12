@@ -33,11 +33,9 @@ class TraceError(Exception):
     """Exception caused by tabulating a trace element on the interior of a cell,
     or the gradient of a trace element."""
 
-    def __init__(self, msg, values, keys):
+    def __init__(self, msg):
         super(TraceError, self).__init__(msg)
         self.msg = msg
-        self.zeros = values
-        self.D = keys
 
 
 class HDivTrace(FiniteElement):
@@ -169,23 +167,23 @@ class HDivTrace(FiniteElement):
 
                 return phivals
 
-        # If the user is directly specifying cell-wise tabulation,
-        # raise TraceError and return zeros
+        # If the user is directly specifying cell-wise tabulation, return TraceError
         elif entity[0] != facet_dim:
-            raise TraceError("Trace elements can only be tabulated on facet entities.",
-                             phivals, key)
+            for key in phivals.keys():
+                phivals[key] = TraceError("Trace elements can only be tabulated on facet entities.")
+            return phivals
         else:
             # Retrieve function evaluations (order = 0 case)
             facet_id = entity[1]
             nonzerovals = list(self.dclagrange.tabulate(0, points).values())[0]
             phivals[evalkey][nf*facet_id:nf*(facet_id + 1), :] = nonzerovals
 
-            # If asking for gradient evaluations, raise TraceError
-            # but return functon evaluations, and zeros for the gradient.
+            # If asking for gradient evaluations, insert TraceError in gradient evaluations
+            # but return functon evaluations
             if order > 0:
-                raise TraceError("No gradient evaluations on trace elements.",
-                                 phivals, key)
-
+                for key in phivals.keys():
+                    if key != evalkey:
+                        phivals[key] = TraceError("Gradient evaluations are illegal on trace elements.")
             return phivals
 
     def value_shape(self):
