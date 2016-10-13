@@ -25,7 +25,6 @@ from FIAT.reference_element import TensorProductCell
 from FIAT.polynomial_set import mis
 from FIAT import dual_set
 from FIAT import functional
-from FIAT.hdiv_trace import TraceError
 
 
 def _first_point(node):
@@ -222,35 +221,12 @@ class TensorProductElement(FiniteElement):
                 raise NotImplementedError("unsupported functional type")
 
         self.dual = dual_set.DualSet(nodes, self.ref_el, entity_ids)
+        super(TensorProductElement, self).__init__(self.ref_el, self.dual, self.order,
+                                                   self.formdegree, self._mapping)
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
-
-    def dual_basis(self):
-        """Return the dual basis (list of functionals) for the finite
-        element."""
-        return self.dual.get_nodes()
-
-    def entity_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom for the enriched element."""
-        return self.dual.get_entity_ids()
-
-    def entity_closure_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom on the closure of those entities for the finite element."""
-        return self.dual.get_entity_closure_ids()
-
-    def get_dual_set(self):
-        "Return the dual for the finite element."
-        return self.dual
-
-    def mapping(self):
-        """Return a list of appropriate mappings from the reference
-        element to a physical element for each basis function of the
-        finite element."""
-        return [self._mapping] * self.space_dimension()
 
     def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
@@ -261,11 +237,6 @@ class TensorProductElement(FiniteElement):
         """Return the expansion coefficients for the basis of the
         finite element."""
         raise NotImplementedError("get_coeffs not implemented")
-
-    def space_dimension(self):
-        """Return the dimension of the finite element space."""
-        # number of dofs just multiplies
-        return self.A.space_dimension() * self.B.space_dimension()
 
     def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
@@ -293,20 +264,8 @@ class TensorProductElement(FiniteElement):
         # Note that for entities other than cells, the following
         # tabulations are already appropriately zero-padded so no
         # additional zero padding is required.
-        try:
-            Atab = self.A.tabulate(order, pointsA, entityA)
-        except TraceError as e:
-            if self.ref_el.get_spatial_dimension() == entityA[0] + entityB[0]:
-                raise
-            Atab = e.zeros
-
-        try:
-            Btab = self.B.tabulate(order, pointsB, entityB)
-        except TraceError as e:
-            if self.ref_el.get_spatial_dimension() == entityA[0] + entityB[0]:
-                raise
-            Btab = e.zeros
-
+        Atab = self.A.tabulate(order, pointsA, entityA)
+        Btab = self.B.tabulate(order, pointsB, entityB)
         npoints = len(points)
 
         # allow 2 scalar-valued FE spaces, or 1 scalar-valued,

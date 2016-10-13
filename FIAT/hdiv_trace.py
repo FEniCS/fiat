@@ -76,49 +76,15 @@ class HDivTrace(FiniteElement):
 
         # Setting up dual basis - only point evaluations
         nodes = [PointEvaluation(self.ref_el, pt) for pt in points]
-        self._dual = dual_set.DualSet(nodes, self.ref_el, self._entity_dofs)
+        self.dual = dual_set.DualSet(nodes, self.ref_el, self._entity_dofs)
+        super(HDivTrace, self).__init__(self.ref_el, self.dual,
+                                        self.dclagrange.get_order(),
+                                        self.dclagrange.get_formdegree(),
+                                        self.dclagrange.mapping())
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
-
-    def order(self):
-        """Return the order of the trace element."""
-        return self.polydegree
-
-    def get_formdegree(self):
-        """Returns the form degree of the facet element (FEEC)"""
-        return self.dclagrange.get_formdegree()
-
-    def dual_basis(self):
-        """Returns the dual basis corresponding to a single facet element.
-        Note: that this is not the dual set of the trace element."""
-        return self._dual.get_nodes()
-
-    def mapping(self):
-        """Returns the mapping from the reference
-        element to a trace element."""
-        return self.dclagrange.mapping()
-
-    def space_dimension(self):
-        "Return the dimension of the finite element space."
-        return self.dclagrange.space_dimension() * self.num_facets
-
-    def get_reference_element(self):
-        "Return the reference element where the traces are defined on."
-        return self.ref_el
-
-    def entity_dofs(self):
-        """Return the entity dictionary."""
-        return self._dual.get_entity_ids()
-
-    def entity_closure_dofs(self):
-        """Return the entity closure dictionary."""
-        return self._dual.get_entity_closure_ids()
-
-    def get_dual_set(self):
-        "Return the dual for the finite element."
-        return self._dual
 
     def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
@@ -131,8 +97,17 @@ class HDivTrace(FiniteElement):
         raise NotImplementedError("get_coeffs not implemented for the trace element.")
 
     def tabulate(self, order, points, entity=None):
-        """Return tabulated values of basis functions at given points."""
+        """Return tabulated values of derivatives up to a given order of
+        basis functions at given points.
 
+        :arg order: The maximum order of derivative.
+        :arg points: An iterable of points.
+        :arg entity: Optional (dimension, entity number) pair
+                     indicating which topological entity of the
+                     reference element to tabulate on.  If ``None``,
+                     tabulated values are computed by geometrically
+                     approximating which facet the points are on.
+        """
         facet_dim = self.ref_el.get_spatial_dimension() - 1
         sdim = self.space_dimension()
         nf = self.dclagrange.space_dimension()
@@ -149,7 +124,6 @@ class HDivTrace(FiniteElement):
         # If entity is None, identify facet using numerical tolerance and
         # return the tabulated values
         if entity is None:
-
             # Attempt to identify which facet (if any) the given points are on
             vertices = self.ref_el.vertices
             coordinates = barycentric_coordinates(points, vertices)
@@ -157,7 +131,6 @@ class HDivTrace(FiniteElement):
 
             # If we are successful in finding a unique facet, we fill in the non-zero values
             if success:
-
                 # Map points to the reference facet
                 new_points = map_to_reference_facet(points, vertices, unique_facet)
 
@@ -167,11 +140,12 @@ class HDivTrace(FiniteElement):
 
                 return phivals
 
-        # If the user is directly specifying cell-wise tabulation, return TraceError
+        # If the user is directly specifying cell-wise tabulation, return TraceErrors in dict
         elif entity[0] != facet_dim:
             for key in phivals.keys():
                 phivals[key] = TraceError("Trace elements can only be tabulated on facet entities.")
             return phivals
+
         else:
             # Retrieve function evaluations (order = 0 case)
             facet_id = entity[1]
@@ -179,7 +153,6 @@ class HDivTrace(FiniteElement):
             phivals[evalkey][nf*facet_id:nf*(facet_id + 1), :] = nonzerovals
 
             # If asking for gradient evaluations, insert TraceError in gradient evaluations
-            # but return functon evaluations
             if order > 0:
                 for key in phivals.keys():
                     if key != evalkey:

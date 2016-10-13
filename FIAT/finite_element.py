@@ -30,29 +30,66 @@ from FIAT.quadrature_schemes import create_quadrature
 
 class FiniteElement(object):
     """Class implementing a basic abstraction template for special
-    types of finite elements. These elements do not have an explicit dual
-    associated with it. Most special methods will need to be implemented
-    by the special element in its module.
+    types of finite elements. These elements do not have an explicit PolynomialSet
+    associated with it."""
 
-    Examples of special elements that inherit from this class include
-    the following: EnrichedElement, TensorElement and HDivTrace."""
-
-    def __init__(self, ref_el, order, formdegree=None):
+    def __init__(self, ref_el, dual, order, formdegree=None, mapping="affine"):
+        # Relevant attributes that do not necessarily depend on a PolynomialSet object:
+        # The order (degree) of the polynomial basis
         self.order = order
         self.formdegree = formdegree
-        self.ref_el = ref_el
 
-    def get_order(self):
-        "Return the order of the element (may be different from the degree)"
-        return self.order
+        # The reference element and the appropriate dual
+        self.ref_el = ref_el
+        self.dual = dual
+
+        # The appropriate mapping for the finite element space
+        self._mapping = mapping
 
     def get_reference_element(self):
-        "Return the reference element for the finite element."
+        """Return the reference element for the finite element."""
         return self.ref_el
+
+    def get_dual_set(self):
+        """Return the dual for the finite element."""
+        return self.dual
+
+    def get_order(self):
+        """Return the order of the element (may be different from the degree."""
+        return self.order
+
+    def dual_basis(self):
+        """Return the dual basis (list of functionals) for the finite
+        element."""
+        return self.dual.get_nodes()
+
+    def entity_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom for the finite element."""
+        return self.dual.get_entity_ids()
+
+    def entity_closure_dofs(self):
+        """Return the map of topological entities to degrees of
+        freedom on the closure of those entities for the finite element."""
+        return self.dual.get_entity_closure_ids()
 
     def get_formdegree(self):
         """Return the degree of the associated form (FEEC)"""
         return self.formdegree
+
+    def mapping(self):
+        """Return a list of appropriate mappings from the reference
+        element to a physical element for each basis function of the
+        finite element."""
+        return [self._mapping] * self.space_dimension()
+
+    def num_sub_elements(self):
+        """Return the number of sub-elements."""
+        return 1
+
+    def space_dimension(self):
+        """Return the dimension of the finite element space."""
+        return len(self.dual_basis())
 
     def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
@@ -78,16 +115,8 @@ class CiarletElement(FiniteElement):
         # need to overload equality
         # if poly_set.get_reference_element() != dual.get_reference_element:
         #    raise Exception, ""
-
-        # The order (degree) of the polynomial basis
-        self.order = order
-        self.formdegree = formdegree
-
-        self.ref_el = poly_set.get_reference_element()
-        self.dual = dual
-
-        # Appropriate mapping for the element space
-        self._mapping = mapping
+        ref_el = poly_set.get_reference_element()
+        super(CiarletElement, self).__init__(ref_el, dual, order, formdegree, mapping)
 
         # build generalized Vandermonde matrix
         old_coeffs = poly_set.get_coeffs()
@@ -114,7 +143,7 @@ class CiarletElement(FiniteElement):
         new_shp = tuple([new_coeffs_flat.shape[0]] + list(shp[1:]))
         new_coeffs = numpy.reshape(new_coeffs_flat, new_shp)
 
-        self.poly_set = PolynomialSet(self.ref_el,
+        self.poly_set = PolynomialSet(ref_el,
                                       poly_set.get_degree(),
                                       poly_set.get_embedded_degree(),
                                       poly_set.get_expansion_set(),
@@ -125,60 +154,15 @@ class CiarletElement(FiniteElement):
         "Return the degree of the (embedding) polynomial space."
         return self.poly_set.get_embedded_degree()
 
-    def get_reference_element(self):
-        "Return the reference element for the finite element."
-        return self.ref_el
-
     def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
         for the finite element."""
         return self.poly_set
 
-    def get_dual_set(self):
-        "Return the dual for the finite element."
-        return self.dual
-
-    def get_order(self):
-        "Return the order of the element (may be different from the degree)"
-        return self.order
-
-    def dual_basis(self):
-        """Return the dual basis (list of functionals) for the finite
-        element."""
-        return self.dual.get_nodes()
-
-    def entity_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom for the finite element."""
-        return self.dual.get_entity_ids()
-
-    def entity_closure_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom on the closure of those entities for the finite element."""
-        return self.dual.get_entity_closure_ids()
-
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
         finite element."""
         return self.poly_set.get_coeffs()
-
-    def get_formdegree(self):
-        """Return the degree of the associated form (FEEC)"""
-        return self.formdegree
-
-    def mapping(self):
-        """Return a list of appropriate mappings from the reference
-        element to a physical element for each basis function of the
-        finite element."""
-        return [self._mapping] * self.space_dimension()
-
-    def num_sub_elements(self):
-        "Return the number of sub-elements."
-        return 1
-
-    def space_dimension(self):
-        "Return the dimension of the finite element space."
-        return self.poly_set.get_num_members()
 
     def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of

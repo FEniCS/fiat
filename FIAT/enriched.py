@@ -80,35 +80,12 @@ class EnrichedElement(FiniteElement):
         # set up dual basis - just concatenation
         nodes = A.dual_basis() + B.dual_basis()
         self.dual = dual_set.DualSet(nodes, self.ref_el, entity_ids)
+        super(EnrichedElement, self).__init__(self.ref_el, self.dual, self.order,
+                                              self.formdegree, self._mapping)
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
-
-    def dual_basis(self):
-        """Return the dual basis (list of functionals) for the finite
-        element."""
-        return self.dual.get_nodes()
-
-    def entity_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom for the enriched element."""
-        return self.dual.get_entity_ids()
-
-    def entity_closure_dofs(self):
-        """Return the map of topological entities to degrees of
-        freedom on the closure of those entities for the finite element."""
-        return self.dual.get_entity_closure_ids()
-
-    def get_dual_set(self):
-        "Return the dual for the finite element."
-        return self.dual
-
-    def mapping(self):
-        """Return a list of appropriate mappings from the reference
-        element to a physical element for each basis function of the
-        finite element."""
-        return self.A.mapping() + self.B.mapping()
 
     def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
@@ -119,11 +96,6 @@ class EnrichedElement(FiniteElement):
         """Return the expansion coefficients for the basis of the
         finite element."""
         raise NotImplementedError("get_coeffs not implemented")
-
-    def space_dimension(self):
-        """Return the dimension of the finite element space."""
-        # number of dofs just adds
-        return self.A.space_dimension() + self.B.space_dimension()
 
     def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
