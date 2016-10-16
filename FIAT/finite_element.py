@@ -111,10 +111,6 @@ class CiarletElement(FiniteElement):
     being a domain, function space, and set of nodes."""
 
     def __init__(self, poly_set, dual, order, formdegree=None, mapping="affine"):
-        # first, compare ref_el of poly_set and dual
-        # need to overload equality
-        # if poly_set.get_reference_element() != dual.get_reference_element:
-        #    raise Exception, ""
         ref_el = poly_set.get_reference_element()
         super(CiarletElement, self).__init__(ref_el, dual, order, formdegree, mapping)
 

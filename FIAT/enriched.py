@@ -42,26 +42,20 @@ class EnrichedElement(FiniteElement):
         if not A.value_shape() == B.value_shape():
             raise ValueError("Elements must have the same value shape")
 
-        # Set up constituent elements
-        self.A = A
-        self.B = B
-
-        # required degree (for quadrature) is definitely max
-        self.polydegree = max(A.degree(), B.degree())
         # order is at least max, possibly more, though getting this
         # right isn't important AFAIK
-        self.order = max(A.get_order(), B.get_order())
+        order = max(A.get_order(), B.get_order())
         # form degree is essentially max (not true for Hdiv/Hcurl,
         # but this will raise an error above anyway).
         # E.g. an H^1 function enriched with an L^2 is now just L^2.
         if A.get_formdegree() is None or B.get_formdegree() is None:
-            self.formdegree = None
+            formdegree = None
         else:
-            self.formdegree = max(A.get_formdegree(), B.get_formdegree())
+            formdegree = max(A.get_formdegree(), B.get_formdegree())
 
         # set up reference element and mapping, following checks above
-        self.ref_el = A.get_reference_element()
-        self._mapping = A.mapping()[0]
+        ref_el = A.get_reference_element()
+        mapping = A.mapping()[0]
 
         # set up entity_ids - for each geometric entity, just concatenate
         # the entities of the constituent elements
@@ -79,9 +73,15 @@ class EnrichedElement(FiniteElement):
 
         # set up dual basis - just concatenation
         nodes = A.dual_basis() + B.dual_basis()
-        self.dual = dual_set.DualSet(nodes, self.ref_el, entity_ids)
-        super(EnrichedElement, self).__init__(self.ref_el, self.dual, self.order,
-                                              self.formdegree, self._mapping)
+        dual = dual_set.DualSet(nodes, ref_el, entity_ids)
+
+        super(EnrichedElement, self).__init__(ref_el, dual, order, formdegree, mapping)
+        # Set up constituent elements
+        self.A = A
+        self.B = B
+
+        # required degree (for quadrature) is definitely max
+        self.polydegree = max(A.degree(), B.degree())
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""

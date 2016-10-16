@@ -45,42 +45,44 @@ class HDivTrace(FiniteElement):
         sd = ref_el.get_spatial_dimension()
         if sd in (0, 1):
             raise ValueError("Cannot use this trace class on a %d-dimensional cell.")
-        self.ref_el = ref_el
-        self.polydegree = degree
 
         # Constructing facet element as a discontinuous Lagrange element
-        self.dclagrange = DiscontinuousLagrange(ufc_simplex(sd - 1), degree)
+        dglagrange = DiscontinuousLagrange(ufc_simplex(sd - 1), degree)
 
         # Construct entity ids (assigning top. dim. and initializing as empty)
-        self._entity_dofs = {}
+        entity_dofs = {}
 
         # Looping over dictionary of cell topology to construct the empty
         # dictionary for entity ids of the trace element
-        topology = self.ref_el.get_topology()
+        topology = ref_el.get_topology()
         for top_dim, entities in topology.items():
-            self._entity_dofs[top_dim] = {}
+            entity_dofs[top_dim] = {}
             for entity in entities:
-                self._entity_dofs[top_dim][entity] = []
+                entity_dofs[top_dim][entity] = []
 
         # Filling in entity ids and generating points for dual basis
-        nf = self.dclagrange.space_dimension()
+        nf = dglagrange.space_dimension()
         points = []
-        self.num_facets = sd + 1
-        for f in range(self.num_facets):
-            self._entity_dofs[sd - 1][f] = range(f * nf, (f + 1) * nf)
+        num_facets = sd + 1
+        for f in range(num_facets):
+            entity_dofs[sd - 1][f] = range(f * nf, (f + 1) * nf)
 
-            for dof in self.dclagrange.dual_basis():
+            for dof in dglagrange.dual_basis():
                 facet_point = list(dof.get_point_dict().keys())[0]
-                transform = self.ref_el.get_entity_transform(sd - 1, f)
+                transform = ref_el.get_entity_transform(sd - 1, f)
                 points.append(tuple(transform(facet_point)))
 
         # Setting up dual basis - only point evaluations
-        nodes = [PointEvaluation(self.ref_el, pt) for pt in points]
-        self.dual = dual_set.DualSet(nodes, self.ref_el, self._entity_dofs)
-        super(HDivTrace, self).__init__(self.ref_el, self.dual,
-                                        self.dclagrange.get_order(),
-                                        self.dclagrange.get_formdegree(),
-                                        self.dclagrange.mapping())
+        nodes = [PointEvaluation(ref_el, pt) for pt in points]
+        dual = dual_set.DualSet(nodes, ref_el, entity_dofs)
+
+        super(HDivTrace, self).__init__(ref_el, dual, dglagrange.get_order(),
+                                        dglagrange.get_formdegree(), dglagrange.mapping())
+        # Set up facet element
+        self.facet_element = dglagrange
+
+        # degree for quadrature rule
+        self.polydegree = degree
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
@@ -110,7 +112,7 @@ class HDivTrace(FiniteElement):
         """
         facet_dim = self.ref_el.get_spatial_dimension() - 1
         sdim = self.space_dimension()
-        nf = self.dclagrange.space_dimension()
+        nf = self.facet_element.space_dimension()
 
         # Initializing dictionary with zeros
         phivals = {}
@@ -129,28 +131,32 @@ class HDivTrace(FiniteElement):
             coordinates = barycentric_coordinates(points, vertices)
             (unique_facet, success) = extract_unique_facet(coordinates)
 
-            # If we are successful in finding a unique facet, we fill in the non-zero values
-            if success:
-                # Map points to the reference facet
-                new_points = map_to_reference_facet(points, vertices, unique_facet)
+            # If we are not successful in finding a unique facet, raise an exception
+            if not success:
+                raise TraceError("Could not find a unique facet to tabulate on.")
 
-                # Retrieve values by tabulating the DiscontinuousLagrange element
-                nonzerovals = list(self.dclagrange.tabulate(order, new_points).values())[0]
-                phivals[evalkey][nf*unique_facet:nf*(unique_facet + 1), :] = nonzerovals
+            # Map points to the reference facet
+            new_points = map_to_reference_facet(points, vertices, unique_facet)
 
-                return phivals
+            # Retrieve values by tabulating the DiscontinuousLagrange element
+            nonzerovals = list(self.facet_element.tabulate(order, new_points).values())[0]
+            phivals[evalkey][nf*unique_facet:nf*(unique_facet + 1), :] = nonzerovals
 
-        # If the user is directly specifying cell-wise tabulation, return TraceErrors in dict
-        elif entity[0] != facet_dim:
+            return phivals
+
+        entity_dim, entity_id = entity
+
+        # If the user is directly specifying cell-wise tabulation, return TraceErrors in dict for
+        # appropriate handling in the form compiler
+        if entity_dim != facet_dim:
             for key in phivals.keys():
-                phivals[key] = TraceError("Trace elements can only be tabulated on facet entities.")
+                phivals[key] = TraceError("Attempting to tabulate a %d-entity. Expecting a %d-entitiy" % (entity_dim, facet_dim))
             return phivals
 
         else:
             # Retrieve function evaluations (order = 0 case)
-            facet_id = entity[1]
-            nonzerovals = list(self.dclagrange.tabulate(0, points).values())[0]
-            phivals[evalkey][nf*facet_id:nf*(facet_id + 1), :] = nonzerovals
+            nonzerovals = list(self.facet_element.tabulate(0, points).values())[0]
+            phivals[evalkey][nf*entity_id:nf*(entity_id + 1), :] = nonzerovals
 
             # If asking for gradient evaluations, insert TraceError in gradient evaluations
             if order > 0:
@@ -161,7 +167,7 @@ class HDivTrace(FiniteElement):
 
     def value_shape(self):
         """Return the value shape of the finite element functions."""
-        return self.dclagrange.value_shape()
+        return self.facet_element.value_shape()
 
     def dmats(self):
         """Return dmats: expansion coefficients for basis function

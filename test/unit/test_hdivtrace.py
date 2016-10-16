@@ -43,7 +43,7 @@ def test_basis_values(degree, facet_id):
     ref_el = ufc_simplex(2)
     quadrule = make_quadrature(ufc_simplex(1), degree + 1)
     fiat_element = HDivTrace(ref_el, degree)
-    nf = fiat_element.dclagrange.space_dimension()
+    nf = fiat_element.facet_element.space_dimension()
 
     # Tabulate without an entity pair given --- need to map to cell coordinates
     cell_transform = ref_el.get_entity_transform(1, facet_id)
@@ -57,7 +57,7 @@ def test_basis_values(degree, facet_id):
 
     for test_degree in range(degree + 1):
         coeffs = [n(lambda x: x[0]**test_degree)
-                  for n in fiat_element.dclagrange.dual.nodes]
+                  for n in fiat_element.facet_element.dual.nodes]
 
         cintegral = np.dot(coeffs, np.dot(ctab, quadrule.wts))
         eintegral = np.dot(coeffs, np.dot(etab, quadrule.wts))
