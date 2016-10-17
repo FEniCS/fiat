@@ -44,7 +44,7 @@ class HDivTrace(FiniteElement):
     def __init__(self, ref_el, degree):
         sd = ref_el.get_spatial_dimension()
         if sd in (0, 1):
-            raise ValueError("Cannot use this trace class on a %d-dimensional cell.")
+            raise ValueError("Cannot use this trace class on a %d-dimensional cell." % sd)
 
         # Constructing facet element as a discontinuous Lagrange element
         dglagrange = DiscontinuousLagrange(ufc_simplex(sd - 1), degree)
