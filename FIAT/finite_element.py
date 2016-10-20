@@ -102,8 +102,16 @@ class FiniteElement(object):
                      reference element to tabulate on.  If ``None``,
                      default cell-wise tabulation is performed.
         """
-        raise NotImplementedError(
-            "Tabulation must be specified in the element class that inherits from FiniteElement.")
+        raise NotImplementedError("Must be specified in the element subclass of FiniteElement.")
+
+    @staticmethod
+    def is_nodal():
+        """True if primal and dual bases are orthogonal. If false,
+        dual basis is not implemented or is undefined.
+
+        Subclasses may not necessarily be nodal, unless it is a CiarletElement.
+        """
+        return False
 
 
 class CiarletElement(FiniteElement):
@@ -130,7 +138,6 @@ class CiarletElement(FiniteElement):
 
         V = numpy.dot(A, numpy.transpose(B))
         self.V = V
-        (u, s, vt) = numpy.linalg.svd(V)
 
         Vinv = numpy.linalg.inv(V)
 
@@ -190,6 +197,15 @@ class CiarletElement(FiniteElement):
     def get_num_members(self, arg):
         "Return number of members of the expansion set."
         return self.get_nodal_basis().get_expansion_set().get_num_members(arg)
+
+    @staticmethod
+    def is_nodal():
+        """True if primal and dual bases are orthogonal. If false,
+        dual basis is not implemented or is undefined.
+
+        Most implementations/subclasses are nodal including this one.
+        """
+        return True
 
 
 def entity_support_dofs(elem, entity_dim):

@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Anders Logg, Marie Rognes, Jan Blechta, Andrew T T McRae
+# Copyright (C) 2015-2016 Jan Blechta, Andrew T T McRae, and others
 #
 # This file is part of FIAT.
 #
@@ -15,11 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-# Based on FFC file restrictedelement.py and Jan's own FIAT implementation
-
 from __future__ import absolute_import, print_function, division
 
-import numpy
 import six
 from six import string_types
 from six import iteritems
@@ -48,7 +45,11 @@ class RestrictedElement(CiarletElement):
         self._element = element
         self._indices = indices
 
+        # Fetch reference element
         ref_el = element.get_reference_element()
+
+        # Restrict primal set
+        poly_set = element.get_nodal_basis().take(indices)
 
         # Restrict dual set
         dof_counter = 0
@@ -67,31 +68,14 @@ class RestrictedElement(CiarletElement):
                     nodes.append(nodes_old[dof])
         assert dof_counter == len(indices)
         dual = DualSet(nodes, ref_el, entity_ids)
-        self.ref_el = ref_el
-        self.dual = dual
 
-    def get_reference_element(self):
-        return self.ref_el
+        # Restrict mapping
+        mapping_old = element.mapping()
+        mapping_new = [mapping_old[dof] for dof in indices]
+        assert all(e_mapping == mapping_new[0] for e_mapping in mapping_new)
 
-    def space_dimension(self):
-        return len(self._indices)
-
-    def value_shape(self):
-        return self._element.value_shape()
-
-    def degree(self):
-        return self._element.degree()
-
-    def mapping(self):
-        mappings = self._element.mapping()
-        return [mappings[i] for i in self._indices]
-
-    def tabulate(self, order, points, entity=None):
-        result = self._element.tabulate(order, points, entity)
-        extracted = {}
-        for (dtuple, values) in sorted_by_key(result):
-            extracted[dtuple] = numpy.array([values[i] for i in self._indices])
-        return extracted
+        # Call constructor of CiarletElement
+        super(RestrictedElement, self).__init__(poly_set, dual, 0, element.get_formdegree(), mapping_new[0])
 
 
 def sorted_by_key(mapping):

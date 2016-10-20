@@ -18,8 +18,8 @@
 # Written by David A. Ham (david.ham@imperial.ac.uk), 2015
 
 from __future__ import absolute_import, print_function, division
-from . import finite_element, polynomial_set, dual_set, functional, quadrature
-from .reference_element import LINE
+from FIAT import finite_element, polynomial_set, dual_set, functional, quadrature
+from FIAT.reference_element import LINE
 
 
 class GaussLegendreDualSet(dual_set.DualSet):

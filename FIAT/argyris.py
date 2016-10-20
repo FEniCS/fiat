@@ -88,10 +88,6 @@ class ArgyrisDualSet(dual_set.DualSet):
 
 
 class QuinticArgyrisDualSet(dual_set.DualSet):
-    """The dual basis for Lagrange elements.  This class works for
-    simplices of any dimension.  Nodes are point evaluation at
-    equispaced points."""
-
     def __init__(self, ref_el):
         entity_ids = {}
         nodes = []
@@ -139,7 +135,7 @@ class QuinticArgyrisDualSet(dual_set.DualSet):
         super(QuinticArgyrisDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class Argyris(finite_element.FiniteElement):
+class Argyris(finite_element.CiarletElement):
     """The Argyris finite element."""
 
     def __init__(self, ref_el, degree):
@@ -148,7 +144,7 @@ class Argyris(finite_element.FiniteElement):
         super(Argyris, self).__init__(poly_set, dual, degree)
 
 
-class QuinticArgyris(finite_element.FiniteElement):
+class QuinticArgyris(finite_element.CiarletElement):
     """The Argyris finite element."""
 
     def __init__(self, ref_el):

@@ -5,7 +5,7 @@ Simplices in one, two, and three dimensions are supported."""
 from __future__ import absolute_import, print_function, division
 
 # Import finite element classes
-from FIAT.finite_element import FiniteElement, CiarletElement  # noqa
+from FIAT.finite_element import FiniteElement, CiarletElement  # noqa: F401
 from FIAT.argyris import Argyris
 from FIAT.argyris import QuinticArgyris
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
@@ -24,19 +24,20 @@ from FIAT.P0 import P0
 from FIAT.raviart_thomas import RaviartThomas
 from FIAT.crouzeix_raviart import CrouzeixRaviart
 from FIAT.regge import Regge
+from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson
 from FIAT.bubble import Bubble
 from FIAT.tensor_product import TensorProductElement
 from FIAT.enriched import EnrichedElement
+from FIAT.nodal_enriched import NodalEnrichedElement
 from FIAT.discontinuous import DiscontinuousElement
 from FIAT.hdiv_trace import HDivTrace
-from FIAT.restricted import RestrictedElement  # noqa
-from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson
+from FIAT.restricted import RestrictedElement             # noqa: F401
 
 # Important functionality
-from FIAT.quadrature import make_quadrature  # noqa
-from FIAT.quadrature_schemes import create_quadrature  # noqa
-from FIAT.reference_element import ufc_cell, ufc_simplex  # noqa
-from FIAT.hdivcurl import Hdiv, Hcurl  # noqa
+from FIAT.quadrature import make_quadrature               # noqa: F401
+from FIAT.quadrature_schemes import create_quadrature     # noqa: F401
+from FIAT.reference_element import ufc_cell, ufc_simplex  # noqa: F401
+from FIAT.hdivcurl import Hdiv, Hcurl                     # noqa: F401
 
 __version__ = "2016.2.0.dev0"
 
@@ -59,6 +60,7 @@ supported_elements = {"Argyris": Argyris,
                       "Raviart-Thomas": RaviartThomas,
                       "Regge": Regge,
                       "EnrichedElement": EnrichedElement,
+                      "NodalEnrichedElement": NodalEnrichedElement,
                       "TensorProductElement": TensorProductElement,
                       "BrokenElement": DiscontinuousElement,
                       "HDiv Trace": HDivTrace,

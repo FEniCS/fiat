@@ -24,6 +24,9 @@ Summary of changes
   the end-user.
 - Added support for the Hellan-Herrmann-Johnson element (symmetric matrix
   fields with normal-normal continuity in 2D).
+- Add method ``FiniteElement.is_nodal()`` for checking element nodality
+- Add ``NodalEnrichedElement`` which merges dual bases (nodes) of given
+  elements and orthogonalizes basis for nodality
 
 Detailed changes
 ================

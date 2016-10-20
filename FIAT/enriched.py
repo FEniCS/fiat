@@ -1,6 +1,4 @@
-# Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
-# Copyright (C) 2013 Andrew T. T. McRae
-# Modified by Thomas H. Gibson, 2016
+# Copyright (C) 2013 Andrew T. T. McRae, 2015-2016 Jan Blechta, and others
 #
 # This file is part of FIAT.
 #
@@ -19,17 +17,26 @@
 
 from __future__ import absolute_import, print_function, division
 
-import numpy
-from FIAT.finite_element import FiniteElement
-from FIAT import dual_set
+import numpy as np
 from copy import copy
+
+from FIAT.finite_element import FiniteElement
+from FIAT.dual_set import DualSet
+
+__all__ = ['EnrichedElement']
 
 
 class EnrichedElement(FiniteElement):
     """Class implementing a finite element that combined the degrees of freedom
-    of two existing finite elements."""
+    of two existing finite elements.
 
-    def __init__(self, A, B):
+    This is an implementation which does not care about orthogonality of
+    primal and dual basis.
+    """
+
+    def __init__(self, *elements):
+        assert len(elements) == 2, "EnrichedElement only implemented for two subelements"
+        A, B = elements
 
         # Firstly, check it makes sense to enrich.  Elements must have:
         # - same reference element
@@ -73,15 +80,23 @@ class EnrichedElement(FiniteElement):
 
         # set up dual basis - just concatenation
         nodes = A.dual_basis() + B.dual_basis()
-        dual = dual_set.DualSet(nodes, ref_el, entity_ids)
+        dual = DualSet(nodes, ref_el, entity_ids)
 
         super(EnrichedElement, self).__init__(ref_el, dual, order, formdegree, mapping)
+
         # Set up constituent elements
         self.A = A
         self.B = B
 
         # required degree (for quadrature) is definitely max
         self.polydegree = max(A.degree(), B.degree())
+
+        # Store subelements
+        self._elements = elements
+
+    def elements(self):
+        "Return reference to original subelements"
+        return self._elements
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
@@ -122,8 +137,8 @@ class EnrichedElement(FiniteElement):
                 # We build a new array, which will be the concatenation
                 # of the two subarrays, in the first index.
 
-                temp = numpy.zeros((Asd + Bsd, npoints),
-                                   dtype=Atab[index].dtype)
+                temp = np.zeros((Asd + Bsd, npoints),
+                                dtype=Atab[index].dtype)
                 temp[:Asd, :] = Atab[index][:, :]
                 temp[Asd:, :] = Btab[index][:, :]
 
@@ -135,8 +150,8 @@ class EnrichedElement(FiniteElement):
                 # We build a new array, which will be the concatenation
                 # of the two subarrays, in the first index.
 
-                temp = numpy.zeros((Asd + Bsd, vs[0], npoints),
-                                   dtype=Atab[index].dtype)
+                temp = np.zeros((Asd + Bsd, vs[0], npoints),
+                                dtype=Atab[index].dtype)
                 temp[:Asd, :, :] = Atab[index][:, :, :]
                 temp[Asd:, :, :] = Btab[index][:, :, :]
 
