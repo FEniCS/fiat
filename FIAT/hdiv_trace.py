@@ -39,7 +39,14 @@ class TraceError(Exception):
 
 
 class HDivTrace(FiniteElement):
-    """Class implementing the trace of hdiv elements."""
+    """Class implementing the trace of hdiv elements. This class
+    is a stand-alone element family that produces a DG-facet field.
+    This element is what's produced after performing the trace
+    operation on an existing H(Div) element.
+
+    This element is also known as the discontinuous trace field that
+    arises in several DG formulations.
+    """
 
     def __init__(self, ref_el, degree):
         sd = ref_el.get_spatial_dimension()
@@ -77,7 +84,7 @@ class HDivTrace(FiniteElement):
         dual = dual_set.DualSet(nodes, ref_el, entity_dofs)
 
         super(HDivTrace, self).__init__(ref_el, dual, dglagrange.get_order(),
-                                        dglagrange.get_formdegree(), dglagrange.mapping())
+                                        dglagrange.get_formdegree(), dglagrange.mapping()[0])
         # Set up facet element
         self.facet_element = dglagrange
 

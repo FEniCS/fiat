@@ -34,6 +34,7 @@ from FIAT.brezzi_douglas_marini import BrezziDouglasMarini      # noqa: F401
 from FIAT.nedelec import Nedelec                                # noqa: F401
 from FIAT.nedelec_second_kind import NedelecSecondKind          # noqa: F401
 from FIAT.regge import Regge                                    # noqa: F401
+from FIAT.hdiv_trace import HDivTrace                           # noqa: F401
 from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson  # noqa: F401
 from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini  # noqa: F401
 from FIAT.gauss_legendre import GaussLegendre                   # noqa: F401
@@ -194,6 +195,21 @@ elements = [
     "    Regge(S, 1),"
     "    RestrictedElement(Regge(S, 2), restriction_domain='interior')"
     ")",
+
+    # Following element do not bother implementing get_nodal_basis
+    # so the test would need to be rewritten using tabulate
+    xfail_impl("TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2))"),
+    xfail_impl("Hdiv(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))"),
+    xfail_impl("Hcurl(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))"),
+    xfail_impl("HDivTrace(T, 1)"),
+    xfail_impl("EnrichedElement("
+               "Hdiv(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
+               "Hdiv(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
+               ")"),
+    xfail_impl("EnrichedElement("
+               "Hcurl(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
+               "Hcurl(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
+               ")"),
 
     # These elements have broken constructor
     xfail_key("Argyris(T, 1)",),

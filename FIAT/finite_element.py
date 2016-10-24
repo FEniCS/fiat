@@ -29,9 +29,10 @@ from FIAT.quadrature_schemes import create_quadrature
 
 
 class FiniteElement(object):
-    """Class implementing a basic abstraction template for special
-    types of finite elements. These elements do not have an explicit PolynomialSet
-    associated with it."""
+    """Class implementing a basic abstraction template for general
+    finite element families. Finite elements which inherit from
+    this class are non-nodal unless they are CiarletElement subclasses.
+    """
 
     def __init__(self, ref_el, dual, order, formdegree=None, mapping="affine"):
         # Relevant attributes that do not necessarily depend on a PolynomialSet object:
@@ -116,7 +117,11 @@ class FiniteElement(object):
 
 class CiarletElement(FiniteElement):
     """Class implementing Ciarlet's abstraction of a finite element
-    being a domain, function space, and set of nodes."""
+    being a domain, function space, and set of nodes.
+
+    Elements derived from this class are nodal finite elements, with a nodal
+    basis generated from polynomials encoded in a `PolynomialSet`.
+    """
 
     def __init__(self, poly_set, dual, order, formdegree=None, mapping="affine"):
         ref_el = poly_set.get_reference_element()
@@ -203,7 +208,7 @@ class CiarletElement(FiniteElement):
         """True if primal and dual bases are orthogonal. If false,
         dual basis is not implemented or is undefined.
 
-        Most implementations/subclasses are nodal including this one.
+        All implementations/subclasses are nodal including this one.
         """
         return True
 
