@@ -28,6 +28,18 @@ The FIAT documentation can be viewed at Read the Docs:
 +--------+-------------------------------------------------------------------------------------+
 
 
+Coverage status
+===============
+
+The FIAT coverage status can be viewed at http://coveralls.io:
+
++--------+-------------------------------------------------------------------------------------------------+
+|FIAT    |  .. image:: https://coveralls.io/repos/bitbucket/fenics-project/fiat/badge.svg?branch=master    |
+|        |     :target: https://coveralls.io/bitbucket/fenics-project/fiat?branch=master                   |
+|        |     :alt: Coverage Status                                                                       |
++--------+-------------------------------------------------------------------------------------------------+
+
+
 License
 =======
 
