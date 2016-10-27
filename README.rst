@@ -19,25 +19,37 @@ For more information, visit http://www.fenicsproject.org
 Documentation
 =============
 
-The FIAT documentation can be viewed at Read the Docs:
+Documentation can be viewed at http://fenics-fiat.readthedocs.org/.
 
-+--------+-------------------------------------------------------------------------------------+
-|FIAT    |  .. image:: https://readthedocs.org/projects/fenics-fiat/badge/?version=latest      |
-|        |     :target: http://fenics.readthedocs.io/projects/fiat/en/latest/?badge=latest     |
-|        |     :alt: Documentation Status                                                      |
-+--------+-------------------------------------------------------------------------------------+
+.. image:: https://readthedocs.org/projects/fenics-fiat/badge/?version=latest
+   :target: http://fenics.readthedocs.io/projects/fiat/en/latest/?badge=latest
+   :alt: Documentation Status
 
 
-Coverage status
-===============
+Automated Testing
+-----------------
 
-The FIAT coverage status can be viewed at http://coveralls.io:
+We use Bitbucket Pipelines and Atlassian Bamboo to perform automated
+testing.
 
-+--------+-------------------------------------------------------------------------------------------------+
-|FIAT    |  .. image:: https://coveralls.io/repos/bitbucket/fenics-project/fiat/badge.svg?branch=master    |
-|        |     :target: https://coveralls.io/bitbucket/fenics-project/fiat?branch=master                   |
-|        |     :alt: Coverage Status                                                                       |
-+--------+-------------------------------------------------------------------------------------------------+
+.. image:: https://bitbucket-badges.useast.atlassian.io/badge/fenics-project/fiat.svg
+   :target: https://bitbucket.org/fenics-project/fiat/addon/pipelines/home
+   :alt: Pipelines Build Status
+
+.. image:: http://fenics-bamboo.simula.no:8085/plugins/servlet/wittified/build-status/FIAT-FD
+   :target: http://fenics-bamboo.simula.no:8085/browse/FIAT-FD/latest
+   :alt: Bamboo Build Status
+
+
+Code Coverage
+-------------
+
+Code coverage reports can be viewed at
+https://coveralls.io/repos/bitbucket/fenics-project/fiat.
+
+.. image:: https://coveralls.io/repos/bitbucket/fenics-project/fiat/badge.svg?branch=master
+   :target: https://coveralls.io/bitbucket/fenics-project/fiat?branch=master
+   :alt: Coverage Status
 
 
 License
