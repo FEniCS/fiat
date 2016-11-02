@@ -27,6 +27,18 @@ Summary of changes
 - Add method ``FiniteElement.is_nodal()`` for checking element nodality
 - Add ``NodalEnrichedElement`` which merges dual bases (nodes) of given
   elements and orthogonalizes basis for nodality
+- Restructuring ``finite_element.py`` with the addition of a non-nodal class
+  ``FiniteElement`` and a nodal class ``CiarletElement``. ``FiniteElement`` is
+  designed to be used to create elements where, in general, a nodal basis isn't
+  well-defined. ``CiarletElement`` implements the usual nodal abstraction of
+  a finite element.
+- Removing ``trace.py`` and ``trace_hdiv.py`` with a new implementation of the
+  trace element of an HDiv-conforming element: ``HDivTrace``. It is also
+  mathematically equivalent to the former ``DiscontinuousLagrangeTrace``, that
+  is, the DG field defined only on co-dimension 1 entities.
+- All nodal finite elements inherit from ``CiarletElement``, and the non-nodal
+  ``TensorProductElement``, ``EnrichedElement`` and ``HDivTrace`` inherit from
+  ``FiniteElement``.
 
 Detailed changes
 ================
