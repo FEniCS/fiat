@@ -52,7 +52,7 @@ class DiscontinuousLagrangeDualSet(dual_set.DualSet):
         super(DiscontinuousLagrangeDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class HigherOrderDiscontinuousLagrange(finite_element.FiniteElement):
+class HigherOrderDiscontinuousLagrange(finite_element.CiarletElement):
     """The discontinuous Lagrange finite element.  It is what it is."""
 
     def __init__(self, ref_el, degree):

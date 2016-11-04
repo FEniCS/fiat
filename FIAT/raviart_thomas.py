@@ -140,7 +140,7 @@ class RTDualSet(dual_set.DualSet):
         super(RTDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class RaviartThomas(finite_element.FiniteElement):
+class RaviartThomas(finite_element.CiarletElement):
     """The Raviart-Thomas finite element"""
 
     def __init__(self, ref_el, q):

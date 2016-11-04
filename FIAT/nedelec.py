@@ -289,7 +289,7 @@ class NedelecDual3D(dual_set.DualSet):
         super(NedelecDual3D, self).__init__(nodes, ref_el, entity_ids)
 
 
-class Nedelec(finite_element.FiniteElement):
+class Nedelec(finite_element.CiarletElement):
     """Nedelec finite element"""
 
     def __init__(self, ref_el, q):

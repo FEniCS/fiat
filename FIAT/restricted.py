@@ -21,10 +21,10 @@ import six
 from six import string_types
 from six import iteritems
 from FIAT.dual_set import DualSet
-from FIAT.finite_element import FiniteElement
+from FIAT.finite_element import CiarletElement
 
 
-class RestrictedElement(FiniteElement):
+class RestrictedElement(CiarletElement):
     """Restrict given element to specified list of dofs."""
 
     def __init__(self, element, indices=None, restriction_domain=None):
@@ -71,17 +71,11 @@ class RestrictedElement(FiniteElement):
 
         # Restrict mapping
         mapping_old = element.mapping()
-        self._mapping = [mapping_old[dof] for dof in indices]
+        mapping_new = [mapping_old[dof] for dof in indices]
+        assert all(e_mapping == mapping_new[0] for e_mapping in mapping_new)
 
-        # Store what reused by FiniteElement implementation
-        self.ref_el = ref_el
-        self.poly_set = poly_set
-        self.dual = dual
-        self.formdegree = element.get_formdegree()
-        self.order = 0
-
-    def mapping(self):
-        return self._mapping
+        # Call constructor of CiarletElement
+        super(RestrictedElement, self).__init__(poly_set, dual, 0, element.get_formdegree(), mapping_new[0])
 
 
 def sorted_by_key(mapping):

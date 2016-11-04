@@ -48,8 +48,7 @@ class P0Dual(dual_set.DualSet):
         super(P0Dual, self).__init__(nodes, ref_el, entity_ids)
 
 
-class P0(finite_element.FiniteElement):
-
+class P0(finite_element.CiarletElement):
     def __init__(self, ref_el):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 0)
         dual = P0Dual(ref_el)

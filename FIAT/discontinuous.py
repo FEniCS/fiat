@@ -17,11 +17,11 @@
 
 from __future__ import absolute_import, print_function, division
 
-from FIAT.finite_element import FiniteElement
+from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 
 
-class DiscontinuousElement(FiniteElement):
+class DiscontinuousElement(CiarletElement):
     """A copy of an existing element where all dofs are associated with the cell"""
 
     def __init__(self, element):

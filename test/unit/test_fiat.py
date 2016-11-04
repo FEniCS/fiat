@@ -34,6 +34,7 @@ from FIAT.brezzi_douglas_marini import BrezziDouglasMarini      # noqa: F401
 from FIAT.nedelec import Nedelec                                # noqa: F401
 from FIAT.nedelec_second_kind import NedelecSecondKind          # noqa: F401
 from FIAT.regge import Regge                                    # noqa: F401
+from FIAT.hdiv_trace import HDivTrace                           # noqa: F401
 from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson  # noqa: F401
 from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini  # noqa: F401
 from FIAT.gauss_legendre import GaussLegendre                   # noqa: F401
@@ -41,8 +42,6 @@ from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre    # noqa: F401
 from FIAT.restricted import RestrictedElement                   # noqa: F401
 from FIAT.tensor_product import TensorProductElement            # noqa: F401
 from FIAT.hdivcurl import Hdiv, Hcurl                           # noqa: F401
-from FIAT.trace import DiscontinuousLagrangeTrace               # noqa: F401
-from FIAT.trace_hdiv import HDivTrace                           # noqa: F401
 from FIAT.argyris import Argyris, QuinticArgyris                # noqa: F401
 from FIAT.hermite import CubicHermite                           # noqa: F401
 from FIAT.morley import Morley                                  # noqa: F401
@@ -202,8 +201,7 @@ elements = [
     xfail_impl("TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2))"),
     xfail_impl("Hdiv(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))"),
     xfail_impl("Hcurl(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))"),
-    xfail_impl("DiscontinuousLagrangeTrace(T, 1)"),
-    xfail_impl("HDivTrace(RaviartThomas(T, 1))"),
+    xfail_impl("HDivTrace(T, 1)"),
     xfail_impl("EnrichedElement("
                "Hdiv(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
                "Hdiv(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"

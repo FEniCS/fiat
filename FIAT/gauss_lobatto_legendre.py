@@ -32,14 +32,14 @@ class GaussLobattoLegendreDualSet(dual_set.DualSet):
         l = quadrature.GaussLobattoLegendreQuadratureLineRule(ref_el, degree+1)
         nodes = [functional.PointEvaluation(ref_el, x) for x in l.pts]
 
-        dual_set.DualSet.__init__(self, nodes, ref_el, entity_ids)
+        super(GaussLobattoLegendreDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class GaussLobattoLegendre(finite_element.FiniteElement):
+class GaussLobattoLegendre(finite_element.CiarletElement):
     """1D continuous element with nodes at the Gauss-Lobatto points."""
     def __init__(self, ref_el, degree):
         if ref_el.shape != LINE:
             raise ValueError("Gauss-Lobatto-Legendre elements are only defined in one dimension.")
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
         dual = GaussLobattoLegendreDualSet(ref_el, degree)
-        finite_element.FiniteElement.__init__(self, poly_set, dual, degree)
+        super(GaussLobattoLegendre, self).__init__(poly_set, dual, degree)

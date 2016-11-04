@@ -34,4 +34,4 @@ class Bubble(RestrictedElement):
         if len(cell_entity_dofs) == 0:
             raise RuntimeError('Bubble element of degree %d has no dofs' % degree)
 
-        RestrictedElement.__init__(self, element, indices=cell_entity_dofs)
+        super(Bubble, self).__init__(element, indices=cell_entity_dofs)

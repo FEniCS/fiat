@@ -21,12 +21,12 @@ import numpy as np
 
 from FIAT.polynomial_set import PolynomialSet
 from FIAT.dual_set import DualSet
-from FIAT.finite_element import FiniteElement
+from FIAT.finite_element import CiarletElement
 
 __all__ = ['NodalEnrichedElement']
 
 
-class NodalEnrichedElement(FiniteElement):
+class NodalEnrichedElement(CiarletElement):
     """NodalEnriched element is a direct sum of a sequence of
     finite elements. Dual basis is reorthogonalized to the
     primal basis for nodality.
@@ -87,10 +87,10 @@ class NodalEnrichedElement(FiniteElement):
         nodes = [node for e in elements for node in e.dual_basis()]
         dual_set = DualSet(nodes, ref_el, entity_ids)
 
-        # FiniteElement constructor adjusts poly_set coefficients s.t.
+        # CiarletElement constructor adjusts poly_set coefficients s.t.
         # dual_set is really dual to poly_set
-        FiniteElement.__init__(self, poly_set, dual_set, order,
-                               formdegree=formdegree, mapping=mapping)
+        super(NodalEnrichedElement, self).__init__(poly_set, dual_set, order,
+                                                   formdegree=formdegree, mapping=mapping)
 
 
 def _merge_coeffs(coeffss):

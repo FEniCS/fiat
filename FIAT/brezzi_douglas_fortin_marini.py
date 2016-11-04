@@ -104,7 +104,7 @@ def BDFMSpace(ref_el, order):
     return element_set
 
 
-class BrezziDouglasFortinMarini(finite_element.FiniteElement):
+class BrezziDouglasFortinMarini(finite_element.CiarletElement):
     """The BDFM element"""
 
     def __init__(self, ref_el, degree):

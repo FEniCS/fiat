@@ -20,7 +20,7 @@ from __future__ import absolute_import, print_function, division
 
 import numpy
 
-from FIAT.finite_element import FiniteElement
+from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONPolynomialSet
 from FIAT.functional import PointEdgeTangentEvaluation as Tangent
@@ -210,7 +210,7 @@ class NedelecSecondKindDual(DualSet):
         return (dofs, ids)
 
 
-class NedelecSecondKind(FiniteElement):
+class NedelecSecondKind(CiarletElement):
     """
     The H(curl) Nedelec elements of the second kind on triangles and
     tetrahedra: the polynomial space described by the full polynomials

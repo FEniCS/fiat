@@ -52,7 +52,7 @@ class DiscontinuousTaylorDualSet(dual_set.DualSet):
         super(DiscontinuousTaylorDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class HigherOrderDiscontinuousTaylor(finite_element.FiniteElement):
+class HigherOrderDiscontinuousTaylor(finite_element.CiarletElement):
     """The discontinuous Taylor finite element. Use a Taylor basis for DG."""
 
     def __init__(self, ref_el, degree):

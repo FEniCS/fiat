@@ -83,7 +83,7 @@ class BDMDualSet(dual_set.DualSet):
         super(BDMDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class BrezziDouglasMarini(finite_element.FiniteElement):
+class BrezziDouglasMarini(finite_element.CiarletElement):
     """The BDM element"""
 
     def __init__(self, ref_el, degree):

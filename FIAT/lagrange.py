@@ -49,7 +49,7 @@ class LagrangeDualSet(dual_set.DualSet):
         super(LagrangeDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class Lagrange(finite_element.FiniteElement):
+class Lagrange(finite_element.CiarletElement):
     """The Lagrange finite element.  It is what it is."""
 
     def __init__(self, ref_el, degree):

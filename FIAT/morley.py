@@ -59,7 +59,7 @@ class MorleyDualSet(dual_set.DualSet):
         super(MorleyDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class Morley(finite_element.FiniteElement):
+class Morley(finite_element.CiarletElement):
     """The Morley finite element."""
 
     def __init__(self, ref_el):

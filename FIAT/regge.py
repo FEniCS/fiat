@@ -19,7 +19,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import, print_function, division
 
-from FIAT.finite_element import FiniteElement
+from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONSymTensorPolynomialSet
 from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct
@@ -91,7 +91,7 @@ class ReggeDual(DualSet):
         return (dofs, dof_ids)
 
 
-class Regge(FiniteElement):
+class Regge(CiarletElement):
     """The generalized Regge elements for symmetric-matrix-valued functions.
        REG(r) in dimension n is the space of polynomial symmetric-matrix-valued
        functions of degree r or less with tangential-tangential continuity.

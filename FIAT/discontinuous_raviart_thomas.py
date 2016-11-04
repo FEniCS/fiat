@@ -70,7 +70,7 @@ class DRTDualSet(dual_set.DualSet):
         super(DRTDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class DiscontinuousRaviartThomas(finite_element.FiniteElement):
+class DiscontinuousRaviartThomas(finite_element.CiarletElement):
     """The discontinuous Raviart-Thomas finite element"""
 
     def __init__(self, ref_el, q):

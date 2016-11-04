@@ -5,14 +5,13 @@ Simplices in one, two, and three dimensions are supported."""
 from __future__ import absolute_import, print_function, division
 
 # Import finite element classes
-from FIAT.finite_element import FiniteElement  # noqa: F401
+from FIAT.finite_element import FiniteElement, CiarletElement  # noqa: F401
 from FIAT.argyris import Argyris
 from FIAT.argyris import QuinticArgyris
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
 from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.discontinuous_taylor import DiscontinuousTaylor
-from FIAT.trace import DiscontinuousLagrangeTrace
 from FIAT.discontinuous_raviart_thomas import DiscontinuousRaviartThomas
 from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
@@ -31,7 +30,7 @@ from FIAT.tensor_product import TensorProductElement
 from FIAT.enriched import EnrichedElement
 from FIAT.nodal_enriched import NodalEnrichedElement
 from FIAT.discontinuous import DiscontinuousElement
-from FIAT.trace_hdiv import HDivTrace
+from FIAT.hdiv_trace import HDivTrace
 from FIAT.restricted import RestrictedElement             # noqa: F401
 
 # Important functionality
@@ -50,7 +49,6 @@ supported_elements = {"Argyris": Argyris,
                       "Crouzeix-Raviart": CrouzeixRaviart,
                       "Discontinuous Lagrange": DiscontinuousLagrange,
                       "Discontinuous Taylor": DiscontinuousTaylor,
-                      "Discontinuous Lagrange Trace": DiscontinuousLagrangeTrace,
                       "Discontinuous Raviart-Thomas": DiscontinuousRaviartThomas,
                       "Hermite": CubicHermite,
                       "Lagrange": Lagrange,
@@ -65,7 +63,7 @@ supported_elements = {"Argyris": Argyris,
                       "NodalEnrichedElement": NodalEnrichedElement,
                       "TensorProductElement": TensorProductElement,
                       "BrokenElement": DiscontinuousElement,
-                      "TraceElement": HDivTrace,
+                      "HDiv Trace": HDivTrace,
                       "Hellan-Herrmann-Johnson": HellanHerrmannJohnson}
 
 # List of extra elements
