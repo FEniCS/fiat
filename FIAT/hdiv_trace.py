@@ -127,8 +127,7 @@ class HDivTrace(FiniteElement):
             alphas = mis(self.ref_el.get_spatial_dimension(), i)
             for alpha in alphas:
                 phivals[alpha] = np.zeros(shape=(sdim, len(points)))
-        key = phivals.keys()
-        evalkey = list(key)[-1]
+        evalkey = (0,) * (facet_dim + 1)
 
         # If entity is None, identify facet using numerical tolerance and
         # return the tabulated values
