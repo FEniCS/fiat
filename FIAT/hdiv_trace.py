@@ -137,16 +137,18 @@ class HDivTrace(FiniteElement):
             coordinates = barycentric_coordinates(points, vertices)
             (unique_facet, success) = extract_unique_facet(coordinates)
 
-            # If we are not successful in finding a unique facet, raise an exception
-            if not success:
-                raise TraceError("Could not find a unique facet to tabulate on.")
+            # If successful, insert evaluations
+            if success:
+                # Map points to the reference facet
+                new_points = map_to_reference_facet(points, vertices, unique_facet)
 
-            # Map points to the reference facet
-            new_points = map_to_reference_facet(points, vertices, unique_facet)
-
-            # Retrieve values by tabulating the DiscontinuousLagrange element
-            nonzerovals = list(self.facet_element.tabulate(order, new_points).values())[0]
-            phivals[evalkey][nf*unique_facet:nf*(unique_facet + 1), :] = nonzerovals
+                # Retrieve values by tabulating the DiscontinuousLagrange element
+                nonzerovals = list(self.facet_element.tabulate(order, new_points).values())[0]
+                phivals[evalkey][nf*unique_facet:nf*(unique_facet + 1), :] = nonzerovals
+            # Otherwise, return NaNs
+            else:
+                for key in phivals.keys():
+                    phivals[key] = np.full(shape=(sdim, len(points)), fill_value=np.nan)
 
             return phivals
 
