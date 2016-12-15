@@ -96,6 +96,7 @@ def test_reference_normal_vert(cell, normals):
         assert np.allclose(normals[facet_number],
                            cell.compute_reference_normal(vert_dim, facet_number))
 
+
 if __name__ == '__main__':
     import os
     pytest.main(os.path.abspath(__file__))
