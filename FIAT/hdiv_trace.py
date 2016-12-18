@@ -116,6 +116,14 @@ class HDivTrace(FiniteElement):
                      reference element to tabulate on.  If ``None``,
                      tabulated values are computed by geometrically
                      approximating which facet the points are on.
+
+        .. note ::
+
+        Performing illegal tabulations on this element will result in either
+        a tabulation table of `numpy.nan` arrays (`entity=None` case), or
+        insertions of the `TraceError` exception class. This is due to the
+        fact that performing cell-wise tabulations, or asking for any order
+        of derivative evaluations, are not mathematically well-defined.
         """
         facet_dim = self.ref_el.get_spatial_dimension() - 1
         sdim = self.space_dimension()
