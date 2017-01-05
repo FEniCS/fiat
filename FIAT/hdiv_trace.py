@@ -116,6 +116,14 @@ class HDivTrace(FiniteElement):
                      reference element to tabulate on.  If ``None``,
                      tabulated values are computed by geometrically
                      approximating which facet the points are on.
+
+        .. note ::
+
+        Performing illegal tabulations on this element will result in either
+        a tabulation table of `numpy.nan` arrays (`entity=None` case), or
+        insertions of the `TraceError` exception class. This is due to the
+        fact that performing cell-wise tabulations, or asking for any order
+        of derivative evaluations, are not mathematically well-defined.
         """
         facet_dim = self.ref_el.get_spatial_dimension() - 1
         sdim = self.space_dimension()
@@ -137,16 +145,18 @@ class HDivTrace(FiniteElement):
             coordinates = barycentric_coordinates(points, vertices)
             (unique_facet, success) = extract_unique_facet(coordinates)
 
-            # If we are not successful in finding a unique facet, raise an exception
-            if not success:
-                raise TraceError("Could not find a unique facet to tabulate on.")
+            # If successful, insert evaluations
+            if success:
+                # Map points to the reference facet
+                new_points = map_to_reference_facet(points, vertices, unique_facet)
 
-            # Map points to the reference facet
-            new_points = map_to_reference_facet(points, vertices, unique_facet)
-
-            # Retrieve values by tabulating the DiscontinuousLagrange element
-            nonzerovals = list(self.facet_element.tabulate(order, new_points).values())[0]
-            phivals[evalkey][nf*unique_facet:nf*(unique_facet + 1), :] = nonzerovals
+                # Retrieve values by tabulating the DiscontinuousLagrange element
+                nonzerovals = list(self.facet_element.tabulate(order, new_points).values())[0]
+                phivals[evalkey][nf*unique_facet:nf*(unique_facet + 1), :] = nonzerovals
+            # Otherwise, return NaNs
+            else:
+                for key in phivals.keys():
+                    phivals[key] = np.full(shape=(sdim, len(points)), fill_value=np.nan)
 
             return phivals
 
