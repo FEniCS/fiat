@@ -42,4 +42,5 @@ class GaussLobattoLegendre(finite_element.CiarletElement):
             raise ValueError("Gauss-Lobatto-Legendre elements are only defined in one dimension.")
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
         dual = GaussLobattoLegendreDualSet(ref_el, degree)
-        super(GaussLobattoLegendre, self).__init__(poly_set, dual, degree)
+        formdegree = 0  # 0-form
+        super(GaussLobattoLegendre, self).__init__(poly_set, dual, degree, formdegree)

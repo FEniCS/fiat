@@ -41,4 +41,5 @@ class GaussLegendre(finite_element.CiarletElement):
             raise ValueError("Gauss-Legendre elements are only defined in one dimension.")
         poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
         dual = GaussLegendreDualSet(ref_el, degree)
-        super(GaussLegendre, self).__init__(poly_set, dual, degree)
+        formdegree = ref_el.get_spatial_dimension()  # n-form
+        super(GaussLegendre, self).__init__(poly_set, dual, degree, formdegree)
