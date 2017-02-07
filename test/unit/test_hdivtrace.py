@@ -71,6 +71,36 @@ def test_basis_values(dim, degree):
             assert np.allclose(eintegral, reference, rtol=1e-14)
 
 
+@pytest.mark.parametrize("degree", range(4))
+def test_quad_trace(degree):
+    """Test the trace element defined on a quadrilateral cell"""
+    from FIAT import ufc_simplex, HDivTrace, make_quadrature
+    from FIAT.reference_element import TensorProductCell
+
+    tpc = TensorProductCell(ufc_simplex(1), ufc_simplex(1))
+    fiat_element = HDivTrace(tpc, degree)
+    facet_elements = fiat_element.dg_elements
+    quadrule = make_quadrature(ufc_simplex(1), degree + 1)
+
+    for entity in [((0, 1), 0), ((0, 1), 1), ((1, 0), 0), ((1, 0), 1)]:
+        entity_dim, entity_id = entity
+        element = facet_elements[entity_dim]
+        nf = element.space_dimension()
+
+        tab = fiat_element.tabulate(0, quadrule.pts,
+                                    entity)[(0, 0)][nf*entity_id:nf*(entity_id + 1)]
+
+        for test_degree in range(degree + 1):
+            coeffs = [n(lambda x: x[0]**test_degree)
+                      for n in element.dual.nodes]
+
+            integral = np.dot(coeffs, np.dot(tab, quadrule.wts))
+
+            reference = np.dot([x[0]**test_degree
+                                for x in quadrule.pts], quadrule.wts)
+            assert np.allclose(integral, reference, rtol=1e-14)
+
+
 @pytest.mark.parametrize("dim", (2, 3))
 @pytest.mark.parametrize("order", range(1, 4))
 @pytest.mark.parametrize("degree", range(4))
