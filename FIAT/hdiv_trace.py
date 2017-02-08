@@ -54,13 +54,27 @@ class HDivTrace(FiniteElement):
     def __init__(self, ref_el, degree):
         """Constructor for the HDivTrace element.
 
-        :arg ref_el: a reference element, which may be a tensor product
+        :arg ref_el: A reference element, which may be a tensor product
                      cell.
-        :arg degree: the degree of approximation.
+        :arg degree: The degree of approximation. If on a tensor product
+                     cell, then provide a tuple of degrees.
         """
         sd = ref_el.get_spatial_dimension()
         if sd in (0, 1):
             raise ValueError("Cannot take the trace of a %d-dim cell." % sd)
+
+        if isinstance(ref_el, TensorProductCell):
+            if isinstance(degree, tuple):
+                spanning_degrees = degree
+
+            else:
+                spanning_degrees = (degree,) * len(ref_el.cells)
+        else:
+            assert isinstance(ref_el, (Simplex, FiredrakeQuadrilateral))
+            assert not isinstance(degree, tuple), (
+                "Must have a tensor product cell if providing multiple degrees"
+            )
+            spanning_degrees = (degree,)
 
         facet_sd = sd - 1
         dg_elements = {}
@@ -71,14 +85,15 @@ class HDivTrace(FiniteElement):
             entity_dofs[top_dim] = {}
 
             if cell.get_spatial_dimension() == facet_sd:
-                dg_elements[top_dim] = construct_dg_element(cell, degree)
+                dg_elements[top_dim] = construct_dg_element(cell,
+                                                            spanning_degrees)
 
             for entity in entities:
                 entity_dofs[top_dim][entity] = []
 
         offset = 0
         pts = []
-        for facet_dim in dg_elements:
+        for facet_dim in sorted(dg_elements):
             element = dg_elements[facet_dim]
             nf = element.space_dimension()
             num_facets = len(topology[facet_dim])
@@ -96,11 +111,14 @@ class HDivTrace(FiniteElement):
         nodes = [PointEvaluation(ref_el, pt) for pt in pts]
         dual = dual_set.DualSet(nodes, ref_el, entity_dofs)
 
-        super(HDivTrace, self).__init__(ref_el, dual, order=degree,
+        deg = max([e.degree() for e in dg_elements.values()])
+
+        super(HDivTrace, self).__init__(ref_el, dual, order=deg,
                                         formdegree=facet_sd,
                                         mapping="affine")
         self.dg_elements = dg_elements
-        self.polydegree = degree
+        self.polydegree = deg
+        self._spanning_degrees = spanning_degrees
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
@@ -160,16 +178,22 @@ class HDivTrace(FiniteElement):
             unique_facet, success = extract_unique_facet(coordinates)
 
             if success:
-                new_points = map_to_reference_facet(points, vertices, unique_facet)
+                new_points = map_to_reference_facet(points,
+                                                    vertices,
+                                                    unique_facet)
                 element = self.dg_elements[facet_sd]
                 nf = element.space_dimension()
-                nonzerovals = list(element.tabulate(order, new_points).values())[0]
+                nonzerovals = list(element.tabulate(order,
+                                                    new_points).values())[0]
 
-                phivals[evalkey][nf*unique_facet:nf * (unique_facet + 1), :] = nonzerovals
+                sindex = nf * unique_facet
+                eindex = nf * (unique_facet + 1)
+                phivals[evalkey][sindex:eindex, :] = nonzerovals
 
             else:
                 for key in phivals:
-                    phivals[key] = np.full(shape=(sd, len(points)), fill_value=np.nan)
+                    phivals[key] = np.full(shape=(sd, len(points)),
+                                           fill_value=np.nan)
 
             return phivals
 
@@ -177,7 +201,7 @@ class HDivTrace(FiniteElement):
 
         if entity_dim not in self.dg_elements:
             for key in phivals:
-                msg = "Tabulating the HDivTrace element is only allowed on facet entities"
+                msg = "The HDivTrace element can only be tabulated on facets."
                 phivals[key] = TraceError(msg)
 
         else:
@@ -185,10 +209,12 @@ class HDivTrace(FiniteElement):
             nf = element.space_dimension()
             nonzerovals = list(element.tabulate(0, points).values())[0]
 
-            phivals[evalkey][nf*entity_id:nf * (entity_id + 1), :] = nonzerovals
+            sindex = nf * entity_id
+            eindex = nf * (entity_id + 1)
+            phivals[evalkey][sindex:eindex, :] = nonzerovals
 
             if order > 0:
-                msg = "Gradients on trace elements are not well-defined"
+                msg = "Gradients on trace elements are not well-defined."
                 for key in phivals:
                     if key != evalkey:
                         phivals[key] = TraceError(msg)
@@ -209,33 +235,39 @@ class HDivTrace(FiniteElement):
         raise NotImplementedError("get_num_members not implemented for the trace element.")
 
 
-def construct_dg_element(ref_el, degree):
+def construct_dg_element(ref_el, spanning_degrees):
     """Constructs a discontinuous galerkin element of a given degree
     on a particular reference cell.
     """
     if isinstance(ref_el, Simplex):
+        degree, = spanning_degrees
         dg_element = DiscontinuousLagrange(ref_el, degree)
 
     # Quadrilateral facets could be on a FiredrakeQuadrilateral.
     # In this case, we treat this as an interval x interval cell:
     elif isinstance(ref_el, FiredrakeQuadrilateral):
+        degree, = spanning_degrees
         dg_a = DiscontinuousLagrange(ufc_simplex(1), degree)
         dg_b = DiscontinuousLagrange(ufc_simplex(1), degree)
         dg_element = TensorProductElement(dg_a, dg_b)
 
     # This handles the more general case for facets:
     elif isinstance(ref_el, TensorProductCell):
+        assert len(spanning_degrees) == 2, (
+            "Must provide two degrees for tensor product cells"
+        )
+        d1, d2 = spanning_degrees
         A, B = ref_el.cells
 
         if isinstance(A, Point) and not isinstance(B, Point):
-            dg_element = construct_dg_element(B, degree)
+            dg_element = construct_dg_element(B, (d2,))
 
         elif isinstance(B, Point) and not isinstance(A, Point):
-            dg_element = construct_dg_element(A, degree)
+            dg_element = construct_dg_element(A, (d1,))
 
         else:
-            dg_a = construct_dg_element(A, degree)
-            dg_b = construct_dg_element(B, degree)
+            dg_a = construct_dg_element(A, (d1,))
+            dg_b = construct_dg_element(B, (d2,))
             dg_element = TensorProductElement(dg_a, dg_b)
     else:
         raise NotImplementedError(
