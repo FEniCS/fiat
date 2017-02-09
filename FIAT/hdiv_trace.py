@@ -16,7 +16,7 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, division
-from six import iteritems
+from six import iteritems, itervalues
 
 import numpy as np
 from FIAT.reference_element import (ufc_simplex, Point, Simplex,
@@ -57,25 +57,36 @@ class HDivTrace(FiniteElement):
         :arg ref_el: A reference element, which may be a tensor product
                      cell.
         :arg degree: The degree of approximation. If on a tensor product
-                     cell, then provide a tuple of degrees.
+                     cell, then provide a tuple of degrees if you want
+                     varying degrees.
         """
         sd = ref_el.get_spatial_dimension()
         if sd in (0, 1):
             raise ValueError("Cannot take the trace of a %d-dim cell." % sd)
 
+        # Store the spanning degrees if on a tensor product cell
         if isinstance(ref_el, TensorProductCell):
             if isinstance(degree, tuple):
+                # It is possible to have varying degrees in the component
+                # elements of a tensor product element. This is the same
+                # for the trace element defined on a tensor product cell.
                 spanning_degrees = degree
 
             else:
+                # If one degree is provided, we splat the degree
+                # over all component cells
                 spanning_degrees = (degree,) * len(ref_el.cells)
         else:
             assert isinstance(ref_el, (Simplex, FiredrakeQuadrilateral))
+
+            # Cannot have varying degrees for these reference cells
             assert not isinstance(degree, tuple), (
                 "Must have a tensor product cell if providing multiple degrees"
             )
             spanning_degrees = (degree,)
 
+        # Initialize entity dofs and construct the DG elements
+        # for the facets
         facet_sd = sd - 1
         dg_elements = {}
         entity_dofs = {}
@@ -84,13 +95,16 @@ class HDivTrace(FiniteElement):
             cell = ref_el.construct_subelement(top_dim)
             entity_dofs[top_dim] = {}
 
+            # We have a facet entity!
             if cell.get_spatial_dimension() == facet_sd:
                 dg_elements[top_dim] = construct_dg_element(cell,
                                                             spanning_degrees)
-
+            # Initialize
             for entity in entities:
                 entity_dofs[top_dim][entity] = []
 
+        # Compute the dof numbering for all facet entities
+        # and extract nodes
         offset = 0
         pts = []
         for facet_dim in sorted(dg_elements):
@@ -101,6 +115,8 @@ class HDivTrace(FiniteElement):
             for i in range(num_facets):
                 entity_dofs[facet_dim][i] = range(offset + i * nf,
                                                   offset + (i + 1) * nf)
+
+                # Run over nodes and collect the points for point evaluations
                 for dof in element.dual_basis():
                     facet_pt = list(dof.get_point_dict().keys())[0]
                     transform = ref_el.get_entity_transform(facet_dim, i)
@@ -108,16 +124,24 @@ class HDivTrace(FiniteElement):
 
             offset += entity_dofs[facet_dim][num_facets - 1][-1] + 1
 
+        # Setting up dual basis - only point evaluations
         nodes = [PointEvaluation(ref_el, pt) for pt in pts]
         dual = dual_set.DualSet(nodes, ref_el, entity_dofs)
 
+        # Degree of the element
         deg = max([e.degree() for e in dg_elements.values()])
 
         super(HDivTrace, self).__init__(ref_el, dual, order=deg,
                                         formdegree=facet_sd,
                                         mapping="affine")
+
+        # Set up facet elements
         self.dg_elements = dg_elements
+
+        # Degree for quadrature rule
         self.polydegree = deg
+
+        # Store the spanning degrees
         self._spanning_degrees = spanning_degrees
 
     def degree(self):
@@ -156,6 +180,8 @@ class HDivTrace(FiniteElement):
         """
         sd = self.ref_el.get_spatial_dimension()
         facet_sd = sd - 1
+
+        # Initializing dictionary with zeros
         phivals = {}
         for i in range(order + 1):
             alphas = mis(sd, i)
@@ -166,30 +192,39 @@ class HDivTrace(FiniteElement):
 
         evalkey = (0,) * sd
 
+        # If entity is None, identify facet using numerical tolerance and
+        # return the tabulated values
         if entity is None:
+            # NOTE: Numerical approximation of the facet id is currently only
+            # implemented for simplex reference cells.
             if not isinstance(self.ref_el, Simplex):
                 raise NotImplementedError(
                     "Tabulating this element on a %s cell without providing "
                     "an entity is not currently supported." % type(self.ref_el)
                 )
 
+            # Attempt to identify which facet (if any) the given points are on
             vertices = self.ref_el.vertices
             coordinates = barycentric_coordinates(points, vertices)
             unique_facet, success = extract_unique_facet(coordinates)
 
+            # If successful, insert evaluations
             if success:
+                # Map points to the reference facet
                 new_points = map_to_reference_facet(points,
                                                     vertices,
                                                     unique_facet)
+
+                # Retrieve values by tabulating the DG element
                 element = self.dg_elements[facet_sd]
                 nf = element.space_dimension()
-                nonzerovals = list(element.tabulate(order,
-                                                    new_points).values())[0]
+                nonzerovals, = itervalues(element.tabulate(order, new_points))
 
                 sindex = nf * unique_facet
                 eindex = nf * (unique_facet + 1)
                 phivals[evalkey][sindex:eindex, :] = nonzerovals
 
+            # Otherwise, return NaNs
             else:
                 for key in phivals:
                     phivals[key] = np.full(shape=(sd, len(points)),
@@ -199,20 +234,36 @@ class HDivTrace(FiniteElement):
 
         entity_dim, entity_id = entity
 
+        # If the user is directly specifying cell-wise tabulation, return
+        # TraceErrors in dict for appropriate handling in the form compiler
         if entity_dim not in self.dg_elements:
             for key in phivals:
                 msg = "The HDivTrace element can only be tabulated on facets."
                 phivals[key] = TraceError(msg)
 
         else:
-            element = self.dg_elements[entity_dim]
-            nf = element.space_dimension()
-            nonzerovals = list(element.tabulate(0, points).values())[0]
+            # Retrieve function evaluations (order = 0 case)
+            # NOTE: Depending on the cell, we need to off set
+            # the facet index when tabulating particular facet
+            # entities
+            offset = 0
+            for facet_dim in sorted(self.dg_elements):
+                element = self.dg_elements[facet_dim]
+                nf = element.space_dimension()
+                num_facets = len(self.ref_el.get_topology()[facet_dim])
 
-            sindex = nf * entity_id
-            eindex = nf * (entity_id + 1)
-            phivals[evalkey][sindex:eindex, :] = nonzerovals
+                # Loop over the number of facets until we find a facet
+                # with matching dimension and id
+                for i in range(num_facets):
+                    # Found it!
+                    if facet_dim == entity_dim and i == entity_id:
+                        nonzerovals, = itervalues(element.tabulate(0, points))
+                        phivals[evalkey][offset:offset+nf, :] = nonzerovals
 
+                    offset += nf
+
+            # If asking for gradient evaluations, insert TraceError in
+            # gradient slots
             if order > 0:
                 msg = "Gradients on trace elements are not well-defined."
                 for key in phivals:
