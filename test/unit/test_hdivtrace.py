@@ -78,17 +78,18 @@ def test_quad_trace(degree):
     from FIAT.reference_element import TensorProductCell
 
     tpc = TensorProductCell(ufc_simplex(1), ufc_simplex(1))
-    fiat_element = HDivTrace(tpc, degree)
+    fiat_element = HDivTrace(tpc, (degree, degree))
     facet_elements = fiat_element.dg_elements
     quadrule = make_quadrature(ufc_simplex(1), degree + 1)
 
-    for entity in [((0, 1), 0), ((0, 1), 1), ((1, 0), 0), ((1, 0), 1)]:
-        entity_dim, entity_id = entity
+    for i, entity in enumerate([((0, 1), 0), ((0, 1), 1),
+                                ((1, 0), 0), ((1, 0), 1)]):
+        entity_dim, _ = entity
         element = facet_elements[entity_dim]
         nf = element.space_dimension()
 
         tab = fiat_element.tabulate(0, quadrule.pts,
-                                    entity)[(0, 0)][nf*entity_id:nf*(entity_id + 1)]
+                                    entity)[(0, 0)][nf*i:nf*(i+1)]
 
         for test_degree in range(degree + 1):
             coeffs = [n(lambda x: x[0]**test_degree)
