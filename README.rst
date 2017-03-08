@@ -45,7 +45,7 @@ Code Coverage
 -------------
 
 Code coverage reports can be viewed at
-https://coveralls.io/repos/bitbucket/fenics-project/fiat.
+https://coveralls.io/bitbucket/fenics-project/fiat.
 
 .. image:: https://coveralls.io/repos/bitbucket/fenics-project/fiat/badge.svg?branch=master
    :target: https://coveralls.io/bitbucket/fenics-project/fiat?branch=master
