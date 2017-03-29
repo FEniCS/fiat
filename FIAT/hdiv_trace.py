@@ -117,8 +117,8 @@ class HDivTrace(FiniteElement):
             num_facets = len(topology[facet_dim])
 
             for i in range(num_facets):
-                entity_dofs[facet_dim][i] = range(offset + i * nf,
-                                                  offset + (i + 1) * nf)
+                entity_dofs[facet_dim][i] = list(range(offset + i * nf,
+                                                       offset + (i + 1) * nf))
 
                 # Run over nodes and collect the points for point evaluations
                 for dof in element.dual_basis():
@@ -126,7 +126,7 @@ class HDivTrace(FiniteElement):
                     transform = ref_el.get_entity_transform(facet_dim, i)
                     pts.append(tuple(transform(facet_pt)))
 
-            offset += entity_dofs[facet_dim][num_facets - 1][-1] + 1
+            offset += nf * num_facets
 
         # Setting up dual basis - only point evaluations
         nodes = [PointEvaluation(ref_el, pt) for pt in pts]
