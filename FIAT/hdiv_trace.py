@@ -17,11 +17,12 @@
 
 from __future__ import absolute_import, print_function, division
 from six import iteritems, itervalues
+from six.moves import range
 
 import numpy as np
-from FIAT.reference_element import (ufc_simplex, Point, Simplex,
-                                    TensorProductCell,
-                                    FiredrakeQuadrilateral,
+from FIAT.reference_element import (ufc_simplex, POINT,
+                                    LINE, QUADRILATERAL,
+                                    TRIANGLE, TETRAHEDRON,
                                     TENSORPRODUCT)
 from FIAT.functional import PointEvaluation
 from FIAT.polynomial_set import mis
@@ -77,13 +78,17 @@ class HDivTrace(FiniteElement):
                 "to the number of cells."
             )
         else:
-            assert isinstance(ref_el, (Simplex, FiredrakeQuadrilateral))
-
+            if not ref_el.get_shape() in [TRIANGLE, TETRAHEDRON,
+                                          QUADRILATERAL]:
+                raise NotImplementedError(
+                    "Trace element on a %s not implemented" % type(ref_el)
+                )
             # Cannot have varying degrees for these reference cells
-            assert not isinstance(degree, tuple), (
-                "Must have a tensor product cell if providing multiple degrees"
-            )
-            degree = (degree,)
+            if isinstance(degree, tuple):
+                raise ValueError(
+                    "Must have a tensor product cell "
+                    "if providing multiple degrees"
+                )
 
         # Initialize entity dofs and construct the DG elements
         # for the facets
@@ -117,7 +122,7 @@ class HDivTrace(FiniteElement):
 
                 # Run over nodes and collect the points for point evaluations
                 for dof in element.dual_basis():
-                    facet_pt = list(dof.get_point_dict().keys())[0]
+                    facet_pt, = dof.get_point_dict()
                     transform = ref_el.get_entity_transform(facet_dim, i)
                     pts.append(tuple(transform(facet_pt)))
 
@@ -193,7 +198,7 @@ class HDivTrace(FiniteElement):
         if entity is None:
             # NOTE: Numerical approximation of the facet id is currently only
             # implemented for simplex reference cells.
-            if not isinstance(self.ref_el, Simplex):
+            if not self.ref_el.get_shape() in [TRIANGLE, TETRAHEDRON]:
                 raise NotImplementedError(
                     "Tabulating this element on a %s cell without providing "
                     "an entity is not currently supported." % type(self.ref_el)
@@ -270,7 +275,7 @@ class HDivTrace(FiniteElement):
 
     def value_shape(self):
         """Return the value shape of the finite element functions."""
-        return self.facet_element.value_shape()
+        return ()
 
     def dmats(self):
         """Return dmats: expansion coefficients for basis function
@@ -282,40 +287,35 @@ class HDivTrace(FiniteElement):
         raise NotImplementedError("get_num_members not implemented for the trace element.")
 
 
-def construct_dg_element(ref_el, degrees):
+def construct_dg_element(ref_el, degree):
     """Constructs a discontinuous galerkin element of a given degree
     on a particular reference cell.
     """
-    if isinstance(ref_el, Simplex):
-        degree, = degrees
+    if ref_el.get_shape() in [LINE, TRIANGLE]:
         dg_element = DiscontinuousLagrange(ref_el, degree)
 
     # Quadrilateral facets could be on a FiredrakeQuadrilateral.
     # In this case, we treat this as an interval x interval cell:
-    elif isinstance(ref_el, FiredrakeQuadrilateral):
-        degree, = degrees
+    elif ref_el.get_shape() == QUADRILATERAL:
         dg_a = DiscontinuousLagrange(ufc_simplex(1), degree)
         dg_b = DiscontinuousLagrange(ufc_simplex(1), degree)
         dg_element = TensorProductElement(dg_a, dg_b)
 
     # This handles the more general case for facets:
-    elif isinstance(ref_el, TensorProductCell):
-        assert len(degrees) == 2, (
-            "Must provide two degrees for tensor product cells"
+    elif ref_el.get_shape() == TENSORPRODUCT:
+        assert len(degree) == len(ref_el.cells), (
+            "Must provide the same number of degrees as the number "
+            "of cells that make up the tensor product cell."
         )
-        d1, d2 = degrees
-        A, B = ref_el.cells
+        sub_elements = [construct_dg_element(c, d)
+                        for c, d in zip(ref_el.cells, degree)
+                        if c.get_shape() != POINT]
 
-        if isinstance(A, Point) and not isinstance(B, Point):
-            dg_element = construct_dg_element(B, (d2,))
-
-        elif isinstance(B, Point) and not isinstance(A, Point):
-            dg_element = construct_dg_element(A, (d1,))
-
+        if len(sub_elements) > 1:
+            dg_element = TensorProductElement(*sub_elements)
         else:
-            dg_a = construct_dg_element(A, (d1,))
-            dg_b = construct_dg_element(B, (d2,))
-            dg_element = TensorProductElement(dg_a, dg_b)
+            dg_element, = sub_elements
+
     else:
         raise NotImplementedError(
             "Reference cells of type %s not currently supported" % type(ref_el)
