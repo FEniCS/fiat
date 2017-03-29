@@ -21,7 +21,8 @@ from six import iteritems, itervalues
 import numpy as np
 from FIAT.reference_element import (ufc_simplex, Point, Simplex,
                                     TensorProductCell,
-                                    FiredrakeQuadrilateral)
+                                    FiredrakeQuadrilateral,
+                                    TENSORPRODUCT)
 from FIAT.functional import PointEvaluation
 from FIAT.polynomial_set import mis
 from FIAT import (FiniteElement, dual_set,
@@ -64,18 +65,17 @@ class HDivTrace(FiniteElement):
         if sd in (0, 1):
             raise ValueError("Cannot take the trace of a %d-dim cell." % sd)
 
-        # Store the spanning degrees if on a tensor product cell
-        if isinstance(ref_el, TensorProductCell):
-            if isinstance(degree, tuple):
-                # It is possible to have varying degrees in the component
-                # elements of a tensor product element. This is the same
-                # for the trace element defined on a tensor product cell.
-                spanning_degrees = degree
+        # Store the degrees if on a tensor product cell
+        if ref_el.get_shape() == TENSORPRODUCT:
+            try:
+                degree = tuple(degree)
+            except TypeError:
+                degree = (degree,) * len(ref_el.cells)
 
-            else:
-                # If one degree is provided, we splat the degree
-                # over all component cells
-                spanning_degrees = (degree,) * len(ref_el.cells)
+            assert len(ref_el.cells) == len(degree), (
+                "Number of specified degrees must be equal "
+                "to the number of cells."
+            )
         else:
             assert isinstance(ref_el, (Simplex, FiredrakeQuadrilateral))
 
@@ -83,7 +83,7 @@ class HDivTrace(FiniteElement):
             assert not isinstance(degree, tuple), (
                 "Must have a tensor product cell if providing multiple degrees"
             )
-            spanning_degrees = (degree,)
+            degree = (degree,)
 
         # Initialize entity dofs and construct the DG elements
         # for the facets
@@ -97,8 +97,7 @@ class HDivTrace(FiniteElement):
 
             # We have a facet entity!
             if cell.get_spatial_dimension() == facet_sd:
-                dg_elements[top_dim] = construct_dg_element(cell,
-                                                            spanning_degrees)
+                dg_elements[top_dim] = construct_dg_element(cell, degree)
             # Initialize
             for entity in entities:
                 entity_dofs[top_dim][entity] = []
@@ -141,9 +140,6 @@ class HDivTrace(FiniteElement):
         # Degree for quadrature rule
         self.polydegree = deg
 
-        # Store the spanning degrees
-        self._spanning_degrees = spanning_degrees
-
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.polydegree
@@ -172,11 +168,11 @@ class HDivTrace(FiniteElement):
 
         .. note ::
 
-        Performing illegal tabulations on this element will result in either
-        a tabulation table of `numpy.nan` arrays (`entity=None` case), or
-        insertions of the `TraceError` exception class. This is due to the
-        fact that performing cell-wise tabulations, or asking for any order
-        of derivative evaluations, are not mathematically well-defined.
+           Performing illegal tabulations on this element will result in either
+           a tabulation table of `numpy.nan` arrays (`entity=None` case), or
+           insertions of the `TraceError` exception class. This is due to the
+           fact that performing cell-wise tabulations, or asking for any order
+           of derivative evaluations, are not mathematically well-defined.
         """
         sd = self.ref_el.get_spatial_dimension()
         facet_sd = sd - 1
@@ -286,28 +282,28 @@ class HDivTrace(FiniteElement):
         raise NotImplementedError("get_num_members not implemented for the trace element.")
 
 
-def construct_dg_element(ref_el, spanning_degrees):
+def construct_dg_element(ref_el, degrees):
     """Constructs a discontinuous galerkin element of a given degree
     on a particular reference cell.
     """
     if isinstance(ref_el, Simplex):
-        degree, = spanning_degrees
+        degree, = degrees
         dg_element = DiscontinuousLagrange(ref_el, degree)
 
     # Quadrilateral facets could be on a FiredrakeQuadrilateral.
     # In this case, we treat this as an interval x interval cell:
     elif isinstance(ref_el, FiredrakeQuadrilateral):
-        degree, = spanning_degrees
+        degree, = degrees
         dg_a = DiscontinuousLagrange(ufc_simplex(1), degree)
         dg_b = DiscontinuousLagrange(ufc_simplex(1), degree)
         dg_element = TensorProductElement(dg_a, dg_b)
 
     # This handles the more general case for facets:
     elif isinstance(ref_el, TensorProductCell):
-        assert len(spanning_degrees) == 2, (
+        assert len(degrees) == 2, (
             "Must provide two degrees for tensor product cells"
         )
-        d1, d2 = spanning_degrees
+        d1, d2 = degrees
         A, B = ref_el.cells
 
         if isinstance(A, Point) and not isinstance(B, Point):
