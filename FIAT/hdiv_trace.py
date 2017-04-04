@@ -20,15 +20,16 @@ from six import iteritems, itervalues
 from six.moves import range
 
 import numpy as np
+from FIAT.discontinuous_lagrange import DiscontinuousLagrange
+from FIAT.dual_set import DualSet
+from FIAT.finite_element import FiniteElement
+from FIAT.functional import PointEvaluation
+from FIAT.polynomial_set import mis
 from FIAT.reference_element import (ufc_simplex, POINT,
                                     LINE, QUADRILATERAL,
                                     TRIANGLE, TETRAHEDRON,
                                     TENSORPRODUCT)
-from FIAT.functional import PointEvaluation
-from FIAT.polynomial_set import mis
-from FIAT import (FiniteElement, dual_set,
-                  DiscontinuousLagrange,
-                  TensorProductElement)
+from FIAT.tensor_product import TensorProductElement
 
 # Numerical tolerance for facet-entity identifications
 epsilon = 1e-10
@@ -74,21 +75,16 @@ class HDivTrace(FiniteElement):
                 degree = (degree,) * len(ref_el.cells)
 
             assert len(ref_el.cells) == len(degree), (
-                "Number of specified degrees must be equal "
-                "to the number of cells."
+                "Number of specified degrees must be equal to the number of cells."
             )
         else:
-            if not ref_el.get_shape() in [TRIANGLE, TETRAHEDRON,
-                                          QUADRILATERAL]:
+            if ref_el.get_shape() not in [TRIANGLE, TETRAHEDRON, QUADRILATERAL]:
                 raise NotImplementedError(
                     "Trace element on a %s not implemented" % type(ref_el)
                 )
             # Cannot have varying degrees for these reference cells
             if isinstance(degree, tuple):
-                raise ValueError(
-                    "Must have a tensor product cell "
-                    "if providing multiple degrees"
-                )
+                raise ValueError("Must have a tensor product cell if providing multiple degrees")
 
         # Initialize entity dofs and construct the DG elements
         # for the facets
@@ -130,7 +126,7 @@ class HDivTrace(FiniteElement):
 
         # Setting up dual basis - only point evaluations
         nodes = [PointEvaluation(ref_el, pt) for pt in pts]
-        dual = dual_set.DualSet(nodes, ref_el, entity_dofs)
+        dual = DualSet(nodes, ref_el, entity_dofs)
 
         # Degree of the element
         deg = max([e.degree() for e in dg_elements.values()])
@@ -188,8 +184,7 @@ class HDivTrace(FiniteElement):
             alphas = mis(sd, i)
 
             for alpha in alphas:
-                phivals[alpha] = np.zeros(shape=(self.space_dimension(),
-                                                 len(points)))
+                phivals[alpha] = np.zeros(shape=(self.space_dimension(), len(points)))
 
         evalkey = (0,) * sd
 
@@ -198,7 +193,7 @@ class HDivTrace(FiniteElement):
         if entity is None:
             # NOTE: Numerical approximation of the facet id is currently only
             # implemented for simplex reference cells.
-            if not self.ref_el.get_shape() in [TRIANGLE, TETRAHEDRON]:
+            if self.ref_el.get_shape() not in [TRIANGLE, TETRAHEDRON]:
                 raise NotImplementedError(
                     "Tabulating this element on a %s cell without providing "
                     "an entity is not currently supported." % type(self.ref_el)
@@ -212,9 +207,7 @@ class HDivTrace(FiniteElement):
             # If successful, insert evaluations
             if success:
                 # Map points to the reference facet
-                new_points = map_to_reference_facet(points,
-                                                    vertices,
-                                                    unique_facet)
+                new_points = map_to_reference_facet(points, vertices, unique_facet)
 
                 # Retrieve values by tabulating the DG element
                 element = self.dg_elements[facet_sd]
@@ -228,8 +221,7 @@ class HDivTrace(FiniteElement):
             # Otherwise, return NaNs
             else:
                 for key in phivals:
-                    phivals[key] = np.full(shape=(sd, len(points)),
-                                           fill_value=np.nan)
+                    phivals[key] = np.full(shape=(sd, len(points)), fill_value=np.nan)
 
             return phivals
 
