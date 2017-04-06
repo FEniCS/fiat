@@ -217,8 +217,7 @@ class HDivTrace(FiniteElement):
                 element = self.dg_elements[facet_sd]
                 nf = element.space_dimension()
                 nonzerovals, = itervalues(element.tabulate(order, new_points))
-                sindex = nf * unique_facet
-                eindex = nf * (unique_facet + 1)
+                indices = slice(nf * unique_facet, nf * (unique_facet + 1))
 
         else:
             entity_dim, _ = entity
@@ -246,8 +245,7 @@ class HDivTrace(FiniteElement):
                         # Found it! Grab insertion indices
                         if (facet_dim, i) == entity:
                             nonzerovals, = itervalues(element.tabulate(0, points))
-                            sindex = offset
-                            eindex = offset + nf
+                            indices = slice(offset, offset + nf)
 
                         offset += nf
 
@@ -260,7 +258,7 @@ class HDivTrace(FiniteElement):
                     phivals[key] = TraceError(msg)
 
         # Insert non-zero values in appropriate place
-        phivals[evalkey][sindex:eindex, :] = nonzerovals
+        phivals[evalkey][indices, :] = nonzerovals
 
         return phivals
 
