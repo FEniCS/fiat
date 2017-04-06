@@ -113,16 +113,14 @@ class HDivTrace(FiniteElement):
             num_facets = len(topology[facet_dim])
 
             for i in range(num_facets):
-                entity_dofs[facet_dim][i] = list(range(offset + i * nf,
-                                                       offset + (i + 1) * nf))
+                entity_dofs[facet_dim][i] = list(range(offset, offset + nf))
+                offset += nf
 
                 # Run over nodes and collect the points for point evaluations
                 for dof in element.dual_basis():
                     facet_pt, = dof.get_point_dict()
                     transform = ref_el.get_entity_transform(facet_dim, i)
                     pts.append(tuple(transform(facet_pt)))
-
-            offset += nf * num_facets
 
         # Setting up dual basis - only point evaluations
         nodes = [PointEvaluation(ref_el, pt) for pt in pts]
@@ -182,7 +180,6 @@ class HDivTrace(FiniteElement):
         phivals = {}
         for i in range(order + 1):
             alphas = mis(sd, i)
-
             for alpha in alphas:
                 phivals[alpha] = np.zeros(shape=(self.space_dimension(), len(points)))
 
@@ -204,8 +201,15 @@ class HDivTrace(FiniteElement):
             coordinates = barycentric_coordinates(points, vertices)
             unique_facet, success = extract_unique_facet(coordinates)
 
-            # If successful, insert evaluations
-            if success:
+            # If not successful, return NaNs
+            if not success:
+                for key in phivals:
+                    phivals[key] = np.full(shape=(sd, len(points)), fill_value=np.nan)
+
+                return phivals
+
+            # Otherwise, extract non-zero values and insertion indices
+            else:
                 # Map points to the reference facet
                 new_points = map_to_reference_facet(points, vertices, unique_facet)
 
@@ -213,55 +217,50 @@ class HDivTrace(FiniteElement):
                 element = self.dg_elements[facet_sd]
                 nf = element.space_dimension()
                 nonzerovals, = itervalues(element.tabulate(order, new_points))
-
                 sindex = nf * unique_facet
                 eindex = nf * (unique_facet + 1)
-                phivals[evalkey][sindex:eindex, :] = nonzerovals
-
-            # Otherwise, return NaNs
-            else:
-                for key in phivals:
-                    phivals[key] = np.full(shape=(sd, len(points)), fill_value=np.nan)
-
-            return phivals
-
-        entity_dim, entity_id = entity
-
-        # If the user is directly specifying cell-wise tabulation, return
-        # TraceErrors in dict for appropriate handling in the form compiler
-        if entity_dim not in self.dg_elements:
-            for key in phivals:
-                msg = "The HDivTrace element can only be tabulated on facets."
-                phivals[key] = TraceError(msg)
 
         else:
-            # Retrieve function evaluations (order = 0 case)
-            # NOTE: Depending on the cell, we need to off set
-            # the facet index when tabulating particular facet
-            # entities
-            offset = 0
-            for facet_dim in sorted(self.dg_elements):
-                element = self.dg_elements[facet_dim]
-                nf = element.space_dimension()
-                num_facets = len(self.ref_el.get_topology()[facet_dim])
+            entity_dim, _ = entity
 
-                # Loop over the number of facets until we find a facet
-                # with matching dimension and id
-                for i in range(num_facets):
-                    # Found it!
-                    if facet_dim == entity_dim and i == entity_id:
-                        nonzerovals, = itervalues(element.tabulate(0, points))
-                        phivals[evalkey][offset:offset+nf, :] = nonzerovals
-
-                    offset += nf
-
-            # If asking for gradient evaluations, insert TraceError in
-            # gradient slots
-            if order > 0:
-                msg = "Gradients on trace elements are not well-defined."
+            # If the user is directly specifying cell-wise tabulation, return
+            # TraceErrors in dict for appropriate handling in the form compiler
+            if entity_dim not in self.dg_elements:
                 for key in phivals:
-                    if key != evalkey:
-                        phivals[key] = TraceError(msg)
+                    msg = "The HDivTrace element can only be tabulated on facets."
+                    phivals[key] = TraceError(msg)
+
+                return phivals
+
+            else:
+                # Retrieve function evaluations (order = 0 case)
+                offset = 0
+                for facet_dim in sorted(self.dg_elements):
+                    element = self.dg_elements[facet_dim]
+                    nf = element.space_dimension()
+                    num_facets = len(self.ref_el.get_topology()[facet_dim])
+
+                    # Loop over the number of facets until we find a facet
+                    # with matching dimension and id
+                    for i in range(num_facets):
+                        # Found it! Grab insertion indices
+                        if (facet_dim, i) == entity:
+                            nonzerovals, = itervalues(element.tabulate(0, points))
+                            sindex = offset
+                            eindex = offset + nf
+
+                        offset += nf
+
+        # If asking for gradient evaluations, insert TraceError in
+        # gradient slots
+        if order > 0:
+            msg = "Gradients on trace elements are not well-defined."
+            for key in phivals:
+                if key != evalkey:
+                    phivals[key] = TraceError(msg)
+
+        # Insert non-zero values in appropriate place
+        phivals[evalkey][sindex:eindex, :] = nonzerovals
 
         return phivals
 
