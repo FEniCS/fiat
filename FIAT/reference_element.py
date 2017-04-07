@@ -451,6 +451,10 @@ class Simplex(Cell):
             return lambda point: point
         elif dim == space_dim - 1:  # facet points
             return self.get_facet_transform(entity_i)
+        elif dim == 0:  # vertex point
+            i, = self.get_topology()[dim][entity_i]
+            vertex = self.get_vertices()[i]
+            return lambda point: vertex
         else:
             raise NotImplementedError("Co-dimension >1 not implemented.")
 
