@@ -43,7 +43,8 @@ def test_basis_values(dim, degree):
     ref_el = ufc_simplex(dim)
     quadrule = make_quadrature(ufc_simplex(dim - 1), degree + 1)
     fiat_element = HDivTrace(ref_el, degree)
-    nf = fiat_element.facet_element.space_dimension()
+    facet_element = fiat_element.dg_elements[dim - 1]
+    nf = facet_element.space_dimension()
 
     for facet_id in range(dim + 1):
         # Tabulate without an entity pair given --- need to map to cell coordinates
@@ -58,7 +59,7 @@ def test_basis_values(dim, degree):
 
         for test_degree in range(degree + 1):
             coeffs = [n(lambda x: x[0]**test_degree)
-                      for n in fiat_element.facet_element.dual.nodes]
+                      for n in facet_element.dual.nodes]
 
             cintegral = np.dot(coeffs, np.dot(ctab, quadrule.wts))
             eintegral = np.dot(coeffs, np.dot(etab, quadrule.wts))
@@ -68,6 +69,37 @@ def test_basis_values(dim, degree):
                                 for x in quadrule.pts], quadrule.wts)
             assert np.allclose(cintegral, reference, rtol=1e-14)
             assert np.allclose(eintegral, reference, rtol=1e-14)
+
+
+@pytest.mark.parametrize("degree", range(4))
+def test_quad_trace(degree):
+    """Test the trace element defined on a quadrilateral cell"""
+    from FIAT import ufc_simplex, HDivTrace, make_quadrature
+    from FIAT.reference_element import TensorProductCell
+
+    tpc = TensorProductCell(ufc_simplex(1), ufc_simplex(1))
+    fiat_element = HDivTrace(tpc, (degree, degree))
+    facet_elements = fiat_element.dg_elements
+    quadrule = make_quadrature(ufc_simplex(1), degree + 1)
+
+    for i, entity in enumerate([((0, 1), 0), ((0, 1), 1),
+                                ((1, 0), 0), ((1, 0), 1)]):
+        entity_dim, _ = entity
+        element = facet_elements[entity_dim]
+        nf = element.space_dimension()
+
+        tab = fiat_element.tabulate(0, quadrule.pts,
+                                    entity)[(0, 0)][nf*i:nf*(i+1)]
+
+        for test_degree in range(degree + 1):
+            coeffs = [n(lambda x: x[0]**test_degree)
+                      for n in element.dual.nodes]
+
+            integral = np.dot(coeffs, np.dot(tab, quadrule.wts))
+
+            reference = np.dot([x[0]**test_degree
+                                for x in quadrule.pts], quadrule.wts)
+            assert np.allclose(integral, reference, rtol=1e-14)
 
 
 @pytest.mark.parametrize("dim", (2, 3))
