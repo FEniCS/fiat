@@ -22,57 +22,29 @@
 # Python modules.
 import numpy
 
-# FIAT modules.
-from FIAT.functional import PointEvaluation
-
 # FFC modules.
-from ffc.fiatinterface import reference_cell, create_quadrature
 from ffc.log import error, info_red
 
-
-# Default quadrature element degree
-default_quadrature_degree = 1
-default_quadrature_scheme = "canonical"
+# FIAT modules.
+from FIAT.functional import PointEvaluation
 
 
 class QuadratureElement:
 
     """Write description of QuadratureElement"""
 
-    def __init__(self, ufl_element):
+    def __init__(self, ref_el, points):
         "Create QuadratureElement"
-
-        # Compute number of points per axis from the degree of the element
-        degree = ufl_element.degree()
-        if degree is None:
-            degree = default_quadrature_degree
-        scheme = ufl_element.quadrature_scheme()
-        if scheme is None:
-            scheme = default_quadrature_scheme
-        self._quad_scheme = scheme
-
-        # Create quadrature (only interested in points)
-        # TODO: KBO: What should we do about quadrature functions that live on ds, dS?
-        # Get cell and facet names.
-        cell = ufl_element.cell()
-        cellname = cell.cellname()
-        points, weights = create_quadrature(cellname, degree, self._quad_scheme)
 
         # Save the quadrature points
         self._points = points
 
         # Create entity dofs.
-        ufc_cell = reference_cell(cellname)
-        self._entity_dofs = _create_entity_dofs(ufc_cell, len(points))
+        self._entity_dofs = _create_entity_dofs(ref_el, len(points))
 
         # The dual is a simply the PointEvaluation at the quadrature points
         # FIXME: KBO: Check if this gives expected results for code like evaluate_dof.
-        self._dual = [PointEvaluation(ufc_cell, tuple(point)) for point in points]
-
-        # Save the geometric dimension.
-        # FIXME: KBO: Do we need to change this in order to integrate on facets?
-        #        MSA: Not the geometric dimension, but maybe the topological dimension somewhere?
-        self._geometric_dimension = cell.geometric_dimension()
+        self._dual = [PointEvaluation(ref_el, tuple(point)) for point in points]
 
     def space_dimension(self):
         "The element space dimension is simply the number of quadrature points"
