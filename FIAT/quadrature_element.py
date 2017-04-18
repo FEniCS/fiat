@@ -21,50 +21,42 @@
 
 # Python modules.
 import numpy
+import six
 
 # FFC modules.
 from ffc.log import error, info_red
 
 # FIAT modules.
+from FIAT.dual_set import DualSet
+from FIAT.finite_element import FiniteElement
 from FIAT.functional import PointEvaluation
 
 
-class QuadratureElement:
+class QuadratureElement(FiniteElement):
 
     """Write description of QuadratureElement"""
 
     def __init__(self, ref_el, points):
         "Create QuadratureElement"
 
-        # Save the quadrature points
-        self._points = points
-
         # Create entity dofs.
-        self._entity_dofs = _create_entity_dofs(ref_el, len(points))
+        entity_dofs = {dim: {entity: [] for entity in entities}
+                       for dim, entities in six.iteritems(ref_el.get_topology())}
+        entity_dofs[ref_el.get_dimension()] = {0: list(range(len(points)))}
 
         # The dual is a simply the PointEvaluation at the quadrature points
         # FIXME: KBO: Check if this gives expected results for code like evaluate_dof.
-        self._dual = [PointEvaluation(ref_el, tuple(point)) for point in points]
+        nodes = [PointEvaluation(ref_el, tuple(point)) for point in points]
 
-    def space_dimension(self):
-        "The element space dimension is simply the number of quadrature points"
-        return len(self._points)
+        # Construct the dual set
+        dual = DualSet(nodes, ref_el, entity_dofs)
+
+        super(QuadratureElement, self).__init__(ref_el, dual, order=None)
+        self._points = points  # save the quadrature points
 
     def value_shape(self):
         "The QuadratureElement is scalar valued"
         return ()
-
-    def entity_dofs(self):
-        "Entity dofs are like that of DG, all internal to the cell"
-        return self._entity_dofs
-
-    def mapping(self):
-        "The mapping is not really affine, but it is easier to handle the code generation this way."
-        return ["affine"] * self.space_dimension()
-
-    def dual_basis(self):
-        "Return list of PointEvaluations"
-        return self._dual
 
     def tabulate(self, order, points):
         """Return the identity matrix of size (num_quad_points, num_quad_points),
@@ -95,7 +87,8 @@ class QuadratureElement:
         # Return the identity matrix of size len(self._points) in a
         # suitable format for tensor and quadrature representations.
         values = numpy.eye(len(self._points))
-        return {(0,) * self._geometric_dimension: values}
+        dim = self.ref_el.get_spatial_dimension()
+        return {(0,) * dim: values}
 
 
 def _create_entity_dofs(fiat_cell, num_dofs):
