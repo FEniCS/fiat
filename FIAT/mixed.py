@@ -30,8 +30,11 @@ from collections import defaultdict
 from operator import add
 from functools import partial
 
+from FIAT.dual_set import DualSet
+from FIAT.finite_element import FiniteElement
 
-class MixedElement(object):
+
+class MixedElement(FiniteElement):
     """A FIAT-like representation of a mixed element.
 
     :arg elements: An iterable of FIAT elements.
@@ -39,48 +42,40 @@ class MixedElement(object):
     This object offers tabulation of the concatenated basis function
     tables along with an entity_dofs dict."""
     def __init__(self, elements):
-        self._elements = tuple(elements)
-        self._entity_dofs = None
+        elements = tuple(elements)
 
-    def get_reference_element(self):
-        return self.elements()[0].get_reference_element()
+        ref_el, = set(e.get_reference_element() for e in elements)
+        nodes = [L for e in elements for L in e.dual_basis()]
+
+        entity_dofs = defaultdict(partial(defaultdict, list))
+        offsets = numpy.cumsum([0] + list(e.space_dimension()
+                                          for e in elements), dtype=int)
+        for i, d in enumerate(e.entity_dofs() for e in elements):
+            for dim, dofs in d.items():
+                for ent, off in dofs.items():
+                    entity_dofs[dim][ent] += list(map(partial(add, offsets[i]), off))
+
+        dual = DualSet(nodes, ref_el, entity_dofs)
+        super(MixedElement, self).__init__(ref_el, dual, None, mapping=None)
+        self._elements = elements
 
     def elements(self):
         return self._elements
 
-    def space_dimension(self):
-        return sum(e.space_dimension() for e in self.elements())
+    def num_sub_elements(self):
+        return len(self._elements)
 
     def value_shape(self):
         return (sum(numpy.prod(e.value_shape(), dtype=int) for e in self.elements()), )
 
-    def entity_dofs(self):
-        if self._entity_dofs is not None:
-            return self._entity_dofs
+    def mapping(self):
+        return [m for e in self._elements for m in e.mapping()]
 
-        ret = defaultdict(partial(defaultdict, list))
-
-        dicts = (e.entity_dofs() for e in self.elements())
-
-        offsets = numpy.cumsum([0] + list(e.space_dimension()
-                                          for e in self.elements()),
-                               dtype=int)
-        for i, d in enumerate(dicts):
-            for dim, dofs in d.items():
-                for ent, off in dofs.items():
-                    ret[dim][ent] += list(map(partial(add, offsets[i]),
-                                              off))
-        self._entity_dofs = ret
-        return self._entity_dofs
-
-    def num_components(self):
-        return self.value_shape()[0]
-
-    def tabulate(self, order, points, entity):
+    def tabulate(self, order, points, entity=None):
         """Tabulate a mixed element by appropriately splatting
         together the tabulation of the individual elements.
         """
-        shape = (self.space_dimension(), self.num_components(), len(points))
+        shape = (self.space_dimension(),) + self.value_shape() + (len(points),)
 
         output = {}
 
