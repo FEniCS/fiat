@@ -38,13 +38,18 @@ class MixedElement(FiniteElement):
     """A FIAT-like representation of a mixed element.
 
     :arg elements: An iterable of FIAT elements.
+    :arg ref_el: The reference element (optional).
 
     This object offers tabulation of the concatenated basis function
     tables along with an entity_dofs dict."""
-    def __init__(self, elements):
+    def __init__(self, elements, ref_el=None):
         elements = tuple(elements)
 
-        ref_el, = set(e.get_reference_element() for e in elements)
+        cells = set(e.get_reference_element() for e in elements)
+        if ref_el is not None:
+            cells.add(ref_el)
+        ref_el, = cells
+
         nodes = [L for e in elements for L in e.dual_basis()]
 
         entity_dofs = defaultdict(partial(defaultdict, list))
