@@ -20,6 +20,9 @@
 #
 # Modified by Garth N. Wells 2006-2009
 
+from __future__ import absolute_import, print_function, division
+from six.moves import range
+
 # Python modules.
 import numpy
 import six
