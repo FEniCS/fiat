@@ -1,25 +1,23 @@
 # -*- coding: utf-8 -*-
 #
-# This file was modified from FFC
-# (http://bitbucket.org/fenics-project/ffc), copyright notice
-# reproduced below.
-#
 # Copyright (C) 2005-2010 Anders Logg
+# Copyright (C) 2016 Lawrence Mitchell
+# Copyright (C) 2017 Miklós Homolya
 #
-# This file is part of FFC.
+# This file is part of FIAT.
 #
-# FFC is free software: you can redistribute it and/or modify
+# FIAT is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# FFC is distributed in the hope that it will be useful,
+# FIAT is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with FFC. If not, see <http://www.gnu.org/licenses/>.
+# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, division
 from six.moves import map
