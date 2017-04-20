@@ -75,3 +75,8 @@ class QuadratureElement(FiniteElement):
         values = numpy.eye(len(self._points))
         dim = self.ref_el.get_spatial_dimension()
         return {(0,) * dim: values}
+
+    @staticmethod
+    def is_nodal():
+        # No polynomial basis, but still nodal.
+        return True
