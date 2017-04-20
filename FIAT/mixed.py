@@ -50,13 +50,7 @@ class MixedElement(FiniteElement):
 
         nodes = [L for e in elements for L in e.dual_basis()]
 
-        entity_dofs = defaultdict(partial(defaultdict, list))
-        offsets = numpy.cumsum([0] + list(e.space_dimension()
-                                          for e in elements), dtype=int)
-        for i, d in enumerate(e.entity_dofs() for e in elements):
-            for dim, dofs in d.items():
-                for ent, off in dofs.items():
-                    entity_dofs[dim][ent] += list(map(partial(add, offsets[i]), off))
+        entity_dofs = concatenate_entity_dofs(elements)
 
         dual = DualSet(nodes, ref_el, entity_dofs)
         super(MixedElement, self).__init__(ref_el, dual, None, mapping=None)
@@ -104,3 +98,17 @@ class MixedElement(FiniteElement):
                 arr[slice(*ir), slice(*cr)] = tab
 
         return output
+
+
+def concatenate_entity_dofs(elements):
+    """Combine the entity_dofs from a list of elements into a combined
+    entity_dof containing the information for the concatenated DoFs of
+    all the elements."""
+    entity_dofs = defaultdict(partial(defaultdict, list))
+    offsets = numpy.cumsum([0] + list(e.space_dimension()
+                                      for e in elements), dtype=int)
+    for i, d in enumerate(e.entity_dofs() for e in elements):
+        for dim, dofs in d.items():
+            for ent, off in dofs.items():
+                entity_dofs[dim][ent] += list(map(partial(add, offsets[i]), off))
+    return entity_dofs
