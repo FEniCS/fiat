@@ -99,6 +99,10 @@ class MixedElement(FiniteElement):
 
         return output
 
+    def is_nodal(self):
+        """True if primal and dual bases are orthogonal."""
+        return all(e.is_nodal() for e in self._elements)
+
 
 def concatenate_entity_dofs(elements):
     """Combine the entity_dofs from a list of elements into a combined
