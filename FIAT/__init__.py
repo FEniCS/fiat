@@ -31,7 +31,9 @@ from FIAT.enriched import EnrichedElement
 from FIAT.nodal_enriched import NodalEnrichedElement
 from FIAT.discontinuous import DiscontinuousElement
 from FIAT.hdiv_trace import HDivTrace
+from FIAT.mixed import MixedElement                       # noqa: F401
 from FIAT.restricted import RestrictedElement             # noqa: F401
+from FIAT.quadrature_element import QuadratureElement     # noqa: F401
 
 # Important functionality
 from FIAT.quadrature import make_quadrature               # noqa: F401
