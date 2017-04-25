@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2005-2010 Anders Logg
-# Copyright (C) 2016 Lawrence Mitchell
-# Copyright (C) 2017 Miklós Homolya
 #
 # This file is part of FIAT.
 #
