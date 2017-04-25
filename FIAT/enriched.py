@@ -106,11 +106,11 @@ class EnrichedElement(FiniteElement):
         table_shape = (self.space_dimension(), num_components, len(points))
 
         table = {}
-        irange = (0, 0)
+        irange = slice(0)
         for element in self._elements:
 
             etable = element.tabulate(order, points, entity)
-            irange = (irange[1], irange[1] + element.space_dimension())
+            irange = slice(irange.stop, irange.stop + element.space_dimension())
 
             # Insert element table into table
             for dtuple in etable.keys():
@@ -123,7 +123,7 @@ class EnrichedElement(FiniteElement):
                         table[dtuple] = numpy.zeros(table_shape,
                                                     dtype=etable[dtuple].dtype)
 
-                table[dtuple][irange[0]:irange[1]][:] = etable[dtuple]
+                table[dtuple][irange][:] = etable[dtuple]
 
         return table
 
