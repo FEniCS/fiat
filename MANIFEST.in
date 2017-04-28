@@ -1,0 +1,6 @@
+include AUTHORS
+include COPYING
+include COPYING.LESSER
+include ChangeLog
+recursive-include doc *
+recursive-include test *
