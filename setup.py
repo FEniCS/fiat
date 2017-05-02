@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import, print_function, division
 
-import re
 import sys
 
 try:
@@ -14,8 +13,7 @@ if sys.version_info < (2, 7):
     print("Python 2.7 or higher required, please upgrade.")
     sys.exit(1)
 
-version = re.findall('__version__ = "(.*)"',
-                     open('FIAT/__init__.py', 'r').read())[0]
+version = "2017.1.0.dev0"
 
 url = "https://bitbucket.org/fenics-project/fiat/"
 tarball = None
