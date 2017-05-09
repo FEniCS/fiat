@@ -1,10 +1,15 @@
 Changelog
 =========
 
-2017.1.0 (unreleased)
+2017.1.0 (2017-05-09)
 ---------------------
 
-- Nothing changed yet
+- Extended the discontinuous trace element ``HDivTrace`` to support tensor
+  product reference cells. Tabulating the trace defined on a tensor product
+  cell relies on the argument ``entity`` to specify a facet of the cell. The
+  backwards compatibility case ``entity=None`` does not support tensor product
+  tabulation as a result. Tabulating the trace of triangles or tetrahedron
+  remains unaffected and works as usual with or without an entity argument.
 
 2016.2.0 (2016-11-30)
 ---------------------
