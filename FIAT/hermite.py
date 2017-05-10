@@ -71,7 +71,7 @@ class CubicHermiteDualSet(dual_set.DualSet):
                 nodes.append(n)
                 entity_ids[2][f] = list(range(cur, cur + 1))
                 cur += 1
-            
+
             for dim in range(3, sd + 1):
                 entity_ids[dim] = {}
                 for facet in top[dim]:
