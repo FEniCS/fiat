@@ -36,7 +36,7 @@ class MorleyDualSet(dual_set.DualSet):
         verts = ref_el.get_vertices()
         sd = ref_el.get_spatial_dimension()
         if sd != 2:
-            raise Exception("Illegal spatial dimension")
+            raise Exception("Morley only defined on triangles")
 
         # vertex point evaluations
 
@@ -55,6 +55,8 @@ class MorleyDualSet(dual_set.DualSet):
             nodes.append(n)
             entity_ids[1][e] = [cur]
             cur += 1
+
+        entity_ids[2] = {0:[]}
 
         super(MorleyDualSet, self).__init__(nodes, ref_el, entity_ids)
 
