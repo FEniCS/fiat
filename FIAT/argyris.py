@@ -83,6 +83,8 @@ class ArgyrisDualSet(dual_set.DualSet):
             nodes.extend(internalnds)
             entity_ids[2][0] = list(range(cur, cur + len(internalpts)))
             cur += len(internalpts)
+        else:
+            entity_ids[2] = {0: []}
 
         super(ArgyrisDualSet, self).__init__(nodes, ref_el, entity_ids)
 
