@@ -31,6 +31,7 @@ from FIAT.crouzeix_raviart import CrouzeixRaviart               # noqa: F401
 from FIAT.raviart_thomas import RaviartThomas                   # noqa: F401
 from FIAT.discontinuous_raviart_thomas import DiscontinuousRaviartThomas  # noqa: F401
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini      # noqa: F401
+from FIAT.mixed import MixedElement
 from FIAT.nedelec import Nedelec                                # noqa: F401
 from FIAT.nedelec_second_kind import NedelecSecondKind          # noqa: F401
 from FIAT.regge import Regge                                    # noqa: F401
@@ -301,6 +302,24 @@ def test_nodal_enriched_implementation():
     assert np.allclose(e0.dmats(), e1.dmats())
     assert np.allclose(e0.get_dual_set().to_riesz(e0.get_nodal_basis()),
                        e1.get_dual_set().to_riesz(e1.get_nodal_basis()))
+
+
+def test_mixed_is_nodal():
+    element = MixedElement([DiscontinuousLagrange(T, 1), RaviartThomas(T, 2)])
+
+    assert element.is_nodal()
+
+
+def test_mixed_is_not_nodal():
+    element = MixedElement([
+        EnrichedElement(
+            RaviartThomas(T, 1),
+            RestrictedElement(RaviartThomas(T, 2), restriction_domain="interior")
+        ),
+        DiscontinuousLagrange(T, 1)
+    ])
+
+    assert not element.is_nodal()
 
 
 if __name__ == '__main__':
