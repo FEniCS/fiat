@@ -87,7 +87,7 @@ class MixedElement(FiniteElement):
                 try:
                     arr = output[d]
                 except KeyError:
-                    arr = numpy.zeros(shape)
+                    arr = numpy.zeros(shape, dtype=tab.dtype)
                     output[d] = arr
 
                 ir = irange[i:i+2]
