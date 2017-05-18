@@ -46,6 +46,10 @@ class MixedElement(FiniteElement):
             cells.add(ref_el)
         ref_el, = cells
 
+        # These functionals are absolutely wrong, they all map from
+        # functions of the wrong shape, and potentially of different
+        # shapes.  However, they are wrong precisely as FFC hacks
+        # expect them to be. :(
         nodes = [L for e in elements for L in e.dual_basis()]
 
         entity_dofs = concatenate_entity_dofs(elements)
@@ -65,6 +69,9 @@ class MixedElement(FiniteElement):
 
     def mapping(self):
         return [m for e in self._elements for m in e.mapping()]
+
+    def get_nodal_basis(self):
+        raise NotImplementedError("get_nodal_basis not implemented")
 
     def tabulate(self, order, points, entity=None):
         """Tabulate a mixed element by appropriately splatting

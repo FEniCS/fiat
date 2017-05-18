@@ -197,6 +197,13 @@ elements = [
     "    RestrictedElement(Regge(S, 2), restriction_domain='interior')"
     ")",
 
+    # MixedElement made of nodal elements should be nodal, but its API
+    # is currently just broken.
+    xfail_impl("MixedElement(["
+               "    DiscontinuousLagrange(T, 1),"
+               "    RaviartThomas(T, 2)"
+               "])"),
+
     # Following element do not bother implementing get_nodal_basis
     # so the test would need to be rewritten using tabulate
     xfail_impl("TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2))"),
