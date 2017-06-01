@@ -120,4 +120,4 @@ def concatenate_entity_dofs(elements):
         for dim, dofs in d.items():
             for ent, off in dofs.items():
                 entity_dofs[dim][ent] += list(map(partial(add, offsets[i]), off))
-    return entity_dofs
+    return {dim: dict(dofs) for dim, dofs in entity_dofs.items()}
