@@ -18,11 +18,11 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, division
+from six import iteritems
 from six.moves import map
 
 import numpy
 
-from collections import defaultdict
 from operator import add
 from functools import partial
 
@@ -52,7 +52,7 @@ class MixedElement(FiniteElement):
         # expect them to be. :(
         nodes = [L for e in elements for L in e.dual_basis()]
 
-        entity_dofs = concatenate_entity_dofs(elements)
+        entity_dofs = concatenate_entity_dofs(ref_el, elements)
 
         dual = DualSet(nodes, ref_el, entity_dofs)
         super(MixedElement, self).__init__(ref_el, dual, None, mapping=None)
@@ -90,7 +90,7 @@ class MixedElement(FiniteElement):
         for i, e in enumerate(self.elements()):
             table = e.tabulate(order, points, entity)
 
-            for d, tab in table.items():
+            for d, tab in iteritems(table):
                 try:
                     arr = output[d]
                 except KeyError:
@@ -109,15 +109,16 @@ class MixedElement(FiniteElement):
         return all(e.is_nodal() for e in self._elements)
 
 
-def concatenate_entity_dofs(elements):
+def concatenate_entity_dofs(ref_el, elements):
     """Combine the entity_dofs from a list of elements into a combined
     entity_dof containing the information for the concatenated DoFs of
     all the elements."""
-    entity_dofs = defaultdict(partial(defaultdict, list))
+    entity_dofs = {dim: {i: [] for i in entities}
+                   for dim, entities in iteritems(ref_el.get_topology())}
     offsets = numpy.cumsum([0] + list(e.space_dimension()
                                       for e in elements), dtype=int)
     for i, d in enumerate(e.entity_dofs() for e in elements):
-        for dim, dofs in d.items():
-            for ent, off in dofs.items():
+        for dim, dofs in iteritems(d):
+            for ent, off in iteritems(dofs):
                 entity_dofs[dim][ent] += list(map(partial(add, offsets[i]), off))
-    return {dim: dict(dofs) for dim, dofs in entity_dofs.items()}
+    return entity_dofs

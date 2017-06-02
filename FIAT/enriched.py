@@ -66,7 +66,7 @@ class EnrichedElement(FiniteElement):
 
         # set up entity_ids - for each geometric entity, just concatenate
         # the entities of the constituent elements
-        entity_ids = concatenate_entity_dofs(elements)
+        entity_ids = concatenate_entity_dofs(ref_el, elements)
 
         # set up dual basis - just concatenation
         nodes = list(chain.from_iterable(e.dual_basis() for e in elements))
