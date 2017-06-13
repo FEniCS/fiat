@@ -118,7 +118,7 @@ class QuinticArgyrisDualSet(dual_set.DualSet):
                 nodes.append(pd(ref_el, verts[v], alpha))
 
             # second derivatives
-            alphas = [[2, 0], [1, 1,], [0, 2]]
+            alphas = [[2, 0], [1, 1], [0, 2]]
             for alpha in alphas:
                 nodes.append(pd(ref_el, verts[v], alpha))
 
