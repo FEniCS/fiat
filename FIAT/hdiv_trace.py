@@ -204,7 +204,7 @@ class HDivTrace(FiniteElement):
             # If not successful, return NaNs
             if not success:
                 for key in phivals:
-                    phivals[key] = np.full(shape=(sd, len(points)), fill_value=np.nan)
+                    phivals[key] = np.full(shape=(self.space_dimension(), len(points)), fill_value=np.nan)
 
                 return phivals
 
