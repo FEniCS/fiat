@@ -8,6 +8,7 @@ env:
 
 build:
   ci:
+    - apt-get install libopenblas-dev liblapack-dev
     - pip install flake8 flake8-future-import numpy pytest
     - pip install .
     - python -m flake8 .
