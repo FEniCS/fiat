@@ -8,7 +8,7 @@ env:
 
 build:
   ci:
-    - pip install flake8 flake8-future-import pytest
+    - pip install flake8 flake8-future-import numpy pytest
     - pip install .
     - python -m flake8 .
     - python -m pytest -v test/
