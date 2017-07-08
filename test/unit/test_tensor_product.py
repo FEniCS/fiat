@@ -29,7 +29,7 @@ from FIAT.lagrange import Lagrange
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.nedelec import Nedelec
 from FIAT.raviart_thomas import RaviartThomas
-from FIAT.tensor_product import TensorProductElement
+from FIAT.tensor_product import TensorProductElement, FlattenToQuadHex
 from FIAT.hdivcurl import Hdiv, Hcurl
 from FIAT.enriched import EnrichedElement
 
@@ -520,6 +520,23 @@ def test_TFE_2Dx1D_vector_quad_hcurl():
         assert tab[dd][5][2][0] == 0.0
         assert tab[dd][6][2][0] == 0.0
         assert tab[dd][7][2][0] == 0.0
+
+
+def test_flattened_against_TPE():
+    T = UFCInterval()
+    P1 = Lagrange(T, 1)
+    tpe_element = TensorProductElement(P1, P1)
+    flattened_element = FlattenToQuadHex(tpe_element)
+    assert tpe_element.value_shape() == ()
+    tpe_tab = tpe_element.tabulate(1, [(0.1, 0.2)])
+    flattened_tab = flattened_element.tabulate(1, [(0.1, 0.2)])
+
+    for da, db in [[(0,), (0,)], [(1,), (0,)], [(0,), (1,)]]:
+        dc = da + db
+        assert np.isclose(tpe_tab[dc][0][0], flattened_tab[dc][0][0])
+        assert np.isclose(tpe_tab[dc][1][0], flattened_tab[dc][1][0])
+        assert np.isclose(tpe_tab[dc][2][0], flattened_tab[dc][2][0])
+        assert np.isclose(tpe_tab[dc][3][0], flattened_tab[dc][3][0])
 
 
 if __name__ == '__main__':
