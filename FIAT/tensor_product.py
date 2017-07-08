@@ -21,7 +21,8 @@ from __future__ import absolute_import, print_function, division
 
 import numpy
 from FIAT.finite_element import FiniteElement
-from FIAT.reference_element import TensorProductCell
+from FIAT.reference_element import TensorProductCell, FiredrakeQuadrilateral, Hexahedron, _flatten_entities
+from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import mis
 from FIAT import dual_set
 from FIAT import functional
