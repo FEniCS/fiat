@@ -21,12 +21,13 @@ import pytest
 import numpy as np
 
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
-from FIAT.reference_element import Point, FiredrakeQuadrilateral, TensorProductCell
+from FIAT.reference_element import Point, FiredrakeQuadrilateral, TensorProductCell, Hexahedron
 
 point = Point()
 interval = UFCInterval()
 triangle = UFCTriangle()
 quadrilateral = FiredrakeQuadrilateral()
+hexahedron = Hexahedron()
 tetrahedron = UFCTetrahedron()
 interval_x_interval = TensorProductCell(interval, interval)
 triangle_x_interval = TensorProductCell(triangle, interval)
@@ -41,7 +42,8 @@ quadrilateral_x_interval = TensorProductCell(quadrilateral, interval)
                           (tetrahedron, 1/6),
                           (interval_x_interval, 1),
                           (triangle_x_interval, 1/2),
-                          (quadrilateral_x_interval, 1)])
+                          (quadrilateral_x_interval, 1),
+                          (hexahedron, 1])
 def test_volume(cell, volume):
     assert np.allclose(volume, cell.volume())
 
@@ -59,7 +61,13 @@ def test_volume(cell, volume):
                           (tetrahedron, [[1, 1, 1],
                                          [-1, 0, 0],
                                          [0, -1, 0],
-                                         [0, 0, -1]])])
+                                         [0, 0, -1]]),
+                          (hexahedron, [[-1, 0, 0],
+                                        [1, 0, 0],
+                                        [0, -1, 0],
+                                        [0, 1, 0],
+                                        [0, 0, -1],
+                                        [0, 0, 1]])])
 def test_reference_normal(cell, normals):
     facet_dim = cell.get_spatial_dimension() - 1
     for facet_number in range(len(cell.get_topology()[facet_dim])):
