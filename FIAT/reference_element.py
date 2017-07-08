@@ -952,3 +952,15 @@ def volume(verts):
     p = numpy.prod([si for si in s if (si) > 1.e-10])
 
     return p / factorial(sd)
+
+
+def _tuple_sum(tree):
+    """
+    This function calculates the sum of elements in a tuple, it is needed to handle nested tuples in TensorProductCell.
+    Example: _tuple_sum(((1, 0), 1)) returns 2
+    If input argument is not the tuple, returns input.
+    """
+    if isinstance(tree, tuple):
+        return sum(map(_tuple_sum, tree))
+    else:
+        return tree
