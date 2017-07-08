@@ -367,3 +367,121 @@ class TensorProductElement(FiniteElement):
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented")
+
+
+class FlattenToQuadHex(FiniteElement):
+    """A wrapper class that flattens a FIAT quadrilateral/hexahedron element defined
+    on a TensorProductCell to one with FiredrakeQuadrilateral/Hexahedron entities."""
+
+    def __init__(self, element):
+
+        nodes = element.dual.nodes
+        dim = element.ref_el.get_spatial_dimension()
+
+        if dim == 2:
+            ref_el = FiredrakeQuadrilateral()
+        elif dim == 3:
+            ref_el = Hexahedron()
+        else:
+            raise ValueError("Illegal element dimension %s" % dim)
+
+        entity_ids = element.dual.entity_ids
+
+        flat_entity_ids = _flatten_entities(entity_ids, dim)
+        dual = DualSet(nodes, ref_el, flat_entity_ids)
+        super(FlattenToQuadHex, self).__init__(ref_el, dual, element.get_order(), element.get_formdegree(), element._mapping)
+        self.element = element
+        self.dim = dim
+
+    def degree(self):
+        """Return the degree of the (embedding) polynomial space."""
+        return self.element.degree()
+
+    def tabulate(self, order, points, entity=None):
+        """Return tabulated values of derivatives up to given order of
+        basis functions at given points."""
+        # Quadrilateral path
+        if self.dim == 2:
+            if entity is None:
+                entity = (2, 0)
+
+            # Entity is provided in flattened form (d, i)
+            # The entity is factored and an appropriate
+            # entity id for a TensorProductCell is constructed: ((d1, d2), i)
+            entity_dim, entity_id = entity
+            if entity_dim == 2:
+                assert entity_id == 0
+                product_entity = ((1, 1), 0)
+            elif entity_dim == 1:
+                facets = [((0, 1), 0),
+                          ((0, 1), 1),
+                          ((1, 0), 0),
+                          ((1, 0), 1)]
+                product_entity = facets[entity_id]
+            elif entity_dim == 0:
+                raise NotImplementedError("Not implemented for 0 dimension entities")
+            else:
+                raise ValueError("Illegal entity dimension %s" % entity_dim)
+        # Hexahedron path
+        elif self.dim == 3:
+            if entity is None:
+                entity = (3, 0)
+
+            # Entity is provided in flattened form (d, i)
+            # The entity is factored and an appropriate
+            # entity id for a TensorProductCell is constructed: ((d1+d2, d3), i)
+            entity_dim, entity_id = entity
+            if entity_dim == 3:
+                assert entity_id == 0
+                product_entity = ((2, 1), 0)
+            elif entity_dim == 2:
+                facets = [((1, 1), 0),
+                          ((1, 1), 1),
+                          ((1, 1), 2),
+                          ((1, 1), 3),
+                          ((2, 0), 0),
+                          ((2, 0), 1)]
+                product_entity = facets[entity_id]
+            elif entity_dim == 1:
+                edges = [((0, 1), 0),
+                         ((0, 1), 1),
+                         ((0, 1), 2),
+                         ((0, 1), 3),
+                         ((1, 0), 0),
+                         ((1, 0), 1),
+                         ((1, 0), 2),
+                         ((1, 0), 3),
+                         ((1, 0), 4),
+                         ((1, 0), 5),
+                         ((1, 0), 6),
+                         ((1, 0), 7)]
+                product_entity = edges[entity_id]
+            elif entity_dim == 0:
+                raise NotImplementedError("Not implemented for 0 dimension entities")
+            else:
+                raise ValueError("Illegal entity dimension %s" % entity_dim)
+
+        return self.element.tabulate(order, points, product_entity)
+
+    def value_shape(self):
+        """Return the value shape of the finite element functions."""
+        return self.element.value_shape()
+
+    def get_nodal_basis(self):
+        """Return the nodal basis, encoded as a PolynomialSet object,
+        for the finite element."""
+        raise self.element.get_nodal_basis()
+
+    def get_coeffs(self):
+        """Return the expansion coefficients for the basis of the
+        finite element."""
+        raise self.element.get_coeffs()
+
+    def dmats(self):
+        """Return dmats: expansion coefficients for basis function
+        derivatives."""
+        raise self.element.dmats()
+
+    def get_num_members(self, arg):
+        """Return number of members of the expansion set."""
+        raise self.element.get_num_members(arg)
