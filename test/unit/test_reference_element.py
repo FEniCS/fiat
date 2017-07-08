@@ -43,7 +43,7 @@ quadrilateral_x_interval = TensorProductCell(quadrilateral, interval)
                           (interval_x_interval, 1),
                           (triangle_x_interval, 1/2),
                           (quadrilateral_x_interval, 1),
-                          (hexahedron, 1])
+                          (hexahedron, 1)])
 def test_volume(cell, volume):
     assert np.allclose(volume, cell.volume())
 
