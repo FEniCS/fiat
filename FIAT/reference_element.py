@@ -47,6 +47,7 @@ LINE = 1
 TRIANGLE = 2
 TETRAHEDRON = 3
 QUADRILATERAL = 11
+HEXAHEDRON = 22
 TENSORPRODUCT = 99
 
 
@@ -834,6 +835,94 @@ class FiredrakeQuadrilateral(Cell):
                 1: ((0, 1), 1),
                 2: ((1, 0), 0),
                 3: ((1, 0), 1)}[facet_i]
+        return self.product.compute_reference_normal(d, i)
+
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        return self.product.contains_point(point, epsilon=epsilon)
+
+
+class Hexahedron(Cell):
+    """This is the reference hexahedron with vertices
+    (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), (0.0, 1.0, 0.0), (0.0, 1.0, 1.0),
+    (1.0, 0.0, 0.0), (1.0, 0.0, 1.0), (1.0, 1.0, 0.0) and (1.0, 1.0, 1.0)."""
+
+    def __init__(self):
+        product = TensorProductCell(UFCInterval(), UFCInterval(), UFCInterval())
+        pt = product.get_topology()
+
+        verts = product.get_vertices()
+        dim = product.get_spatial_dimension()
+        topology = _flatten_entities(pt, dim)
+
+        super(Hexahedron, self).__init__(HEXAHEDRON, verts, topology)
+        self.product = product
+
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell.  Same as the
+        spatial dimension."""
+        return self.get_spatial_dimension()
+
+    def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: subentity dimension (integer)
+        """
+        if dimension == 3:
+            return self
+        elif dimension == 2:
+            return FiredrakeQuadrilateral()
+        elif dimension == 1:
+            return UFCInterval()
+        elif dimension == 0:
+            return Point()
+        else:
+            raise ValueError("Invalid dimension: %d" % (dimension,))
+
+    def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: entity dimension (integer)
+        :arg entity_i: entity number (integer)
+        """
+        d, e = {0: lambda e: ((0, 0, 0), e),
+                1: lambda e: {0: ((0, 0, 1), 0),
+                              1: ((0, 0, 1), 1),
+                              2: ((0, 0, 1), 2),
+                              3: ((0, 0, 1), 3),
+                              4: ((0, 1, 0), 0),
+                              5: ((0, 1, 0), 1),
+                              6: ((0, 1, 0), 2),
+                              7: ((0, 1, 0), 3),
+                              8: ((1, 0, 0), 0),
+                              9: ((1, 0, 0), 1),
+                              10: ((1, 0, 0), 2),
+                              11: ((1, 0, 0), 3)}[e],
+                2: lambda e: {0: ((0, 1, 1), 0),
+                              1: ((0, 1, 1), 1),
+                              2: ((1, 0, 1), 0),
+                              3: ((1, 0, 1), 1),
+                              4: ((1, 1, 0), 0),
+                              5: ((1, 1, 0), 1)}[e],
+                3: lambda e: ((1, 1, 1), e)}[dim](entity_i)
+        return self.product.get_entity_transform(d, e)
+
+    def volume(self):
+        """Computes the volume in the appropriate dimensional measure."""
+        return self.product.volume()
+
+    def compute_reference_normal(self, facet_dim, facet_i):
+        """Returns the unit normal in infinity norm to facet_i."""
+        assert facet_dim == 2
+        d, i = {0: ((0, 1, 1), 0),
+                1: ((0, 1, 1), 1),
+                2: ((1, 0, 1), 0),
+                3: ((1, 0, 1), 1),
+                4: ((1, 1, 0), 0),
+                5: ((1, 1, 0), 1)}[facet_i]
         return self.product.compute_reference_normal(d, i)
 
     def contains_point(self, point, epsilon=0):
