@@ -1015,6 +1015,8 @@ def ufc_cell(cell):
         return ufc_simplex(2)
     elif celltype == "tetrahedron":
         return ufc_simplex(3)
+    elif celltype == "hexahedron":
+        return Hexahedron()
     else:
         raise RuntimeError("Don't know how to create UFC cell of type %s" % str(celltype))
 
