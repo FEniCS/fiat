@@ -964,3 +964,18 @@ def _tuple_sum(tree):
         return sum(map(_tuple_sum, tree))
     else:
         return tree
+
+
+def _flatten_entities(topology_dict, dim):
+    """This function flattens topology dict of TensorProductCell and entity_dofs dict of TensorProductElement"""
+
+    tmp = [[] for _ in range(dim + 1)]
+    for key in sorted(topology_dict.keys()):
+        tmp_key = _tuple_sum(key)
+        tmp[tmp_key] += [v for k, v in sorted(topology_dict[key].items())]
+
+    restructured_dict = {}
+    for key in range(dim + 1):
+        restructured_dict[key] = dict(enumerate(tmp[key]))
+
+    return restructured_dict
