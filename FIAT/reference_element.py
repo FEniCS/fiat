@@ -37,7 +37,7 @@ from math import factorial
 
 from six import iteritems, itervalues
 from six import string_types
-from six.moves import reduce
+from six.moves import reduce, range
 import numpy
 from numpy import ravel_multi_index, transpose
 
