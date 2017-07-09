@@ -368,6 +368,10 @@ class TensorProductElement(FiniteElement):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented")
 
+    def is_nodal(self):
+        # This element is nodal iff all factor elements are nodal.
+        return all([self.A.is_nodal(), self.B.is_nodal()])
+
 
 class FlattenToQuadHex(FiniteElement):
     """A wrapper class that flattens a FIAT quadrilateral/hexahedron element defined
@@ -485,3 +489,7 @@ class FlattenToQuadHex(FiniteElement):
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
         raise self.element.get_num_members(arg)
+
+    def is_nodal(self):
+        # This element is nodal iff unflattened element is nodal.
+        return self.element.is_nodal()
