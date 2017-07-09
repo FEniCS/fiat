@@ -41,7 +41,7 @@ from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini  # noqa:
 from FIAT.gauss_legendre import GaussLegendre                   # noqa: F401
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre    # noqa: F401
 from FIAT.restricted import RestrictedElement                   # noqa: F401
-from FIAT.tensor_product import TensorProductElement            # noqa: F401
+from FIAT.tensor_product import TensorProductElement, FlattenedTensorProduct            # noqa: F401
 from FIAT.hdivcurl import Hdiv, Hcurl                           # noqa: F401
 from FIAT.argyris import Argyris, QuinticArgyris                # noqa: F401
 from FIAT.hermite import CubicHermite                           # noqa: F401
@@ -327,6 +327,34 @@ def test_mixed_is_not_nodal():
     ])
 
     assert not element.is_nodal()
+
+
+@pytest.mark.parametrize('element', [
+    "TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))",
+    "TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))",
+    "TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))",
+    "TensorProductElement(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)), Lagrange(I, 2))",
+    "FlattenedTensorProduct(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))",
+    "FlattenedTensorProduct(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))",
+    "FlattenedTensorProduct(TensorProductElement(FlattenedTensorProduct(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))",
+    "FlattenedTensorProduct(TensorProductElement(FlattenedTensorProduct(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))",
+])
+def test_nodality_tpe(element):
+    """Check that generated TensorProductElements are nodal, i.e. nodes evaluated
+    on basis functions give Kronecker delta
+    """
+    # Instantiate element
+    element = eval(element)
+
+    # Get nodes coordinates
+    nodes_coord = list(next(iter(f.get_point_dict().keys())) for f in element.dual_basis())
+
+    # Check nodality
+    for j, x in enumerate(nodes_coord):
+        table = element.tabulate(0, (x,))
+        basis = table[list(table.keys())[0]]
+        for i in range(len(basis)):
+            assert np.isclose(basis[i], 1.0 if i == j else 0.0)
 
 
 if __name__ == '__main__':
