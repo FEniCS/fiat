@@ -29,7 +29,7 @@ from FIAT.lagrange import Lagrange
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.nedelec import Nedelec
 from FIAT.raviart_thomas import RaviartThomas
-from FIAT.tensor_product import TensorProductElement, FlattenToQuadHex
+from FIAT.tensor_product import TensorProductElement, FlattenedTensorProduct
 from FIAT.hdivcurl import Hdiv, Hcurl
 from FIAT.enriched import EnrichedElement
 
@@ -526,7 +526,7 @@ def test_flattened_against_tpe_quad():
     T = UFCInterval()
     P1 = Lagrange(T, 1)
     tpe_quad = TensorProductElement(P1, P1)
-    flattened_quad = FlattenToQuadHex(tpe_quad)
+    flattened_quad = FlattenedTensorProduct(tpe_quad)
     assert tpe_quad.value_shape() == ()
     tpe_tab = tpe_quad.tabulate(1, [(0.1, 0.2)])
     flattened_tab = flattened_quad.tabulate(1, [(0.1, 0.2)])
@@ -544,8 +544,8 @@ def test_flattened_against_tpe_hex():
     P1 = Lagrange(T, 1)
     tpe_quad = TensorProductElement(P1, P1)
     tpe_hex = TensorProductElement(tpe_quad, P1)
-    flattened_quad = FlattenToQuadHex(tpe_quad)
-    flattened_hex = FlattenToQuadHex(TensorProductElement(flattened_quad, P1))
+    flattened_quad = FlattenedTensorProduct(tpe_quad)
+    flattened_hex = FlattenedTensorProduct(TensorProductElement(flattened_quad, P1))
     assert tpe_quad.value_shape() == ()
     tpe_tab = tpe_hex.tabulate(1, [(0.1, 0.2, 0.3)])
     flattened_tab = flattened_hex.tabulate(1, [(0.1, 0.2, 0.3)])

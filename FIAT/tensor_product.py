@@ -373,7 +373,7 @@ class TensorProductElement(FiniteElement):
         return all([self.A.is_nodal(), self.B.is_nodal()])
 
 
-class FlattenToQuadHex(FiniteElement):
+class FlattenedTensorProduct(FiniteElement):
     """A wrapper class that flattens a FIAT quadrilateral/hexahedron element defined
     on a TensorProductCell to one with FiredrakeQuadrilateral/Hexahedron entities."""
 
@@ -393,7 +393,7 @@ class FlattenToQuadHex(FiniteElement):
 
         flat_entity_ids = _flatten_entities(entity_ids, dim)
         dual = DualSet(nodes, ref_el, flat_entity_ids)
-        super(FlattenToQuadHex, self).__init__(ref_el, dual, element.get_order(), element.get_formdegree(), element._mapping)
+        super(FlattenedTensorProduct, self).__init__(ref_el, dual, element.get_order(), element.get_formdegree(), element._mapping)
         self.element = element
         self.dim = dim
 
