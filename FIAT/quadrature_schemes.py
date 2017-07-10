@@ -73,10 +73,7 @@ def create_quadrature(ref_el, degree, scheme="default"):
                       for c, d in zip(ref_el.cells, degree)]
         return make_tensor_product_quadrature(*quad_rules)
 
-    if ref_el.get_shape() == QUADRILATERAL:
-        return create_quadrature(ref_el.product, degree, scheme)
-
-    if ref_el.get_shape() == HEXAHEDRON:
+    if ref_el.get_shape() in [QUADRILATERAL, HEXAHEDRON]:
         return create_quadrature(ref_el.product, degree, scheme)
 
     if degree < 0:
