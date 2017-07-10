@@ -21,12 +21,12 @@ import pytest
 import numpy as np
 
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
-from FIAT.reference_element import Point, FiredrakeQuadrilateral, TensorProductCell, Hexahedron
+from FIAT.reference_element import Point, TensorProductCell, Quadrilateral, Hexahedron
 
 point = Point()
 interval = UFCInterval()
 triangle = UFCTriangle()
-quadrilateral = FiredrakeQuadrilateral()
+quadrilateral = Quadrilateral()
 hexahedron = Hexahedron()
 tetrahedron = UFCTetrahedron()
 interval_x_interval = TensorProductCell(interval, interval)

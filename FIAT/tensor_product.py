@@ -21,7 +21,7 @@ from __future__ import absolute_import, print_function, division
 
 import numpy
 from FIAT.finite_element import FiniteElement
-from FIAT.reference_element import TensorProductCell, FiredrakeQuadrilateral, Hexahedron, _flatten_entities
+from FIAT.reference_element import TensorProductCell, Quadrilateral, Hexahedron, _flatten_entities
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import mis
 from FIAT import dual_set
@@ -375,7 +375,7 @@ class TensorProductElement(FiniteElement):
 
 class FlattenedTensorProduct(FiniteElement):
     """A wrapper class that flattens a FIAT quadrilateral/hexahedron element defined
-    on a TensorProductCell to one with FiredrakeQuadrilateral/Hexahedron entities."""
+    on a TensorProductCell to one with Quadrilateral/Hexahedron entities."""
 
     def __init__(self, element):
 
@@ -383,7 +383,7 @@ class FlattenedTensorProduct(FiniteElement):
         dim = element.ref_el.get_spatial_dimension()
 
         if dim == 2:
-            ref_el = FiredrakeQuadrilateral()
+            ref_el = Quadrilateral()
         elif dim == 3:
             ref_el = Hexahedron()
         else:

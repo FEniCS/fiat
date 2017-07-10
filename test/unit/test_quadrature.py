@@ -23,7 +23,7 @@ import numpy
 import pytest
 import FIAT
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
-from FIAT.reference_element import FiredrakeQuadrilateral, TensorProductCell
+from FIAT.reference_element import Quadrilateral, TensorProductCell
 
 
 @pytest.fixture(scope='module')
@@ -43,7 +43,7 @@ def tetrahedron():
 
 @pytest.fixture(scope='module')
 def quadrilateral():
-    return FiredrakeQuadrilateral()
+    return Quadrilateral()
 
 
 @pytest.fixture(scope='module')
@@ -61,7 +61,7 @@ def extr_triangle():
 @pytest.fixture(scope='module')
 def extr_quadrilateral():
     """Extruded quadrilateral = quadrilateral x interval"""
-    return TensorProductCell(FiredrakeQuadrilateral(), UFCInterval())
+    return TensorProductCell(Quadrilateral(), UFCInterval())
 
 
 @pytest.fixture(params=["canonical", "default"])

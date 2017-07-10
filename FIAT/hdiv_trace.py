@@ -283,7 +283,7 @@ def construct_dg_element(ref_el, degree):
     if ref_el.get_shape() in [LINE, TRIANGLE]:
         dg_element = DiscontinuousLagrange(ref_el, degree)
 
-    # Quadrilateral facets could be on a FiredrakeQuadrilateral.
+    # Quadrilateral facets could be on a Quadrilateral.
     # In this case, we treat this as an interval x interval cell:
     elif ref_el.get_shape() == QUADRILATERAL:
         dg_a = DiscontinuousLagrange(ufc_simplex(1), degree)

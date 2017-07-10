@@ -774,7 +774,7 @@ class TensorProductCell(Cell):
                       True)
 
 
-class FiredrakeQuadrilateral(Cell):
+class Quadrilateral(Cell):
     """This is the reference quadrilateral with vertices
     (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
 
@@ -786,7 +786,7 @@ class FiredrakeQuadrilateral(Cell):
         topology = {0: pt[(0, 0)],
                     1: dict(enumerate(list(itervalues(pt[(0, 1)])) + list(itervalues(pt[(1, 0)])))),
                     2: pt[(1, 1)]}
-        super(FiredrakeQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
+        super(Quadrilateral, self).__init__(QUADRILATERAL, verts, topology)
         self.product = product
 
     def get_dimension(self):
@@ -873,7 +873,7 @@ class Hexahedron(Cell):
         if dimension == 3:
             return self
         elif dimension == 2:
-            return FiredrakeQuadrilateral()
+            return Quadrilateral()
         elif dimension == 1:
             return UFCInterval()
         elif dimension == 0:
@@ -1008,7 +1008,7 @@ def ufc_cell(cell):
         # Tensor product cell
         return TensorProductCell(*map(ufc_cell, celltype.split(" * ")))
     elif celltype == "quadrilateral":
-        return FiredrakeQuadrilateral()
+        return Quadrilateral()
     elif celltype == "hexahedron":
         return Hexahedron()
     elif celltype == "interval":
