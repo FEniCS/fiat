@@ -1009,14 +1009,14 @@ def ufc_cell(cell):
         return TensorProductCell(*map(ufc_cell, celltype.split(" * ")))
     elif celltype == "quadrilateral":
         return FiredrakeQuadrilateral()
+    elif celltype == "hexahedron":
+        return Hexahedron()
     elif celltype == "interval":
         return ufc_simplex(1)
     elif celltype == "triangle":
         return ufc_simplex(2)
     elif celltype == "tetrahedron":
         return ufc_simplex(3)
-    elif celltype == "hexahedron":
-        return Hexahedron()
     else:
         raise RuntimeError("Don't know how to create UFC cell of type %s" % str(celltype))
 
