@@ -41,7 +41,8 @@ from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini  # noqa:
 from FIAT.gauss_legendre import GaussLegendre                   # noqa: F401
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre    # noqa: F401
 from FIAT.restricted import RestrictedElement                   # noqa: F401
-from FIAT.tensor_product import TensorProductElement, FlattenedTensorProduct            # noqa: F401
+from FIAT.tensor_product import TensorProductElement            # noqa: F401
+from FIAT.tensor_product import FlattenedTensorProduct          # noqa: F401
 from FIAT.hdivcurl import Hdiv, Hcurl                           # noqa: F401
 from FIAT.argyris import Argyris, QuinticArgyris                # noqa: F401
 from FIAT.hermite import CubicHermite                           # noqa: F401
