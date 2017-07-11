@@ -409,7 +409,7 @@ class FlattenedDimensions(FiniteElement):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
         if entity is None:
-            entity = sorted(self.unflattening_map.keys())[-1]
+            entity = (self.get_reference_element().get_spatial_dimension(), 0)
 
         # Entity is provided in flattened form (d, i)
         # Appropriate product entity is taken from the unflattening_map dict
