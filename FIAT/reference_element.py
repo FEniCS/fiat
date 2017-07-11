@@ -775,7 +775,7 @@ class TensorProductCell(Cell):
                       True)
 
 
-class Quadrilateral(Cell):
+class UFCQuadrilateral(Cell):
     """This is the reference quadrilateral with vertices
     (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
 
@@ -786,7 +786,7 @@ class Quadrilateral(Cell):
         verts = product.get_vertices()
         topology = _flatten_entities(pt)
 
-        super(Quadrilateral, self).__init__(QUADRILATERAL, verts, topology)
+        super(UFCQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
 
         self.product = product
         self.unflattening_map = _compute_unflattening_map(pt)
@@ -837,7 +837,7 @@ class Quadrilateral(Cell):
         return self.product.contains_point(point, epsilon=epsilon)
 
 
-class Hexahedron(Cell):
+class UFCHexahedron(Cell):
     """This is the reference hexahedron with vertices
     (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), (0.0, 1.0, 0.0), (0.0, 1.0, 1.0),
     (1.0, 0.0, 0.0), (1.0, 0.0, 1.0), (1.0, 1.0, 0.0) and (1.0, 1.0, 1.0)."""
@@ -849,7 +849,7 @@ class Hexahedron(Cell):
         verts = product.get_vertices()
         topology = _flatten_entities(pt)
 
-        super(Hexahedron, self).__init__(HEXAHEDRON, verts, topology)
+        super(UFCHexahedron, self).__init__(HEXAHEDRON, verts, topology)
 
         self.product = product
         self.unflattening_map = _compute_unflattening_map(pt)
@@ -868,7 +868,7 @@ class Hexahedron(Cell):
         if dimension == 3:
             return self
         elif dimension == 2:
-            return Quadrilateral()
+            return UFCQuadrilateral()
         elif dimension == 1:
             return UFCInterval()
         elif dimension == 0:
@@ -979,9 +979,9 @@ def ufc_cell(cell):
         # Tensor product cell
         return TensorProductCell(*map(ufc_cell, celltype.split(" * ")))
     elif celltype == "quadrilateral":
-        return Quadrilateral()
+        return UFCQuadrilateral()
     elif celltype == "hexahedron":
-        return Hexahedron()
+        return UFCHexahedron()
     elif celltype == "interval":
         return ufc_simplex(1)
     elif celltype == "triangle":

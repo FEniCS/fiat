@@ -21,7 +21,7 @@ from __future__ import absolute_import, print_function, division
 
 import numpy
 from FIAT.finite_element import FiniteElement
-from FIAT.reference_element import TensorProductCell, Quadrilateral, Hexahedron, _flatten_entities, _compute_unflattening_map
+from FIAT.reference_element import TensorProductCell, UFCQuadrilateral, UFCHexahedron, _flatten_entities, _compute_unflattening_map
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import mis
 from FIAT import dual_set
@@ -385,9 +385,9 @@ class FlattenedDimensions(FiniteElement):
         dim = element.ref_el.get_spatial_dimension()
 
         if dim == 2:
-            ref_el = Quadrilateral()
+            ref_el = UFCQuadrilateral()
         elif dim == 3:
-            ref_el = Hexahedron()
+            ref_el = UFCHexahedron()
         else:
             raise ValueError("Illegal element dimension %s" % dim)
 
@@ -395,7 +395,7 @@ class FlattenedDimensions(FiniteElement):
 
         flat_entity_ids = _flatten_entities(entity_ids)
         dual = DualSet(nodes, ref_el, flat_entity_ids)
-        super(FlattenedTensorProduct, self).__init__(ref_el, dual, element.get_order(), element.get_formdegree(), element._mapping)
+        super(FlattenedDimensions, self).__init__(ref_el, dual, element.get_order(), element.get_formdegree(), element._mapping)
         self.element = element
         self.dim = dim
 
