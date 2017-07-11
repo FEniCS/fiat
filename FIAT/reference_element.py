@@ -784,12 +784,12 @@ class UFCQuadrilateral(Cell):
         pt = product.get_topology()
 
         verts = product.get_vertices()
-        topology = _flatten_entities(pt)
+        topology = flatten_entities(pt)
 
         super(UFCQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
 
         self.product = product
-        self.unflattening_map = _compute_unflattening_map(pt)
+        self.unflattening_map = compute_unflattening_map(pt)
 
     def get_dimension(self):
         """Returns the subelement dimension of the cell.  Same as the
@@ -847,12 +847,12 @@ class UFCHexahedron(Cell):
         pt = product.get_topology()
 
         verts = product.get_vertices()
-        topology = _flatten_entities(pt)
+        topology = flatten_entities(pt)
 
         super(UFCHexahedron, self).__init__(HEXAHEDRON, verts, topology)
 
         self.product = product
-        self.unflattening_map = _compute_unflattening_map(pt)
+        self.unflattening_map = compute_unflattening_map(pt)
 
     def get_dimension(self):
         """Returns the subelement dimension of the cell.  Same as the
@@ -1016,38 +1016,38 @@ def volume(verts):
     return p / factorial(sd)
 
 
-def _tuple_sum(tree):
+def tuple_sum(tree):
     """
     This function calculates the sum of elements in a tuple, it is needed to handle nested tuples in TensorProductCell.
-    Example: _tuple_sum(((1, 0), 1)) returns 2
+    Example: tuple_sum(((1, 0), 1)) returns 2
     If input argument is not the tuple, returns input.
     """
     if isinstance(tree, tuple):
-        return sum(map(_tuple_sum, tree))
+        return sum(map(tuple_sum, tree))
     else:
         return tree
 
 
-def _flatten_entities(topology_dict):
+def flatten_entities(topology_dict):
     """This function flattens topology dict of TensorProductCell and entity_dofs dict of TensorProductElement"""
 
     flattened_entities = defaultdict(list)
     for dim in sorted(topology_dict.keys()):
-        flat_dim = _tuple_sum(dim)
+        flat_dim = tuple_sum(dim)
         flattened_entities[flat_dim] += [v for k, v in sorted(topology_dict[dim].items())]
 
     return {dim: dict(enumerate(entities))
             for dim, entities in iteritems(flattened_entities)}
 
 
-def _compute_unflattening_map(topology_dict):
+def compute_unflattening_map(topology_dict):
     """This function returns unflattening map for the given tensor product topology dict."""
 
     counter = defaultdict(count)
     unflattening_map = {}
 
     for dim, entities in sorted(iteritems(topology_dict)):
-        flat_dim = _tuple_sum(dim)
+        flat_dim = tuple_sum(dim)
         for entity in entities:
             flat_entity = next(counter[flat_dim])
             unflattening_map[(flat_dim, flat_entity)] = (dim, entity)

@@ -21,7 +21,7 @@ from __future__ import absolute_import, print_function, division
 
 import numpy
 from FIAT.finite_element import FiniteElement
-from FIAT.reference_element import TensorProductCell, UFCQuadrilateral, UFCHexahedron, _flatten_entities, _compute_unflattening_map
+from FIAT.reference_element import TensorProductCell, UFCQuadrilateral, UFCHexahedron, flatten_entities, compute_unflattening_map
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import mis
 from FIAT import dual_set
@@ -393,13 +393,13 @@ class FlattenedDimensions(FiniteElement):
 
         entity_ids = element.dual.entity_ids
 
-        flat_entity_ids = _flatten_entities(entity_ids)
+        flat_entity_ids = flatten_entities(entity_ids)
         dual = DualSet(nodes, ref_el, flat_entity_ids)
         super(FlattenedDimensions, self).__init__(ref_el, dual, element.get_order(), element.get_formdegree(), element._mapping)
         self.element = element
 
         # Construct unflattening map for passing correct values to tabulate()
-        self.unflattening_map = _compute_unflattening_map(self.element.ref_el.get_topology())
+        self.unflattening_map = compute_unflattening_map(self.element.ref_el.get_topology())
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
