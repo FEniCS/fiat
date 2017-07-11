@@ -31,7 +31,7 @@ Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
 from __future__ import absolute_import, print_function, division
 
-from itertools import chain, product
+from itertools import chain, product, count
 import operator
 from math import factorial
 
@@ -40,6 +40,7 @@ from six import string_types
 from six.moves import reduce, range
 import numpy
 from numpy import ravel_multi_index, transpose
+from collections import defaultdict
 
 
 POINT = 0
@@ -1070,3 +1071,18 @@ def _flatten_entities(topology_dict, dim):
         restructured_dict[key] = dict(enumerate(tmp[key]))
 
     return restructured_dict
+
+
+def _compute_unflattening_map(topology_dict):
+    """This function returns unflattening map for the given tensor product topology dict."""
+
+    counter = defaultdict(count)
+    unflattening_map = {}
+
+    for dim, entities in sorted(iteritems(topology_dict)):
+        flat_dim = _tuple_sum(dim)
+        for entity in entities:
+            flat_entity = next(counter[flat_dim])
+            unflattening_map[(flat_dim, flat_entity)] = (dim, entity)
+
+    return unflattening_map
