@@ -397,7 +397,6 @@ class FlattenedDimensions(FiniteElement):
         dual = DualSet(nodes, ref_el, flat_entity_ids)
         super(FlattenedDimensions, self).__init__(ref_el, dual, element.get_order(), element.get_formdegree(), element._mapping)
         self.element = element
-        self.dim = dim
 
         # Construct unflattening map for passing correct values to tabulate()
         self.unflattening_map = _compute_unflattening_map(self.element.ref_el.get_topology())
