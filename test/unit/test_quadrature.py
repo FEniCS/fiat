@@ -23,7 +23,7 @@ import numpy
 import pytest
 import FIAT
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
-from FIAT.reference_element import UFCQuadrilateral, TensorProductCell
+from FIAT.reference_element import UFCQuadrilateral, UFCHexahedron, TensorProductCell
 
 
 @pytest.fixture(scope='module')
@@ -44,6 +44,11 @@ def tetrahedron():
 @pytest.fixture(scope='module')
 def quadrilateral():
     return UFCQuadrilateral()
+
+
+@pytest.fixture(scope='module')
+def hexahedron():
+    return UFCHexahedron()
 
 
 @pytest.fixture(scope='module')
@@ -114,6 +119,13 @@ def test_create_quadrature_quadrilateral(quadrilateral, degree, scheme):
     q = FIAT.create_quadrature(quadrilateral, degree, scheme)
     assert numpy.allclose(q.integrate(lambda x: sum(x)**degree),
                           (2**(degree + 2) - 2) / ((degree + 1)*(degree + 2)))
+
+
+@pytest.mark.parametrize("degree", range(8))
+def test_create_quadrature_hexahedron(hexahedron, degree, scheme):
+    q = FIAT.create_quadrature(hexahedron, degree, scheme)
+    assert numpy.allclose(q.integrate(lambda x: sum(x)**degree),
+                          -3 * (2**(degree + 3) - 3**(degree + 2) - 1) / ((degree + 1)*(degree + 2)*(degree + 3)))
 
 
 @pytest.mark.parametrize("extrdeg", range(4))
