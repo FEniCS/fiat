@@ -784,11 +784,12 @@ class Quadrilateral(Cell):
         pt = product.get_topology()
 
         verts = product.get_vertices()
-        topology = {0: pt[(0, 0)],
-                    1: dict(enumerate(list(itervalues(pt[(0, 1)])) + list(itervalues(pt[(1, 0)])))),
-                    2: pt[(1, 1)]}
+        topology = _flatten_entities(pt, dim)
+
         super(Quadrilateral, self).__init__(QUADRILATERAL, verts, topology)
+
         self.product = product
+        self.unflattening_map = _compute_unflattening_map(pt)
 
     def get_dimension(self):
         """Returns the subelement dimension of the cell.  Same as the
@@ -817,12 +818,7 @@ class Quadrilateral(Cell):
         :arg dim: entity dimension (integer)
         :arg entity_i: entity number (integer)
         """
-        d, e = {0: lambda e: ((0, 0), e),
-                1: lambda e: {0: ((0, 1), 0),
-                              1: ((0, 1), 1),
-                              2: ((1, 0), 0),
-                              3: ((1, 0), 1)}[e],
-                2: lambda e: ((1, 1), e)}[dim](entity_i)
+        d, e = self.unflattening_map[(dim, entity_i)]
         return self.product.get_entity_transform(d, e)
 
     def volume(self):
@@ -832,10 +828,7 @@ class Quadrilateral(Cell):
     def compute_reference_normal(self, facet_dim, facet_i):
         """Returns the unit normal in infinity norm to facet_i."""
         assert facet_dim == 1
-        d, i = {0: ((0, 1), 0),
-                1: ((0, 1), 1),
-                2: ((1, 0), 0),
-                3: ((1, 0), 1)}[facet_i]
+        d, i = self.unflattening_map[(facet_dim, facet_i)]
         return self.product.compute_reference_normal(d, i)
 
     def contains_point(self, point, epsilon=0):
@@ -858,7 +851,9 @@ class Hexahedron(Cell):
         topology = _flatten_entities(pt, dim)
 
         super(Hexahedron, self).__init__(HEXAHEDRON, verts, topology)
+
         self.product = product
+        self.unflattening_map = _compute_unflattening_map(pt)
 
     def get_dimension(self):
         """Returns the subelement dimension of the cell.  Same as the
@@ -889,26 +884,7 @@ class Hexahedron(Cell):
         :arg dim: entity dimension (integer)
         :arg entity_i: entity number (integer)
         """
-        d, e = {0: lambda e: ((0, 0, 0), e),
-                1: lambda e: {0: ((0, 0, 1), 0),
-                              1: ((0, 0, 1), 1),
-                              2: ((0, 0, 1), 2),
-                              3: ((0, 0, 1), 3),
-                              4: ((0, 1, 0), 0),
-                              5: ((0, 1, 0), 1),
-                              6: ((0, 1, 0), 2),
-                              7: ((0, 1, 0), 3),
-                              8: ((1, 0, 0), 0),
-                              9: ((1, 0, 0), 1),
-                              10: ((1, 0, 0), 2),
-                              11: ((1, 0, 0), 3)}[e],
-                2: lambda e: {0: ((0, 1, 1), 0),
-                              1: ((0, 1, 1), 1),
-                              2: ((1, 0, 1), 0),
-                              3: ((1, 0, 1), 1),
-                              4: ((1, 1, 0), 0),
-                              5: ((1, 1, 0), 1)}[e],
-                3: lambda e: ((1, 1, 1), e)}[dim](entity_i)
+        d, e = self.unflattening_map[(dim, entity_i)]
         return self.product.get_entity_transform(d, e)
 
     def volume(self):
@@ -918,12 +894,7 @@ class Hexahedron(Cell):
     def compute_reference_normal(self, facet_dim, facet_i):
         """Returns the unit normal in infinity norm to facet_i."""
         assert facet_dim == 2
-        d, i = {0: ((0, 1, 1), 0),
-                1: ((0, 1, 1), 1),
-                2: ((1, 0, 1), 0),
-                3: ((1, 0, 1), 1),
-                4: ((1, 1, 0), 0),
-                5: ((1, 1, 0), 1)}[facet_i]
+        d, i = self.unflattening_map[(facet_dim, facet_i)]
         return self.product.compute_reference_normal(d, i)
 
     def contains_point(self, point, epsilon=0):
