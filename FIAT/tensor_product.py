@@ -375,8 +375,9 @@ class TensorProductElement(FiniteElement):
 
 class FlattenedDimensions(FiniteElement):
     """A wrapper class that flattens entity dimensions of a FIAT element defined
-    on a TensorProductCell to one with Quadrilateral/Hexahedron entities.
-    TensorProductCell has dimension defined as a tuple of factor element dimensions (i, j, k).
+    on a TensorProductCell to one with quadrilateral/hexahedron entities.
+    TensorProductCell has dimension defined as a tuple of factor element dimensions
+    (i, j) in 2D  and (i, j, k) in 3D.
     Flattened dimension is a sum of the tuple elements."""
 
     def __init__(self, element):
