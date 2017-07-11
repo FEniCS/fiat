@@ -21,11 +21,12 @@ from __future__ import absolute_import, print_function, division
 
 import numpy
 from FIAT.finite_element import FiniteElement
-from FIAT.reference_element import TensorProductCell, Quadrilateral, Hexahedron, _flatten_entities
+from FIAT.reference_element import TensorProductCell, Quadrilateral, Hexahedron, _flatten_entities, _tuple_sum
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import mis
 from FIAT import dual_set
 from FIAT import functional
+from six import iteritems
 
 
 def _first_point(node):
@@ -397,6 +398,17 @@ class FlattenedTensorProduct(FiniteElement):
         self.element = element
         self.dim = dim
 
+        # Construct unflattening map for passing correct values to tabulate()
+        counter = [[] for _ in range(self.dim + 1)]
+        for dimension in sorted(ref_el.get_topology().keys()):
+            counter[dimension] = iter(ref_el.get_topology()[dimension].keys())
+        self.unflattening_map = {}
+        for dimension, entities in sorted(iteritems(self.element.ref_el.get_topology())):
+            flat_dimension = _tuple_sum(dimension)
+            for entity in entities:
+                flat_entity = next(counter[flat_dimension])
+                self.unflattening_map[(flat_dimension, flat_entity)] = (dimension, entity)
+
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
         return self.element.degree()
@@ -410,18 +422,10 @@ class FlattenedTensorProduct(FiniteElement):
                 entity = (2, 0)
 
             # Entity is provided in flattened form (d, i)
-            # The entity is factored and an appropriate
-            # entity id for a TensorProductCell is constructed: ((d1, d2), i)
+            # Appropriate product entity is taken from the unflattening_map dict
             entity_dim, entity_id = entity
-            if entity_dim == 2:
-                assert entity_id == 0
-                product_entity = ((1, 1), 0)
-            elif entity_dim == 1:
-                facets = [((0, 1), 0),
-                          ((0, 1), 1),
-                          ((1, 0), 0),
-                          ((1, 0), 1)]
-                product_entity = facets[entity_id]
+            if entity_dim in [1, 2]:
+                product_entity = self.unflattening_map[(entity_dim, entity_id)]
             elif entity_dim == 0:
                 raise NotImplementedError("Not implemented for 0 dimension entities")
             else:
@@ -432,34 +436,10 @@ class FlattenedTensorProduct(FiniteElement):
                 entity = (3, 0)
 
             # Entity is provided in flattened form (d, i)
-            # The entity is factored and an appropriate
-            # entity id for a TensorProductCell is constructed: ((d1+d2, d3), i)
+            # Appropriate product entity is taken from the unflattening_map dict
             entity_dim, entity_id = entity
-            if entity_dim == 3:
-                assert entity_id == 0
-                product_entity = ((2, 1), 0)
-            elif entity_dim == 2:
-                facets = [((1, 1), 0),
-                          ((1, 1), 1),
-                          ((1, 1), 2),
-                          ((1, 1), 3),
-                          ((2, 0), 0),
-                          ((2, 0), 1)]
-                product_entity = facets[entity_id]
-            elif entity_dim == 1:
-                edges = [((0, 1), 0),
-                         ((0, 1), 1),
-                         ((0, 1), 2),
-                         ((0, 1), 3),
-                         ((1, 0), 0),
-                         ((1, 0), 1),
-                         ((1, 0), 2),
-                         ((1, 0), 3),
-                         ((1, 0), 4),
-                         ((1, 0), 5),
-                         ((1, 0), 6),
-                         ((1, 0), 7)]
-                product_entity = edges[entity_id]
+            if entity_dim in [1, 2, 3]:
+                product_entity = self.unflattening_map[(entity_dim, entity_id)]
             elif entity_dim == 0:
                 raise NotImplementedError("Not implemented for 0 dimension entities")
             else:
