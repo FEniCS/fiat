@@ -407,34 +407,13 @@ class FlattenedTensorProduct(FiniteElement):
     def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
-        # Quadrilateral path
-        if self.dim == 2:
-            if entity is None:
-                entity = (2, 0)
+        if entity is None:
+            entity = sorted(self.unflattening_map.keys())[-1]
 
-            # Entity is provided in flattened form (d, i)
-            # Appropriate product entity is taken from the unflattening_map dict
-            entity_dim, entity_id = entity
-            if entity_dim in [1, 2]:
-                product_entity = self.unflattening_map[(entity_dim, entity_id)]
-            elif entity_dim == 0:
-                raise NotImplementedError("Not implemented for 0 dimension entities")
-            else:
-                raise ValueError("Illegal entity dimension %s" % entity_dim)
-        # Hexahedron path
-        elif self.dim == 3:
-            if entity is None:
-                entity = (3, 0)
-
-            # Entity is provided in flattened form (d, i)
-            # Appropriate product entity is taken from the unflattening_map dict
-            entity_dim, entity_id = entity
-            if entity_dim in [1, 2, 3]:
-                product_entity = self.unflattening_map[(entity_dim, entity_id)]
-            elif entity_dim == 0:
-                raise NotImplementedError("Not implemented for 0 dimension entities")
-            else:
-                raise ValueError("Illegal entity dimension %s" % entity_dim)
+        # Entity is provided in flattened form (d, i)
+        # Appropriate product entity is taken from the unflattening_map dict
+        entity_dim, entity_id = entity
+        product_entity = self.unflattening_map[(entity_dim, entity_id)]
 
         return self.element.tabulate(order, points, product_entity)
 
