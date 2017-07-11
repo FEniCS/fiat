@@ -1031,13 +1031,13 @@ def _tuple_sum(tree):
 def _flatten_entities(topology_dict):
     """This function flattens topology dict of TensorProductCell and entity_dofs dict of TensorProductElement"""
 
-    tmp = defaultdict(list)
-    for key in sorted(topology_dict.keys()):
-        tmp_key = _tuple_sum(key)
-        tmp[tmp_key] += [v for k, v in sorted(topology_dict[key].items())]
+    flattened_entities = defaultdict(list)
+    for dim in sorted(topology_dict.keys()):
+        flat_dim = _tuple_sum(dim)
+        flattened_entities[flat_dim] += [v for k, v in sorted(topology_dict[dim].items())]
 
     return {dim: dict(enumerate(entities))
-            for dim, entities in iteritems(tmp)}
+            for dim, entities in iteritems(flattened_entities)}
 
 
 def _compute_unflattening_map(topology_dict):
