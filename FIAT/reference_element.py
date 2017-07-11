@@ -35,7 +35,7 @@ from itertools import chain, product, count
 import operator
 from math import factorial
 
-from six import iteritems, itervalues
+from six import iteritems
 from six import string_types
 from six.moves import reduce, range
 import numpy
