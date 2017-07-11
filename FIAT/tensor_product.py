@@ -21,12 +21,11 @@ from __future__ import absolute_import, print_function, division
 
 import numpy
 from FIAT.finite_element import FiniteElement
-from FIAT.reference_element import TensorProductCell, Quadrilateral, Hexahedron, _flatten_entities, _tuple_sum
+from FIAT.reference_element import TensorProductCell, Quadrilateral, Hexahedron, _flatten_entities, _compute_unflattening_map
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import mis
 from FIAT import dual_set
 from FIAT import functional
-from six import iteritems
 
 
 def _first_point(node):
@@ -399,15 +398,7 @@ class FlattenedTensorProduct(FiniteElement):
         self.dim = dim
 
         # Construct unflattening map for passing correct values to tabulate()
-        counter = [[] for _ in range(self.dim + 1)]
-        for dimension in sorted(ref_el.get_topology().keys()):
-            counter[dimension] = iter(ref_el.get_topology()[dimension].keys())
-        self.unflattening_map = {}
-        for dimension, entities in sorted(iteritems(self.element.ref_el.get_topology())):
-            flat_dimension = _tuple_sum(dimension)
-            for entity in entities:
-                flat_entity = next(counter[flat_dimension])
-                self.unflattening_map[(flat_dimension, flat_entity)] = (dimension, entity)
+        self.unflattening_map = _compute_unflattening_map(self.element.ref_el.get_topology())
 
     def degree(self):
         """Return the degree of the (embedding) polynomial space."""
