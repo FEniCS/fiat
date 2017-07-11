@@ -784,7 +784,7 @@ class Quadrilateral(Cell):
         pt = product.get_topology()
 
         verts = product.get_vertices()
-        topology = _flatten_entities(pt, dim)
+        topology = _flatten_entities(pt)
 
         super(Quadrilateral, self).__init__(QUADRILATERAL, verts, topology)
 
@@ -847,8 +847,7 @@ class Hexahedron(Cell):
         pt = product.get_topology()
 
         verts = product.get_vertices()
-        dim = product.get_spatial_dimension()
-        topology = _flatten_entities(pt, dim)
+        topology = _flatten_entities(pt)
 
         super(Hexahedron, self).__init__(HEXAHEDRON, verts, topology)
 
@@ -1029,19 +1028,16 @@ def _tuple_sum(tree):
         return tree
 
 
-def _flatten_entities(topology_dict, dim):
+def _flatten_entities(topology_dict):
     """This function flattens topology dict of TensorProductCell and entity_dofs dict of TensorProductElement"""
 
-    tmp = [[] for _ in range(dim + 1)]
+    tmp = defaultdict(list)
     for key in sorted(topology_dict.keys()):
         tmp_key = _tuple_sum(key)
         tmp[tmp_key] += [v for k, v in sorted(topology_dict[key].items())]
 
-    restructured_dict = {}
-    for key in range(dim + 1):
-        restructured_dict[key] = dict(enumerate(tmp[key]))
-
-    return restructured_dict
+    return {dim: dict(enumerate(entities))
+            for dim, entities in iteritems(tmp)}
 
 
 def _compute_unflattening_map(topology_dict):

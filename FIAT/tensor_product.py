@@ -392,7 +392,7 @@ class FlattenedTensorProduct(FiniteElement):
 
         entity_ids = element.dual.entity_ids
 
-        flat_entity_ids = _flatten_entities(entity_ids, dim)
+        flat_entity_ids = _flatten_entities(entity_ids)
         dual = DualSet(nodes, ref_el, flat_entity_ids)
         super(FlattenedTensorProduct, self).__init__(ref_el, dual, element.get_order(), element.get_formdegree(), element._mapping)
         self.element = element
