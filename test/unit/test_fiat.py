@@ -42,7 +42,7 @@ from FIAT.gauss_legendre import GaussLegendre                   # noqa: F401
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre    # noqa: F401
 from FIAT.restricted import RestrictedElement                   # noqa: F401
 from FIAT.tensor_product import TensorProductElement            # noqa: F401
-from FIAT.tensor_product import FlattenedTensorProduct          # noqa: F401
+from FIAT.tensor_product import FlattenedDimensions             # noqa: F401
 from FIAT.hdivcurl import Hdiv, Hcurl                           # noqa: F401
 from FIAT.argyris import Argyris, QuinticArgyris                # noqa: F401
 from FIAT.hermite import CubicHermite                           # noqa: F401
@@ -224,10 +224,10 @@ elements = [
     xfail_impl("TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))"),
     xfail_impl("TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))"),
     xfail_impl("TensorProductElement(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)), Lagrange(I, 2))"),
-    xfail_impl("FlattenedTensorProduct(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))"),
-    xfail_impl("FlattenedTensorProduct(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))"),
-    xfail_impl("FlattenedTensorProduct(TensorProductElement(FlattenedTensorProduct(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))"),
-    xfail_impl("FlattenedTensorProduct(TensorProductElement(FlattenedTensorProduct(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))"),
 
     # These elements have broken constructor
     xfail_key("Argyris(T, 1)",),
@@ -344,10 +344,10 @@ def test_mixed_is_not_nodal():
     "TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))",
     "TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))",
     "TensorProductElement(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)), Lagrange(I, 2))",
-    "FlattenedTensorProduct(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))",
-    "FlattenedTensorProduct(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))",
-    "FlattenedTensorProduct(TensorProductElement(FlattenedTensorProduct(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))",
-    "FlattenedTensorProduct(TensorProductElement(FlattenedTensorProduct(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))",
+    "FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))",
+    "FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))",
+    "FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))",
+    "FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))",
 ])
 def test_nodality_tpe(element):
     """Check that generated TensorProductElements are nodal, i.e. nodes evaluated

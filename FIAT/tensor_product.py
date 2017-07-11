@@ -373,9 +373,11 @@ class TensorProductElement(FiniteElement):
         return all([self.A.is_nodal(), self.B.is_nodal()])
 
 
-class FlattenedTensorProduct(FiniteElement):
-    """A wrapper class that flattens a FIAT quadrilateral/hexahedron element defined
-    on a TensorProductCell to one with Quadrilateral/Hexahedron entities."""
+class FlattenedDimensions(FiniteElement):
+    """A wrapper class that flattens entity dimensions of a FIAT element defined
+    on a TensorProductCell to one with Quadrilateral/Hexahedron entities.
+    TensorProductCell has dimension defined as a tuple of factor element dimensions (i, j, k).
+    Flattened dimension is a sum of the tuple elements."""
 
     def __init__(self, element):
 
