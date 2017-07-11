@@ -219,6 +219,15 @@ elements = [
                "Hcurl(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
                "Hcurl(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
                ")"),
+    # Following elements are checked using tabulate
+    xfail_impl("TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))"),
+    xfail_impl("TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))"),
+    xfail_impl("TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))"),
+    xfail_impl("TensorProductElement(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)), Lagrange(I, 2))"),
+    xfail_impl("FlattenedTensorProduct(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))"),
+    xfail_impl("FlattenedTensorProduct(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))"),
+    xfail_impl("FlattenedTensorProduct(TensorProductElement(FlattenedTensorProduct(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))"),
+    xfail_impl("FlattenedTensorProduct(TensorProductElement(FlattenedTensorProduct(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))"),
 
     # These elements have broken constructor
     xfail_key("Argyris(T, 1)",),
