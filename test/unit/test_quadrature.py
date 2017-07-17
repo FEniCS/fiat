@@ -153,23 +153,6 @@ def test_invalid_quadrature_degree_tensor_prod(cell):
         FIAT.create_quadrature(cell, (-1, -1))
 
 
-@pytest.mark.parametrize("cell", [interval(),
-                                  triangle(),
-                                  tetrahedron(),
-                                  quadrilateral()])
-def test_high_degree_runtime_error(cell):
-    with pytest.raises(RuntimeError):
-        FIAT.create_quadrature(cell, 60)
-
-
-@pytest.mark.parametrize("cell", [extr_interval(),
-                                  extr_triangle(),
-                                  extr_quadrilateral()])
-def test_high_degree_runtime_error_tensor_prod(cell):
-    with pytest.raises(RuntimeError):
-        FIAT.create_quadrature(cell, (60, 60))
-
-
 def test_tensor_product_composition(interval, triangle, extr_triangle, scheme):
     degree = (4, 4)
     qa = FIAT.create_quadrature(triangle, degree[0], scheme)
