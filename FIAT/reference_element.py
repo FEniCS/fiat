@@ -395,43 +395,56 @@ class Simplex(Cell):
         n = Simplex.compute_normal(self, facet_i)  # skip UFC overrides
         return n / numpy.linalg.norm(n, numpy.inf)
 
-    def get_facet_transform(self, facet_i):
-        """Return a function f such that for a point with facet coordinates
-        x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
+    def get_entity_transform(self, dim, entity):
+        """Returns a mapping of point coordinates from the
+        `entity`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: subentity dimension (integer)
+        :arg entity: entity number (integer)
         """
-        t = self.get_topology()
+        topology = self.get_topology()
+        celldim = self.get_spatial_dimension()
+        codim = celldim - dim
+        if dim == 0:
+            # Special case vertices.
+            i, = topology[dim][entity]
+            vertex = self.get_vertices()[i]
+            return lambda point: vertex
+        elif dim == celldim:
+            assert entity == 0
+            return lambda point: point
 
         try:
-            f_el = self.get_facet_element()
+            subcell = self.construct_subelement(dim)
         except NotImplementedError:
             # Special case for 1D elements.
-            x_c = self.get_vertices_of_subcomplex(t[0][facet_i])[0]
-
+            x_c, = self.get_vertices_of_subcomplex(topology[0][entity])
             return lambda x: x_c
 
-        sd_c = self.get_spatial_dimension()
-        sd_f = f_el.get_spatial_dimension()
+        subdim = subcell.get_spatial_dimension()
 
-        # Facet vertices in facet space.
-        v_f = numpy.array(f_el.get_vertices())
+        assert subdim == celldim - codim
 
-        A = numpy.zeros([sd_f, sd_f])
+        # Entity vertices in entity space.
+        v_e = numpy.asarray(subcell.get_vertices())
 
-        for i in range(A.shape[0]):
-            A[i, :] = (v_f[i + 1] - v_f[0])
+        A = numpy.zeros([subdim, subdim])
+
+        for i in range(subdim):
+            A[i, :] = (v_e[i + 1] - v_e[0])
             A[i, :] /= A[i, :].dot(A[i, :])
 
-        # Facet vertices in cell space.
-        v_c = numpy.array(self.get_vertices_of_subcomplex(t[sd_c - 1][facet_i]))
+        # Entity vertices in cell space.
+        v_c = numpy.asarray(self.get_vertices_of_subcomplex(topology[dim][entity]))
 
-        B = numpy.zeros([sd_c, sd_f])
+        B = numpy.zeros([celldim, subdim])
 
-        for j in range(B.shape[1]):
+        for j in range(subdim):
             B[:, j] = (v_c[j + 1] - v_c[0])
 
         C = B.dot(A)
 
-        offset = v_c[0] - C.dot(v_f[0])
+        offset = v_c[0] - C.dot(v_e[0])
 
         return lambda x: offset + C.dot(x)
 
@@ -439,26 +452,6 @@ class Simplex(Cell):
         """Returns the subelement dimension of the cell.  Same as the
         spatial dimension."""
         return self.get_spatial_dimension()
-
-    def get_entity_transform(self, dim, entity_i):
-        """Returns a mapping of point coordinates from the
-        `entity_i`-th subentity of dimension `dim` to the cell.
-
-        :arg dim: subentity dimension (integer)
-        :arg entity_i: entity number (integer)
-        """
-        space_dim = self.get_spatial_dimension()
-        if dim == space_dim:  # cell points
-            assert entity_i == 0
-            return lambda point: point
-        elif dim == space_dim - 1:  # facet points
-            return self.get_facet_transform(entity_i)
-        elif dim == 0:  # vertex point
-            i, = self.get_topology()[dim][entity_i]
-            vertex = self.get_vertices()[i]
-            return lambda point: vertex
-        else:
-            raise NotImplementedError("Co-dimension >1 not implemented.")
 
 
 # Backwards compatible name
