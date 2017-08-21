@@ -4,7 +4,8 @@ Changelog
 2017.2.0 (unreleased)
 ---------------------
 
-- Nothing changed yet
+- Add quadrilateral and hexahedron reference cells
+- Add quadrilateral and hexahedron elements (with a wrapping class for TensorProductElement)
 
 2017.1.0 (2017-05-09)
 ---------------------
