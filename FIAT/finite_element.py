@@ -56,7 +56,7 @@ class FiniteElement(object):
         return self.dual
 
     def get_order(self):
-        """Return the order of the element (may be different from the degree."""
+        """Return the order of the element (may be different from the degree)."""
         return self.order
 
     def dual_basis(self):

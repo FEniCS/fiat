@@ -31,15 +31,16 @@ Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
 from __future__ import absolute_import, print_function, division
 
-from itertools import chain, product
+from itertools import chain, product, count
 import operator
 from math import factorial
 
-from six import iteritems, itervalues
+from six import iteritems
 from six import string_types
-from six.moves import reduce
+from six.moves import reduce, range
 import numpy
 from numpy import ravel_multi_index, transpose
+from collections import defaultdict
 
 
 POINT = 0
@@ -47,6 +48,7 @@ LINE = 1
 TRIANGLE = 2
 TETRAHEDRON = 3
 QUADRILATERAL = 11
+HEXAHEDRON = 111
 TENSORPRODUCT = 99
 
 
@@ -393,43 +395,56 @@ class Simplex(Cell):
         n = Simplex.compute_normal(self, facet_i)  # skip UFC overrides
         return n / numpy.linalg.norm(n, numpy.inf)
 
-    def get_facet_transform(self, facet_i):
-        """Return a function f such that for a point with facet coordinates
-        x_f on facet_i, x_c = f(x_f) is the corresponding cell coordinates.
+    def get_entity_transform(self, dim, entity):
+        """Returns a mapping of point coordinates from the
+        `entity`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: subentity dimension (integer)
+        :arg entity: entity number (integer)
         """
-        t = self.get_topology()
+        topology = self.get_topology()
+        celldim = self.get_spatial_dimension()
+        codim = celldim - dim
+        if dim == 0:
+            # Special case vertices.
+            i, = topology[dim][entity]
+            vertex = self.get_vertices()[i]
+            return lambda point: vertex
+        elif dim == celldim:
+            assert entity == 0
+            return lambda point: point
 
         try:
-            f_el = self.get_facet_element()
+            subcell = self.construct_subelement(dim)
         except NotImplementedError:
             # Special case for 1D elements.
-            x_c = self.get_vertices_of_subcomplex(t[0][facet_i])[0]
-
+            x_c, = self.get_vertices_of_subcomplex(topology[0][entity])
             return lambda x: x_c
 
-        sd_c = self.get_spatial_dimension()
-        sd_f = f_el.get_spatial_dimension()
+        subdim = subcell.get_spatial_dimension()
 
-        # Facet vertices in facet space.
-        v_f = numpy.array(f_el.get_vertices())
+        assert subdim == celldim - codim
 
-        A = numpy.zeros([sd_f, sd_f])
+        # Entity vertices in entity space.
+        v_e = numpy.asarray(subcell.get_vertices())
 
-        for i in range(A.shape[0]):
-            A[i, :] = (v_f[i + 1] - v_f[0])
+        A = numpy.zeros([subdim, subdim])
+
+        for i in range(subdim):
+            A[i, :] = (v_e[i + 1] - v_e[0])
             A[i, :] /= A[i, :].dot(A[i, :])
 
-        # Facet vertices in cell space.
-        v_c = numpy.array(self.get_vertices_of_subcomplex(t[sd_c - 1][facet_i]))
+        # Entity vertices in cell space.
+        v_c = numpy.asarray(self.get_vertices_of_subcomplex(topology[dim][entity]))
 
-        B = numpy.zeros([sd_c, sd_f])
+        B = numpy.zeros([celldim, subdim])
 
-        for j in range(B.shape[1]):
+        for j in range(subdim):
             B[:, j] = (v_c[j + 1] - v_c[0])
 
         C = B.dot(A)
 
-        offset = v_c[0] - C.dot(v_f[0])
+        offset = v_c[0] - C.dot(v_e[0])
 
         return lambda x: offset + C.dot(x)
 
@@ -437,22 +452,6 @@ class Simplex(Cell):
         """Returns the subelement dimension of the cell.  Same as the
         spatial dimension."""
         return self.get_spatial_dimension()
-
-    def get_entity_transform(self, dim, entity_i):
-        """Returns a mapping of point coordinates from the
-        `entity_i`-th subentity of dimension `dim` to the cell.
-
-        :arg dim: subentity dimension (integer)
-        :arg entity_i: entity number (integer)
-        """
-        space_dim = self.get_spatial_dimension()
-        if dim == space_dim:  # cell points
-            assert entity_i == 0
-            return lambda point: point
-        elif dim == space_dim - 1:  # facet points
-            return self.get_facet_transform(entity_i)
-        else:
-            raise NotImplementedError("Co-dimension >1 not implemented.")
 
 
 # Backwards compatible name
@@ -769,7 +768,7 @@ class TensorProductCell(Cell):
                       True)
 
 
-class FiredrakeQuadrilateral(Cell):
+class UFCQuadrilateral(Cell):
     """This is the reference quadrilateral with vertices
     (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
 
@@ -778,11 +777,12 @@ class FiredrakeQuadrilateral(Cell):
         pt = product.get_topology()
 
         verts = product.get_vertices()
-        topology = {0: pt[(0, 0)],
-                    1: dict(enumerate(list(itervalues(pt[(0, 1)])) + list(itervalues(pt[(1, 0)])))),
-                    2: pt[(1, 1)]}
-        super(FiredrakeQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
+        topology = flatten_entities(pt)
+
+        super(UFCQuadrilateral, self).__init__(QUADRILATERAL, verts, topology)
+
         self.product = product
+        self.unflattening_map = compute_unflattening_map(pt)
 
     def get_dimension(self):
         """Returns the subelement dimension of the cell.  Same as the
@@ -811,12 +811,7 @@ class FiredrakeQuadrilateral(Cell):
         :arg dim: entity dimension (integer)
         :arg entity_i: entity number (integer)
         """
-        d, e = {0: lambda e: ((0, 0), e),
-                1: lambda e: {0: ((0, 1), 0),
-                              1: ((0, 1), 1),
-                              2: ((1, 0), 0),
-                              3: ((1, 0), 1)}[e],
-                2: lambda e: ((1, 1), e)}[dim](entity_i)
+        d, e = self.unflattening_map[(dim, entity_i)]
         return self.product.get_entity_transform(d, e)
 
     def volume(self):
@@ -826,10 +821,72 @@ class FiredrakeQuadrilateral(Cell):
     def compute_reference_normal(self, facet_dim, facet_i):
         """Returns the unit normal in infinity norm to facet_i."""
         assert facet_dim == 1
-        d, i = {0: ((0, 1), 0),
-                1: ((0, 1), 1),
-                2: ((1, 0), 0),
-                3: ((1, 0), 1)}[facet_i]
+        d, i = self.unflattening_map[(facet_dim, facet_i)]
+        return self.product.compute_reference_normal(d, i)
+
+    def contains_point(self, point, epsilon=0):
+        """Checks if reference cell contains given point
+        (with numerical tolerance)."""
+        return self.product.contains_point(point, epsilon=epsilon)
+
+
+class UFCHexahedron(Cell):
+    """This is the reference hexahedron with vertices
+    (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), (0.0, 1.0, 0.0), (0.0, 1.0, 1.0),
+    (1.0, 0.0, 0.0), (1.0, 0.0, 1.0), (1.0, 1.0, 0.0) and (1.0, 1.0, 1.0)."""
+
+    def __init__(self):
+        product = TensorProductCell(UFCInterval(), UFCInterval(), UFCInterval())
+        pt = product.get_topology()
+
+        verts = product.get_vertices()
+        topology = flatten_entities(pt)
+
+        super(UFCHexahedron, self).__init__(HEXAHEDRON, verts, topology)
+
+        self.product = product
+        self.unflattening_map = compute_unflattening_map(pt)
+
+    def get_dimension(self):
+        """Returns the subelement dimension of the cell.  Same as the
+        spatial dimension."""
+        return self.get_spatial_dimension()
+
+    def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: subentity dimension (integer)
+        """
+        if dimension == 3:
+            return self
+        elif dimension == 2:
+            return UFCQuadrilateral()
+        elif dimension == 1:
+            return UFCInterval()
+        elif dimension == 0:
+            return Point()
+        else:
+            raise ValueError("Invalid dimension: %d" % (dimension,))
+
+    def get_entity_transform(self, dim, entity_i):
+        """Returns a mapping of point coordinates from the
+        `entity_i`-th subentity of dimension `dim` to the cell.
+
+        :arg dim: entity dimension (integer)
+        :arg entity_i: entity number (integer)
+        """
+        d, e = self.unflattening_map[(dim, entity_i)]
+        return self.product.get_entity_transform(d, e)
+
+    def volume(self):
+        """Computes the volume in the appropriate dimensional measure."""
+        return self.product.volume()
+
+    def compute_reference_normal(self, facet_dim, facet_i):
+        """Returns the unit normal in infinity norm to facet_i."""
+        assert facet_dim == 2
+        d, i = self.unflattening_map[(facet_dim, facet_i)]
         return self.product.compute_reference_normal(d, i)
 
     def contains_point(self, point, epsilon=0):
@@ -915,7 +972,9 @@ def ufc_cell(cell):
         # Tensor product cell
         return TensorProductCell(*map(ufc_cell, celltype.split(" * ")))
     elif celltype == "quadrilateral":
-        return FiredrakeQuadrilateral()
+        return UFCQuadrilateral()
+    elif celltype == "hexahedron":
+        return UFCHexahedron()
     elif celltype == "interval":
         return ufc_simplex(1)
     elif celltype == "triangle":
@@ -948,3 +1007,42 @@ def volume(verts):
     p = numpy.prod([si for si in s if (si) > 1.e-10])
 
     return p / factorial(sd)
+
+
+def tuple_sum(tree):
+    """
+    This function calculates the sum of elements in a tuple, it is needed to handle nested tuples in TensorProductCell.
+    Example: tuple_sum(((1, 0), 1)) returns 2
+    If input argument is not the tuple, returns input.
+    """
+    if isinstance(tree, tuple):
+        return sum(map(tuple_sum, tree))
+    else:
+        return tree
+
+
+def flatten_entities(topology_dict):
+    """This function flattens topology dict of TensorProductCell and entity_dofs dict of TensorProductElement"""
+
+    flattened_entities = defaultdict(list)
+    for dim in sorted(topology_dict.keys()):
+        flat_dim = tuple_sum(dim)
+        flattened_entities[flat_dim] += [v for k, v in sorted(topology_dict[dim].items())]
+
+    return {dim: dict(enumerate(entities))
+            for dim, entities in iteritems(flattened_entities)}
+
+
+def compute_unflattening_map(topology_dict):
+    """This function returns unflattening map for the given tensor product topology dict."""
+
+    counter = defaultdict(count)
+    unflattening_map = {}
+
+    for dim, entities in sorted(iteritems(topology_dict)):
+        flat_dim = tuple_sum(dim)
+        for entity in entities:
+            flat_entity = next(counter[flat_dim])
+            unflattening_map[(flat_dim, flat_entity)] = (dim, entity)
+
+    return unflattening_map

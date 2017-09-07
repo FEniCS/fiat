@@ -21,7 +21,8 @@ from __future__ import absolute_import, print_function, division
 
 import numpy
 from FIAT.finite_element import FiniteElement
-from FIAT.reference_element import TensorProductCell
+from FIAT.reference_element import TensorProductCell, UFCQuadrilateral, UFCHexahedron, flatten_entities, compute_unflattening_map
+from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import mis
 from FIAT import dual_set
 from FIAT import functional
@@ -366,3 +367,81 @@ class TensorProductElement(FiniteElement):
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented")
+
+    def is_nodal(self):
+        # This element is nodal iff all factor elements are nodal.
+        return all([self.A.is_nodal(), self.B.is_nodal()])
+
+
+class FlattenedDimensions(FiniteElement):
+    """A wrapper class that flattens entity dimensions of a FIAT element defined
+    on a TensorProductCell to one with quadrilateral/hexahedron entities.
+    TensorProductCell has dimension defined as a tuple of factor element dimensions
+    (i, j) in 2D  and (i, j, k) in 3D.
+    Flattened dimension is a sum of the tuple elements."""
+
+    def __init__(self, element):
+
+        nodes = element.dual.nodes
+        dim = element.ref_el.get_spatial_dimension()
+
+        if dim == 2:
+            ref_el = UFCQuadrilateral()
+        elif dim == 3:
+            ref_el = UFCHexahedron()
+        else:
+            raise ValueError("Illegal element dimension %s" % dim)
+
+        entity_ids = element.dual.entity_ids
+
+        flat_entity_ids = flatten_entities(entity_ids)
+        dual = DualSet(nodes, ref_el, flat_entity_ids)
+        super(FlattenedDimensions, self).__init__(ref_el, dual, element.get_order(), element.get_formdegree(), element._mapping)
+        self.element = element
+
+        # Construct unflattening map for passing correct values to tabulate()
+        self.unflattening_map = compute_unflattening_map(self.element.ref_el.get_topology())
+
+    def degree(self):
+        """Return the degree of the (embedding) polynomial space."""
+        return self.element.degree()
+
+    def tabulate(self, order, points, entity=None):
+        """Return tabulated values of derivatives up to given order of
+        basis functions at given points."""
+        if entity is None:
+            entity = (self.get_reference_element().get_spatial_dimension(), 0)
+
+        # Entity is provided in flattened form (d, i)
+        # Appropriate product entity is taken from the unflattening_map dict
+        entity_dim, entity_id = entity
+        product_entity = self.unflattening_map[(entity_dim, entity_id)]
+
+        return self.element.tabulate(order, points, product_entity)
+
+    def value_shape(self):
+        """Return the value shape of the finite element functions."""
+        return self.element.value_shape()
+
+    def get_nodal_basis(self):
+        """Return the nodal basis, encoded as a PolynomialSet object,
+        for the finite element."""
+        raise self.element.get_nodal_basis()
+
+    def get_coeffs(self):
+        """Return the expansion coefficients for the basis of the
+        finite element."""
+        raise self.element.get_coeffs()
+
+    def dmats(self):
+        """Return dmats: expansion coefficients for basis function
+        derivatives."""
+        raise self.element.dmats()
+
+    def get_num_members(self, arg):
+        """Return number of members of the expansion set."""
+        raise self.element.get_num_members(arg)
+
+    def is_nodal(self):
+        # This element is nodal iff unflattened element is nodal.
+        return self.element.is_nodal()

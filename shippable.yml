@@ -1,0 +1,15 @@
+language: python
+python:
+  - 2.7
+  - 3.6
+
+env:
+  - DATA_REPO_GIT=""
+
+build:
+  ci:
+    - pip install --upgrade pip
+    - pip install flake8 flake8-future-import pytest
+    - pip install .
+    - python -m flake8 .
+    - python -m pytest -v test/

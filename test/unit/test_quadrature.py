@@ -23,7 +23,7 @@ import numpy
 import pytest
 import FIAT
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
-from FIAT.reference_element import FiredrakeQuadrilateral, TensorProductCell
+from FIAT.reference_element import UFCQuadrilateral, UFCHexahedron, TensorProductCell
 
 
 @pytest.fixture(scope='module')
@@ -43,7 +43,12 @@ def tetrahedron():
 
 @pytest.fixture(scope='module')
 def quadrilateral():
-    return FiredrakeQuadrilateral()
+    return UFCQuadrilateral()
+
+
+@pytest.fixture(scope='module')
+def hexahedron():
+    return UFCHexahedron()
 
 
 @pytest.fixture(scope='module')
@@ -61,7 +66,7 @@ def extr_triangle():
 @pytest.fixture(scope='module')
 def extr_quadrilateral():
     """Extruded quadrilateral = quadrilateral x interval"""
-    return TensorProductCell(FiredrakeQuadrilateral(), UFCInterval())
+    return TensorProductCell(UFCQuadrilateral(), UFCInterval())
 
 
 @pytest.fixture(params=["canonical", "default"])
@@ -116,6 +121,13 @@ def test_create_quadrature_quadrilateral(quadrilateral, degree, scheme):
                           (2**(degree + 2) - 2) / ((degree + 1)*(degree + 2)))
 
 
+@pytest.mark.parametrize("degree", range(8))
+def test_create_quadrature_hexahedron(hexahedron, degree, scheme):
+    q = FIAT.create_quadrature(hexahedron, degree, scheme)
+    assert numpy.allclose(q.integrate(lambda x: sum(x)**degree),
+                          -3 * (2**(degree + 3) - 3**(degree + 2) - 1) / ((degree + 1)*(degree + 2)*(degree + 3)))
+
+
 @pytest.mark.parametrize("extrdeg", range(4))
 @pytest.mark.parametrize("basedeg", range(5))
 def test_create_quadrature_extr_quadrilateral(extr_quadrilateral, basedeg, extrdeg, scheme):
@@ -139,23 +151,6 @@ def test_invalid_quadrature_degree(cell, scheme):
 def test_invalid_quadrature_degree_tensor_prod(cell):
     with pytest.raises(ValueError):
         FIAT.create_quadrature(cell, (-1, -1))
-
-
-@pytest.mark.parametrize("cell", [interval(),
-                                  triangle(),
-                                  tetrahedron(),
-                                  quadrilateral()])
-def test_high_degree_runtime_error(cell):
-    with pytest.raises(RuntimeError):
-        FIAT.create_quadrature(cell, 60)
-
-
-@pytest.mark.parametrize("cell", [extr_interval(),
-                                  extr_triangle(),
-                                  extr_quadrilateral()])
-def test_high_degree_runtime_error_tensor_prod(cell):
-    with pytest.raises(RuntimeError):
-        FIAT.create_quadrature(cell, (60, 60))
 
 
 def test_tensor_product_composition(interval, triangle, extr_triangle, scheme):

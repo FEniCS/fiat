@@ -44,7 +44,7 @@ from __future__ import absolute_import, print_function, division
 from numpy import array, arange, float64
 
 # FIAT
-from FIAT.reference_element import QUADRILATERAL, TENSORPRODUCT, UFCTriangle, UFCTetrahedron
+from FIAT.reference_element import QUADRILATERAL, HEXAHEDRON, TENSORPRODUCT, UFCTriangle, UFCTetrahedron
 from FIAT.quadrature import QuadratureRule, make_quadrature, make_tensor_product_quadrature
 
 
@@ -73,7 +73,7 @@ def create_quadrature(ref_el, degree, scheme="default"):
                       for c, d in zip(ref_el.cells, degree)]
         return make_tensor_product_quadrature(*quad_rules)
 
-    if ref_el.get_shape() == QUADRILATERAL:
+    if ref_el.get_shape() in [QUADRILATERAL, HEXAHEDRON]:
         return create_quadrature(ref_el.product, degree, scheme)
 
     if degree < 0:
@@ -99,12 +99,6 @@ def _fiat_scheme(ref_el, degree):
 
     # Number of points per axis for exact integration
     num_points_per_axis = (degree + 1 + 1) // 2
-
-    # Check for excess
-    if num_points_per_axis > 30:
-        dim = ref_el.get_spatial_dimension()
-        raise RuntimeError("Requested a quadrature rule with %d points per direction (%d points)" %
-                           (num_points_per_axis, num_points_per_axis**dim))
 
     # Create and return FIAT quadrature rule
     return make_quadrature(ref_el, num_points_per_axis)

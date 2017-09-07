@@ -31,6 +31,7 @@ from FIAT.crouzeix_raviart import CrouzeixRaviart               # noqa: F401
 from FIAT.raviart_thomas import RaviartThomas                   # noqa: F401
 from FIAT.discontinuous_raviart_thomas import DiscontinuousRaviartThomas  # noqa: F401
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini      # noqa: F401
+from FIAT.mixed import MixedElement
 from FIAT.nedelec import Nedelec                                # noqa: F401
 from FIAT.nedelec_second_kind import NedelecSecondKind          # noqa: F401
 from FIAT.regge import Regge                                    # noqa: F401
@@ -41,6 +42,7 @@ from FIAT.gauss_legendre import GaussLegendre                   # noqa: F401
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre    # noqa: F401
 from FIAT.restricted import RestrictedElement                   # noqa: F401
 from FIAT.tensor_product import TensorProductElement            # noqa: F401
+from FIAT.tensor_product import FlattenedDimensions             # noqa: F401
 from FIAT.hdivcurl import Hdiv, Hcurl                           # noqa: F401
 from FIAT.argyris import Argyris, QuinticArgyris                # noqa: F401
 from FIAT.hermite import CubicHermite                           # noqa: F401
@@ -196,6 +198,13 @@ elements = [
     "    RestrictedElement(Regge(S, 2), restriction_domain='interior')"
     ")",
 
+    # MixedElement made of nodal elements should be nodal, but its API
+    # is currently just broken.
+    xfail_impl("MixedElement(["
+               "    DiscontinuousLagrange(T, 1),"
+               "    RaviartThomas(T, 2)"
+               "])"),
+
     # Following element do not bother implementing get_nodal_basis
     # so the test would need to be rewritten using tabulate
     xfail_impl("TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2))"),
@@ -210,6 +219,15 @@ elements = [
                "Hcurl(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
                "Hcurl(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
                ")"),
+    # Following elements are checked using tabulate
+    xfail_impl("TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))"),
+    xfail_impl("TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))"),
+    xfail_impl("TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))"),
+    xfail_impl("TensorProductElement(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)), Lagrange(I, 2))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))"),
 
     # These elements have broken constructor
     xfail_key("Argyris(T, 1)",),
@@ -301,6 +319,52 @@ def test_nodal_enriched_implementation():
     assert np.allclose(e0.dmats(), e1.dmats())
     assert np.allclose(e0.get_dual_set().to_riesz(e0.get_nodal_basis()),
                        e1.get_dual_set().to_riesz(e1.get_nodal_basis()))
+
+
+def test_mixed_is_nodal():
+    element = MixedElement([DiscontinuousLagrange(T, 1), RaviartThomas(T, 2)])
+
+    assert element.is_nodal()
+
+
+def test_mixed_is_not_nodal():
+    element = MixedElement([
+        EnrichedElement(
+            RaviartThomas(T, 1),
+            RestrictedElement(RaviartThomas(T, 2), restriction_domain="interior")
+        ),
+        DiscontinuousLagrange(T, 1)
+    ])
+
+    assert not element.is_nodal()
+
+
+@pytest.mark.parametrize('element', [
+    "TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))",
+    "TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))",
+    "TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))",
+    "TensorProductElement(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)), Lagrange(I, 2))",
+    "FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))",
+    "FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))",
+    "FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))",
+    "FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))",
+])
+def test_nodality_tpe(element):
+    """Check that generated TensorProductElements are nodal, i.e. nodes evaluated
+    on basis functions give Kronecker delta
+    """
+    # Instantiate element
+    element = eval(element)
+
+    # Get nodes coordinates
+    nodes_coord = list(next(iter(f.get_point_dict().keys())) for f in element.dual_basis())
+
+    # Check nodality
+    for j, x in enumerate(nodes_coord):
+        table = element.tabulate(0, (x,))
+        basis = table[list(table.keys())[0]]
+        for i in range(len(basis)):
+            assert np.isclose(basis[i], 1.0 if i == j else 0.0)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,8 @@ Simplices in one, two, and three dimensions are supported."""
 
 from __future__ import absolute_import, print_function, division
 
+import pkg_resources
+
 # Import finite element classes
 from FIAT.finite_element import FiniteElement, CiarletElement  # noqa: F401
 from FIAT.argyris import Argyris
@@ -31,7 +33,9 @@ from FIAT.enriched import EnrichedElement
 from FIAT.nodal_enriched import NodalEnrichedElement
 from FIAT.discontinuous import DiscontinuousElement
 from FIAT.hdiv_trace import HDivTrace
+from FIAT.mixed import MixedElement                       # noqa: F401
 from FIAT.restricted import RestrictedElement             # noqa: F401
+from FIAT.quadrature_element import QuadratureElement     # noqa: F401
 
 # Important functionality
 from FIAT.quadrature import make_quadrature               # noqa: F401
@@ -39,7 +43,7 @@ from FIAT.quadrature_schemes import create_quadrature     # noqa: F401
 from FIAT.reference_element import ufc_cell, ufc_simplex  # noqa: F401
 from FIAT.hdivcurl import Hdiv, Hcurl                     # noqa: F401
 
-__version__ = "2017.1.0.dev0"
+__version__ = pkg_resources.get_distribution("FIAT").version
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris": Argyris,

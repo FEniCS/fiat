@@ -17,11 +17,14 @@
 
 from __future__ import absolute_import, print_function, division
 
-import numpy as np
-from copy import copy
+from itertools import chain
+
+import numpy
 
 from FIAT.finite_element import FiniteElement
 from FIAT.dual_set import DualSet
+from FIAT.mixed import concatenate_entity_dofs
+
 
 __all__ = ['EnrichedElement']
 
@@ -35,61 +38,44 @@ class EnrichedElement(FiniteElement):
     """
 
     def __init__(self, *elements):
-        assert len(elements) == 2, "EnrichedElement only implemented for two subelements"
-        A, B = elements
-
         # Firstly, check it makes sense to enrich.  Elements must have:
         # - same reference element
         # - same mapping
         # - same value shape
-        if not A.get_reference_element() == B.get_reference_element():
+        if len(set(e.get_reference_element() for e in elements)) > 1:
             raise ValueError("Elements must be defined on the same reference element")
-        if not A.mapping()[0] == B.mapping()[0]:
+        if len(set(m for e in elements for m in e.mapping())) > 1:
             raise ValueError("Elements must have same mapping")
-        if not A.value_shape() == B.value_shape():
+        if len(set(e.value_shape() for e in elements)) > 1:
             raise ValueError("Elements must have the same value shape")
 
         # order is at least max, possibly more, though getting this
         # right isn't important AFAIK
-        order = max(A.get_order(), B.get_order())
+        order = max(e.get_order() for e in elements)
         # form degree is essentially max (not true for Hdiv/Hcurl,
         # but this will raise an error above anyway).
         # E.g. an H^1 function enriched with an L^2 is now just L^2.
-        if A.get_formdegree() is None or B.get_formdegree() is None:
+        if any(e.get_formdegree() is None for e in elements):
             formdegree = None
         else:
-            formdegree = max(A.get_formdegree(), B.get_formdegree())
+            formdegree = max(e.get_formdegree() for e in elements)
 
         # set up reference element and mapping, following checks above
-        ref_el = A.get_reference_element()
-        mapping = A.mapping()[0]
+        ref_el, = set(e.get_reference_element() for e in elements)
+        mapping, = set(m for e in elements for m in e.mapping())
 
         # set up entity_ids - for each geometric entity, just concatenate
         # the entities of the constituent elements
-        Adofs = A.entity_dofs()
-        Bdofs = B.entity_dofs()
-        offset = A.space_dimension()  # number of entities belonging to A
-        entity_ids = {}
-
-        for ent_dim in Adofs:
-            entity_ids[ent_dim] = {}
-            for ent_dim_index in Adofs[ent_dim]:
-                entlist = copy(Adofs[ent_dim][ent_dim_index])
-                entlist += [c + offset for c in Bdofs[ent_dim][ent_dim_index]]
-                entity_ids[ent_dim][ent_dim_index] = entlist
+        entity_ids = concatenate_entity_dofs(ref_el, elements)
 
         # set up dual basis - just concatenation
-        nodes = A.dual_basis() + B.dual_basis()
+        nodes = list(chain.from_iterable(e.dual_basis() for e in elements))
         dual = DualSet(nodes, ref_el, entity_ids)
 
         super(EnrichedElement, self).__init__(ref_el, dual, order, formdegree, mapping)
 
-        # Set up constituent elements
-        self.A = A
-        self.B = B
-
         # required degree (for quadrature) is definitely max
-        self.polydegree = max(A.degree(), B.degree())
+        self.polydegree = max(e.degree() for e in elements)
 
         # Store subelements
         self._elements = elements
@@ -116,53 +102,35 @@ class EnrichedElement(FiniteElement):
         """Return tabulated values of derivatives up to given order of
         basis functions at given points."""
 
-        # Again, simply concatenate at the basis-function level
-        # Number of array dimensions depends on whether the space
-        # is scalar- or vector-valued, so treat these separately.
+        num_components = numpy.prod(self.value_shape())
+        table_shape = (self.space_dimension(), num_components, len(points))
 
-        Asd = self.A.space_dimension()
-        Bsd = self.B.space_dimension()
-        Atab = self.A.tabulate(order, points, entity)
-        Btab = self.B.tabulate(order, points, entity)
-        npoints = len(points)
-        vs = self.A.value_shape()
-        rank = len(vs)  # scalar: 0, vector: 1
+        table = {}
+        irange = slice(0)
+        for element in self._elements:
 
-        result = {}
-        for index in Atab:
-            if rank == 0:
-                # scalar valued
-                # Atab[index] and Btab[index] look like
-                # array[basis_fn][point]
-                # We build a new array, which will be the concatenation
-                # of the two subarrays, in the first index.
+            etable = element.tabulate(order, points, entity)
+            irange = slice(irange.stop, irange.stop + element.space_dimension())
 
-                temp = np.zeros((Asd + Bsd, npoints),
-                                dtype=Atab[index].dtype)
-                temp[:Asd, :] = Atab[index][:, :]
-                temp[Asd:, :] = Btab[index][:, :]
+            # Insert element table into table
+            for dtuple in etable.keys():
 
-                result[index] = temp
-            elif rank == 1:
-                # vector valued
-                # Atab[index] and Btab[index] look like
-                # array[basis_fn][x/y/z][point]
-                # We build a new array, which will be the concatenation
-                # of the two subarrays, in the first index.
+                if dtuple not in table:
+                    if num_components == 1:
+                        table[dtuple] = numpy.zeros((self.space_dimension(), len(points)),
+                                                    dtype=etable[dtuple].dtype)
+                    else:
+                        table[dtuple] = numpy.zeros(table_shape,
+                                                    dtype=etable[dtuple].dtype)
 
-                temp = np.zeros((Asd + Bsd, vs[0], npoints),
-                                dtype=Atab[index].dtype)
-                temp[:Asd, :, :] = Atab[index][:, :, :]
-                temp[Asd:, :, :] = Btab[index][:, :, :]
+                table[dtuple][irange][:] = etable[dtuple]
 
-                result[index] = temp
-            else:
-                raise NotImplementedError("must be scalar- or vector-valued")
-        return result
+        return table
 
     def value_shape(self):
         """Return the value shape of the finite element functions."""
-        return self.A.value_shape()
+        result, = set(e.value_shape() for e in self._elements)
+        return result
 
     def dmats(self):
         """Return dmats: expansion coefficients for basis function
