@@ -18,6 +18,7 @@
 from __future__ import absolute_import, print_function, division
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
+from FIAT.reference_element import TRIANGLE
 
 
 class MorleyDualSet(dual_set.DualSet):
@@ -34,9 +35,8 @@ class MorleyDualSet(dual_set.DualSet):
         # need to do this dimension-by-dimension, facet-by-facet
         top = ref_el.get_topology()
         verts = ref_el.get_vertices()
-        sd = ref_el.get_spatial_dimension()
-        if sd != 2:
-            raise Exception("Illegal spatial dimension")
+        if ref_el.get_shape() != TRIANGLE:
+            raise ValueError("Morley only defined on triangles")
 
         # vertex point evaluations
 
@@ -55,6 +55,8 @@ class MorleyDualSet(dual_set.DualSet):
             nodes.append(n)
             entity_ids[1][e] = [cur]
             cur += 1
+
+        entity_ids[2] = {0: []}
 
         super(MorleyDualSet, self).__init__(nodes, ref_el, entity_ids)
 

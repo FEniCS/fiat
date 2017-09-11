@@ -18,6 +18,7 @@
 from __future__ import absolute_import, print_function, division
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
+from FIAT.reference_element import TRIANGLE
 
 
 class ArgyrisDualSet(dual_set.DualSet):
@@ -30,8 +31,8 @@ class ArgyrisDualSet(dual_set.DualSet):
         verts = ref_el.get_vertices()
         sd = ref_el.get_spatial_dimension()
 
-        if sd != 2:
-            raise Exception("Illegal spatial dimension")
+        if ref_el.get_shape() != TRIANGLE:
+            raise ValueError("Argyris only defined on triangles")
 
         pe = functional.PointEvaluation
         pd = functional.PointDerivative
@@ -50,7 +51,7 @@ class ArgyrisDualSet(dual_set.DualSet):
                 nodes.append(pd(ref_el, verts[v], alpha))
 
             # second derivatives
-            alphas = [[2, 0], [0, 2], [1, 1]]
+            alphas = [[2, 0], [1, 1], [0, 2]]
             for alpha in alphas:
                 nodes.append(pd(ref_el, verts[v], alpha))
 
@@ -83,6 +84,8 @@ class ArgyrisDualSet(dual_set.DualSet):
             nodes.extend(internalnds)
             entity_ids[2][0] = list(range(cur, cur + len(internalpts)))
             cur += len(internalpts)
+        else:
+            entity_ids[2] = {0: []}
 
         super(ArgyrisDualSet, self).__init__(nodes, ref_el, entity_ids)
 
@@ -98,8 +101,8 @@ class QuinticArgyrisDualSet(dual_set.DualSet):
         top = ref_el.get_topology()
         verts = ref_el.get_vertices()
         sd = ref_el.get_spatial_dimension()
-        if sd != 2:
-            raise Exception("Illegal spatial dimension")
+        if ref_el.get_shape() != TRIANGLE:
+            raise ValueError("Argyris only defined on triangles")
 
         pd = functional.PointDerivative
 
@@ -116,7 +119,7 @@ class QuinticArgyrisDualSet(dual_set.DualSet):
                 nodes.append(pd(ref_el, verts[v], alpha))
 
             # second derivatives
-            alphas = [[2, 0], [0, 2], [1, 1]]
+            alphas = [[2, 0], [1, 1], [0, 2]]
             for alpha in alphas:
                 nodes.append(pd(ref_el, verts[v], alpha))
 
@@ -131,6 +134,8 @@ class QuinticArgyrisDualSet(dual_set.DualSet):
             nodes.append(n)
             entity_ids[1][e] = [cur]
             cur += 1
+
+        entity_ids[2] = {0: []}
 
         super(QuinticArgyrisDualSet, self).__init__(nodes, ref_el, entity_ids)
 

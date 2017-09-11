@@ -197,6 +197,12 @@ elements = [
     "    Regge(S, 1),"
     "    RestrictedElement(Regge(S, 2), restriction_domain='interior')"
     ")",
+    "Argyris(T, 5)",
+    "QuinticArgyris(T)",
+    "CubicHermite(I)",
+    "CubicHermite(T)",
+    "CubicHermite(S)",
+    "Morley(T)",
 
     # MixedElement made of nodal elements should be nodal, but its API
     # is currently just broken.
@@ -228,14 +234,6 @@ elements = [
     xfail_impl("FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))"),
     xfail_impl("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))"),
     xfail_impl("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))"),
-
-    # These elements have broken constructor
-    xfail_key("Argyris(T, 1)",),
-    xfail_key("QuinticArgyris(T)",),
-    xfail_key("CubicHermite(I)",),
-    xfail_key("CubicHermite(T)",),
-    xfail_key("CubicHermite(S)",),
-    xfail_key("Morley(T)",),
 ]
 
 

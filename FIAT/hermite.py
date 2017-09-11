@@ -1,4 +1,5 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+# Modified 2017 by RCK
 #
 # This file is part of FIAT.
 #
@@ -51,23 +52,30 @@ class CubicHermiteDualSet(dual_set.DualSet):
             entity_ids[0][v] = list(range(cur, cur + 1 + sd))
             cur += sd + 1
 
+        # now only have dofs at the barycenter, which is the
+        # maximal dimension
         # no edge dof
+
         entity_ids[1] = {}
+        for i in top[1]:
+            entity_ids
+            entity_ids[1][i] = []
 
-        # face dof
-        # point evaluation at barycenter
-        entity_ids[2] = {}
-        for f in sorted(top[2]):
-            pt = ref_el.make_points(2, f, 3)[0]
-            n = functional.PointEvaluation(ref_el, pt)
-            nodes.append(n)
-            entity_ids[2] = list(range(cur, cur + 1))
-            cur += 1
+        if sd > 1:
+            # face dof
+            # point evaluation at barycenter
+            entity_ids[2] = {}
+            for f in sorted(top[2]):
+                pt = ref_el.make_points(2, f, 3)[0]
+                n = functional.PointEvaluation(ref_el, pt)
+                nodes.append(n)
+                entity_ids[2][f] = list(range(cur, cur + 1))
+                cur += 1
 
-        for dim in range(3, sd + 1):
-            entity_ids[dim] = {}
-            for facet in top[dim]:
-                entity_ids[dim][facet] = []
+            for dim in range(3, sd + 1):
+                entity_ids[dim] = {}
+                for facet in top[dim]:
+                    entity_ids[dim][facet] = []
 
         super(CubicHermiteDualSet, self).__init__(nodes, ref_el, entity_ids)
 

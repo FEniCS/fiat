@@ -229,6 +229,24 @@ class PointNormalDerivative(Functional):
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
 
+    def to_riesz(self, poly_set):
+        x = list(self.deriv_dict.keys())[0]
+
+        X = sympy.DeferredVector('x')
+        dx = numpy.asarray([X[i] for i in range(len(x))])
+
+        es = poly_set.get_expansion_set()
+        ed = poly_set.get_embedded_degree()
+
+        bfs = es.tabulate(ed, [dx])[:, 0]
+
+        # We need the gradient dotted with the normal.
+        return numpy.asarray(
+            [sympy.lambdify(
+                X, sum([sympy.diff(b, dxi)*ni
+                        for dxi, ni in zip(dx, self.n)]))(x)
+             for b in bfs])
+
 
 class IntegralMoment(Functional):
     """An IntegralMoment is a functional"""
