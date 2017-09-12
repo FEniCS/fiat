@@ -13,12 +13,12 @@ if sys.version_info < (2, 7):
     print("Python 2.7 or higher required, please upgrade.")
     sys.exit(1)
 
-version = "2017.1.0"
+version = "2017.1.0.post1"
 
 url = "https://bitbucket.org/fenics-project/fiat/"
 tarball = None
 if 'dev' not in version:
-    tarball = url + "downloads/fiat-%s.tar.gz" % version
+    tarball = url + "downloads/fenics-fiat-%s.tar.gz" % version
 
 setup(name="fenics-fiat",
       description="FInite element Automatic Tabulator",
