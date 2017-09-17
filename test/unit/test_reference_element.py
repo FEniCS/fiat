@@ -19,6 +19,8 @@ from __future__ import absolute_import, print_function, division
 
 import pytest
 import numpy as np
+import six
+from six.moves import range
 
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.reference_element import Point, TensorProductCell, UFCQuadrilateral, UFCHexahedron
@@ -32,6 +34,52 @@ tetrahedron = UFCTetrahedron()
 interval_x_interval = TensorProductCell(interval, interval)
 triangle_x_interval = TensorProductCell(triangle, interval)
 quadrilateral_x_interval = TensorProductCell(quadrilateral, interval)
+
+ufc_tetrahedron_21connectivity = [(0, 1, 2), (0, 3, 4), (1, 3, 5), (2, 4, 5)]
+ufc_hexahedron_21connectivity = [(0, 1, 4, 5), (2, 3, 6, 7), (0, 2, 8, 9),
+                                 (1, 3, 10, 11), (4, 6, 8, 10), (5, 7, 9, 11)]
+
+
+@pytest.mark.parametrize(('cell', 'connectivity'),
+                         [(tetrahedron, ufc_tetrahedron_21connectivity),
+                          (hexahedron, ufc_hexahedron_21connectivity),
+                          pytest.mark.xfail((triangle_x_interval, [])),
+                          pytest.mark.xfail((quadrilateral_x_interval, []))])
+def test_ufc_connectivity_21(cell, connectivity):
+    """Check face-edge connectivity builds what UFC expects.
+    This is only non-trivial case ; the rest is x-0 and D-x,
+    see below."""
+    assert cell.get_connectivity()[(2, 1)] == connectivity
+
+
+@pytest.mark.parametrize('cell',
+                         [point, interval, triangle, tetrahedron,
+                          quadrilateral, hexahedron,
+                          pytest.mark.xfail(interval_x_interval),
+                          pytest.mark.xfail(triangle_x_interval),
+                          pytest.mark.xfail(quadrilateral_x_interval)])
+def test_ufc_connectivity_x0(cell):
+    """Check x-0 connectivity is just what get_topology gives"""
+    for dim0 in range(cell.get_spatial_dimension()+1):
+        connectivity = cell.get_connectivity()[(dim0, 0)]
+        topology = cell.get_topology()[dim0]
+        assert len(connectivity) == len(topology)
+        assert all(connectivity[i] == t for i, t in six.iteritems(topology))
+
+
+@pytest.mark.parametrize('cell',
+                         [point, interval, triangle, tetrahedron,
+                          quadrilateral, hexahedron,
+                          pytest.mark.xfail(interval_x_interval),
+                          pytest.mark.xfail(triangle_x_interval),
+                          pytest.mark.xfail(quadrilateral_x_interval)])
+def test_ufc_connectivity_Dx(cell):
+    """Check D-x connectivity is just [(0,1,2,...)]"""
+    D = cell.get_spatial_dimension()
+    for dim1 in range(D+1):
+        connectivity = cell.get_connectivity()[(D, dim1)]
+        assert len(connectivity) == 1
+        assert connectivity[0] == tuple(range(len(connectivity[0])))
 
 
 @pytest.mark.parametrize(('cell', 'volume'),
