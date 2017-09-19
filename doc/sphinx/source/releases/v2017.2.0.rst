@@ -1,0 +1,11 @@
+===========================
+Changes in version 2017.2.0
+===========================
+
+FIAT 2017.2.0 was released on 2017-09-19.
+
+Summary of changes
+==================
+
+- Add quadrilateral and hexahedron reference cells
+- Add quadrilateral and hexahedron elements (with a wrapping class for TensorProductElement)
