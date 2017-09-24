@@ -18,9 +18,9 @@ version = "2017.2.0.dev0"
 url = "https://bitbucket.org/fenics-project/fiat/"
 tarball = None
 if 'dev' not in version:
-    tarball = url + "downloads/fiat-%s.tar.gz" % version
+    tarball = url + "downloads/fenics-fiat-%s.tar.gz" % version
 
-setup(name="FIAT",
+setup(name="fenics-fiat",
       description="FInite element Automatic Tabulator",
       version=version,
       author="Robert C. Kirby et al.",

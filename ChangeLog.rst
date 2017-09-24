@@ -7,6 +7,11 @@ Changelog
 - Add quadrilateral and hexahedron reference cells
 - Add quadrilateral and hexahedron elements (with a wrapping class for TensorProductElement)
 
+2017.1.0.post1 (2017-09-12)
+---------------------------
+
+- Change PyPI package name to fenics-fiat.
+
 2017.1.0 (2017-05-09)
 ---------------------
 
