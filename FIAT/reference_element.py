@@ -130,7 +130,23 @@ class Cell(object):
                         if vertices.issuperset(vertices_):
                             sub_entities.append((dim_, e_))
 
+                # Sort for the sake of determinism and by UFC conventions
                 self.sub_entities[dim][e] = sorted(sub_entities)
+
+        # Build connectivity dictionary for easier queries
+        self.connectivity = {}
+        for dim0, sub_entities in iteritems(self.sub_entities):
+
+            # Skip tensor product entities
+            # TODO: Can we do something better?
+            if isinstance(dim0, tuple):
+                continue
+
+            for entity, sub_sub_entities in sorted(iteritems(sub_entities)):
+                for dim1 in range(dim0+1):
+                    d01_entities = filter(lambda x: x[0] == dim1, sub_sub_entities)
+                    d01_entities = tuple(x[1] for x in d01_entities)
+                    self.connectivity.setdefault((dim0, dim1), []).append(d01_entities)
 
     def _key(self):
         """Hashable object key data (excluding type)."""
@@ -165,6 +181,14 @@ class Cell(object):
         The dictionary's keys are the spatial dimensions (0, 1, ...)
         and each value is a dictionary mapping."""
         return self.topology
+
+    def get_connectivity(self):
+        """Returns a dictionary encoding the connectivity of the element.
+
+        The dictionary's keys are the spatial dimensions pairs ((1, 0),
+        (2, 0), (2, 1), ...) and each value is a list with entities
+        of second dimension ordered by local dim0-dim1 numbering."""
+        return self.connectivity
 
     def get_vertices_of_subcomplex(self, t):
         """Returns the tuple of vertex coordinates associated with the labels

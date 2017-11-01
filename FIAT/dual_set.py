@@ -37,6 +37,7 @@ class DualSet(object):
 
                 for d, se in sub_entities:
                     ids += self.entity_ids[d][se]
+                ids.sort()
                 self.entity_closure_ids[d][e] = ids
 
     def get_nodes(self):
