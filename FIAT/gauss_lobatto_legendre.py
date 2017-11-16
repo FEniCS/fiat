@@ -29,8 +29,8 @@ class GaussLobattoLegendreDualSet(dual_set.DualSet):
     def __init__(self, ref_el, degree):
         entity_ids = {0: {0: [0], 1: [degree]},
                       1: {0: list(range(1, degree))}}
-        l = quadrature.GaussLobattoLegendreQuadratureLineRule(ref_el, degree+1)
-        nodes = [functional.PointEvaluation(ref_el, x) for x in l.pts]
+        lr = quadrature.GaussLobattoLegendreQuadratureLineRule(ref_el, degree+1)
+        nodes = [functional.PointEvaluation(ref_el, x) for x in lr.pts]
 
         super(GaussLobattoLegendreDualSet, self).__init__(nodes, ref_el, entity_ids)
 
