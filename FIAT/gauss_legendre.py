@@ -28,8 +28,8 @@ class GaussLegendreDualSet(dual_set.DualSet):
     def __init__(self, ref_el, degree):
         entity_ids = {0: {0: [], 1: []},
                       1: {0: list(range(0, degree+1))}}
-        l = quadrature.GaussLegendreQuadratureLineRule(ref_el, degree+1)
-        nodes = [functional.PointEvaluation(ref_el, x) for x in l.pts]
+        lr = quadrature.GaussLegendreQuadratureLineRule(ref_el, degree+1)
+        nodes = [functional.PointEvaluation(ref_el, x) for x in lr.pts]
 
         super(GaussLegendreDualSet, self).__init__(nodes, ref_el, entity_ids)
 
