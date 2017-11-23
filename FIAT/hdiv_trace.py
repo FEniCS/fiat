@@ -34,7 +34,6 @@ from FIAT.tensor_product import TensorProductElement
 # Numerical tolerance for facet-entity identifications
 epsilon = 1e-10
 
-
 class TraceError(Exception):
     """Exception caused by tabulating a trace element on the interior of a cell,
     or the gradient of a trace element."""
@@ -275,7 +274,10 @@ class HDivTrace(FiniteElement):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented for the trace element.")
 
-
+    @staticmethod
+    def is_nodal():
+        return True
+    
 def construct_dg_element(ref_el, degree):
     """Constructs a discontinuous galerkin element of a given degree
     on a particular reference cell.
