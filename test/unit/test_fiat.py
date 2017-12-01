@@ -226,6 +226,14 @@ elements = [
                "Hcurl(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
                ")"),
     # Following elements are checked using tabulate
+    xfail_impl("HDivTrace(T, 0)"),
+    xfail_impl("HDivTrace(T, 1)"),
+    xfail_impl("HDivTrace(T, 2)"),
+    xfail_impl("HDivTrace(T, 3)"),
+    xfail_impl("HDivTrace(S, 0)"),
+    xfail_impl("HDivTrace(S, 1)"),
+    xfail_impl("HDivTrace(S, 2)"),
+    xfail_impl("HDivTrace(S, 3)"),
     xfail_impl("TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))"),
     xfail_impl("TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))"),
     xfail_impl("TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))"),
@@ -338,6 +346,14 @@ def test_mixed_is_not_nodal():
 
 
 @pytest.mark.parametrize('element', [
+    "HDivTrace(T, 0)",
+    "HDivTrace(T, 1)",
+    "HDivTrace(T, 2)",
+    "HDivTrace(T, 3)",
+    "HDivTrace(S, 0)",
+    "HDivTrace(S, 1)",
+    "HDivTrace(S, 2)",
+    "HDivTrace(S, 3)",
     "TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))",
     "TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))",
     "TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))",
@@ -347,9 +363,10 @@ def test_mixed_is_not_nodal():
     "FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))",
     "FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))",
 ])
-def test_nodality_tpe(element):
-    """Check that generated TensorProductElements are nodal, i.e. nodes evaluated
-    on basis functions give Kronecker delta
+def test_nodality_tabulate(element):
+    """Check that certain elements (which do no implement
+    get_nodal_basis) are nodal too, by tabulating at nodes
+    (assuming nodes are point evaluation)
     """
     # Instantiate element
     element = eval(element)
