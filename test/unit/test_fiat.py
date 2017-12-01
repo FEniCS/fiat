@@ -35,7 +35,7 @@ from FIAT.mixed import MixedElement
 from FIAT.nedelec import Nedelec                                # noqa: F401
 from FIAT.nedelec_second_kind import NedelecSecondKind          # noqa: F401
 from FIAT.regge import Regge                                    # noqa: F401
-from FIAT.hdiv_trace import HDivTrace                           # noqa: F401
+from FIAT.hdiv_trace import HDivTrace, map_to_reference_facet   # noqa: F401
 from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson  # noqa: F401
 from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini  # noqa: F401
 from FIAT.gauss_legendre import GaussLegendre                   # noqa: F401
@@ -402,11 +402,11 @@ def test_facet_nodality_tabulate(element):
     nodes_coords = []
 
     # Iterate over facet degrees of freedom
-    # (FIXME: check that these are the only degrees of freedom)
     entity_dofs = element.dual.entity_ids
     facet_dim = sorted(entity_dofs.keys())[-2]
     facet_dofs = entity_dofs[facet_dim]
     dofs = element.dual_basis()
+    vertices = element.ref_el.vertices
 
     for (facet, indices) in facet_dofs.iteritems():
         for i in indices:
@@ -414,7 +414,12 @@ def test_facet_nodality_tabulate(element):
             # Assume point evaluation
             (coords, weights), = node.get_point_dict().items()
             assert weights == [(1.0, ())]
-            nodes_coords.append((facet, coords))
+
+            # Map dof coordinates to reference element due to
+            # HdivTrace interface peculiarity
+            ref_coords = map_to_reference_facet((coords,), vertices, facet)
+            assert len(ref_coords) == 1
+            nodes_coords.append((facet, ref_coords[0]))
 
     # Check nodality
     for j, (facet, x) in enumerate(nodes_coords):

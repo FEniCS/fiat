@@ -187,7 +187,6 @@ class HDivTrace(FiniteElement):
 
         # If entity is None, identify facet using numerical tolerance and
         # return the tabulated values
-        vertices = self.ref_el.vertices
         if entity is None:
             # NOTE: Numerical approximation of the facet id is currently only
             # implemented for simplex reference cells.
@@ -198,6 +197,7 @@ class HDivTrace(FiniteElement):
                 )
 
             # Attempt to identify which facet (if any) the given points are on
+            vertices = self.ref_el.vertices
             coordinates = barycentric_coordinates(points, vertices)
             unique_facet, success = extract_unique_facet(coordinates)
 
@@ -242,11 +242,9 @@ class HDivTrace(FiniteElement):
                     # Loop over the number of facets until we find a facet
                     # with matching dimension and id
                     for i in range(num_facets):
-                        # Found it! Tabulate and grab insertion indices
+                        # Found it! Grab insertion indices
                         if (facet_dim, i) == entity:
-                            # Map points to the reference facet
-                            new_points = map_to_reference_facet(points, vertices, i)
-                            nonzerovals, = itervalues(element.tabulate(0, new_points))
+                            nonzerovals, = itervalues(element.tabulate(0, points))
                             indices = slice(offset, offset + nf)
 
                         offset += nf
