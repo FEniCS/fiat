@@ -346,14 +346,6 @@ def test_mixed_is_not_nodal():
 
 
 @pytest.mark.parametrize('element', [
-    "HDivTrace(T, 0)",
-    "HDivTrace(T, 1)",
-    "HDivTrace(T, 2)",
-    "HDivTrace(T, 3)",
-    "HDivTrace(S, 0)",
-    "HDivTrace(S, 1)",
-    "HDivTrace(S, 2)",
-    "HDivTrace(S, 3)",
     "TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))",
     "TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))",
     "TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))",
@@ -383,6 +375,50 @@ def test_nodality_tabulate(element):
     # Check nodality
     for j, x in enumerate(nodes_coords):
         table = element.tabulate(0, (x,))
+        basis = table[list(table.keys())[0]]
+        for i in range(len(basis)):
+            assert np.isclose(basis[i], 1.0 if i == j else 0.0)
+
+
+@pytest.mark.parametrize('element', [
+    "HDivTrace(T, 0)",
+    "HDivTrace(T, 1)",
+    "HDivTrace(T, 2)",
+    "HDivTrace(T, 3)",
+    "HDivTrace(S, 0)",
+    "HDivTrace(S, 1)",
+    "HDivTrace(S, 2)",
+    "HDivTrace(S, 3)",
+])
+def test_facet_nodality_tabulate(element):
+    """Check that certain elements (which do no implement get_nodal_basis)
+    are nodal too, by tabulating facet-wise at nodes (assuming nodes
+    are point evaluation)
+    """
+    # Instantiate element
+    element = eval(element)
+
+    # Dof/Node coordinates and respective facet
+    nodes_coords = []
+
+    # Iterate over facet degrees of freedom
+    # (FIXME: check that these are the only degrees of freedom)
+    entity_dofs = element.dual.entity_ids
+    facet_dim = sorted(entity_dofs.keys())[-2]
+    facet_dofs = entity_dofs[facet_dim]
+    dofs = element.dual_basis()
+
+    for (facet, indices) in facet_dofs.iteritems():
+        for i in indices:
+            node = dofs[i]
+            # Assume point evaluation
+            (coords, weights), = node.get_point_dict().items()
+            assert weights == [(1.0, ())]
+            nodes_coords.append((facet, coords))
+
+    # Check nodality
+    for j, (facet, x) in enumerate(nodes_coords):
+        table = element.tabulate(0, (x,), entity=(facet_dim, facet))
         basis = table[list(table.keys())[0]]
         for i in range(len(basis)):
             assert np.isclose(basis[i], 1.0 if i == j else 0.0)
