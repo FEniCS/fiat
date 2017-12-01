@@ -372,10 +372,16 @@ def test_nodality_tabulate(element):
     element = eval(element)
 
     # Get nodes coordinates
-    nodes_coord = list(next(iter(f.get_point_dict().keys())) for f in element.dual_basis())
+    nodes_coords = []
+    for node in element.dual_basis():
+        # Assume point evaluation
+        (coords, weights), = node.get_point_dict().items()
+        assert weights == [(1.0, ())]
+
+        nodes_coords.append(coords)
 
     # Check nodality
-    for j, x in enumerate(nodes_coord):
+    for j, x in enumerate(nodes_coords):
         table = element.tabulate(0, (x,))
         basis = table[list(table.keys())[0]]
         for i in range(len(basis)):
