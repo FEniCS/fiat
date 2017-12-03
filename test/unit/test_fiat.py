@@ -408,7 +408,7 @@ def test_facet_nodality_tabulate(element):
     dofs = element.dual_basis()
     vertices = element.ref_el.vertices
 
-    for (facet, indices) in facet_dofs.iteritems():
+    for (facet, indices) in facet_dofs.items():
         for i in indices:
             node = dofs[i]
             # Assume point evaluation
