@@ -52,7 +52,7 @@ from FIAT.enriched import EnrichedElement                       # noqa: F401
 from FIAT.nodal_enriched import NodalEnrichedElement
 
 
-I = UFCInterval()
+I = UFCInterval()  # noqa: E741
 T = UFCTriangle()
 S = UFCTetrahedron()
 

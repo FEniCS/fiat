@@ -36,8 +36,8 @@ testing.
    :target: https://bitbucket.org/fenics-project/fiat/addon/pipelines/home
    :alt: Pipelines Build Status
 
-.. image:: http://fenics-bamboo.simula.no:8085/plugins/servlet/wittified/build-status/FIAT-FD
-   :target: http://fenics-bamboo.simula.no:8085/browse/FIAT-FD/latest
+.. image:: http://magpie.bpi.cam.ac.uk:8085/plugins/servlet/wittified/build-status/FIAT-FD
+   :target: http://magpie.bpi.cam.ac.uk:8085/browse/FIAT-FD
    :alt: Bamboo Build Status
 
 
