@@ -275,6 +275,10 @@ class HDivTrace(FiniteElement):
         """Return number of members of the expansion set."""
         raise NotImplementedError("get_num_members not implemented for the trace element.")
 
+    @staticmethod
+    def is_nodal():
+        return True
+
 
 def construct_dg_element(ref_el, degree):
     """Constructs a discontinuous galerkin element of a given degree
