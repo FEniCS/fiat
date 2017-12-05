@@ -6,7 +6,7 @@ Changelog
 
 - No changes.
 
-2017.2.0 (2017-09-19)
+2017.2.0 (2017-12-05)
 ---------------------
 
 - Add quadrilateral and hexahedron reference cells
