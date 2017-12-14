@@ -29,10 +29,8 @@
     Modified by David A. Ham (david.ham@imperial.ac.uk), 2016
 """
 
-from __future__ import absolute_import, print_function, division
-
 import numpy as np
-from six.moves import xrange, reduce
+from functools import reduce
 from math import gamma
 
 
@@ -197,7 +195,7 @@ def polyval(alpha, beta, x):
     P[:, 0] = 1
     P[:, 1] = (x - alpha[0]) * P[:, 0]
 
-    for k in xrange(1, N):
+    for k in range(1, N):
         P[:, k + 1] = (x - alpha[k]) * P[:, k] - beta[k] * P[:, k - 1]
 
     return P
@@ -225,7 +223,7 @@ def jacobi(N, a, b, x, NOPT=1):
         P[:, 1] = 0.5 * (a - b + (apb + 2) * x)
 
     if N > 1:
-        for k in xrange(2, N + 1):
+        for k in range(2, N + 1):
             k2 = 2 * k
             g = k2 + apb
             g1 = g - 1

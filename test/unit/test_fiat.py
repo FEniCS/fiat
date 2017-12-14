@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-
 import random
 import numpy as np
 import pytest
@@ -99,7 +97,6 @@ def test_basis_derivatives_scaling():
 
 
 xfail_impl = pytest.mark.xfail(strict=True, raises=NotImplementedError)
-xfail_key = pytest.mark.xfail(strict=True, raises=KeyError)
 elements = [
     "Lagrange(I, 1)",
     "Lagrange(I, 2)",

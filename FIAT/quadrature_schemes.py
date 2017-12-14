@@ -38,8 +38,6 @@ Background on the schemes:
 # First added:  2011-04-19
 # Last changed: 2011-04-19
 
-from __future__ import absolute_import, print_function, division
-
 # NumPy
 from numpy import array, arange, float64
 

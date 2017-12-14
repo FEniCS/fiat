@@ -29,18 +29,13 @@ and orderings of entities have a single point of entry.
 
 Currently implemented are UFC and Default Line, Triangle and Tetrahedron.
 """
-from __future__ import absolute_import, print_function, division
-
 from itertools import chain, product, count
+from functools import reduce
+from collections import defaultdict
 import operator
 from math import factorial
 
-from six import iteritems
-from six import string_types
-from six.moves import reduce, range
 import numpy
-from numpy import ravel_multi_index, transpose
-from collections import defaultdict
 
 
 POINT = 0
@@ -118,15 +113,15 @@ class Cell(object):
         # Given the topology, work out for each entity in the cell,
         # which other entities it contains.
         self.sub_entities = {}
-        for dim, entities in iteritems(topology):
+        for dim, entities in topology.items():
             self.sub_entities[dim] = {}
 
-            for e, v in iteritems(entities):
+            for e, v in entities.items():
                 vertices = frozenset(v)
                 sub_entities = []
 
-                for dim_, entities_ in iteritems(topology):
-                    for e_, vertices_ in iteritems(entities_):
+                for dim_, entities_ in topology.items():
+                    for e_, vertices_ in entities_.items():
                         if vertices.issuperset(vertices_):
                             sub_entities.append((dim_, e_))
 
@@ -135,14 +130,14 @@ class Cell(object):
 
         # Build connectivity dictionary for easier queries
         self.connectivity = {}
-        for dim0, sub_entities in iteritems(self.sub_entities):
+        for dim0, sub_entities in self.sub_entities.items():
 
             # Skip tensor product entities
             # TODO: Can we do something better?
             if isinstance(dim0, tuple):
                 continue
 
-            for entity, sub_sub_entities in sorted(iteritems(sub_entities)):
+            for entity, sub_sub_entities in sorted(sub_entities.items()):
                 for dim1 in range(dim0+1):
                     d01_entities = filter(lambda x: x[0] == dim1, sub_sub_entities)
                     d01_entities = tuple(x[1] for x in d01_entities)
@@ -703,7 +698,7 @@ class TensorProductCell(Cell):
             for tuple_ei in product(*[sorted(topd)for topd in topds]):
                 tuple_vs = list(product(*[topd[ei]
                                           for topd, ei in zip(topds, tuple_ei)]))
-                vs = tuple(ravel_multi_index(transpose(tuple_vs), shape))
+                vs = tuple(numpy.ravel_multi_index(numpy.transpose(tuple_vs), shape))
                 topology[dim][tuple_ei] = vs
             # flatten entity numbers
             topology[dim] = dict(enumerate(topology[dim][key]
@@ -987,7 +982,7 @@ def ufc_cell(cell):
     """Handle incoming calls from FFC."""
 
     # celltype could be a string or a cell.
-    if isinstance(cell, string_types):
+    if isinstance(cell, str):
         celltype = cell
     else:
         celltype = cell.cellname()
@@ -1054,7 +1049,7 @@ def flatten_entities(topology_dict):
         flattened_entities[flat_dim] += [v for k, v in sorted(topology_dict[dim].items())]
 
     return {dim: dict(enumerate(entities))
-            for dim, entities in iteritems(flattened_entities)}
+            for dim, entities in flattened_entities.items()}
 
 
 def compute_unflattening_map(topology_dict):
@@ -1063,7 +1058,7 @@ def compute_unflattening_map(topology_dict):
     counter = defaultdict(count)
     unflattening_map = {}
 
-    for dim, entities in sorted(iteritems(topology_dict)):
+    for dim, entities in sorted(topology_dict.items()):
         flat_dim = tuple_sum(dim)
         for entity in entities:
             flat_entity = next(counter[flat_dim])

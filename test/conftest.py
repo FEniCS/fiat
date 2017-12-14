@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-
 
 def pytest_addoption(parser):
     parser.addoption("--skip-download", dest='download', action='store_false',

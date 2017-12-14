@@ -21,8 +21,6 @@
 # This work is partially supported by the US Department of Energy
 # under award number DE-FG02-04ER25650
 
-from __future__ import absolute_import, print_function, division
-
 from FIAT import dual_set, functional, polynomial_set, finite_element
 import numpy
 

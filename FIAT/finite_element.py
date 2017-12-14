@@ -19,10 +19,7 @@
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 # Modified by Thomas H. Gibson (t.gibson15@imperial.ac.uk), 2016
 
-from __future__ import absolute_import, print_function, division
-
 import numpy
-from six.moves import map
 
 from FIAT.polynomial_set import PolynomialSet
 from FIAT.quadrature_schemes import create_quadrature

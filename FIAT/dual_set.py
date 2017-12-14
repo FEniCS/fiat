@@ -15,10 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-
 import numpy
-from six import iteritems
 
 
 class DualSet(object):
@@ -29,10 +26,10 @@ class DualSet(object):
 
         # Compute the nodes on the closure of each sub_entity.
         self.entity_closure_ids = {}
-        for dim, entities in iteritems(ref_el.sub_entities):
+        for dim, entities in ref_el.sub_entities.items():
             self.entity_closure_ids[dim] = {}
 
-            for e, sub_entities in iteritems(entities):
+            for e, sub_entities in entities.items():
                 ids = []
 
                 for d, se in sub_entities:

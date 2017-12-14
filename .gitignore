@@ -2,7 +2,7 @@
 
 /build/
 /dist/
-/FIAT.egg-info/
+/fenics_fiat.egg-info/
 
 /.cache/
 /doc/sphinx/source/api-doc
