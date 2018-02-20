@@ -234,6 +234,50 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
         return self._J
 
 
+class UFCTetrahedronEdgeQuadratureRule(QuadratureRule):
+    """Highly specialized quadrature rule for the edge of a
+    tetrahedron, mapped from a reference interval, used for higher
+    order Nedelecs"""
+
+    def __init__(self, edge_number, degree):
+
+        # Create quadrature rule on reference triangle
+        reference_interval = reference_element.UFCInterval()
+        reference_rule = make_quadrature(reference_interval, degree)
+        ref_points = reference_rule.get_points()
+        ref_weights = reference_rule.get_weights()
+
+        # Get geometry information about the face of interest
+        reference_tet = reference_element.UFCTetrahedron()
+        edge = reference_tet.get_topology()[1][edge_number]
+        vertices = reference_tet.get_vertices_of_subcomplex(edge)
+
+        # Use tet to map points and weights on the appropriate face
+        vertices = [numpy.array(list(vertex)) for vertex in vertices]
+        x0 = vertices[0]
+        J = numpy.matrix([vertices[1] - x0]).transpose()
+        x0 = numpy.matrix(x0).transpose()
+        # This is just a very numpyfied way of writing J*p + x0:
+        F = lambda p: \
+            numpy.array(J*numpy.matrix(p).transpose() + x0).flatten()
+        points = numpy.array([F(p) for p in ref_points])
+
+        # Map weights: multiply reference weights by sqrt(|J^T J|)
+        detJTJ = numpy.linalg.det(J.transpose() * J)
+        weights = numpy.sqrt(detJTJ) * ref_weights
+
+        # Initialize super class with new points and weights
+        QuadratureRule.__init__(self, reference_tet, points, weights)
+        self._reference_rule = reference_rule
+        self._J = J
+
+    def reference_rule(self):
+        return self._reference_rule
+
+    def jacobian(self):
+        return self._J
+
+
 def make_quadrature(ref_el, m):
     """Returns the collapsed quadrature rule using m points per
     direction on the given reference element. In the tensor product

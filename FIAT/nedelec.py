@@ -18,6 +18,8 @@
 
 from FIAT import (polynomial_set, expansions, quadrature, dual_set,
                   finite_element, functional)
+from FIAT.quadrature import UFCTetrahedronFaceQuadratureRule, UFCTetrahedronEdgeQuadratureRule
+from FIAT.functional import Functional, PointFaceTangentEvaluation
 from itertools import chain
 import numpy
 
@@ -228,22 +230,21 @@ class NedelecDual3D(dual_set.DualSet):
         num_edges = len(t[1])
 
         for i in range(num_edges):
-            # points to specify P_k on each edge
-            pts_cur = ref_el.make_points(1, i, degree + 2)
-            for j in range(len(pts_cur)):
-                pt_cur = pts_cur[j]
-                f = functional.PointEdgeTangentEvaluation(ref_el, i, pt_cur)
+            Q = UFCTetrahedronEdgeQuadratureRule(i, degree + 1)
+            for p in Q.get_points():
+                f = functional.PointEdgeTangentEvaluation(ref_el, i, tuple(p))
                 nodes.append(f)
 
         if degree > 0:  # face tangents
             num_faces = len(t[2])
             for i in range(num_faces):  # loop over faces
-                pts_cur = ref_el.make_points(2, i, degree + 2)
-                for j in range(len(pts_cur)):  # loop over points
-                    pt_cur = pts_cur[j]
-                    for k in range(2):  # loop over tangents
-                        f = functional.PointFaceTangentEvaluation(ref_el, i, k, pt_cur)
-                        nodes.append(f)
+                Q = UFCTetrahedronFaceQuadratureRule(i, degree + 1)
+                S = sum(Q.get_weights())
+                for k in range(2):  # loop over tangents
+                    f = Functional(ref_el, (3,), {}, {}, "ZeroFunctional")
+                    for p, w in zip(Q.get_points(), Q.get_weights()):
+                        f += w/S*PointFaceTangentEvaluation(ref_el, i, k, tuple(p))
+                    nodes.append(f)
 
         if degree > 1:  # internal moments
             Q = quadrature.make_quadrature(ref_el, 2 * (degree + 1))

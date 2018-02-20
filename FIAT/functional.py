@@ -130,6 +130,36 @@ class Functional(object):
     def tostr(self):
         return self.functional_type
 
+    def __add__(self, other):
+        # Extract unique data
+        assert self.ref_el == other.get_reference_element()
+        assert self.target_shape == other.target_shape
+        assert not (self.deriv_dict or other.deriv_dict), "derivatives not supported"
+
+        # Concatenate point-weight dicts
+        pt_dict = dict()
+        for operands in (self, other):
+            for pt, wlist in operands.get_point_dict().items():
+                # Just concatenate two lists rather then try summing weights
+                pt_dict.setdefault(pt, [])[:] += wlist
+
+        return Functional(self.ref_el, self.target_shape, pt_dict, {}, "FunctionalSum")
+
+    def __mul__(self, other):
+        assert not self.deriv_dict, "derivatives not supported"
+
+        # Construct scalar multiple of point-weight dict
+        pt_dict = dict()
+        for pt, wlist in self.pt_dict.items():
+            for weight, component in wlist:
+                pt_dict.setdefault(pt, []).append((weight*other, component))
+
+        return Functional(self.ref_el, self.target_shape, pt_dict, {},
+                          self.functional_type)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
 
 class PointEvaluation(Functional):
     """Class representing point evaluation of scalar functions at a
