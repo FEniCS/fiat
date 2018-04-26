@@ -2,8 +2,6 @@
 evaluating arbitrary order Lagrange and many other elements.
 Simplices in one, two, and three dimensions are supported."""
 
-from __future__ import absolute_import, print_function, division
-
 import pkg_resources
 
 # Import finite element classes

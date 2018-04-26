@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-
 import random
 import numpy as np
 import pytest
@@ -99,7 +97,6 @@ def test_basis_derivatives_scaling():
 
 
 xfail_impl = pytest.mark.xfail(strict=True, raises=NotImplementedError)
-xfail_key = pytest.mark.xfail(strict=True, raises=KeyError)
 elements = [
     "Lagrange(I, 1)",
     "Lagrange(I, 2)",
@@ -374,8 +371,7 @@ def test_nodality_tabulate(element):
 
     # Check nodality
     for j, x in enumerate(nodes_coords):
-        table = element.tabulate(0, (x,))
-        basis = table[list(table.keys())[0]]
+        basis, = element.tabulate(0, (x,)).values()
         for i in range(len(basis)):
             assert np.isclose(basis[i], 1.0 if i == j else 0.0)
 
@@ -417,14 +413,12 @@ def test_facet_nodality_tabulate(element):
 
             # Map dof coordinates to reference element due to
             # HdivTrace interface peculiarity
-            ref_coords = map_to_reference_facet((coords,), vertices, facet)
-            assert len(ref_coords) == 1
-            nodes_coords.append((facet, ref_coords[0]))
+            ref_coords, = map_to_reference_facet((coords,), vertices, facet)
+            nodes_coords.append((facet, ref_coords))
 
     # Check nodality
     for j, (facet, x) in enumerate(nodes_coords):
-        table = element.tabulate(0, (x,), entity=(facet_dim, facet))
-        basis = table[list(table.keys())[0]]
+        basis, = element.tabulate(0, (x,), entity=(facet_dim, facet)).values()
         for i in range(len(basis)):
             assert np.isclose(basis[i], 1.0 if i == j else 0.0)
 

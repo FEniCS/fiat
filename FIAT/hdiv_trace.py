@@ -15,10 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-from six import iteritems, itervalues
-from six.moves import range
-
 import numpy as np
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.dual_set import DualSet
@@ -92,7 +88,7 @@ class HDivTrace(FiniteElement):
         dg_elements = {}
         entity_dofs = {}
         topology = ref_el.get_topology()
-        for top_dim, entities in iteritems(topology):
+        for top_dim, entities in topology.items():
             cell = ref_el.construct_subelement(top_dim)
             entity_dofs[top_dim] = {}
 
@@ -216,7 +212,7 @@ class HDivTrace(FiniteElement):
                 # Retrieve values by tabulating the DG element
                 element = self.dg_elements[facet_sd]
                 nf = element.space_dimension()
-                nonzerovals, = itervalues(element.tabulate(order, new_points))
+                nonzerovals, = element.tabulate(order, new_points).values()
                 indices = slice(nf * unique_facet, nf * (unique_facet + 1))
 
         else:
@@ -244,7 +240,7 @@ class HDivTrace(FiniteElement):
                     for i in range(num_facets):
                         # Found it! Grab insertion indices
                         if (facet_dim, i) == entity:
-                            nonzerovals, = itervalues(element.tabulate(0, points))
+                            nonzerovals, = element.tabulate(0, points).values()
                             indices = slice(offset, offset + nf)
 
                         offset += nf

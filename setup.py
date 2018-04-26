@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import absolute_import, print_function, division
-
 import sys
 
 try:
@@ -9,11 +7,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
-if sys.version_info < (2, 7):
-    print("Python 2.7 or higher required, please upgrade.")
+if sys.version_info < (3, 0):
+    print("Python 3.0 or higher required, please upgrade.")
     sys.exit(1)
 
-version = "2017.2.0"
+version = "2018.1.0.dev0"
 
 url = "https://bitbucket.org/fenics-project/fiat/"
 tarball = None
@@ -29,4 +27,4 @@ setup(name="fenics-fiat",
       download_url=tarball,
       license="LGPL v3 or later",
       packages=["FIAT"],
-      install_requires=["numpy", "sympy", "six"])
+      install_requires=["numpy", "sympy"])

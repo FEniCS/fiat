@@ -1,5 +1,3 @@
-from __future__ import absolute_import, print_function, division
-
 from FIAT import (finite_element, functional, dual_set,
                   polynomial_set, lagrange)
 

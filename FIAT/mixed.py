@@ -17,10 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-from six import iteritems
-from six.moves import map
-
 import numpy
 
 from operator import add
@@ -90,7 +86,7 @@ class MixedElement(FiniteElement):
         for i, e in enumerate(self.elements()):
             table = e.tabulate(order, points, entity)
 
-            for d, tab in iteritems(table):
+            for d, tab in table.items():
                 try:
                     arr = output[d]
                 except KeyError:
@@ -114,11 +110,11 @@ def concatenate_entity_dofs(ref_el, elements):
     entity_dof containing the information for the concatenated DoFs of
     all the elements."""
     entity_dofs = {dim: {i: [] for i in entities}
-                   for dim, entities in iteritems(ref_el.get_topology())}
+                   for dim, entities in ref_el.get_topology().items()}
     offsets = numpy.cumsum([0] + list(e.space_dimension()
                                       for e in elements), dtype=int)
     for i, d in enumerate(e.entity_dofs() for e in elements):
-        for dim, dofs in iteritems(d):
-            for ent, off in iteritems(dofs):
+        for dim, dofs in d.items():
+            for ent, off in dofs.items():
                 entity_dofs[dim][ent] += list(map(partial(add, offsets[i]), off))
     return entity_dofs

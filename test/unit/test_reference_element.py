@@ -15,12 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-
 import pytest
 import numpy as np
-import six
-from six.moves import range
 
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.reference_element import Point, TensorProductCell, UFCQuadrilateral, UFCHexahedron
@@ -64,7 +60,7 @@ def test_ufc_connectivity_x0(cell):
         connectivity = cell.get_connectivity()[(dim0, 0)]
         topology = cell.get_topology()[dim0]
         assert len(connectivity) == len(topology)
-        assert all(connectivity[i] == t for i, t in six.iteritems(topology))
+        assert all(connectivity[i] == t for i, t in topology.items())
 
 
 @pytest.mark.parametrize('cell',

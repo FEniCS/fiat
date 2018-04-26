@@ -18,8 +18,6 @@
 and Sherwin.  These are parametrized over a reference element so as
 to allow users to get coordinates that they want."""
 
-from __future__ import absolute_import, print_function, division
-
 import numpy
 import math
 import sympy

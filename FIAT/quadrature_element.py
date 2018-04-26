@@ -20,14 +20,8 @@
 #
 # Modified by Garth N. Wells 2006-2009
 
-from __future__ import absolute_import, print_function, division
-from six.moves import range
-
-# Python modules.
 import numpy
-import six
 
-# FIAT modules.
 from FIAT.dual_set import DualSet
 from FIAT.finite_element import FiniteElement
 from FIAT.functional import PointEvaluation
@@ -39,7 +33,7 @@ class QuadratureElement(FiniteElement):
     def __init__(self, ref_el, points):
         # Create entity dofs.
         entity_dofs = {dim: {entity: [] for entity in entities}
-                       for dim, entities in six.iteritems(ref_el.get_topology())}
+                       for dim, entities in ref_el.get_topology().items()}
         entity_dofs[ref_el.get_dimension()] = {0: list(range(len(points)))}
 
         # The dual nodes are PointEvaluations at the quadrature points.

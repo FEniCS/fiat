@@ -1,4 +1,3 @@
-from __future__ import absolute_import, print_function, division
 from FIAT.reference_element import UFCTriangle
 from FIAT import Regge, HellanHerrmannJohnson
 import numpy as np

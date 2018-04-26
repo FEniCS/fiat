@@ -19,9 +19,6 @@
 #
 # Thomas Gibson (t.gibson15@imperial.ac.uk)
 
-from __future__ import absolute_import, print_function, division
-from six.moves import map
-
 import pytest
 import numpy as np
 

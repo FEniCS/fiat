@@ -17,8 +17,6 @@
 #
 # Modified by Jan Blechta 2014
 
-from __future__ import absolute_import, print_function, division
-
 from FIAT import dual_set, finite_element, functional
 from FIAT.raviart_thomas import RTSpace
 

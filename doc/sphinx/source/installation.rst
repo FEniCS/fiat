@@ -23,7 +23,6 @@ following Python packages:
 
 * NumPy
 * SymPy
-* six
 
 These packages will be automatically installed as part of the
 installation of FIAT, if not already present on your system.

@@ -15,11 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-
-import six
-from six import string_types
-from six import iteritems
 from FIAT.dual_set import DualSet
 from FIAT.finite_element import CiarletElement
 
@@ -36,7 +31,7 @@ class RestrictedElement(CiarletElement):
         if not indices:
             indices = _get_indices(element, restriction_domain)
 
-        if isinstance(indices, string_types):
+        if isinstance(indices, str):
             raise RuntimeError("variable 'indices' was a string; did you forget to use a keyword?")
 
         if len(indices) == 0:
@@ -56,9 +51,9 @@ class RestrictedElement(CiarletElement):
         entity_ids = {}
         nodes = []
         nodes_old = element.dual_basis()
-        for d, entities in six.iteritems(element.entity_dofs()):
+        for d, entities in element.entity_dofs().items():
             entity_ids[d] = {}
-            for entity, dofs in six.iteritems(entities):
+            for entity, dofs in entities.items():
                 entity_ids[d][entity] = []
                 for dof in dofs:
                     if dof not in indices:
@@ -83,7 +78,7 @@ def sorted_by_key(mapping):
     # Python3 doesn't allow comparing builtins of different type, therefore the typename trick here
     def _key(x):
         return (type(x[0]).__name__, x[0])
-    return sorted(iteritems(mapping), key=_key)
+    return sorted(mapping.items(), key=_key)
 
 
 def _get_indices(element, restriction_domain):

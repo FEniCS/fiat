@@ -17,8 +17,6 @@
 #
 # Written by David A. Ham (david.ham@imperial.ac.uk), 2015
 
-from __future__ import absolute_import, print_function, division
-
 import numpy
 import pytest
 import FIAT

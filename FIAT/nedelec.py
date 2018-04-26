@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-
 from FIAT import (polynomial_set, expansions, quadrature, dual_set,
                   finite_element, functional)
 from itertools import chain
