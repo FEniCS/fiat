@@ -19,6 +19,7 @@
 
 from FIAT.lagrange import Lagrange
 from FIAT.restricted import RestrictedElement
+from itertools import chain
 
 
 class CodimBubble(RestrictedElement):
@@ -29,16 +30,17 @@ class CodimBubble(RestrictedElement):
 
         cell_dim = ref_el.get_dimension()
         assert cell_dim == max(element.entity_dofs().keys())
-        cell_entity_dofs_dict = element.entity_dofs()[cell_dim-codim]
-        cell_entity_dofs = [cell_entity_dofs_dict[k][0] for k in cell_entity_dofs_dict]
-        if len(cell_entity_dofs) == 0:
+        dofs = list(chain(*element.entity_dofs()[cell_dim - codim].values()))
+        if len(dofs) == 0:
             raise RuntimeError('Bubble element of degree %d and codimension has no dofs' % degree)
 
-        super(CodimBubble, self).__init__(element, indices=cell_entity_dofs)
+        super(CodimBubble, self).__init__(element, indices=dofs)
+
 
 class Bubble(CodimBubble):
     def __init__(self, ref_el, degree):
         super(Bubble, self).__init__(ref_el, degree, codim=0)
+
 
 class FacetBubble(CodimBubble):
     def __init__(self, ref_el, degree):
