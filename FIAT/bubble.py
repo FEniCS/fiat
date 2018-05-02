@@ -1,5 +1,6 @@
 # Copyright (C) 2013 Andrew T. T. McRae (Imperial College London)
 # Copyright (C) 2015 Jan Blechta
+# Copyright (C) 2018 Patrick E. Farrell
 #
 # This file is part of FIAT.
 #
@@ -20,16 +21,25 @@ from FIAT.lagrange import Lagrange
 from FIAT.restricted import RestrictedElement
 
 
-class Bubble(RestrictedElement):
+class CodimBubble(RestrictedElement):
     """The Bubble finite element: the interior dofs of the Lagrange FE"""
 
-    def __init__(self, ref_el, degree):
+    def __init__(self, ref_el, degree, codim):
         element = Lagrange(ref_el, degree)
 
         cell_dim = ref_el.get_dimension()
         assert cell_dim == max(element.entity_dofs().keys())
-        cell_entity_dofs = element.entity_dofs()[cell_dim][0]
+        cell_entity_dofs_dict = element.entity_dofs()[cell_dim-codim]
+        cell_entity_dofs = [cell_entity_dofs_dict[k][0] for k in cell_entity_dofs_dict]
         if len(cell_entity_dofs) == 0:
-            raise RuntimeError('Bubble element of degree %d has no dofs' % degree)
+            raise RuntimeError('Bubble element of degree %d and codimension has no dofs' % degree)
 
-        super(Bubble, self).__init__(element, indices=cell_entity_dofs)
+        super(CodimBubble, self).__init__(element, indices=cell_entity_dofs)
+
+class Bubble(CodimBubble):
+    def __init__(self, ref_el, degree):
+        super(Bubble, self).__init__(ref_el, degree, codim=0)
+
+class FacetBubble(CodimBubble):
+    def __init__(self, ref_el, degree):
+        super(FacetBubble, self).__init__(ref_el, degree, codim=1)
