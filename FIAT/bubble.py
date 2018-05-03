@@ -32,7 +32,7 @@ class CodimBubble(RestrictedElement):
         assert cell_dim == max(element.entity_dofs().keys())
         dofs = list(chain(*element.entity_dofs()[cell_dim - codim].values()))
         if len(dofs) == 0:
-            raise RuntimeError('Bubble element of degree %d and codimension has no dofs' % degree)
+            raise RuntimeError('Bubble element of degree %d and codimension %d has no dofs' % (degree, codim))
 
         super(CodimBubble, self).__init__(element, indices=dofs)
 
