@@ -25,7 +25,7 @@ from FIAT.raviart_thomas import RaviartThomas
 from FIAT.crouzeix_raviart import CrouzeixRaviart
 from FIAT.regge import Regge
 from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson
-from FIAT.bubble import Bubble
+from FIAT.bubble import Bubble, FacetBubble
 from FIAT.tensor_product import TensorProductElement
 from FIAT.enriched import EnrichedElement
 from FIAT.nodal_enriched import NodalEnrichedElement
@@ -48,6 +48,7 @@ supported_elements = {"Argyris": Argyris,
                       "Brezzi-Douglas-Marini": BrezziDouglasMarini,
                       "Brezzi-Douglas-Fortin-Marini": BrezziDouglasFortinMarini,
                       "Bubble": Bubble,
+                      "FacetBubble": FacetBubble,
                       "Crouzeix-Raviart": CrouzeixRaviart,
                       "Discontinuous Lagrange": DiscontinuousLagrange,
                       "Discontinuous Taylor": DiscontinuousTaylor,
