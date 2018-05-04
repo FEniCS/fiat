@@ -23,7 +23,7 @@ from itertools import chain
 
 
 class CodimBubble(RestrictedElement):
-    """The Bubble finite element: the interior dofs of the Lagrange FE"""
+    """Bubbles of a certain codimension."""
 
     def __init__(self, ref_el, degree, codim):
         element = Lagrange(ref_el, degree)
@@ -38,10 +38,14 @@ class CodimBubble(RestrictedElement):
 
 
 class Bubble(CodimBubble):
+    """The bubble finite element: the dofs of the Lagrange FE in the interior of the cell"""
+
     def __init__(self, ref_el, degree):
         super(Bubble, self).__init__(ref_el, degree, codim=0)
 
 
 class FacetBubble(CodimBubble):
+    """The facet bubble finite element: the dofs of the Lagrange FE in the interior of the facets"""
+
     def __init__(self, ref_el, degree):
         super(FacetBubble, self).__init__(ref_el, degree, codim=1)
