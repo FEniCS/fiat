@@ -4,7 +4,10 @@ Changelog
 2018.1.0.dev0
 -------------
 
-- No changes.
+- Remove Python 2 support
+- Generalize ``Bubble`` element to ``CodimBubblei`` to create bubbles on entity
+  of arbitrary codimension; add ``FacetBubble``, keep ``Bubble`` (as bubble
+  on cell)
 
 2017.2.0 (2017-12-05)
 ---------------------
