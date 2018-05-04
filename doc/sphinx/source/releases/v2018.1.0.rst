@@ -1,0 +1,13 @@
+===========================
+Changes in version 2018.1.0
+===========================
+
+FIAT 2018.1.0 was released on 2017-05-22.
+
+Summary of changes
+==================
+
+- Remove Python 2 support
+- Generalize ``Bubble`` element to ``CodimBubble`` to create bubbles on entity
+  of arbitrary codimension; add ``FacetBubble``, keep ``Bubble`` (as bubble on
+  cell)

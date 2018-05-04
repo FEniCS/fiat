@@ -1,11 +1,11 @@
 Changelog
 =========
 
-2018.1.0 (2018-05-01)
--------------
+2018.1.0 (2018-05-22)
+---------------------
 
 - Remove Python 2 support
-- Generalize ``Bubble`` element to ``CodimBubblei`` to create bubbles on entity
+- Generalize ``Bubble`` element to ``CodimBubble`` to create bubbles on entity
   of arbitrary codimension; add ``FacetBubble``, keep ``Bubble`` (as bubble
   on cell)
 
