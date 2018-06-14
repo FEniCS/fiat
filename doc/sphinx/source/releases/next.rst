@@ -6,8 +6,7 @@ Changes in the next release
 Summary of changes
 ==================
 
-- Remove Python 2 support
-- Add ``FacetBubble``, ``CodimBubble`` elements
+- No changes yet.
 
 .. note:: Developers should use this page to track and list changes
           during development. At the time of release, this page should
