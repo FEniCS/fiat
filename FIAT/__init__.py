@@ -7,6 +7,7 @@ import pkg_resources
 # Import finite element classes
 from FIAT.finite_element import FiniteElement, CiarletElement  # noqa: F401
 from FIAT.argyris import Argyris
+from FIAT.bell import Bell
 from FIAT.argyris import QuinticArgyris
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
 from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini
