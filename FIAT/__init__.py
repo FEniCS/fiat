@@ -46,6 +46,7 @@ __version__ = pkg_resources.get_distribution("fenics-fiat").version
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris": Argyris,
+                      "Bell": Bell,
                       "Brezzi-Douglas-Marini": BrezziDouglasMarini,
                       "Brezzi-Douglas-Fortin-Marini": BrezziDouglasFortinMarini,
                       "Bubble": Bubble,
