@@ -77,7 +77,7 @@ class BellDualSet(dual_set.DualSet):
 
 
 class Bell(finite_element.CiarletElement):
-    """The Argyris finite element."""
+    """The Bell finite element."""
 
     def __init__(self, ref_el):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 5)
