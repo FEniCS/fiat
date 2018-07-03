@@ -1,4 +1,4 @@
-# Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
+# Copyright (C) 2018 Robert C. Kirby
 #
 # This file is part of FIAT.
 #
@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-# This is not quite Bell, but is 21-dofs and includes 3 extra constraint functionals.  The first 18 basis functions are the reference element bfs, but the extra three are used in the transformation theory.
+# This is not quite Bell, but is 21-dofs and includes 3 extra constraint
+# functionals.  The first 18 basis functions are the reference element
+# bfs, but the extra three are used in the transformation theory.
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
 from FIAT.reference_element import TRIANGLE, ufc_simplex
