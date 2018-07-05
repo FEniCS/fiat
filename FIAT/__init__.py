@@ -7,6 +7,7 @@ import pkg_resources
 # Import finite element classes
 from FIAT.finite_element import FiniteElement, CiarletElement  # noqa: F401
 from FIAT.argyris import Argyris
+from FIAT.bell import Bell
 from FIAT.argyris import QuinticArgyris
 from FIAT.brezzi_douglas_marini import BrezziDouglasMarini
 from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini
@@ -45,6 +46,7 @@ __version__ = pkg_resources.get_distribution("fenics-fiat").version
 
 # List of supported elements and mapping to element classes
 supported_elements = {"Argyris": Argyris,
+                      "Bell": Bell,
                       "Brezzi-Douglas-Marini": BrezziDouglasMarini,
                       "Brezzi-Douglas-Fortin-Marini": BrezziDouglasFortinMarini,
                       "Bubble": Bubble,
