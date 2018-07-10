@@ -46,7 +46,7 @@ def _tabulate_dpts(tabulator, D, n, order, pts):
         out = []
         try:
             out = [sympy.diff(F, X[j]) for j in range(D)]
-        except AttributeError:
+        except (AttributeError, ValueError):
             # Intercept errors like
             #  AttributeError: 'list' object has no attribute
             #  'free_symbols'
