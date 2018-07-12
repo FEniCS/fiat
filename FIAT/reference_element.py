@@ -47,6 +47,21 @@ HEXAHEDRON = 111
 TENSORPRODUCT = 99
 
 
+def lattice_iter(start, finish, depth):
+    """Generator iterating over the depth-dimensional lattice of
+    integers between start and (finish-1).  This works on simplices in
+    1d, 2d, 3d, and beyond"""
+    if depth == 0:
+        return
+    elif depth == 1:
+        for ii in range(start, finish):
+            yield [ii]
+    else:
+        for ii in range(start, finish):
+            for jj in lattice_iter(start, finish - ii, depth - 1):
+                yield jj + [ii]
+
+
 def make_lattice(verts, n, interior=0):
     """Constructs a lattice of points on the simplex defined by verts.
     For example, the 1:st order lattice will be just the vertices.
@@ -56,19 +71,12 @@ def make_lattice(verts, n, interior=0):
     midpoint, but with interior = 1, it will only return the
     midpoint."""
 
-    nverts = len(verts)
-    vs = [numpy.array(v) for v in verts]
-    hs = [(vs[i] - vs[0]) / n for i in range(1, nverts)]
+    vs = numpy.array(verts)
+    hs = (vs - vs[0])[1:, :] / n
 
-    result = []
-
-    m = len(hs)
-
-    for indices in lattice_iter(interior, n + 1 - interior, m):
-        res_cur = vs[0].copy()
-        for i in range(len(indices)):
-            res_cur += indices[i] * hs[m - i - 1]
-        result.append(tuple(res_cur))
+    m = hs.shape[0]
+    result = [tuple(vs[0] + numpy.array(indices).dot(hs))
+              for indices in lattice_iter(interior, n + 1 - interior, m)]
 
     return result
 
@@ -102,21 +110,6 @@ def linalg_subspace_intersection(A, B):
     rank_c = len([s for s in c if numpy.abs(1.0 - s) < 1.e-10])
 
     return U[:, :rank_c]
-
-
-def lattice_iter(start, finish, depth):
-    """Generator iterating over the depth-dimensional lattice of
-    integers between start and (finish-1).  This works on simplices in
-    1d, 2d, 3d, and beyond"""
-    if depth == 0:
-        return
-    elif depth == 1:
-        for ii in range(start, finish):
-            yield [ii]
-    else:
-        for ii in range(start, finish):
-            for jj in lattice_iter(start, finish - ii, depth - 1):
-                yield [ii] + jj
 
 
 class Cell(object):
