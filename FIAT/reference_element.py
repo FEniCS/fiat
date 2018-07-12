@@ -47,6 +47,32 @@ HEXAHEDRON = 111
 TENSORPRODUCT = 99
 
 
+def make_lattice(verts, n, interior=0):
+    """Constructs a lattice of points on the simplex defined by verts.
+    For example, the 1:st order lattice will be just the vertices.
+    The optional argument interior specifies how many points from
+    the boundary to omit.  For example, on a line with n = 2,
+    and interior = 0, this function will return the vertices and
+    midpoint, but with interior = 1, it will only return the
+    midpoint."""
+
+    nverts = len(verts)
+    vs = [numpy.array(v) for v in verts]
+    hs = [(vs[i] - vs[0]) / n for i in range(1, nverts)]
+
+    result = []
+
+    m = len(hs)
+
+    for indices in lattice_iter(interior, n + 1 - interior, m):
+        res_cur = vs[0].copy()
+        for i in range(len(indices)):
+            res_cur += indices[i] * hs[m - i - 1]
+        result.append(tuple(res_cur))
+
+    return result
+
+
 def linalg_subspace_intersection(A, B):
     """Computes the intersection of the subspaces spanned by the
     columns of 2-dimensional arrays A,B using the algorithm found in
@@ -64,12 +90,12 @@ def linalg_subspace_intersection(A, B):
 
     # Compute the principal vectors/angles between the subspaces, G&vL
     # p.604
-    (qa, ra) = numpy.linalg.qr(A)
-    (qb, rb) = numpy.linalg.qr(B)
+    (qa, _ra) = numpy.linalg.qr(A)
+    (qb, _rb) = numpy.linalg.qr(B)
 
     C = numpy.dot(numpy.transpose(qa), qb)
 
-    (y, c, zt) = numpy.linalg.svd(C)
+    (y, c, _zt) = numpy.linalg.svd(C)
 
     U = numpy.dot(qa, y)
 
@@ -342,30 +368,6 @@ class Simplex(Cell):
                 edge_ts.append(vert_coords[dest] - vert_coords[source])
         return edge_ts
 
-    def make_lattice(self, n, interior=0):
-        """Constructs a lattice of points on the simplex.  For
-        example, the 1:st order lattice will be just the vertices.
-        The optional argument interior specifies how many points from
-        the boundary to omit.  For example, on a line with n = 2,
-        and interior = 0, this function will return the vertices and
-        midpoint, but with interior = 1, it will only return the
-        midpoint."""
-        verts = self.get_vertices()
-        nverts = len(verts)
-        vs = [numpy.array(v) for v in verts]
-        hs = [(vs[i] - vs[0]) / n for i in range(1, nverts)]
-
-        result = []
-
-        m = len(hs)
-
-        for indices in lattice_iter(interior, n + 1 - interior, m):
-            res_cur = vs[0].copy()
-            for i in range(len(indices)):
-                res_cur += indices[i] * hs[m - i - 1]
-            result.append(tuple(res_cur))
-
-        return result
 
     def make_points(self, dim, entity_id, order):
         """Constructs a lattice of points on the entity_id:th
@@ -376,21 +378,13 @@ class Simplex(Cell):
         elif dim > self.get_spatial_dimension():
             raise Exception("illegal dimension")
         elif dim == self.get_spatial_dimension():
-            return self.make_lattice(order, 1)
+            return make_lattice(self.get_vertices(), order, 1)
         else:
-            base_el = default_simplex(dim)
-            base_verts = base_el.get_vertices()
             facet_verts = \
                 self.get_vertices_of_subcomplex(
                     self.get_topology()[dim][entity_id])
+            return make_lattice(facet_verts, order, 1)
 
-            (A, b) = make_affine_mapping(base_verts, facet_verts)
-
-            f = lambda x: (numpy.dot(A, x) + b)
-            base_pts = base_el.make_lattice(order, 1)
-            image_pts = tuple([tuple(f(x)) for x in base_pts])
-
-            return image_pts
 
     def volume(self):
         """Computes the volume of the simplex in the appropriate
