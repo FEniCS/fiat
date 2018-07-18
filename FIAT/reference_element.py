@@ -361,7 +361,6 @@ class Simplex(Cell):
                 edge_ts.append(vert_coords[dest] - vert_coords[source])
         return edge_ts
 
-
     def make_points(self, dim, entity_id, order):
         """Constructs a lattice of points on the entity_id:th
         facet of dimension dim.  Order indicates how many points to
@@ -377,7 +376,6 @@ class Simplex(Cell):
                 self.get_vertices_of_subcomplex(
                     self.get_topology()[dim][entity_id])
             return make_lattice(facet_verts, order, 1)
-
 
     def volume(self):
         """Computes the volume of the simplex in the appropriate
