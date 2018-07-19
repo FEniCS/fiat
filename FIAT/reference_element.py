@@ -367,15 +367,15 @@ class Simplex(Cell):
         include in each direction."""
         if dim == 0:
             return (self.get_vertices()[entity_id], )
-        elif dim > self.get_spatial_dimension():
-            raise Exception("illegal dimension")
+        elif 0 < dim < self.get_spatial_dimension():
+            entity_verts = \
+                self.get_vertices_of_subcomplex(
+                    self.get_topology()[dim][entity_id])
+            return make_lattice(entity_verts, order, 1)
         elif dim == self.get_spatial_dimension():
             return make_lattice(self.get_vertices(), order, 1)
         else:
-            facet_verts = \
-                self.get_vertices_of_subcomplex(
-                    self.get_topology()[dim][entity_id])
-            return make_lattice(facet_verts, order, 1)
+            raise ValueError("illegal dimension")
 
     def volume(self):
         """Computes the volume of the simplex in the appropriate
