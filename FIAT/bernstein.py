@@ -18,6 +18,7 @@
 # along with FIAT.  If not, see <https://www.gnu.org/licenses/>.
 
 import itertools
+import math
 import numpy
 
 from FIAT.finite_element import FiniteElement
@@ -113,5 +114,8 @@ class Bernstein(FiniteElement):
         result = numpy.zeros((len(alphas), len(Bs)))
         for i, alpha in enumerate(alphas):
             for j, bs in enumerate(Bs):
-                result[i, j] = numpy.prod([b**k for b, k in zip(bs, alpha)])
+                c = math.factorial(deg)
+                for k in alpha:
+                    c = c // math.factorial(k)
+                result[i, j] = c * numpy.prod([b**k for b, k in zip(bs, alpha)])
         return {(0,) * ref_el.get_spatial_dimension(): result}
