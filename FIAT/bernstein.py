@@ -19,10 +19,13 @@
 
 import itertools
 import math
+
 import numpy
+import sympy
 
 from FIAT.finite_element import FiniteElement
 from FIAT.dual_set import DualSet
+from FIAT.polynomial_set import mis
 
 
 class BernsteinDualSet(DualSet):
@@ -86,36 +89,41 @@ class Bernstein(FiniteElement):
                      reference element to tabulate on.  If ``None``,
                      default cell-wise tabulation is performed.
         """
-        # Retrieve entity transformation
+        # Transform points to reference cell coordinates
         ref_el = self.get_reference_element()
         if entity is None:
             entity = (ref_el.get_spatial_dimension(), 0)
 
         entity_dim, entity_id = entity
         entity_transform = ref_el.get_entity_transform(entity_dim, entity_id)
+        cell_points = list(map(entity_transform, points))
 
         # Construct Cartesian to Barycentric coordinate mapping
-        B2C = numpy.hstack([ref_el.get_vertices(),
-                            numpy.ones((len(ref_el.get_vertices()), 1))])
-        C2B = numpy.linalg.inv(B2C)
+        vs = numpy.asarray(ref_el.get_vertices())
+        B2R = numpy.vstack([vs.T, numpy.ones(len(vs))])
+        R2B = numpy.linalg.inv(B2R)
 
-        # Array of barycentric point coordinates
-        Bs = numpy.array([tuple(entity_transform(point)) + (1,)
-                          for point in points]).dot(C2B)
+        dim = ref_el.get_spatial_dimension()
+        X = sympy.symbols('X Y Z')[:dim]
+        B = R2B.dot(X + (1,))
 
         # Generate triangular barycentric indices
-        dim = ref_el.get_spatial_dimension()
         deg = self.degree()
-        alphas = [(deg - sum(beta),) + tuple(reversed(beta))
-                  for beta in itertools.product(range(deg + 1), repeat=dim)
-                  if sum(beta) <= deg]
+        etas = [(deg - sum(beta),) + tuple(reversed(beta))
+                for beta in itertools.product(range(deg + 1), repeat=dim)
+                if sum(beta) <= deg]
 
-        assert order == 0
-        result = numpy.zeros((len(alphas), len(Bs)))
-        for i, alpha in enumerate(alphas):
-            for j, bs in enumerate(Bs):
-                c = math.factorial(deg)
-                for k in alpha:
-                    c = c // math.factorial(k)
-                result[i, j] = c * numpy.prod([b**k for b, k in zip(bs, alpha)])
-        return {(0,) * ref_el.get_spatial_dimension(): result}
+        result = {}
+        for D in range(order + 1):
+            for alpha in mis(dim, D):
+                table = numpy.zeros((len(etas), len(cell_points)))
+                for i, eta in enumerate(etas):
+                    for j, point in enumerate(cell_points):
+                        c = math.factorial(deg)
+                        for k in eta:
+                            c = c // math.factorial(k)
+                        b = c * (B ** eta).prod()
+                        e = sympy.diff(b, *zip(X, alpha))
+                        table[i, j] = e.subs(dict(zip(X, point))).evalf()
+                result[alpha] = table
+        return result
