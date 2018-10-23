@@ -17,9 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with FIAT.  If not, see <https://www.gnu.org/licenses/>.
 
-import itertools
 import math
-
 import numpy
 
 from FIAT.finite_element import FiniteElement
@@ -44,14 +42,12 @@ class BernsteinDualSet(DualSet):
 
         # Generate triangular barycentric indices
         dim = ref_el.get_spatial_dimension()
-        alphas = [(degree - sum(beta),) + tuple(reversed(beta))
-                  for beta in itertools.product(range(degree + 1), repeat=dim)
-                  if sum(beta) <= degree]
+        kss = mis(dim + 1, degree)
 
         # Fill data structures
         nodes = []
-        for i, alpha in enumerate(alphas):
-            vertices, = numpy.nonzero(alpha)
+        for i, ks in enumerate(kss):
+            vertices, = numpy.nonzero(ks)
             entity_dim, entity_i = inverse_topology[tuple(vertices)]
             entity_ids[entity_dim][entity_i].append(i)
 
@@ -108,16 +104,14 @@ class Bernstein(FiniteElement):
         # Generate triangular barycentric indices
         deg = self.degree()
         dim = ref_el.get_spatial_dimension()
-        etas = [(deg - sum(beta),) + tuple(reversed(beta))
-                for beta in itertools.product(range(deg + 1), repeat=dim)
-                if sum(beta) <= deg]
+        kss = mis(dim + 1, deg)
 
         result = {}
         for D in range(order + 1):
             for alpha in mis(dim, D):
-                result[alpha] = numpy.zeros((len(etas), len(cell_points)))
-            for i, eta in enumerate(etas):
-                for alpha, vec in bernstein_Dx(B, eta, D, R2B).items():
+                result[alpha] = numpy.zeros((len(kss), len(cell_points)))
+            for i, ks in enumerate(kss):
+                for alpha, vec in bernstein_Dx(B, ks, D, R2B).items():
                     result[alpha][i, :] = vec
         return result
 
