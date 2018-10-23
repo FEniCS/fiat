@@ -101,18 +101,22 @@ class Bernstein(FiniteElement):
         B = numpy.hstack([cell_points,
                           numpy.ones((len(cell_points), 1))]).dot(R2B.T)
 
-        # Generate triangular barycentric indices
+        # Evaluate everything
         deg = self.degree()
         dim = ref_el.get_spatial_dimension()
-        kss = mis(dim + 1, deg)
+        raw_result = {(alpha, i): vec
+                      for i, ks in enumerate(mis(dim + 1, deg))
+                      for o in range(order + 1)
+                      for alpha, vec in bernstein_Dx(B, ks, o, R2B).items()}
 
-        result = {}
-        for D in range(order + 1):
-            for alpha in mis(dim, D):
-                result[alpha] = numpy.zeros((len(kss), len(cell_points)))
-            for i, ks in enumerate(kss):
-                for alpha, vec in bernstein_Dx(B, ks, D, R2B).items():
-                    result[alpha][i, :] = vec
+        # Rearrange result
+        space_dim = self.space_dimension()
+        dtype = numpy.array(list(raw_result.values())).dtype
+        result = {alpha: numpy.zeros((space_dim, len(cell_points)), dtype=dtype)
+                  for o in range(order + 1)
+                  for alpha in mis(dim, o)}
+        for (alpha, i), vec in raw_result.items():
+            result[alpha][i, :] = vec
         return result
 
 
@@ -175,8 +179,9 @@ def bernstein_Dx(points, ks, order, R2B):
               for alpha in mis(d_1, order)}
 
     # Arrange derivative tensor (barycentric coordinates)
+    dtype = numpy.array(list(Db_map.values())).dtype
     Db_shape = (d_1,) * order
-    Db_tensor = numpy.empty(Db_shape + (N,))
+    Db_tensor = numpy.empty(Db_shape + (N,), dtype=dtype)
     for ds in numpy.ndindex(Db_shape):
         alpha = [0] * d_1
         for d in ds:
