@@ -104,8 +104,6 @@ class Bernstein(FiniteElement):
 
         B = numpy.hstack([cell_points,
                           numpy.ones((len(cell_points), 1))]).dot(R2B.T)
-        # X = sympy.symbols('X Y Z')[:dim]
-        # B = R2B.dot(X + (1,))
 
         # Generate triangular barycentric indices
         deg = self.degree()
@@ -117,87 +115,74 @@ class Bernstein(FiniteElement):
         result = {}
         for D in range(order + 1):
             for alpha in mis(dim, D):
-                table = numpy.zeros((len(etas), len(cell_points)))
-                for i, eta in enumerate(etas):
-                    table[i, :] = bernstein_dx(B, eta, alpha, R2B)
-                    # for j, point in enumerate(cell_points):
-                    #     # c = math.factorial(deg)
-                    #     # for k in eta:
-                    #     #     c = c // math.factorial(k)
-                    #     b = c * (B ** eta).prod()
-                    #     e = sympy.diff(b, *zip(X, alpha))
-                    #     table[i, j] = e.subs(dict(zip(X, point))).evalf()
-                result[alpha] = table
+                result[alpha] = numpy.zeros((len(etas), len(cell_points)))
+            for i, eta in enumerate(etas):
+                for alpha, vec in bernstein_Dx(B, eta, D, R2B).items():
+                    result[alpha][i, :] = vec
         return result
 
 
-def bernstein_b(points, alpha):
-    """Evaluates Bernstein polynomials at barycentric points.
+def bernstein_db(points, ks, alpha=None):
+    """Evaluates Bernstein polynomials or its derivative at barycentric
+    points.
 
     :arg points: array of points in barycentric coordinates
-    :arg alpha: exponents defining the Bernstein polynomial
+    :arg ks: exponents defining the Bernstein polynomial
+    :arg alpha: derivative tuple
+
     :returns: array of Bernstein polynomial values at given points.
     """
     points = numpy.asarray(points)
-    alpha = tuple(alpha)
+    ks = numpy.array(tuple(ks))
 
     N, d_1 = points.shape
-    assert d_1 == len(alpha)
-    if any(k < 0 for k in alpha):
+    assert d_1 == len(ks)
+
+    if alpha is None:
+        alpha = numpy.zeros(d_1)
+    else:
+        alpha = numpy.array(tuple(alpha))
+        assert d_1 == len(alpha)
+
+    ls = ks - alpha
+    if any(k < 0 for k in ls):
         return numpy.zeros(len(points))
-    elif all(k == 0 for k in alpha):
+    elif all(k == 0 for k in ls):
         return numpy.ones(len(points))
     else:
-        c = math.factorial(sum(alpha))
-        for k in alpha:
-            c = c // math.factorial(k)
-        return c * numpy.prod(points**alpha, axis=1)
+        # Calculate coefficient
+        coeff = math.factorial(ks.sum())
+        for k in ls:
+            coeff //= math.factorial(k)
+        return coeff * numpy.prod(points**ls, axis=1)
 
 
-def bernstein_db(points, alpha, delta):
+def bernstein_Dx(points, ks, order, R2B):
     points = numpy.asarray(points)
-    alpha = tuple(alpha)
-    delta = tuple(delta)
+    ks = tuple(ks)
 
     N, d_1 = points.shape
-    assert d_1 == len(alpha) == len(delta)
+    assert d_1 == len(ks)
 
-    # Calculate derivative factor
-    c = 1
-    for _, i in zip(range(sum(delta)), range(sum(alpha), 0, -1)):
-        c *= i
+    # Collect derivatives according to barycentric coordinates
+    Db_map = {alpha: bernstein_db(points, ks, alpha)
+              for alpha in mis(d_1, order)}
 
-    alpha_ = numpy.array(alpha) - numpy.array(delta)
-    return c * bernstein_b(points, alpha_)
+    # Arrange derivative tensor (barycentric coordinates)
+    Db_shape = (d_1,) * order
+    Db_tensor = numpy.empty(Db_shape + (N,))
+    for ds in numpy.ndindex(Db_shape):
+        alpha = [0] * d_1
+        for d in ds:
+            alpha[d] += 1
+        Db_tensor[ds + (slice(None),)] = Db_map[tuple(alpha)]
 
-
-def bernstein_Db(points, alpha, order):
-    points = numpy.asarray(points)
-    alpha = tuple(alpha)
-
-    N, d_1 = points.shape
-    assert d_1 == len(alpha)
-    Dshape = (d_1,) * order
-
-    result = numpy.empty(Dshape + (N,))
-    for indices in numpy.ndindex(Dshape):
-        delta = [0] * d_1
-        for i in indices:
-            delta[i] += 1
-        result[indices + (slice(None),)] = bernstein_db(points, alpha, delta)
-    return result
-
-
-def bernstein_dx(points, alpha, delta, R2B):
-    points = numpy.asarray(points)
-    alpha = tuple(alpha)
-    delta = tuple(delta)
-
-    N, d_1 = points.shape
-    assert d_1 == len(alpha) == len(delta) + 1
-
-    result = bernstein_Db(points, alpha, sum(delta))
-    for d, c in enumerate(delta):
-        for _ in range(c):
-            result = R2B[:, d].dot(result)
+    # Coordinate transformation: barycentric -> reference
+    result = {}
+    for alpha in mis(d_1 - 1, order):
+        values = Db_tensor
+        for d, k in enumerate(alpha):
+            for _ in range(k):
+                values = R2B[:, d].dot(values)
+        result[alpha] = values
     return result
