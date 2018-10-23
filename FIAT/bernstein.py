@@ -152,6 +152,18 @@ def bernstein_db(points, ks, alpha=None):
 
 
 def bernstein_Dx(points, ks, order, R2B):
+    """Evaluates Bernstein polynomials or its derivatives according to
+    reference coordinates.
+
+    :arg points: array of points in BARYCENTRIC COORDINATES
+    :arg ks: exponents defining the Bernstein polynomial
+    :arg alpha: derivative order (returns all derivatives of this
+                specified order)
+    :arg R2B: linear mapping from reference to barycentric coordinates
+
+    :returns: dictionary mapping from derivative tuples to arrays of
+              Bernstein polynomial values at given points.
+    """
     points = numpy.asarray(points)
     ks = tuple(ks)
 
