@@ -29,7 +29,7 @@ from FIAT.reference_element import UFCTetrahedron
 
 
 class NedelecSecondKindDual(DualSet):
-    """
+    r"""
     This class represents the dual basis for the Nedelec H(curl)
     elements of the second kind. The degrees of freedom (L) for the
     elements of the k'th degree are
