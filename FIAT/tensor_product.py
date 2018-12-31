@@ -80,6 +80,10 @@ class TensorProductElement(FiniteElement):
         Anodes = A.dual_basis()
         Bnodes = B.dual_basis()
 
+        ac = A.get_coeffs()
+        bc = B.get_coeffs()
+        self.coeffs = numpy.block([[w*ac for w in v] for v in bc])
+
         # build the dual set by inspecting the current dual
         # sets item by item.
         # Currently supported cases:
@@ -237,7 +241,7 @@ class TensorProductElement(FiniteElement):
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
         finite element."""
-        raise NotImplementedError("get_coeffs not implemented")
+        return self.coeffs
 
     def tabulate(self, order, points, entity=None):
         """Return tabulated values of derivatives up to given order of
@@ -360,11 +364,24 @@ class TensorProductElement(FiniteElement):
     def dmats(self):
         """Return dmats: expansion coefficients for basis function
         derivatives."""
-        raise NotImplementedError("dmats not implemented")
+        # NB This could well be wrong, needs testing
+
+        ac = self.A.get_coeffs()
+        ad = self.A.dmats()
+        bc = self.B.get_coeffs()
+        bd = self.B.dmats()
+
+        dmats = []
+        for q in ad:
+            dmats += [numpy.block([[w*bc for w in v] for v in q])]
+        for q in bd:
+            dmats += [numpy.block([[w*ac for w in v] for v in q])]
+
+        return dmats
 
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
-        raise NotImplementedError("get_num_members not implemented")
+        return self.coeffs.shape[0]
 
     def is_nodal(self):
         # This element is nodal iff all factor elements are nodal.
@@ -424,21 +441,21 @@ class FlattenedDimensions(FiniteElement):
     def get_nodal_basis(self):
         """Return the nodal basis, encoded as a PolynomialSet object,
         for the finite element."""
-        raise self.element.get_nodal_basis()
+        return self.element.get_nodal_basis()
 
     def get_coeffs(self):
         """Return the expansion coefficients for the basis of the
         finite element."""
-        raise self.element.get_coeffs()
+        return self.element.get_coeffs()
 
     def dmats(self):
         """Return dmats: expansion coefficients for basis function
         derivatives."""
-        raise self.element.dmats()
+        return self.element.dmats()
 
     def get_num_members(self, arg):
         """Return number of members of the expansion set."""
-        raise self.element.get_num_members(arg)
+        return self.element.get_num_members(arg)
 
     def is_nodal(self):
         # This element is nodal iff unflattened element is nodal.
