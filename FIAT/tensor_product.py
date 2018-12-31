@@ -80,9 +80,12 @@ class TensorProductElement(FiniteElement):
         Anodes = A.dual_basis()
         Bnodes = B.dual_basis()
 
-        ac = A.get_coeffs()
-        bc = B.get_coeffs()
-        self.coeffs = numpy.block([[w*ac for w in v] for v in bc])
+        try:
+            ac = A.get_coeffs()
+            bc = B.get_coeffs()
+            self.coeffs = numpy.block([[w*ac for w in v] for v in bc])
+        except Exception:
+            pass
 
         # build the dual set by inspecting the current dual
         # sets item by item.
