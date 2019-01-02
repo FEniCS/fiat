@@ -367,18 +367,19 @@ class TensorProductElement(FiniteElement):
     def dmats(self):
         """Return dmats: expansion coefficients for basis function
         derivatives."""
-        # NB This could well be wrong, needs testing
 
-        ac = self.A.get_coeffs()
         ad = self.A.dmats()
-        bc = self.B.get_coeffs()
+        ai = numpy.eye(ad[0].shape[0])
         bd = self.B.dmats()
+        bi = numpy.eye(bd[0].shape[0])
+
+        if len(bd) != 1:
+            raise NotImplementedError("Cannot create dmats")
 
         dmats = []
-        for q in ad:
-            dmats += [numpy.block([[w*bc for w in v] for v in q])]
-        for q in bd:
-            dmats += [numpy.block([[w*ac for w in v] for v in q])]
+        for mat in ad:
+            dmats += [numpy.block([[w*mat for w in v] for v in bi])]
+        dmats += [numpy.block([[w*ai for w in v] for v in bd[0]])]
 
         return dmats
 
