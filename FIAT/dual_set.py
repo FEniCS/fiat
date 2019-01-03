@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import numpy
+import numpy, collections
+
+from FIAT import polynomial_set
 
 
 class DualSet(object):
@@ -63,4 +65,77 @@ class DualSet(object):
         for i in range(len(self.nodes)):
             self.mat[i][:] = self.nodes[i].to_riesz(poly_set)
 
+        return self.mat
+
+    def to_riesz_foo(self, poly_set):
+
+        tshape = self.nodes[0].target_shape
+        num_nodes = len(self.nodes)
+        es = poly_set.get_expansion_set()
+        ed = poly_set.get_embedded_degree()
+        num_exp = es.get_num_members(poly_set.get_embedded_degree())
+        nbf = poly_set.get_num_members()
+
+        riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
+
+        self.mat = numpy.zeros(riesz_shape, "d")
+
+        # let's amalgamate the pt_dict and deriv_dicts of all the
+        # functionals so we can tabulate the basis functions twice only
+        # (once on pts and once on derivatives)
+
+        # Need: dictionary mapping pts to which functionals they come from
+        pts_to_ells = collections.OrderedDict()
+        dpts_to_ells = collections.OrderedDict()
+
+        for i, ell in enumerate(self.nodes):
+            for pt in ell.pt_dict:
+                if pt in pts_to_ells:
+                    pts_to_ells[pt].append(i)
+                else:
+                    pts_to_ells[pt] = [i]
+
+        for i, ell in enumerate(self.nodes):
+            for pt in ell.deriv_dict:
+                if pt in dpts_to_ells:
+                    dpts_to_ells[pt].append(i)
+                else:
+                    dpts_to_ells[pt] = [i]
+
+        # Now tabulate
+        pts = list(pts_to_ells.keys())
+        bfs = es.tabulate(ed, pts)
+
+
+        for j, pt in enumerate(pts):
+            which_ells = pts_to_ells[pt]
+
+            for k in which_ells:
+                pt_dict = self.nodes[k].pt_dict
+                wc_list = pt_dict[pt]
+
+                for i in range(bfs.shape[0]):
+                    for (w, c) in wc_list:
+
+                        self.mat[k][c][i] += w*bfs[i, j]
+
+
+        mdo = max([ell.max_deriv_order for ell in self.nodes])
+        if mdo > 0:
+            dpts = list(dpts_to_ells.keys())
+            es_foo = polynomial_set.ONPolynomialSet(self.ref_el, ed)
+            dbfs = es_foo.tabulate(dpts, mdo)
+
+            for j, pt in enumerate(dpts):
+                which_ells = dpts_to_ells[pt]
+
+                for k in which_ells:
+                    dpt_dict = self.nodes[k].deriv_dict
+                    wac_list = dpt_dict[pt]
+
+                    for i in range(nbf):
+                        for (w, alpha, c) in wac_list:
+                            self.mat[k][c][i] += w*dbfs[alpha][i, j]
+
+        #assert numpy.allclose(self.mat, self.to_riesz_old(poly_set))
         return self.mat
