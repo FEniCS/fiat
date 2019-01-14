@@ -51,23 +51,23 @@ class DualSet(object):
     def get_reference_element(self):
         return self.ref_el
 
+    # def to_riesz(self, poly_set):
+
+    #     tshape = self.nodes[0].target_shape
+    #     num_nodes = len(self.nodes)
+    #     es = poly_set.get_expansion_set()
+    #     num_exp = es.get_num_members(poly_set.get_embedded_degree())
+
+    #     riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
+
+    #     self.mat = numpy.zeros(riesz_shape, "d")
+
+    #     for i in range(len(self.nodes)):
+    #         self.mat[i][:] = self.nodes[i].to_riesz(poly_set)
+
+    #     return self.mat
+
     def to_riesz(self, poly_set):
-
-        tshape = self.nodes[0].target_shape
-        num_nodes = len(self.nodes)
-        es = poly_set.get_expansion_set()
-        num_exp = es.get_num_members(poly_set.get_embedded_degree())
-
-        riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
-
-        self.mat = numpy.zeros(riesz_shape, "d")
-
-        for i in range(len(self.nodes)):
-            self.mat[i][:] = self.nodes[i].to_riesz(poly_set)
-
-        return self.mat
-
-    def to_riesz_foo(self, poly_set):
 
         tshape = self.nodes[0].target_shape
         num_nodes = len(self.nodes)
