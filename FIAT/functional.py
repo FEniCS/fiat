@@ -133,7 +133,7 @@ class Functional(object):
 
             # this makes things quicker since it uses dmats after
             # instantiation
-            es_foo = polynomial_set.ONPolynomialSet(self.ref_el, ed) 
+            es_foo = polynomial_set.ONPolynomialSet(self.ref_el, ed)
             dpts = list(dpt_dict.keys())
 
             # figure out the maximum order of derivative being taken
@@ -146,8 +146,6 @@ class Functional(object):
                 for i in range(nbf):
                     for (w, alpha, c) in wac_list:
                         result[c][i] += w * dbfs[alpha][i, j]
-
-            #raise NotImplementedError("Generic to_riesz implementation does not support derivatives")
 
         return result
 

@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-import numpy, collections
+import numpy
+import collections
 
 from FIAT import polynomial_set
 
@@ -50,22 +51,6 @@ class DualSet(object):
 
     def get_reference_element(self):
         return self.ref_el
-
-    # def to_riesz(self, poly_set):
-
-    #     tshape = self.nodes[0].target_shape
-    #     num_nodes = len(self.nodes)
-    #     es = poly_set.get_expansion_set()
-    #     num_exp = es.get_num_members(poly_set.get_embedded_degree())
-
-    #     riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
-
-    #     self.mat = numpy.zeros(riesz_shape, "d")
-
-    #     for i in range(len(self.nodes)):
-    #         self.mat[i][:] = self.nodes[i].to_riesz(poly_set)
-
-    #     return self.mat
 
     def to_riesz(self, poly_set):
 
@@ -106,7 +91,6 @@ class DualSet(object):
         pts = list(pts_to_ells.keys())
         bfs = es.tabulate(ed, pts)
 
-
         for j, pt in enumerate(pts):
             which_ells = pts_to_ells[pt]
 
@@ -118,7 +102,6 @@ class DualSet(object):
                     for (w, c) in wc_list:
 
                         self.mat[k][c][i] += w*bfs[i, j]
-
 
         mdo = max([ell.max_deriv_order for ell in self.nodes])
         if mdo > 0:
@@ -137,5 +120,4 @@ class DualSet(object):
                         for (w, alpha, c) in wac_list:
                             self.mat[k][c][i] += w*dbfs[alpha][i, j]
 
-        #assert numpy.allclose(self.mat, self.to_riesz_old(poly_set))
         return self.mat
