@@ -45,12 +45,6 @@ def index_iterator(shp):
                 yield [i] + foo
 
 
-# also put in a "jet_dict" that maps
-# pt --> {wt, multiindex, comp}
-# the multiindex is an iterable of nonnegative
-# integers
-
-
 class Functional(object):
     """Class implementing an abstract functional.
     All functionals are discrete in the sense that
@@ -97,7 +91,6 @@ class Functional(object):
         normal component, which is probably handy for clients of FIAT"""
         return self.functional_type
 
-    # overload me in subclasses to make life easier!!
     def to_riesz(self, poly_set):
         """Constructs an array representation of the functional over
         the base of the given polynomial_set so that f(phi) for any
@@ -213,25 +206,6 @@ class PointDerivative(Functional):
 
         return sympy.diff(fn(X), *dvars).evalf(subs=dict(zip(dX, x)))
 
-    # def to_riesz(self, poly_set):
-    #     x = list(self.deriv_dict.keys())[0]
-
-    #     X = sympy.DeferredVector('x')
-    #     dx = numpy.asarray([X[i] for i in range(len(x))])
-
-    #     es = poly_set.get_expansion_set()
-    #     ed = poly_set.get_embedded_degree()
-
-    #     bfs = es.tabulate(ed, [dx])[:, 0]
-
-    #     # Expand the multi-index as a series of variables to
-    #     # differentiate with respect to.
-    #     dvars = tuple(d for d, a in zip(dx, self.alpha)
-    #                   for count in range(a))
-
-    #     return numpy.asarray([sympy.lambdify(X, sympy.diff(b, *dvars))(x)
-    #                           for b in bfs])
-
 
 class PointNormalDerivative(Functional):
 
@@ -248,24 +222,6 @@ class PointNormalDerivative(Functional):
         dpt_dict = {pt: [(n[i], tuple(alphas[i]), tuple()) for i in range(sd)]}
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
-
-    # def to_riesz(self, poly_set):
-    #     x = list(self.deriv_dict.keys())[0]
-
-    #     X = sympy.DeferredVector('x')
-    #     dx = numpy.asarray([X[i] for i in range(len(x))])
-
-    #     es = poly_set.get_expansion_set()
-    #     ed = poly_set.get_embedded_degree()
-
-    #     bfs = es.tabulate(ed, [dx])[:, 0]
-
-    #     # We need the gradient dotted with the normal.
-    #     return numpy.asarray(
-    #         [sympy.lambdify(
-    #             X, sum([sympy.diff(b, dxi)*ni
-    #                     for dxi, ni in zip(dx, self.n)]))(x)
-    #          for b in bfs])
 
 
 class PointNormalSecondDerivative(Functional):
@@ -292,32 +248,6 @@ class PointNormalSecondDerivative(Functional):
         dpt_dict = {pt: [(n[i], alphas[i], tuple()) for i in range(sd)]}
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
-
-    def to_riesz_blah(self, poly_set):
-        x = list(self.deriv_dict.keys())[0]
-
-        X = sympy.DeferredVector('x')
-        dx = numpy.asarray([X[i] for i in range(len(x))])
-
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-
-        bfs = es.tabulate(ed, [dx])[:, 0]
-
-        # We need the gradient dotted with the normal.
-        def diffargtosplat(alpha):
-            assert sum(alpha) > 0
-            args = []
-            for dxi, a in zip(dx, alpha):
-                if a > 0:
-                    args.extend([dxi, a])
-            return tuple(args)
-
-        return numpy.asarray(
-            [sympy.lambdify(
-                X, sum([sympy.diff(b, *diffargtosplat(alpha))*taui
-                        for alpha, taui in zip(self.alphas, self.tau)]))(x)
-             for b in bfs])
 
 
 class IntegralMoment(Functional):
