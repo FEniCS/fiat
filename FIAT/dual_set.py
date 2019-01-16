@@ -63,7 +63,7 @@ class DualSet(object):
 
         riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
 
-        self.mat = numpy.zeros(riesz_shape, "d")
+        self.matrix = numpy.zeros(riesz_shape, "d")
 
         # let's amalgamate the pt_dict and deriv_dicts of all the
         # functionals so we can tabulate the basis functions twice only
@@ -89,7 +89,7 @@ class DualSet(object):
 
         # Now tabulate
         pts = list(pts_to_ells.keys())
-        bfs = es.tabulate(ed, pts)
+        expansion_values = es.tabulate(ed, pts)
 
         for j, pt in enumerate(pts):
             which_ells = pts_to_ells[pt]
@@ -98,16 +98,19 @@ class DualSet(object):
                 pt_dict = self.nodes[k].pt_dict
                 wc_list = pt_dict[pt]
 
-                for i in range(bfs.shape[0]):
+                for i in range(expanion_values.shape[0]):
                     for (w, c) in wc_list:
 
-                        self.mat[k][c][i] += w*bfs[i, j]
+                        self.matrix[k][c][i] += w*expanion_values[i, j]
 
-        mdo = max([ell.max_deriv_order for ell in self.nodes])
-        if mdo > 0:
+        max_deriv_order = max([ell.max_deriv_order for ell in self.nodes])
+        if max_deriv_order > 0:
             dpts = list(dpts_to_ells.keys())
-            es_foo = polynomial_set.ONPolynomialSet(self.ref_el, ed)
-            dbfs = es_foo.tabulate(dpts, mdo)
+            # It's easiest/most efficient to get derivatives of the
+            # expansion set through the polynomial set interface.
+            # This is creating a short-lived set to do just this.
+            expansion = polynomial_set.ONPolynomialSet(self.ref_el, ed)
+            dexpanion_values = expansion.tabulate(dpts, max_deriv_order)
 
             for j, pt in enumerate(dpts):
                 which_ells = dpts_to_ells[pt]
@@ -118,6 +121,6 @@ class DualSet(object):
 
                     for i in range(nbf):
                         for (w, alpha, c) in wac_list:
-                            self.mat[k][c][i] += w*dbfs[alpha][i, j]
+                            self.matrix[k][c][i] += w*dexpanion_values[alpha][i, j]
 
-        return self.mat
+        return self.matrix
