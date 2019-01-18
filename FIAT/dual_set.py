@@ -98,10 +98,10 @@ class DualSet(object):
                 pt_dict = self.nodes[k].pt_dict
                 wc_list = pt_dict[pt]
 
-                for i in range(expanion_values.shape[0]):
+                for i in range(expansion_values.shape[0]):
                     for (w, c) in wc_list:
 
-                        self.matrix[k][c][i] += w*expanion_values[i, j]
+                        self.matrix[k][c][i] += w*expansion_values[i, j]
 
         max_deriv_order = max([ell.max_deriv_order for ell in self.nodes])
         if max_deriv_order > 0:
@@ -110,7 +110,7 @@ class DualSet(object):
             # expansion set through the polynomial set interface.
             # This is creating a short-lived set to do just this.
             expansion = polynomial_set.ONPolynomialSet(self.ref_el, ed)
-            dexpanion_values = expansion.tabulate(dpts, max_deriv_order)
+            dexpansion_values = expansion.tabulate(dpts, max_deriv_order)
 
             for j, pt in enumerate(dpts):
                 which_ells = dpts_to_ells[pt]
@@ -121,6 +121,6 @@ class DualSet(object):
 
                     for i in range(nbf):
                         for (w, alpha, c) in wac_list:
-                            self.matrix[k][c][i] += w*dexpanion_values[alpha][i, j]
+                            self.matrix[k][c][i] += w*dexpansion_values[alpha][i, j]
 
         return self.matrix
