@@ -60,7 +60,7 @@ class DualSet(object):
         ed = poly_set.get_embedded_degree()
         num_exp = es.get_num_members(poly_set.get_embedded_degree())
         nbf = poly_set.get_num_members()
-
+        
         riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
 
         self.matrix = numpy.zeros(riesz_shape, "d")
@@ -100,7 +100,6 @@ class DualSet(object):
 
                 for i in range(expansion_values.shape[0]):
                     for (w, c) in wc_list:
-
                         self.matrix[k][c][i] += w*expansion_values[i, j]
 
         max_deriv_order = max([ell.max_deriv_order for ell in self.nodes])
@@ -119,7 +118,7 @@ class DualSet(object):
                     dpt_dict = self.nodes[k].deriv_dict
                     wac_list = dpt_dict[pt]
 
-                    for i in range(nbf):
+                    for i in range(num_exp):
                         for (w, alpha, c) in wac_list:
                             self.matrix[k][c][i] += w*dexpansion_values[alpha][i, j]
 
