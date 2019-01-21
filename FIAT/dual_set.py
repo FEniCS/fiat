@@ -98,7 +98,7 @@ class DualSet(object):
                 pt_dict = self.nodes[k].pt_dict
                 wc_list = pt_dict[pt]
 
-                for i in range(expansion_values.shape[0]):
+                for i in range(num_exp]):
                     for (w, c) in wc_list:
                         self.matrix[k][c][i] += w*expansion_values[i, j]
 
