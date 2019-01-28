@@ -13,16 +13,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from FIAT import finite_element, polynomial_set, dual_set, functional, P0,
-                 reference_element
+from FIAT import finite_element, polynomial_set, dual_set, functional, P0, reference_element
 from FIAT.discontinuous_lagrange import DiscontinuousLagrangeDualSet
+from FIAT.reference_element import Point, DefaultLine, UFCInterval, UFCQuadrilateral, UFCHexahedron, UFCTriangle, UFCTetrahedron
 from FIAT.P0 import P0Dual
 
-hypercube_simplex_map = {Point: Point,
-                         DefaultLine: DefaultLine,
-                         UFCInterval: UFCInterval,
-                         UFCQuadrilateral: UFCTriangle,
-                         UFCHexahedron: UFCTetrahedron}
+hypercube_simplex_map = {'Point': Point(),
+                         'DefaultLine': DefaultLine(),
+                         'UFCInterval': UFCInterval(),
+                         'UFCQuadrilateral': UFCTriangle(),
+                         'UFCHexahedron': UFCTetrahedron()}
 
 class DPC0Dual(P0Dual):
     def __init__(self, ref_el):
@@ -30,19 +30,19 @@ class DPC0Dual(P0Dual):
 
 class DPC0(finite_element.CiarletElement):
     def __init__(self, ref_el):
-        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[ref_el], 0)
+        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[type(ref_el).__name__], 0)
         dual = DPC0Dual(ref_el)
         degree = 0
         formdegree = ref_el.get_spatial_dimension()  # n-form
         super(DPC0, self).__init__(poly_set=poly_set,
                                    dual=dual,
-                                   degree=degree,
+                                   order=degree,
                                    ref_el=ref_el,
                                    formdegree=formdegree)
 
 
 class DiscontinuousSerendipityDualSet(DiscontinuousLagrangeDualSet):
-    """The dual basis for Lagrange elements.  This class works for
+    """The dual basis for Serendipity elements.  This class works for
     hypercubes of any dimension.  Nodes are point evaluation at
     equispaced points.  This is the discontinuous version where
     all nodes are topologically associated with the cell itself"""
@@ -52,15 +52,15 @@ class DiscontinuousSerendipityDualSet(DiscontinuousLagrangeDualSet):
 
 
 class HigherOrderDiscontinuousSerendipity(finite_element.CiarletElement):
-    """The discontinuous Lagrange finite element.  It is what it is."""
+    """The discontinuous Serendipity finite element.  It is what it is."""
 
     def __init__(self, ref_el, degree):
-        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[ref_el], degree)
-        dual = DiscontinuousSerendipityDualSet(hypercube_simplex_map[ref_el], degree)
+        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[type(ref_el).__name__], degree)
+        dual = DiscontinuousSerendipityDualSet(hypercube_simplex_map[type(ref_el).__name__], degree)
         formdegree = ref_el.get_spatial_dimension()  # n-form
         super(HigherOrderDiscontinuousSerendipity, self).__init__(poly_set=poly_set,
                                                                   dual=dual,
-                                                                  degree=degree,
+                                                                  order=degree,
                                                                   ref_el=ref_el,
                                                                   formdegree=formdegree)
 
