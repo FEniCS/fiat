@@ -53,7 +53,20 @@ class DualSet(object):
         return self.ref_el
 
     def to_riesz(self, poly_set):
-
+        """This method gives the action of the entire dual set
+        on each member of the expansion set underlying poly_set.
+        Then, applying the linear functionals of the dual set to an
+        arbitrary polynomial in poly_set is accomplished by matrix
+        multiplication."""
+        
+        # This rather technical code queries the low-level information
+        # for each functional to find out where it evaluates its
+        # inputs and/or their derivatives.  Then, it tabulates the
+        # expansion set one time for all the function values and
+        # another for all of the derivatives.  This circumvents
+        # needing to call the to_riesz method of each functional and
+        # also limits the number of different calls to tabulate.
+        
         tshape = self.nodes[0].target_shape
         num_nodes = len(self.nodes)
         es = poly_set.get_expansion_set()
