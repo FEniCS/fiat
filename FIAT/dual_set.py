@@ -58,7 +58,7 @@ class DualSet(object):
         Then, applying the linear functionals of the dual set to an
         arbitrary polynomial in poly_set is accomplished by matrix
         multiplication."""
-        
+
         # This rather technical code queries the low-level information
         # for each functional to find out where it evaluates its
         # inputs and/or their derivatives.  Then, it tabulates the
@@ -66,14 +66,13 @@ class DualSet(object):
         # another for all of the derivatives.  This circumvents
         # needing to call the to_riesz method of each functional and
         # also limits the number of different calls to tabulate.
-        
+
         tshape = self.nodes[0].target_shape
         num_nodes = len(self.nodes)
         es = poly_set.get_expansion_set()
         ed = poly_set.get_embedded_degree()
         num_exp = es.get_num_members(poly_set.get_embedded_degree())
-        nbf = poly_set.get_num_members()
-        
+
         riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
 
         self.matrix = numpy.zeros(riesz_shape, "d")
@@ -111,7 +110,7 @@ class DualSet(object):
                 pt_dict = self.nodes[k].pt_dict
                 wc_list = pt_dict[pt]
 
-                for i in range(num_exp]):
+                for i in range(num_exp):
                     for (w, c) in wc_list:
                         self.matrix[k][c][i] += w*expansion_values[i, j]
 
