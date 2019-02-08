@@ -15,14 +15,22 @@
 
 from FIAT import finite_element, polynomial_set, dual_set, functional, P0, reference_element
 from FIAT.discontinuous_lagrange import DiscontinuousLagrangeDualSet
-from FIAT.reference_element import Point, DefaultLine, UFCInterval, UFCQuadrilateral, UFCHexahedron, UFCTriangle, UFCTetrahedron
+from FIAT.reference_element import (Point,
+                                    DefaultLine,
+                                    UFCInterval,
+                                    UFCQuadrilateral,
+                                    UFCHexahedron,
+                                    UFCTriangle,
+                                    UFCTetrahedron,
+                                    make_affine_mapping)
 from FIAT.P0 import P0Dual
+import numpy as np
 
-hypercube_simplex_map = {'Point': Point(),
-                         'DefaultLine': DefaultLine(),
-                         'UFCInterval': UFCInterval(),
-                         'UFCQuadrilateral': UFCTriangle(),
-                         'UFCHexahedron': UFCTetrahedron()}
+hypercube_simplex_map = {Point(): Point(),
+                         DefaultLine(): DefaultLine(),
+                         UFCInterval(): UFCInterval(),
+                         UFCQuadrilateral(): UFCTriangle(),
+                         UFCHexahedron(): UFCTetrahedron()}
 
 class DPC0Dual(P0Dual):
     def __init__(self, ref_el):
@@ -30,7 +38,7 @@ class DPC0Dual(P0Dual):
 
 class DPC0(finite_element.CiarletElement):
     def __init__(self, ref_el):
-        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[type(ref_el).__name__], 0)
+        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[ref_el], 0)
         dual = DPC0Dual(ref_el)
         degree = 0
         formdegree = ref_el.get_spatial_dimension()  # n-form
@@ -41,22 +49,53 @@ class DPC0(finite_element.CiarletElement):
                                    formdegree=formdegree)
 
 
-class DiscontinuousSerendipityDualSet(DiscontinuousLagrangeDualSet):
+class DiscontinuousSerendipityDualSet(dual_set.DualSet):
     """The dual basis for Serendipity elements.  This class works for
     hypercubes of any dimension.  Nodes are point evaluation at
     equispaced points.  This is the discontinuous version where
     all nodes are topologically associated with the cell itself"""
 
     def __init__(self, ref_el, degree):
-        super(DiscontinuousSerendipityDualSet, self).__init__(ref_el, degree)
+        entity_ids = {}
+        nodes = []
+
+        ### Change coordinates here.
+        v_simplex = hypercube_simplex_map[ref_el].get_vertices()
+        v_hypercube = ref_el.get_vertices()
+        v_ = list(v_hypercube[:2])
+        for d in range(1, ref_el.get_dimension()):
+            v_.append(tuple(np.asarray(v_hypercube[d+1]
+                            + np.average(np.asarray(v_hypercube[2**d:2**(d+1)]),axis=0))))
+        A, b = make_affine_mapping(v_simplex, tuple(v_))
+
+
+        # make nodes by getting points
+        # need to do this dimension-by-dimension, facet-by-facet
+        top = hypercube_simplex_map[ref_el].get_topology()
+
+        cur = 0
+        for dim in sorted(top):
+            entity_ids[dim] = {}
+            for entity in sorted(top[dim]):
+                pts_cur = hypercube_simplex_map[ref_el].make_points(dim, entity, degree)
+                pts_cur = [tuple(np.matmul(A, np.array(x)) + b) for x in pts_cur]
+                nodes_cur = [functional.PointEvaluation(ref_el, x)
+                             for x in pts_cur]
+                nnodes_cur = len(nodes_cur)
+                nodes += nodes_cur
+                entity_ids[dim][entity] = []
+                cur += nnodes_cur
+
+        entity_ids[dim][0] = list(range(len(nodes)))
+        super(DiscontinuousSerendipityDualSet, self).__init__(nodes, hypercube_simplex_map[ref_el], entity_ids)
 
 
 class HigherOrderDiscontinuousSerendipity(finite_element.CiarletElement):
     """The discontinuous Serendipity finite element.  It is what it is."""
 
     def __init__(self, ref_el, degree):
-        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[type(ref_el).__name__], degree)
-        dual = DiscontinuousSerendipityDualSet(hypercube_simplex_map[type(ref_el).__name__], degree)
+        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[ref_el], degree)
+        dual = DiscontinuousSerendipityDualSet(ref_el, degree)
         formdegree = ref_el.get_spatial_dimension()  # n-form
         super(HigherOrderDiscontinuousSerendipity, self).__init__(poly_set=poly_set,
                                                                   dual=dual,
