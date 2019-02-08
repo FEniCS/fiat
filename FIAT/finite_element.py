@@ -120,7 +120,7 @@ class CiarletElement(FiniteElement):
     basis generated from polynomials encoded in a `PolynomialSet`.
     """
 
-    def __init__(self, poly_set, dual, order, ref_el=None, formdegree=None, mapping="affine"):
+    def __init__(self, poly_set, dual, order, formdegree=None, mapping="affine", ref_el=None):
         ref_el = ref_el or poly_set.get_reference_element()
         super(CiarletElement, self).__init__(ref_el, dual, order, formdegree, mapping)
 
