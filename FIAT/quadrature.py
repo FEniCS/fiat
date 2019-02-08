@@ -252,6 +252,14 @@ def make_quadrature(ref_el, m):
         return CollapsedQuadratureTriangleRule(ref_el, m)
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule(ref_el, m)
+    elif ref_el.get_shape() == reference_element.QUADRILATERAL:
+        line_rule = GaussJacobiQuadratureLineRule(ref_el.construct_subelement(1), m)
+        return make_tensor_product_quadrature(line_rule, line_rule)
+    elif ref_el.get_shape() == reference_element.HEXAHEDRON:
+        line_rule = GaussJacobiQuadratureLineRule(ref_el.construct_subelement(1), m)
+        return make_tensor_product_quadrature(line_rule, line_rule, line_rule)
+    else:
+        raise ValueError("Unable to make quadrature for cell: %s" % ref_el)
 
 
 def make_tensor_product_quadrature(*quad_rules):
