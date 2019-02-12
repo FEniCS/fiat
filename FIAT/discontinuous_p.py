@@ -48,7 +48,7 @@ class DPC0(finite_element.CiarletElement):
                                    formdegree=formdegree)
 
 
-class DPCDualSet(dual_set.DualSet):
+class DPDualSet(dual_set.DualSet):
     """The dual basis for Serendipity elements.  This class works for
     hypercubes of any dimension.  Nodes are point evaluation at
     equispaced points.  This is the discontinuous version where
@@ -59,13 +59,20 @@ class DPCDualSet(dual_set.DualSet):
         nodes = []
 
         ### Change coordinates here.
+        # Vertices of the simplex corresponding to the reference element.
         v_simplex = hypercube_simplex_map[ref_el].get_vertices()
+        # Vertices of the reference element.
         v_hypercube = ref_el.get_vertices()
+        # For the mapping, first two vertices are unchanged in all dimensions.
         v_ = list(v_hypercube[:2])
+
+        # For dimension 1 upwards,
+        # take the next vertex and map it to the midpoint of the edge/face it belongs to, and shares
+        # with no other points.
         for d in range(1, ref_el.get_dimension()):
             v_.append(tuple(np.asarray(v_hypercube[d+1]
                             + np.average(np.asarray(v_hypercube[2**d:2**(d+1)]),axis=0))))
-        A, b = make_affine_mapping(v_simplex, tuple(v_))
+        A, b = make_affine_mapping(v_simplex, tuple(v_)) # Make affine mapping to be used later.
 
 
         # make nodes by getting points
@@ -86,25 +93,25 @@ class DPCDualSet(dual_set.DualSet):
                 cur += nnodes_cur
 
         entity_ids[dim][0] = list(range(len(nodes)))
-        super(DPCDualSet, self).__init__(nodes, hypercube_simplex_map[ref_el], entity_ids)
+        super(DPDualSet, self).__init__(nodes, hypercube_simplex_map[ref_el], entity_ids)
 
 
-class HigherOrderDPC(finite_element.CiarletElement):
+class HigherOrderDP(finite_element.CiarletElement):
     """The discontinuous Serendipity finite element.  It is what it is."""
 
     def __init__(self, ref_el, degree):
         poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[ref_el], degree)
-        dual = DPCDualSet(ref_el, degree)
+        dual = DPDualSet(ref_el, degree)
         formdegree = ref_el.get_spatial_dimension()  # n-form
-        super(HigherOrderDPC, self).__init__(poly_set=poly_set,
+        super(HigherOrderDP, self).__init__(poly_set=poly_set,
                                              dual=dual,
                                              order=degree,
                                              ref_el=ref_el,
                                              formdegree=formdegree)
 
 
-def DPC(ref_el, degree):
+def DP(ref_el, degree):
     if degree == 0:
         return DPC0(ref_el)
     else:
-        return HigherOrderDPC(ref_el, degree)
+        return HigherOrderDP(ref_el, degree)
