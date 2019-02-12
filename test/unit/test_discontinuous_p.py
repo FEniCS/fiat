@@ -29,13 +29,13 @@ import numpy as np
 def test_basis_values(dim, degree):
     """Ensure that integrating a simple monomial produces the expected results."""
     from FIAT import ufc_cell, make_quadrature
-    from FIAT.discontinuous_p import DiscontinuousP
+    from FIAT.discontinuous_p import DP
 
     cell = np.array([None, 'interval', 'quadrilateral', 'hexahedron'])
     s = ufc_cell(cell[dim])
     q = make_quadrature(s, degree + 1)
 
-    fe = DiscontinuousP(s, degree)
+    fe = DP(s, degree)
     tab = fe.tabulate(0, q.pts)[(0,) * dim]
 
     for test_degree in range(degree + 1):
