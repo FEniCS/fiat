@@ -59,18 +59,26 @@ class DPCDualSet(dual_set.DualSet):
         nodes = []
 
         ### Change coordinates here.
+        # Vertices of the simplex corresponding to the reference element.
         v_simplex = hypercube_simplex_map[ref_el].get_vertices()
+        # Vertices of the reference element.
         v_hypercube = ref_el.get_vertices()
+        # For the mapping, first two vertices are unchanged in all dimensions.
         v_ = list(v_hypercube[:2])
+
+        # For dimension 1 upwards,
+        # take the next vertex and map it to the midpoint of the edge/face it belongs to, and shares
+        # with no other points.
         for d in range(1, ref_el.get_dimension()):
             v_.append(tuple(np.asarray(v_hypercube[d+1]
                             + np.average(np.asarray(v_hypercube[2**d:2**(d+1)]),axis=0))))
-        A, b = make_affine_mapping(v_simplex, tuple(v_))
+        A, b = make_affine_mapping(v_simplex, tuple(v_)) # Make affine mapping to be used later.
 
 
         # make nodes by getting points
         # need to do this dimension-by-dimension, facet-by-facet
         top = hypercube_simplex_map[ref_el].get_topology()
+        cube_topology = ref_el.get_topology()
 
         cur = 0
         for dim in sorted(top):
@@ -82,8 +90,9 @@ class DPCDualSet(dual_set.DualSet):
                              for x in pts_cur]
                 nnodes_cur = len(nodes_cur)
                 nodes += nodes_cur
-                entity_ids[dim][entity] = []
                 cur += nnodes_cur
+            for entity in sorted(cube_topology[dim]):
+                entity_ids[dim][entity] = []
 
         entity_ids[dim][0] = list(range(len(nodes)))
         super(DPCDualSet, self).__init__(nodes, hypercube_simplex_map[ref_el], entity_ids)
