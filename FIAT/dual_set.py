@@ -16,6 +16,9 @@
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
 import numpy
+import collections
+
+from FIAT import polynomial_set
 
 
 class DualSet(object):
@@ -50,17 +53,79 @@ class DualSet(object):
         return self.ref_el
 
     def to_riesz(self, poly_set):
+        """This method gives the action of the entire dual set
+        on each member of the expansion set underlying poly_set.
+        Then, applying the linear functionals of the dual set to an
+        arbitrary polynomial in poly_set is accomplished by matrix
+        multiplication."""
+
+        # This rather technical code queries the low-level information
+        # for each functional to find out where it evaluates its
+        # inputs and/or their derivatives.  Then, it tabulates the
+        # expansion set one time for all the function values and
+        # another for all of the derivatives.  This circumvents
+        # needing to call the to_riesz method of each functional and
+        # also limits the number of different calls to tabulate.
 
         tshape = self.nodes[0].target_shape
         num_nodes = len(self.nodes)
         es = poly_set.get_expansion_set()
+        ed = poly_set.get_embedded_degree()
         num_exp = es.get_num_members(poly_set.get_embedded_degree())
 
         riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
 
-        self.mat = numpy.zeros(riesz_shape, "d")
+        result = numpy.zeros(riesz_shape, "d")
 
-        for i in range(len(self.nodes)):
-            self.mat[i][:] = self.nodes[i].to_riesz(poly_set)
+        # let's amalgamate the pt_dict and deriv_dicts of all the
+        # functionals so we can tabulate the basis functions twice only
+        # (once on pts and once on derivatives)
 
-        return self.mat
+        # Need: dictionary mapping pts to which functionals they come from
+        pts_to_ells = collections.OrderedDict()
+        dpts_to_ells = collections.OrderedDict()
+
+        for i, ell in enumerate(self.nodes):
+            for pt in ell.pt_dict:
+                pts_to_ells.setdefault(pt, []).append(i)
+
+        for i, ell in enumerate(self.nodes):
+            for pt in ell.deriv_dict:
+                dpts_to_ells.setdefault(pt, []).append(i)
+
+        # Now tabulate
+        pts = list(pts_to_ells.keys())
+        expansion_values = es.tabulate(ed, pts)
+
+        for j, pt in enumerate(pts):
+            which_ells = pts_to_ells[pt]
+
+            for k in which_ells:
+                pt_dict = self.nodes[k].pt_dict
+                wc_list = pt_dict[pt]
+
+                for i in range(num_exp):
+                    for (w, c) in wc_list:
+                        result[k][c][i] += w*expansion_values[i, j]
+
+        max_deriv_order = max([ell.max_deriv_order for ell in self.nodes])
+        if max_deriv_order > 0:
+            dpts = list(dpts_to_ells.keys())
+            # It's easiest/most efficient to get derivatives of the
+            # expansion set through the polynomial set interface.
+            # This is creating a short-lived set to do just this.
+            expansion = polynomial_set.ONPolynomialSet(self.ref_el, ed)
+            dexpansion_values = expansion.tabulate(dpts, max_deriv_order)
+
+            for j, pt in enumerate(dpts):
+                which_ells = dpts_to_ells[pt]
+
+                for k in which_ells:
+                    dpt_dict = self.nodes[k].deriv_dict
+                    wac_list = dpt_dict[pt]
+
+                    for i in range(num_exp):
+                        for (w, alpha, c) in wac_list:
+                            result[k][c][i] += w*dexpansion_values[alpha][i, j]
+
+        return result
