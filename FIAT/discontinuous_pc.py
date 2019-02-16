@@ -49,7 +49,7 @@ class DPC0(finite_element.CiarletElement):
 
 
 class DPCDualSet(dual_set.DualSet):
-    """The dual basis for Serendipity elements.  This class works for
+    """The dual basis for DPC elements.  This class works for
     hypercubes of any dimension.  Nodes are point evaluation at
     equispaced points.  This is the discontinuous version where
     all nodes are topologically associated with the cell itself"""
@@ -99,7 +99,7 @@ class DPCDualSet(dual_set.DualSet):
 
 
 class HigherOrderDPC(finite_element.CiarletElement):
-    """The discontinuous Serendipity finite element.  It is what it is."""
+    """The DPC finite element.  It is what it is."""
 
     def __init__(self, ref_el, degree):
         poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[ref_el], degree)
