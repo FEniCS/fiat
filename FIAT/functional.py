@@ -326,7 +326,7 @@ class IntegralMomentOfNormalDerivative(Functional):
 
         alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
         for j, pt in enumerate(dpts):
-            dpt_dict[tuple(pt)] = [(qwts[j]*n[i], alphas[i], tuple()) for i in range(sd)]
+            dpt_dict[tuple(pt)] = [(qwts[j]*n[i], tuple(alphas[i]), tuple()) for i in range(sd)]
 
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfNormalDerivative")

@@ -6,9 +6,9 @@ pipelines:
         script:
           - apt-get update
           - apt-get install -y
-              git python3-minimal python3-pip python3-pytest python3-setuptools python3-wheel
+              git python3-minimal python3-pip python3-setuptools python3-wheel
               --no-install-recommends
-          - pip3 install flake8
+          - pip3 install flake8 pytest --upgrade
           - pip3 install .
           - python3 -m flake8
           - DATA_REPO_GIT="" python3 -m pytest -v test/

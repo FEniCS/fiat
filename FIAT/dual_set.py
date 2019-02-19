@@ -75,7 +75,7 @@ class DualSet(object):
 
         riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
 
-        self.matrix = numpy.zeros(riesz_shape, "d")
+        result = numpy.zeros(riesz_shape, "d")
 
         # let's amalgamate the pt_dict and deriv_dicts of all the
         # functionals so we can tabulate the basis functions twice only
@@ -87,17 +87,11 @@ class DualSet(object):
 
         for i, ell in enumerate(self.nodes):
             for pt in ell.pt_dict:
-                if pt in pts_to_ells:
-                    pts_to_ells[pt].append(i)
-                else:
-                    pts_to_ells[pt] = [i]
+                pts_to_ells.setdefault(pt, []).append(i)
 
         for i, ell in enumerate(self.nodes):
             for pt in ell.deriv_dict:
-                if pt in dpts_to_ells:
-                    dpts_to_ells[pt].append(i)
-                else:
-                    dpts_to_ells[pt] = [i]
+                dpts_to_ells.setdefault(pt, []).append(i)
 
         # Now tabulate
         pts = list(pts_to_ells.keys())
@@ -112,7 +106,7 @@ class DualSet(object):
 
                 for i in range(num_exp):
                     for (w, c) in wc_list:
-                        self.matrix[k][c][i] += w*expansion_values[i, j]
+                        result[k][c][i] += w*expansion_values[i, j]
 
         max_deriv_order = max([ell.max_deriv_order for ell in self.nodes])
         if max_deriv_order > 0:
@@ -132,6 +126,6 @@ class DualSet(object):
 
                     for i in range(num_exp):
                         for (w, alpha, c) in wac_list:
-                            self.matrix[k][c][i] += w*dexpansion_values[alpha][i, j]
+                            result[k][c][i] += w*dexpansion_values[alpha][i, j]
 
-        return self.matrix
+        return result
