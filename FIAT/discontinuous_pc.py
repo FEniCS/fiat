@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
 
-from FIAT import finite_element, polynomial_set, dual_set, functional, P0, reference_element
+from FIAT import finite_element, polynomial_set, dual_set, functional
 from FIAT.reference_element import (Point,
                                     DefaultLine,
                                     UFCInterval,
@@ -31,9 +31,11 @@ hypercube_simplex_map = {Point(): Point(),
                          UFCQuadrilateral(): UFCTriangle(),
                          UFCHexahedron(): UFCTetrahedron()}
 
+
 class DPC0Dual(P0Dual):
     def __init__(self, ref_el):
         super(DPC0Dual, self).__init__(ref_el)
+
 
 class DPC0(finite_element.CiarletElement):
     def __init__(self, ref_el):
@@ -58,7 +60,7 @@ class DPCDualSet(dual_set.DualSet):
         entity_ids = {}
         nodes = []
 
-        ### Change coordinates here.
+        # Change coordinates here.
         # Vertices of the simplex corresponding to the reference element.
         v_simplex = hypercube_simplex_map[ref_el].get_vertices()
         # Vertices of the reference element.
@@ -70,10 +72,9 @@ class DPCDualSet(dual_set.DualSet):
         # take the next vertex and map it to the midpoint of the edge/face it belongs to, and shares
         # with no other points.
         for d in range(1, ref_el.get_dimension()):
-            v_.append(tuple(np.asarray(v_hypercube[d+1]
-                            + np.average(np.asarray(v_hypercube[2**d:2**(d+1)]),axis=0))))
-        A, b = make_affine_mapping(v_simplex, tuple(v_)) # Make affine mapping to be used later.
-
+            v_.append(tuple(np.asarray(v_hypercube[d+1] +
+                            np.average(np.asarray(v_hypercube[2**d:2**(d+1)]), axis=0))))
+        A, b = make_affine_mapping(v_simplex, tuple(v_))  # Make affine mapping to be used later.
 
         # make nodes by getting points
         # need to do this dimension-by-dimension, facet-by-facet
