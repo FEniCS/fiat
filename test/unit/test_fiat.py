@@ -203,42 +203,42 @@ elements = [
 
     # MixedElement made of nodal elements should be nodal, but its API
     # is currently just broken.
-    pytest.param("MixedElement(["
-                 "    DiscontinuousLagrange(T, 1),"
-                 "    RaviartThomas(T, 2)"
-                 "])", marks=xfail_impl),
+    xfail_impl("MixedElement(["
+               "    DiscontinuousLagrange(T, 1),"
+               "    RaviartThomas(T, 2)"
+               "])"),
 
     # Following element do not bother implementing get_nodal_basis
     # so the test would need to be rewritten using tabulate
-    pytest.param("TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2))", marks=xfail_impl),
-    pytest.param("Hdiv(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))", marks=xfail_impl),
-    pytest.param("Hcurl(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))", marks=xfail_impl),
-    pytest.param("HDivTrace(T, 1)", marks=xfail_impl),
-    pytest.param("EnrichedElement("
-                 "Hdiv(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
-                 "Hdiv(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
-                 ")", marks=xfail_impl),
-    pytest.param("EnrichedElement("
-                 "Hcurl(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
-                 "Hcurl(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
-                 ")", marks=xfail_impl),
+    xfail_impl("TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2))"),
+    xfail_impl("Hdiv(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))"),
+    xfail_impl("Hcurl(TensorProductElement(DiscontinuousLagrange(I, 1), Lagrange(I, 2)))"),
+    xfail_impl("HDivTrace(T, 1)"),
+    xfail_impl("EnrichedElement("
+               "Hdiv(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
+               "Hdiv(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
+               ")"),
+    xfail_impl("EnrichedElement("
+               "Hcurl(TensorProductElement(Lagrange(I, 1), DiscontinuousLagrange(I, 0))), "
+               "Hcurl(TensorProductElement(DiscontinuousLagrange(I, 0), Lagrange(I, 1)))"
+               ")"),
     # Following elements are checked using tabulate
-    pytest.param("HDivTrace(T, 0)", marks=xfail_impl),
-    pytest.param("HDivTrace(T, 1)", marks=xfail_impl),
-    pytest.param("HDivTrace(T, 2)", marks=xfail_impl),
-    pytest.param("HDivTrace(T, 3)", marks=xfail_impl),
-    pytest.param("HDivTrace(S, 0)", marks=xfail_impl),
-    pytest.param("HDivTrace(S, 1)", marks=xfail_impl),
-    pytest.param("HDivTrace(S, 2)", marks=xfail_impl),
-    pytest.param("HDivTrace(S, 3)", marks=xfail_impl),
-    pytest.param("TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))", marks=xfail_impl),
-    pytest.param("TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))", marks=xfail_impl),
-    pytest.param("TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))", marks=xfail_impl),
-    pytest.param("TensorProductElement(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)), Lagrange(I, 2))", marks=xfail_impl),
-    pytest.param("FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))", marks=xfail_impl),
-    pytest.param("FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))", marks=xfail_impl),
-    pytest.param("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))", marks=xfail_impl),
-    pytest.param("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))", marks=xfail_impl),
+    xfail_impl("HDivTrace(T, 0)"),
+    xfail_impl("HDivTrace(T, 1)"),
+    xfail_impl("HDivTrace(T, 2)"),
+    xfail_impl("HDivTrace(T, 3)"),
+    xfail_impl("HDivTrace(S, 0)"),
+    xfail_impl("HDivTrace(S, 1)"),
+    xfail_impl("HDivTrace(S, 2)"),
+    xfail_impl("HDivTrace(S, 3)"),
+    xfail_impl("TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))"),
+    xfail_impl("TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))"),
+    xfail_impl("TensorProductElement(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)), Lagrange(I, 1))"),
+    xfail_impl("TensorProductElement(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)), Lagrange(I, 2))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 1), Lagrange(I, 1))), Lagrange(I, 1)))"),
+    xfail_impl("FlattenedDimensions(TensorProductElement(FlattenedDimensions(TensorProductElement(Lagrange(I, 2), Lagrange(I, 2))), Lagrange(I, 2)))"),
 ]
 
 

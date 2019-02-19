@@ -134,39 +134,21 @@ def test_create_quadrature_extr_quadrilateral(extr_quadrilateral, basedeg, extrd
                           (2**(basedeg + 2) - 2) / ((basedeg + 1)*(basedeg + 2)) * 1/(extrdeg + 1))
 
 
-def test_invalid_quadrature_degree_interval(interval, scheme):
+@pytest.mark.parametrize("cell", [interval(),
+                                  triangle(),
+                                  tetrahedron(),
+                                  quadrilateral()])
+def test_invalid_quadrature_degree(cell, scheme):
     with pytest.raises(ValueError):
-        FIAT.create_quadrature(interval, -1, scheme)
+        FIAT.create_quadrature(cell, -1, scheme)
 
 
-def test_invalid_quadrature_degree_tri(triangle, scheme):
+@pytest.mark.parametrize("cell", [extr_interval(),
+                                  extr_triangle(),
+                                  extr_quadrilateral()])
+def test_invalid_quadrature_degree_tensor_prod(cell):
     with pytest.raises(ValueError):
-        FIAT.create_quadrature(triangle, -1, scheme)
-
-
-def test_invalid_quadrature_degree_quad(quadrilateral, scheme):
-    with pytest.raises(ValueError):
-        FIAT.create_quadrature(quadrilateral, -1, scheme)
-
-
-def test_invalid_quadrature_degree_tet(tetrahedron, scheme):
-    with pytest.raises(ValueError):
-        FIAT.create_quadrature(tetrahedron, -1, scheme)
-
-
-def test_invalid_quadrature_degree_tensor_prod_interval(extr_interval):
-    with pytest.raises(ValueError):
-        FIAT.create_quadrature(extr_interval, (-1, -1))
-
-
-def test_invalid_quadrature_degree_tensor_prod_tri(extr_triangle):
-    with pytest.raises(ValueError):
-        FIAT.create_quadrature(extr_triangle, (-1, -1))
-
-
-def test_invalid_quadrature_degree_tensor_prod_quad(extr_quadrilateral):
-    with pytest.raises(ValueError):
-        FIAT.create_quadrature(extr_quadrilateral, (-1, -1))
+        FIAT.create_quadrature(cell, (-1, -1))
 
 
 def test_tensor_product_composition(interval, triangle, extr_triangle, scheme):

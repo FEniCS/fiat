@@ -277,7 +277,7 @@ def test_quadrature():
         reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
         for test_case in test_cases:
             family, dim, degree = test_case
-            _perform_test(family, dim, degree, reference[str(test_case)])
+            yield _perform_test, family, dim, degree, reference[str(test_case)]
 
     # Update references if missing
     except (IOError, KeyError) as e:

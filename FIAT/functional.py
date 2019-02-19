@@ -26,8 +26,6 @@ from itertools import chain
 import numpy
 import sympy
 
-from FIAT import polynomial_set
-
 
 def index_iterator(shp):
     """Constructs a generator iterating over all indices in
@@ -43,6 +41,11 @@ def index_iterator(shp):
         for i in range(shp[0]):
             for foo in index_iterator(shp_foo):
                 yield [i] + foo
+
+# also put in a "jet_dict" that maps
+# pt --> {wt, multiindex, comp}
+# the multiindex is an iterable of nonnegative
+# integers
 
 
 class Functional(object):
@@ -91,6 +94,7 @@ class Functional(object):
         normal component, which is probably handy for clients of FIAT"""
         return self.functional_type
 
+    # overload me in subclasses to make life easier!!
     def to_riesz(self, poly_set):
         """Constructs an array representation of the functional over
         the base of the given polynomial_set so that f(phi) for any
@@ -99,20 +103,17 @@ class Functional(object):
         ed = poly_set.get_embedded_degree()
         pt_dict = self.get_point_dict()
 
-        nbf = poly_set.get_num_members()
-
         pts = list(pt_dict.keys())
 
         # bfs is matrix that is pdim rows by num_pts cols
         # where pdim is the polynomial dimension
 
         bfs = es.tabulate(ed, pts)
-        npts = len(pts)
 
         result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
 
         # loop over points
-        for j in range(npts):
+        for j in range(len(pts)):
             pt_cur = pts[j]
             wc_list = pt_dict[pt_cur]
 
@@ -122,23 +123,7 @@ class Functional(object):
                     result[c][i] += w * bfs[i, j]
 
         if self.deriv_dict:
-            dpt_dict = self.deriv_dict
-
-            # this makes things quicker since it uses dmats after
-            # instantiation
-            es_foo = polynomial_set.ONPolynomialSet(self.ref_el, ed)
-            dpts = list(dpt_dict.keys())
-
-            # figure out the maximum order of derivative being taken
-            dbfs = es_foo.tabulate(dpts, self.max_deriv_order)
-
-            ndpts = len(dpts)
-            for j in range(ndpts):
-                dpt_cur = dpts[j]
-                wac_list = dpt_dict[dpt_cur]
-                for i in range(nbf):
-                    for (w, alpha, c) in wac_list:
-                        result[c][i] += w * dbfs[alpha][i, j]
+            raise NotImplementedError("Generic to_riesz implementation does not support derivatives")
 
         return result
 
@@ -187,8 +172,8 @@ class PointDerivative(Functional):
     functions at a particular point x."""
 
     def __init__(self, ref_el, x, alpha):
-        dpt_dict = {x: [(1.0, tuple(alpha), tuple())]}
-        self.alpha = tuple(alpha)
+        dpt_dict = {x: [(1.0, alpha, tuple())]}
+        self.alpha = alpha
         self.order = sum(self.alpha)
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointDeriv")
@@ -206,6 +191,25 @@ class PointDerivative(Functional):
 
         return sympy.diff(fn(X), *dvars).evalf(subs=dict(zip(dX, x)))
 
+    def to_riesz(self, poly_set):
+        x = list(self.deriv_dict.keys())[0]
+
+        X = sympy.DeferredVector('x')
+        dx = numpy.asarray([X[i] for i in range(len(x))])
+
+        es = poly_set.get_expansion_set()
+        ed = poly_set.get_embedded_degree()
+
+        bfs = es.tabulate(ed, [dx])[:, 0]
+
+        # Expand the multi-index as a series of variables to
+        # differentiate with respect to.
+        dvars = tuple(d for d, a in zip(dx, self.alpha)
+                      for count in range(a))
+
+        return numpy.asarray([sympy.lambdify(X, sympy.diff(b, *dvars))(x)
+                              for b in bfs])
+
 
 class PointNormalDerivative(Functional):
 
@@ -219,35 +223,27 @@ class PointNormalDerivative(Functional):
             alpha = [0] * sd
             alpha[i] = 1
             alphas.append(alpha)
-        dpt_dict = {pt: [(n[i], tuple(alphas[i]), tuple()) for i in range(sd)]}
-
-        Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
-
-
-class PointNormalSecondDerivative(Functional):
-
-    def __init__(self, ref_el, facet_no, pt):
-        n = ref_el.compute_normal(facet_no)
-        self.n = n
-        sd = ref_el.get_spatial_dimension()
-        tau = numpy.zeros((sd*(sd+1)//2,))
-
-        alphas = []
-        cur = 0
-        for i in range(sd):
-            for j in range(i, sd):
-                alpha = [0] * sd
-                alpha[i] += 1
-                alpha[j] += 1
-                alphas.append(tuple(alpha))
-                tau[cur] = n[i]*n[j]
-                cur += 1
-
-        self.tau = tau
-        self.alphas = alphas
         dpt_dict = {pt: [(n[i], alphas[i], tuple()) for i in range(sd)]}
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
+
+    def to_riesz(self, poly_set):
+        x = list(self.deriv_dict.keys())[0]
+
+        X = sympy.DeferredVector('x')
+        dx = numpy.asarray([X[i] for i in range(len(x))])
+
+        es = poly_set.get_expansion_set()
+        ed = poly_set.get_embedded_degree()
+
+        bfs = es.tabulate(ed, [dx])[:, 0]
+
+        # We need the gradient dotted with the normal.
+        return numpy.asarray(
+            [sympy.lambdify(
+                X, sum([sympy.diff(b, dxi)*ni
+                        for dxi, ni in zip(dx, self.n)]))(x)
+             for b in bfs])
 
 
 class IntegralMoment(Functional):
