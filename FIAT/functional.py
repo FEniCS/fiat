@@ -309,21 +309,6 @@ class IntegralMoment(Functional):
             result = result[self.comp]
         return result
 
-    # def to_riesz(self, poly_set):
-    #     es = poly_set.get_expansion_set()
-    #     ed = poly_set.get_embedded_degree()
-    #     pts = list(self.pt_dict.keys())
-    #     bfs = es.tabulate(ed, pts)
-    #     wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
-    #     result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-
-    #     if len(self.comp) == 0:
-    #         result[:] = numpy.dot(bfs, wts)
-    #     else:
-    #         result[self.comp, :] = numpy.dot(bfs, wts)
-
-    #     return result
-
 
 class IntegralMomentOfNormalDerivative(Functional):
     """Functional giving normal derivative integrated against some function on a facet."""
@@ -406,12 +391,6 @@ class PointEdgeTangentEvaluation(Functional):
         x = list(map(str, list(self.pt_dict.keys())[0]))
         return "(u.t)(%s)" % (','.join(x),)
 
-    def to_riesz(self, poly_set):
-        # should be singleton
-        xs = list(self.pt_dict.keys())
-        phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
-        return numpy.outer(self.t, phis)
-
 
 class PointFaceTangentEvaluation(Functional):
     """Implements the evaluation of a tangential component of a
@@ -430,10 +409,10 @@ class PointFaceTangentEvaluation(Functional):
         x = list(map(str, list(self.pt_dict.keys())[0]))
         return "(u.t%d)(%s)" % (self.tno, ','.join(x),)
 
-    def to_riesz(self, poly_set):
-        xs = list(self.pt_dict.keys())
-        phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
-        return numpy.outer(self.t, phis)
+    # def to_riesz(self, poly_set):
+    #     xs = list(self.pt_dict.keys())
+    #     phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
+    #     return numpy.outer(self.t, phis)
 
 
 class PointScaledNormalEvaluation(Functional):
