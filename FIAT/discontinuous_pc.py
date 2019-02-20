@@ -32,15 +32,10 @@ hypercube_simplex_map = {Point(): Point(),
                          UFCHexahedron(): UFCTetrahedron()}
 
 
-class DPC0Dual(P0Dual):
-    def __init__(self, ref_el):
-        super(DPC0Dual, self).__init__(ref_el)
-
-
 class DPC0(finite_element.CiarletElement):
     def __init__(self, ref_el):
         poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[ref_el], 0)
-        dual = DPC0Dual(ref_el)
+        dual = P0Dual(ref_el)
         degree = 0
         formdegree = ref_el.get_spatial_dimension()  # n-form
         super(DPC0, self).__init__(poly_set=poly_set,
