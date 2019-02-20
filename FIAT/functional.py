@@ -71,7 +71,7 @@ class Functional(object):
 
     def __init__(self, ref_el, target_shape, pt_dict, deriv_dict,
                  functional_type):
-        if target_shape != () and deriv_dict is not {}:
+        if target_shape != () and deriv_dict != {}:
             raise NotImplementedError("We don't support derivatives of vector-valued functions yet.")
         self.ref_el = ref_el
         self.target_shape = target_shape
@@ -309,20 +309,20 @@ class IntegralMoment(Functional):
             result = result[self.comp]
         return result
 
-    def to_riesz(self, poly_set):
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-        pts = list(self.pt_dict.keys())
-        bfs = es.tabulate(ed, pts)
-        wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
-        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
+    # def to_riesz(self, poly_set):
+    #     es = poly_set.get_expansion_set()
+    #     ed = poly_set.get_embedded_degree()
+    #     pts = list(self.pt_dict.keys())
+    #     bfs = es.tabulate(ed, pts)
+    #     wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
+    #     result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
 
-        if len(self.comp) == 0:
-            result[:] = numpy.dot(bfs, wts)
-        else:
-            result[self.comp, :] = numpy.dot(bfs, wts)
+    #     if len(self.comp) == 0:
+    #         result[:] = numpy.dot(bfs, wts)
+    #     else:
+    #         result[self.comp, :] = numpy.dot(bfs, wts)
 
-        return result
+    #     return result
 
 
 class IntegralMomentOfNormalDerivative(Functional):
