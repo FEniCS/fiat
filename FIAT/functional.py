@@ -352,32 +352,6 @@ class IntegralMomentOfNormalDerivative(Functional):
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfNormalDerivative")
 
-    def to_riesz(self, poly_set):
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-
-        result = numpy.zeros(es.get_num_members(ed))
-        sd = self.ref_el.get_spatial_dimension()
-
-        X = sympy.DeferredVector('x')
-        dX = numpy.asarray([X[i] for i in range(sd)])
-
-        # evaluate bfs symbolically
-        bfs = es.tabulate(ed, [dX])[:, 0]
-
-        n = self.n
-        qwts = self.Q.get_weights()
-
-        for i in range(len(result)):
-            thing = sympy.lambdify(
-                X, sum([sympy.diff(bfs[i], dxi)*ni
-                        for dxi, ni in zip(dX, n)]))
-
-            for j, pt in enumerate(self.deriv_dict.keys()):
-                result[i] += qwts[j] * self.f_at_qpts[j] * thing(pt)
-
-        return result
-
 
 class FrobeniusIntegralMoment(Functional):
 
