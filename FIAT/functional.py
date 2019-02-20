@@ -409,11 +409,6 @@ class PointFaceTangentEvaluation(Functional):
         x = list(map(str, list(self.pt_dict.keys())[0]))
         return "(u.t%d)(%s)" % (self.tno, ','.join(x),)
 
-    # def to_riesz(self, poly_set):
-    #     xs = list(self.pt_dict.keys())
-    #     phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
-    #     return numpy.outer(self.t, phis)
-
 
 class PointScaledNormalEvaluation(Functional):
     """Implements the evaluation of the normal component of a vector at a
@@ -431,11 +426,6 @@ class PointScaledNormalEvaluation(Functional):
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
         return "(u.n)(%s)" % (','.join(x),)
-
-    def to_riesz(self, poly_set):
-        xs = list(self.pt_dict.keys())
-        phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
-        return numpy.outer(self.n, phis)
 
 
 class PointwiseInnerProductEvaluation(Functional):
