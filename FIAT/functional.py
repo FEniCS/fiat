@@ -45,13 +45,34 @@ def index_iterator(shp):
                 yield [i] + foo
 
 
+# Note: morally, a functional on discrete spaces is always a weighted
+# linear combination of function values and derivatives at particular
+# points.  Because the notation is a little different, we store
+# separate data structures describing the function values and
+# derivatives that are needed.
+#
+# pt_dict maps points (tuples of floating-point numbers) to lists
+# of tuples.  Each tuple contains a weight and a particular component
+# (to support functionals on vector- or tensor-valued functions.
+#
+# If the functional does not depend on any derivatives, then pt_dict
+# contains the information such that
+# ell(f) = sum(w*f(pt)[c] for pt in pt_dict for (w, c) in pt_dict[pt])
+#
+# The deriv_dict contains similar information about derivatives, but
+# is currently limited to scalar functions (FIXME!)
+
+
 class Functional(object):
     """Class implementing an abstract functional.
     All functionals are discrete in the sense that
     the are written as a weighted sum of (components of) their
     argument evaluated at particular points."""
 
-    def __init__(self, ref_el, target_shape, pt_dict, deriv_dict, functional_type):
+    def __init__(self, ref_el, target_shape, pt_dict, deriv_dict,
+                 functional_type):
+        if target_shape != () and deriv_dict is not {}:
+            raise NotImplementedError("We don't support derivatives of vector-valued functions yet.")
         self.ref_el = ref_el
         self.target_shape = target_shape
         self.pt_dict = pt_dict
@@ -326,7 +347,7 @@ class IntegralMomentOfNormalDerivative(Functional):
 
         alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
         for j, pt in enumerate(dpts):
-            dpt_dict[tuple(pt)] = [(qwts[j]*n[i], tuple(alphas[i]), tuple()) for i in range(sd)]
+            dpt_dict[tuple(pt)] = [(qwts[j]*n[i]*f_at_qpts[j], tuple(alphas[i]), tuple()) for i in range(sd)]
 
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfNormalDerivative")
