@@ -15,6 +15,7 @@ from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.discontinuous_taylor import DiscontinuousTaylor
 from FIAT.discontinuous_raviart_thomas import DiscontinuousRaviartThomas
+from FIAT.discontinuous_pc import DPC
 from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre
@@ -55,6 +56,7 @@ supported_elements = {"Argyris": Argyris,
                       "FacetBubble": FacetBubble,
                       "Crouzeix-Raviart": CrouzeixRaviart,
                       "Discontinuous Lagrange": DiscontinuousLagrange,
+                      "DPC": DPC,
                       "Discontinuous Taylor": DiscontinuousTaylor,
                       "Discontinuous Raviart-Thomas": DiscontinuousRaviartThomas,
                       "Hermite": CubicHermite,
