@@ -1,3 +1,5 @@
+# Copyright (C) 2018 Cyrus Cheng (Imperial College London)
+#
 # This file is part of FIAT.
 #
 # FIAT is free software: you can redistribute it and/or modify
@@ -12,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+#
+# Modified by David A. Ham (david.ham@imperial.ac.uk), 2018
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
 from FIAT.P0 import P0Dual

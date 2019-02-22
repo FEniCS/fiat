@@ -53,7 +53,7 @@ class Serendipity(FiniteElement):
     def get_coeffs(self):
         raise NotImplementedError("get_coeffs not implemented for serendipity")
 
-    def tabulate(self):
+    def tabulate(self, order, points, entity):
         raise NotImplementedError
 
     def value_shape(self):
@@ -83,9 +83,9 @@ def e_lambda_0(i, dim):
         EL = tuple([X[0]*X[1]*b*x**i for b in Y]
                    + [Y[0]*Y[1]*a*y**i for a in X])
     else:
-        EL = tuple([X[0]*X[1]*b*c*x**i for b in Y for c in Z] +
-                   [Y[0]*Y[1]*a*c*y**i for c in Z for a in X] +
-                   [Z[0]*Z[1]*a*b*z**i for a in X for b in Y])
+        EL = tuple([X[0]*X[1]*b*c*x**i for b in Y for c in Z]
+                   + [Y[0]*Y[1]*a*c*y**i for c in Z for a in X]
+                   + [Z[0]*Z[1]*a*b*z**i for a in X for b in Y])
 
     return EL
 
@@ -98,10 +98,10 @@ def f_lambda_0(i, dim):
                     for j in range(i-3)])
     else:
         FL = tuple([X[0]*X[1]*Y[0]*Y[1]*(x**(i-4-j))*(y**j)*c
-                    for j in range(i-3) for c in Z] +
-                   [X[0]*X[1]*Z[0]*Z[1]*(x**(i-4-j))*(z**j)*b
-                    for j in range(i-3) for b in Y] +
-                   [Y[0]*Y[1]*Z[0]*Z[1]*(y**(i-4-j))*(z**j)*a
+                    for j in range(i-3) for c in Z]
+                   + [X[0]*X[1]*Z[0]*Z[1]*(x**(i-4-j))*(z**j)*b
+                    for j in range(i-3) for b in Y]
+                   + [Y[0]*Y[1]*Z[0]*Z[1]*(y**(i-4-j))*(z**j)*a
                     for j in range(i-3) for a in X])
 
     return FL
@@ -115,20 +115,6 @@ def i_lambda_0(i):
                 for j in range(i-5) for k in range(j+1)])
 
     return IL
-
-
-class SerendipityDualSet(dual_set.DualSet):
-
-    def __init__(self, ref_el, degree):
-        nodes = []
-        entity_ids = {}
-        topology = ref_el.get_topology()
-
-        for dim in sorted(topology):
-            entity_ids[dim] = {}
-            for entity in sorted(topology[dim]):
-                entity_ids[dim][entity] = []
-        super(SerendipityDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
 def S(ref_el, degree):
