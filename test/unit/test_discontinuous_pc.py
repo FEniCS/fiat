@@ -17,7 +17,7 @@
 #
 # Authors:
 #
-# David Ham
+# David Ham and Cyrus Cheng
 
 import pytest
 import numpy as np

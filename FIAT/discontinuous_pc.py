@@ -1,3 +1,6 @@
+# Copyright (C) 2018 Cyrus Cheng (Imperial College London)
+# Modified by David A. Ham (Imperial College London)
+#
 # This file is part of FIAT.
 #
 # FIAT is free software: you can redistribute it and/or modify
