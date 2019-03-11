@@ -20,6 +20,9 @@ class Serendipity(FiniteElement):
             return Lagrange(ref_el, degree)
         elif dim == 0:
             raise IndexError("reference element cannot be dimension 0")
+        else:
+            self = super().__new__(cls)
+            return self
 
     def __init__(self, ref_el, degree):
 
@@ -31,11 +34,13 @@ class Serendipity(FiniteElement):
         FL = []
         IL = []
         s_list = []
-        entity_ids = {0:{},
-                      1:{},
-                      2:{},
-                      3:{}}
+        entity_ids = {}
         cur = 0
+
+        for top_dim, entities in topology.items():
+            entity_ids[top_dim] = {}
+            for entity in entities:
+                entity_ids[top_dim][entity] = []
 
         for j in sorted(topology[0]):
             entity_ids[0][j] = [cur]
@@ -63,13 +68,13 @@ class Serendipity(FiniteElement):
             entity_ids[3][0] = list(range(cur, cur + len(IL)))
 
         s_list = VL + EL + FL + IL
+        formdegree = 0
 
         super(Serendipity, self).__init__(ref_el=ref_el, dual=None, order=degree, formdegree=formdegree)
 
         self.basis = {(0,0):s_list}
         self.entity_ids = entity_ids
-        self.entity_closure_ids = make_entity_closure_ids(entity_ids)
-        formdegree = 0
+        self.entity_closure_ids = make_entity_closure_ids(ref_el, entity_ids)
         self.degree = degree
 
 
@@ -89,15 +94,22 @@ class Serendipity(FiniteElement):
 
         phivals = {}
         T = []
-        poly = self.basis[(0,0)]
+        try:
+            poly = self.basis[(0,0)]
+        except KeyError:
+            ...
         dim = self.ref_el.get_spatial_dimension()
         for i in range(len(points)):
             if dim == 3:
                 T += [f.evalf(subs={x: points[i][0], y: points[i][1], z: points[i][2]}) for f in poly]
             elif dim == 2:
                 T += [f.evalf(subs={x: points[i][0], y: points[i][1]}) for f in poly]
+            else:
+                raise ValueError('Dimension of reference element must be 2 or 3.')
         T = np.transpose(np.reshape(np.array(T), (len(points), -1)))
         phivals[(0,0)] = T
+
+        return phivals
 
     def entity_dofs(self):
         """Return the map of topological entities to degrees of
