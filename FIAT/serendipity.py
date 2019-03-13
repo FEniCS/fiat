@@ -4,8 +4,10 @@ from FIAT.finite_element import FiniteElement
 from FIAT import dual_set, reference_element
 from FIAT.lagrange import Lagrange
 from FIAT.dual_set import make_entity_closure_ids
+from FIAT.polynomial_set import mis
 
 x, y, z = symbols('x y z')
+vars = (x, y, z)
 
 dx = (1-x, x)
 dy = (1-y, y)
@@ -69,10 +71,11 @@ class Serendipity(FiniteElement):
 
         s_list = VL + EL + FL + IL
         formdegree = 0
+        derivs = (0,)*dim
 
         super(Serendipity, self).__init__(ref_el=ref_el, dual=None, order=degree, formdegree=formdegree)
 
-        self.basis = {(0,0):s_list}
+        self.basis = {derivs:s_list}
         self.entity_ids = entity_ids
         self.entity_closure_ids = make_entity_closure_ids(ref_el, entity_ids)
         self.degree = degree
@@ -94,20 +97,33 @@ class Serendipity(FiniteElement):
 
         phivals = {}
         T = []
-        try:
-            poly = self.basis[(0,0)]
-        except KeyError:
-            ...
         dim = self.ref_el.get_spatial_dimension()
-        for i in range(len(points)):
-            if dim == 3:
-                T += [f.evalf(subs={x: points[i][0], y: points[i][1], z: points[i][2]}) for f in poly]
-            elif dim == 2:
-                T += [f.evalf(subs={x: points[i][0], y: points[i][1]}) for f in poly]
-            else:
-                raise ValueError('Dimension of reference element must be 2 or 3.')
-        T = np.transpose(np.reshape(np.array(T), (len(points), -1)))
-        phivals[(0,0)] = T
+        if dim <= 1:
+            raise NotImplementedError('no tabulate method for serendipity elements of dimension 1 or less.')
+        if dim >= 4:
+            raise NotImplementedError('tabulate does not support higher dimensions than 3.')
+        derivs = np.zeros(dim)
+        for j in range(order + 1):
+            alphas = mis(dim, j)
+            for alpha in alphas:
+                try:
+                    poly = self.basis[alpha]
+                except KeyError:
+                    max_alpha = max(alpha)
+                    index = alpha.index(max_alpha)
+                    alpha = list(alpha)
+                    alpha[index] += -1
+                    alpha = tuple(alpha)
+                    poly = diff(self.basis[alpha], vars[index])
+                for i in range(len(points)):
+                    if dim == 3:
+                        T += [f.evalf(subs={x: points[i][0], y: points[i][1], z: points[i][2]}) for f in poly]
+                    elif dim == 2:
+                        T += [f.evalf(subs={x: points[i][0], y: points[i][1]}) for f in poly]
+                    else:
+                        raise ValueError('Dimension of reference element must be 2 or 3.')
+                T = np.transpose(np.reshape(np.array(T), (len(points), -1)))
+                phivals[alpha] = T
 
         return phivals
 
