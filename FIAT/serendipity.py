@@ -75,7 +75,7 @@ class Serendipity(FiniteElement):
 
         super(Serendipity, self).__init__(ref_el=ref_el, dual=None, order=degree, formdegree=formdegree)
 
-        self.basis = {derivs:s_list}
+        self.basis = {derivs:Array(s_list)}
         self.entity_ids = entity_ids
         self.entity_closure_ids = make_entity_closure_ids(ref_el, entity_ids)
         self.degree = degree
@@ -120,10 +120,9 @@ class Serendipity(FiniteElement):
                         T += [f.evalf(subs={x: points[i][0], y: points[i][1], z: points[i][2]}) for f in poly]
                     elif dim == 2:
                         T += [f.evalf(subs={x: points[i][0], y: points[i][1]}) for f in poly]
-                    else:
-                        raise ValueError('Dimension of reference element must be 2 or 3.')
                 T = np.transpose(np.reshape(np.array(T), (len(points), -1)))
                 phivals[alpha] = T
+                self.basis[alpha] = Array(poly)
 
         return phivals
 
