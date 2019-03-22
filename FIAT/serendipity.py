@@ -7,11 +7,7 @@ from FIAT.dual_set import make_entity_closure_ids
 from FIAT.polynomial_set import mis
 
 x, y, z = symbols('x y z')
-vars = (x, y, z)
-
-dx = (1-x, x)
-dy = (1-y, y)
-dz = (1-z, z)
+variables = (x, y, z)
 
 
 class Serendipity(FiniteElement):
@@ -31,7 +27,21 @@ class Serendipity(FiniteElement):
         dim = ref_el.get_spatial_dimension()
         topology = ref_el.get_topology()
 
-        VL = list(v_lambda_0(dim))
+        x, y, z = symbols('x y z')
+        verts = ref_el.get_vertices()
+
+        dx = ((verts[-1][0] - x)/(verts[-1][0] - verts[0][0]), (x - verts[0][0])/(verts[-1][0] - verts[0][0]))
+        dy = ((verts[-1][1] - y)/(verts[-1][1] - verts[0][1]), (y - verts[0][1])/(verts[-1][1] - verts[0][1]))
+        x_mid = (dx[1] - dx[0])/2
+        y_mid = (dy[1] - dy[0])/2
+        try:
+            dz = ((verts[-1][2] - y)/(verts[-1][2] - verts[0][2]), (y - verts[0][2])/(verts[-1][2] - verts[0][2]))
+            z_mid = (dz[1] - dz[0])/2
+        except IndexError:
+            dz = None
+            z_mid = None
+
+        VL = list(v_lambda_0(dim, dx, dy, dz))
         EL = []
         FL = []
         IL = []
@@ -49,14 +59,14 @@ class Serendipity(FiniteElement):
             cur = cur + 1
 
         for i in range(degree - 1):
-            EL += e_lambda_0(i, dim)
+            EL += e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid)
 
         for j in sorted(topology[1]):
             entity_ids[1][j] = list(range(cur, cur + degree - 1))
             cur = cur + degree - 1
 
         for i in range(4, degree + 1):
-            FL += f_lambda_0(i, dim)
+            FL += f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid)
 
         for j in sorted(topology[2]):
             entity_ids[2][j] = list(range(cur, cur + int((degree - 3)*(degree - 2)/2)))
@@ -64,18 +74,17 @@ class Serendipity(FiniteElement):
 
         if dim == 3:
             for i in range(6, degree + 1):
-                IL += i_lambda_0(i)
+                IL += i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid)
 
             entity_ids[3] = {}
             entity_ids[3][0] = list(range(cur, cur + len(IL)))
 
         s_list = VL + EL + FL + IL
         formdegree = 0
-        derivs = (0,)*dim
 
         super(Serendipity, self).__init__(ref_el=ref_el, dual=None, order=degree, formdegree=formdegree)
 
-        self.basis = {derivs:Array(s_list)}
+        self.basis = {(0,)*dim:Array(s_list)}
         self.entity_ids = entity_ids
         self.entity_closure_ids = make_entity_closure_ids(ref_el, entity_ids)
         self.degree = degree
@@ -88,12 +97,19 @@ class Serendipity(FiniteElement):
         raise NotImplementedError("get_nodal_basis not implemented for serendipity")
 
     def get_dual_set(self):
-        raise NotImplementedError("")
+        raise NotImplementedError("get_dual_set is not implemented for serendipity")
 
     def get_coeffs(self):
         raise NotImplementedError("get_coeffs not implemented for serendipity")
 
     def tabulate(self, order, points, entity):
+
+        if entity is None:
+            entity = (self.ref_el.get_spatial_dimension(), 0)
+
+        entity_dim, entity_id = entity
+        transform = self.ref_el.get_entity_transform(entity_dim, entity_id)
+        points = list(map(transform, points))
 
         phivals = {}
         T = []
@@ -102,27 +118,20 @@ class Serendipity(FiniteElement):
             raise NotImplementedError('no tabulate method for serendipity elements of dimension 1 or less.')
         if dim >= 4:
             raise NotImplementedError('tabulate does not support higher dimensions than 3.')
-        derivs = np.zeros(dim)
-        for j in range(order + 1):
-            alphas = mis(dim, j)
+        for o in range(order + 1):
+            alphas = mis(dim, o)
             for alpha in alphas:
                 try:
                     poly = self.basis[alpha]
                 except KeyError:
-                    max_alpha = max(alpha)
-                    index = alpha.index(max_alpha)
-                    alpha = list(alpha)
-                    alpha[index] += -1
-                    alpha = tuple(alpha)
-                    poly = diff(self.basis[alpha], vars[index])
+                    poly = diff(self.basis[(0,)*dim], *zip(variables, alpha))
+                    self.basis[alpha] = Array(poly)
+                T = np.zeros((len(poly), len(points)))
                 for i in range(len(points)):
-                    if dim == 3:
-                        T += [f.evalf(subs={x: points[i][0], y: points[i][1], z: points[i][2]}) for f in poly]
-                    elif dim == 2:
-                        T += [f.evalf(subs={x: points[i][0], y: points[i][1]}) for f in poly]
-                T = np.transpose(np.reshape(np.array(T), (len(points), -1)))
+                    subs = {v: points[i][k] for k, v in enumerate(variables[:dim])}
+                    for j, f in enumerate(poly):
+                        T[j, i] = f.evalf(subs=subs)
                 phivals[alpha] = T
-                self.basis[alpha] = Array(poly)
 
         return phivals
 
@@ -149,7 +158,7 @@ class Serendipity(FiniteElement):
         raise NotImplementedError("")
 
 
-def v_lambda_0(dim):
+def v_lambda_0(dim, dx, dy, dz):
 
     if dim == 2:
         VL = tuple([a*b for a in dx for b in dy])
@@ -158,43 +167,43 @@ def v_lambda_0(dim):
 
     return VL
 
-def e_lambda_0(i, dim):
+def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 
     assert i >= 0, 'invalid value of i'
 
     if dim == 2:
-        EL = tuple([dx[0]*dx[1]*b*x**i for b in dy]
-                   + [dy[0]*dy[1]*a*y**i for a in dx])
+        EL = tuple([dx[0]*dx[1]*b*x_mid**i for b in dy]
+                   + [dy[0]*dy[1]*a*y_mid**i for a in dx])
     else:
-        EL = tuple([dx[0]*dx[1]*b*c*x**i for b in dy for c in dz]
-                   + [dy[0]*dy[1]*a*c*y**i for c in dz for a in dx]
-                   + [dz[0]*dz[1]*a*b*z**i for a in dx for b in dy])
+        EL = tuple([dx[0]*dx[1]*b*c*x_mid**i for b in dy for c in dz]
+                   + [dy[0]*dy[1]*a*c*y_mid**i for c in dz for a in dx]
+                   + [dz[0]*dz[1]*a*b*z_mid**i for a in dx for b in dy])
 
     return EL
 
-def f_lambda_0(i, dim):
+def f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 
     assert i >= 4, 'invalid value for i'
 
     if dim == 2:
-        FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x**(i-4-j))*(y**j)
+        FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x_mid**(i-4-j))*(y_mid**j)
                     for j in range(i-3)])
     else:
-        FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x**(i-4-j))*(y**j)*c
+        FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x_mid**(i-4-j))*(y_mid**j)*c
                     for j in range(i-3) for c in dz]
-                   + [dx[0]*dx[1]*dz[0]*dz[1]*(x**(i-4-j))*(z**j)*b
+                   + [dx[0]*dx[1]*dz[0]*dz[1]*(x_mid**(i-4-j))*(z_mid**j)*b
                     for j in range(i-3) for b in dy]
-                   + [dy[0]*dy[1]*dz[0]*dz[1]*(y**(i-4-j))*(z**j)*a
+                   + [dy[0]*dy[1]*dz[0]*dz[1]*(y_mid**(i-4-j))*(z_mid**j)*a
                     for j in range(i-3) for a in dx])
 
     return FL
 
-def i_lambda_0(i):
+def i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid):
 
     assert i >= 6, 'invalid value for i'
     assert dim == 3, 'reference element must be dimension 3'
 
-    IL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*dz[0]*dz[1]*(x**(i-6-j))*(y**(j-k))*(z**k)
+    IL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*dz[0]*dz[1]*(x_mid**(i-6-j))*(y_mid**(j-k))*(z_mid**k)
                 for j in range(i-5) for k in range(j+1)])
 
     return IL
