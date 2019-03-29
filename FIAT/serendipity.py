@@ -32,11 +32,11 @@ class Serendipity(FiniteElement):
 
         dx = ((verts[-1][0] - x)/(verts[-1][0] - verts[0][0]), (x - verts[0][0])/(verts[-1][0] - verts[0][0]))
         dy = ((verts[-1][1] - y)/(verts[-1][1] - verts[0][1]), (y - verts[0][1])/(verts[-1][1] - verts[0][1]))
-        x_mid = (dx[1] - dx[0])/2
-        y_mid = (dy[1] - dy[0])/2
+        x_mid = 2*(x-(verts[-1][0] + verts[0][0])/2)
+        y_mid = 2*(y-(verts[-1][1] + verts[0][1])/2)
         try:
-            dz = ((verts[-1][2] - y)/(verts[-1][2] - verts[0][2]), (y - verts[0][2])/(verts[-1][2] - verts[0][2]))
-            z_mid = (dz[1] - dz[0])/2
+            dz = ((verts[-1][2] - z)/(verts[-1][2] - verts[0][2]), (z - verts[0][2])/(verts[-1][2] - verts[0][2]))
+            z_mid = z-(verts[-1][2] + verts[0][2])/2
         except IndexError:
             dz = None
             z_mid = None
@@ -58,8 +58,7 @@ class Serendipity(FiniteElement):
             entity_ids[0][j] = [cur]
             cur = cur + 1
 
-        for i in range(degree - 1):
-            EL += e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid)
+        EL += e_lambda_0(degree, dim, dx, dy, dz, x_mid, y_mid, z_mid)
 
         for j in sorted(topology[1]):
             entity_ids[1][j] = list(range(cur, cur + degree - 1))
@@ -87,11 +86,11 @@ class Serendipity(FiniteElement):
         self.basis = {(0,)*dim:Array(s_list)}
         self.entity_ids = entity_ids
         self.entity_closure_ids = make_entity_closure_ids(ref_el, entity_ids)
-        self.degree = degree
+        self._degree = degree
 
 
     def degree(self):
-        return self.degree
+        return self._degree
 
     def get_nodal_basis(self):
         raise NotImplementedError("get_nodal_basis not implemented for serendipity")
@@ -102,7 +101,7 @@ class Serendipity(FiniteElement):
     def get_coeffs(self):
         raise NotImplementedError("get_coeffs not implemented for serendipity")
 
-    def tabulate(self, order, points, entity):
+    def tabulate(self, order, points, entity=None):
 
         if entity is None:
             entity = (self.ref_el.get_spatial_dimension(), 0)
@@ -125,7 +124,7 @@ class Serendipity(FiniteElement):
                     poly = self.basis[alpha]
                 except KeyError:
                     poly = diff(self.basis[(0,)*dim], *zip(variables, alpha))
-                    self.basis[alpha] = Array(poly)
+                    self.basis[alpha] = poly
                 T = np.zeros((len(poly), len(points)))
                 for i in range(len(points)):
                     subs = {v: points[i][k] for k, v in enumerate(variables[:dim])}
@@ -146,16 +145,16 @@ class Serendipity(FiniteElement):
         return self.entity_closure_ids
 
     def value_shape(self):
-        raise NotImplementedError("")
+        return ()
 
     def dmats(self):
-        raise NotImplementedError("")
+        raise NotImplementedError
 
     def get_num_members(self, arg):
-        raise NotImplementedError("")
+        raise NotImplementedError
 
     def space_dimension(self):
-        raise NotImplementedError("")
+        return len(self.basis[(0,)*self.ref_el.get_spatial_dimension()])
 
 
 def v_lambda_0(dim, dx, dy, dz):
@@ -172,8 +171,8 @@ def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
     assert i >= 0, 'invalid value of i'
 
     if dim == 2:
-        EL = tuple([dx[0]*dx[1]*b*x_mid**i for b in dy]
-                   + [dy[0]*dy[1]*a*y_mid**i for a in dx])
+        EL = tuple([dy[0]*dy[1]*a*y_mid**j for a in dx for j in range(i-1)]
+                   + [dx[0]*dx[1]*b*x_mid**j for b in dy for j in range(i-1)])
     else:
         EL = tuple([dx[0]*dx[1]*b*c*x_mid**i for b in dy for c in dz]
                    + [dy[0]*dy[1]*a*c*y_mid**i for c in dz for a in dx]
@@ -207,7 +206,3 @@ def i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid):
                 for j in range(i-5) for k in range(j+1)])
 
     return IL
-
-
-def S(ref_el, degree):
-    return Serendipity(ref_el, degree)
