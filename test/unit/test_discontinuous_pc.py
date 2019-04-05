@@ -25,7 +25,7 @@ import numpy as np
 
 @pytest.mark.parametrize("dim, degree", [(dim, degree)
                                          for dim in range(1, 4)
-                                         for degree in range(4)])
+                                         for degree in range(6)])
 def test_basis_values(dim, degree):
     """Ensure that integrating a simple monomial produces the expected results."""
     from FIAT import ufc_cell, make_quadrature

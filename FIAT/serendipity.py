@@ -3,11 +3,20 @@ import numpy as np
 from FIAT.finite_element import FiniteElement
 from FIAT import dual_set, reference_element
 from FIAT.lagrange import Lagrange
+from FIAT.tensor_product import TensorProductElement
 from FIAT.dual_set import make_entity_closure_ids
 from FIAT.polynomial_set import mis
+from FIAT.reference_element import UFCInterval, Point
 
 x, y, z = symbols('x y z')
 variables = (x, y, z)
+
+
+def tr(n):
+    if n <= 1:
+        return 0
+    else:
+        return int((n-3)*(n-2)/2)
 
 
 class Serendipity(FiniteElement):
@@ -32,16 +41,16 @@ class Serendipity(FiniteElement):
 
         dx = ((verts[-1][0] - x)/(verts[-1][0] - verts[0][0]), (x - verts[0][0])/(verts[-1][0] - verts[0][0]))
         dy = ((verts[-1][1] - y)/(verts[-1][1] - verts[0][1]), (y - verts[0][1])/(verts[-1][1] - verts[0][1]))
-        x_mid = 2*(x-(verts[-1][0] + verts[0][0])/2)
-        y_mid = 2*(y-(verts[-1][1] + verts[0][1])/2)
+        x_mid = (x-(verts[-1][0] + verts[0][0])/2)
+        y_mid = (y-(verts[-1][1] + verts[0][1])/2)
         try:
             dz = ((verts[-1][2] - z)/(verts[-1][2] - verts[0][2]), (z - verts[0][2])/(verts[-1][2] - verts[0][2]))
-            z_mid = z-(verts[-1][2] + verts[0][2])/2
+            z_mid = (z-(verts[-1][2] + verts[0][2])/2)//((verts[-1][2] - verts[0][2])/2)
         except IndexError:
             dz = None
             z_mid = None
 
-        VL = list(v_lambda_0(dim, dx, dy, dz))
+        VL = v_lambda_0(dim, dx, dy, dz)
         EL = []
         FL = []
         IL = []
@@ -68,8 +77,8 @@ class Serendipity(FiniteElement):
             FL += f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid)
 
         for j in sorted(topology[2]):
-            entity_ids[2][j] = list(range(cur, cur + int((degree - 3)*(degree - 2)/2)))
-            cur = cur + int((degree - 3)*(degree - 2)/2)
+            entity_ids[2][j] = list(range(cur, cur + tr(degree)))
+            cur = cur + tr(degree)
 
         if dim == 3:
             for i in range(6, degree + 1):
@@ -79,6 +88,8 @@ class Serendipity(FiniteElement):
             entity_ids[3][0] = list(range(cur, cur + len(IL)))
 
         s_list = VL + EL + FL + IL
+        print(len(s_list), cur)
+        assert len(s_list) == cur
         formdegree = 0
 
         super(Serendipity, self).__init__(ref_el=ref_el, dual=None, order=degree, formdegree=formdegree)
@@ -160,9 +171,9 @@ class Serendipity(FiniteElement):
 def v_lambda_0(dim, dx, dy, dz):
 
     if dim == 2:
-        VL = tuple([a*b for a in dx for b in dy])
+        VL = [a*b for a in dx for b in dy]
     else:
-        VL = tuple([a*b*c for a in dx for b in dy for c in dz])
+        VL = [a*b*c for a in dx for b in dy for c in dz]
 
     return VL
 
@@ -174,9 +185,9 @@ def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
         EL = tuple([dy[0]*dy[1]*a*y_mid**j for a in dx for j in range(i-1)]
                    + [dx[0]*dx[1]*b*x_mid**j for b in dy for j in range(i-1)])
     else:
-        EL = tuple([dx[0]*dx[1]*b*c*x_mid**i for b in dy for c in dz]
-                   + [dy[0]*dy[1]*a*c*y_mid**i for c in dz for a in dx]
-                   + [dz[0]*dz[1]*a*b*z_mid**i for a in dx for b in dy])
+        EL = tuple([dx[0]*dx[1]*b*c*x_mid**j for b in dy for c in dz for j in range(i-1)]
+                   + [dy[0]*dy[1]*a*c*y_mid**j for c in dz for a in dx for j in range(i-1)]
+                   + [dz[0]*dz[1]*a*b*z_mid**j for a in dx for b in dy for j in range(i-1)])
 
     return EL
 
