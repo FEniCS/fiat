@@ -211,15 +211,12 @@ class UFCTetrahedronFaceQuadratureRule(QuadratureRule):
         # Use tet to map points and weights on the appropriate face
         vertices = [numpy.array(list(vertex)) for vertex in vertices]
         x0 = vertices[0]
-        J = numpy.matrix([vertices[1] - x0, vertices[2] - x0]).transpose()
-        x0 = numpy.matrix(x0).transpose()
+        J = numpy.vstack([vertices[1] - x0, vertices[2] - x0]).T
         # This is just a very numpyfied way of writing J*p + x0:
-        F = lambda p: \
-            numpy.array(J*numpy.matrix(p).transpose() + x0).flatten()
-        points = numpy.array([F(p) for p in ref_points])
+        points = numpy.einsum("ij,kj->ki", J, ref_points) + x0
 
         # Map weights: multiply reference weights by sqrt(|J^T J|)
-        detJTJ = numpy.linalg.det(J.transpose() * J)
+        detJTJ = numpy.linalg.det(numpy.dot(J.T, J))
         weights = numpy.sqrt(detJTJ) * ref_weights
 
         # Initialize super class with new points and weights
@@ -255,6 +252,14 @@ def make_quadrature(ref_el, m):
         return CollapsedQuadratureTriangleRule(ref_el, m)
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return CollapsedQuadratureTetrahedronRule(ref_el, m)
+    elif ref_el.get_shape() == reference_element.QUADRILATERAL:
+        line_rule = GaussJacobiQuadratureLineRule(ref_el.construct_subelement(1), m)
+        return make_tensor_product_quadrature(line_rule, line_rule)
+    elif ref_el.get_shape() == reference_element.HEXAHEDRON:
+        line_rule = GaussJacobiQuadratureLineRule(ref_el.construct_subelement(1), m)
+        return make_tensor_product_quadrature(line_rule, line_rule, line_rule)
+    else:
+        raise ValueError("Unable to make quadrature for cell: %s" % ref_el)
 
 
 def make_tensor_product_quadrature(*quad_rules):

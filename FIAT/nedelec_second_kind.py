@@ -29,7 +29,7 @@ from FIAT.reference_element import UFCTetrahedron
 
 
 class NedelecSecondKindDual(DualSet):
-    """
+    r"""
     This class represents the dual basis for the Nedelec H(curl)
     elements of the second kind. The degrees of freedom (L) for the
     elements of the k'th degree are
@@ -160,11 +160,11 @@ class NedelecSecondKindDual(DualSet):
 
             # Map Phis -> phis (reference values to physical values)
             J = Q_face.jacobian()
-            scale = 1.0 / numpy.sqrt(numpy.linalg.det(J.transpose() * J))
+            scale = 1.0 / numpy.sqrt(numpy.linalg.det(numpy.dot(J.T, J)))
             phis = numpy.ndarray((d, num_quad_points))
             for i in range(num_rts):
                 for q in range(num_quad_points):
-                    phi_i_q = scale * J * numpy.matrix(Phis[i, :, q]).transpose()
+                    phi_i_q = scale * numpy.dot(J, Phis[numpy.newaxis, i, :, q].T)
                     for j in range(d):
                         phis[j, q] = phi_i_q[j]
 
