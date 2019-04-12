@@ -38,8 +38,6 @@ def test_basis_values(dim, degree):
     """Ensure that integrating a simple monomial produces the expected results."""
     from FIAT import ufc_cell, make_quadrature
     from FIAT.serendipity import Serendipity
-    from FIAT.tensor_product import TensorProductElement
-    from FIAT.lagrange import Lagrange
 
     cell = np.array([None, 'interval', 'quadrilateral', 'hexahedron'])
     s = ufc_cell(cell[dim])
@@ -47,6 +45,9 @@ def test_basis_values(dim, degree):
 
     fe = Serendipity(s, degree)
     tab = fe.tabulate(0, q.pts)[(0,) * dim]
+
+    #points = [(0,0), (0,1), (1,0), (1,1), (0,0.5), (1,0.5), (0.5,0), (0.5,1)]
+
     l = np.shape(tab)[0]
 
     for test_degree in range(degree + 1):

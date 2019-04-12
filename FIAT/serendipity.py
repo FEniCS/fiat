@@ -41,11 +41,11 @@ class Serendipity(FiniteElement):
 
         dx = ((verts[-1][0] - x)/(verts[-1][0] - verts[0][0]), (x - verts[0][0])/(verts[-1][0] - verts[0][0]))
         dy = ((verts[-1][1] - y)/(verts[-1][1] - verts[0][1]), (y - verts[0][1])/(verts[-1][1] - verts[0][1]))
-        x_mid = (x-(verts[-1][0] + verts[0][0])/2)
-        y_mid = (y-(verts[-1][1] + verts[0][1])/2)
+        x_mid = x-(verts[-1][0] + verts[0][0])/2
+        y_mid = y-(verts[-1][1] + verts[0][1])/2
         try:
             dz = ((verts[-1][2] - z)/(verts[-1][2] - verts[0][2]), (z - verts[0][2])/(verts[-1][2] - verts[0][2]))
-            z_mid = (z-(verts[-1][2] + verts[0][2])/2)//((verts[-1][2] - verts[0][2])/2)
+            z_mid = z-(verts[-1][2] + verts[0][2])/2
         except IndexError:
             dz = None
             z_mid = None
@@ -73,8 +73,7 @@ class Serendipity(FiniteElement):
             entity_ids[1][j] = list(range(cur, cur + degree - 1))
             cur = cur + degree - 1
 
-        for i in range(4, degree + 1):
-            FL += f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid)
+        FL += f_lambda_0(degree, dim, dx, dy, dz, x_mid, y_mid, z_mid)
 
         for j in sorted(topology[2]):
             entity_ids[2][j] = list(range(cur, cur + tr(degree)))
@@ -88,7 +87,6 @@ class Serendipity(FiniteElement):
             entity_ids[3][0] = list(range(cur, cur + len(IL)))
 
         s_list = VL + EL + FL + IL
-        print(len(s_list), cur)
         assert len(s_list) == cur
         formdegree = 0
 
@@ -122,7 +120,6 @@ class Serendipity(FiniteElement):
         points = list(map(transform, points))
 
         phivals = {}
-        T = []
         dim = self.ref_el.get_spatial_dimension()
         if dim <= 1:
             raise NotImplementedError('no tabulate method for serendipity elements of dimension 1 or less.')
@@ -179,8 +176,6 @@ def v_lambda_0(dim, dx, dy, dz):
 
 def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 
-    assert i >= 0, 'invalid value of i'
-
     if dim == 2:
         EL = tuple([dy[0]*dy[1]*a*y_mid**j for a in dx for j in range(i-1)]
                    + [dx[0]*dx[1]*b*x_mid**j for b in dy for j in range(i-1)])
@@ -193,11 +188,9 @@ def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 
 def f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 
-    assert i >= 4, 'invalid value for i'
-
     if dim == 2:
-        FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x_mid**(i-4-j))*(y_mid**j)
-                    for j in range(i-3)])
+        FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x_mid**(k-4-j))*(y_mid**j)
+                    for k in range(4, i + 1) for j in range(k-3)])
     else:
         FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x_mid**(i-4-j))*(y_mid**j)*c
                     for j in range(i-3) for c in dz]
