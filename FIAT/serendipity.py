@@ -100,7 +100,7 @@ class Serendipity(FiniteElement):
 
 
     def degree(self):
-        return self._degree
+        return self._degree + 1
 
     def get_nodal_basis(self):
         raise NotImplementedError("get_nodal_basis not implemented for serendipity")
