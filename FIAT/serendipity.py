@@ -10,6 +10,7 @@ from FIAT.reference_element import UFCInterval, Point
 
 x, y, z = symbols('x y z')
 variables = (x, y, z)
+leg = legendre
 
 
 def tr(n):
@@ -41,11 +42,11 @@ class Serendipity(FiniteElement):
 
         dx = ((verts[-1][0] - x)/(verts[-1][0] - verts[0][0]), (x - verts[0][0])/(verts[-1][0] - verts[0][0]))
         dy = ((verts[-1][1] - y)/(verts[-1][1] - verts[0][1]), (y - verts[0][1])/(verts[-1][1] - verts[0][1]))
-        x_mid = x-(verts[-1][0] + verts[0][0])/2
-        y_mid = y-(verts[-1][1] + verts[0][1])/2
+        x_mid = 2*x-(verts[-1][0] + verts[0][0])
+        y_mid = 2*y-(verts[-1][1] + verts[0][1])
         try:
             dz = ((verts[-1][2] - z)/(verts[-1][2] - verts[0][2]), (z - verts[0][2])/(verts[-1][2] - verts[0][2]))
-            z_mid = z-(verts[-1][2] + verts[0][2])/2
+            z_mid = 2*z-(verts[-1][2] + verts[0][2])
         except IndexError:
             dz = None
             z_mid = None
@@ -177,10 +178,10 @@ def v_lambda_0(dim, dx, dy, dz):
 def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 
     if dim == 2:
-        EL = tuple([dy[0]*dy[1]*a*y_mid**j for a in dx for j in range(i-1)]
-                   + [dx[0]*dx[1]*b*x_mid**j for b in dy for j in range(i-1)])
+        EL = tuple([-leg(j, y_mid) * dy[0] * dy[1] * a for a in dx for j in range(i-1)]
+                   + [-leg(j, x_mid) * dx[0] * dx[1] * b for b in dy for j in range(i-1)])
     else:
-        EL = tuple([dx[0]*dx[1]*b*c*x_mid**j for b in dy for c in dz for j in range(i-1)]
+        EL = tuple([leg(j, x_mid) * dx[0] * dx[1] * b * c for b in dy for c in dz for j in range(i-1)]
                    + [dy[0]*dy[1]*a*c*y_mid**j for c in dz for a in dx for j in range(i-1)]
                    + [dz[0]*dz[1]*a*b*z_mid**j for a in dx for b in dy for j in range(i-1)])
 
@@ -189,7 +190,7 @@ def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 def f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 
     if dim == 2:
-        FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x_mid**(k-4-j))*(y_mid**j)
+        FL = tuple([leg(j, x_mid) * leg(k-4-j, y_mid) * dx[0] * dx[1] * dy[0] * dy[1]
                     for k in range(4, i + 1) for j in range(k-3)])
     else:
         FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x_mid**(i-4-j))*(y_mid**j)*c
