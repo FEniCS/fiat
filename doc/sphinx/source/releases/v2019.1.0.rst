@@ -1,0 +1,12 @@
+===========================
+Changes in version 2019.1.0
+===========================
+
+FIAT 2019.1.0 was released on 2019-04-17.
+
+Summary of changes
+==================
+
+- Added an implementation of the Bell finite element (K. Bell 1969
+  doi:10.1002/nme.1620010180), with extra basis functions for
+  transformation theory from Kirby (2018) doi:10.5802/smai-jcm.33.

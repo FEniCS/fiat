@@ -11,7 +11,7 @@ if sys.version_info < (3, 0):
     print("Python 3.0 or higher required, please upgrade.")
     sys.exit(1)
 
-version = "2018.2.0.dev0"
+version = "2019.1.0"
 
 url = "https://bitbucket.org/fenics-project/fiat/"
 tarball = None
