@@ -118,7 +118,7 @@ def test_expansions():
     def create_data():
         E = reference_element.DefaultTriangle()
         k = 3
-        pts = E.make_lattice(k)
+        pts = reference_element.make_lattice(E.get_vertices(), k)
         Phis = expansions.get_expansion_set(E)
         phis = Phis.tabulate(k, pts)
         dphis = Phis.tabulate_derivatives(k, pts)
@@ -152,7 +152,7 @@ def test_expansions_jet():
         n = 1
         order = 2
         E = reference_element.DefaultTetrahedron()
-        pts = E.make_lattice(latticeK)
+        pts = reference_element.make_lattice(E.get_vertices(), latticeK)
         F = expansions.TetrahedronExpansionSet(E)
         return F.tabulate_jet(n, pts, order)
 

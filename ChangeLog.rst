@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2018.2.0.dev0
+-------------
+
+- Added an implementation of the Bell finite element (K. Bell 1969
+  doi:10.1002/nme.1620010180), with extra basis functions for
+  transformation theory from Kirby (2018) doi:10.5802/smai-jcm.33.
+
 2018.1.0 (2018-06-14)
 ---------------------
 

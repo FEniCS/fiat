@@ -348,19 +348,13 @@ def barycentric_coordinates(points, vertices):
     """
 
     # Form mapping matrix
-    last = np.asarray(vertices[-1])
-    T = np.matrix([np.array(v) - last for v in vertices[:-1]]).T
+    T = (np.asarray(vertices[:-1]) - vertices[-1]).T
     invT = np.linalg.inv(T)
 
-    # Compute the barycentric coordinates for all points
-    coords = []
-    for p in points:
-        y = np.asarray(p) - last
-        bary = invT.dot(y.T)
-        bary = [bary[(0, i)] for i in range(len(y))]
-        bary += [1.0 - sum(bary)]
-        coords.append(bary)
-    return coords
+    points = np.asarray(points)
+    bary = np.einsum("ij,kj->ki", invT, (points - vertices[-1]))
+    last = (1 - bary.sum(axis=1))
+    return np.concatenate([bary, last[..., np.newaxis]], axis=1)
 
 
 def map_from_reference_facet(point, vertices):

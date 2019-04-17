@@ -47,6 +47,40 @@ HEXAHEDRON = 111
 TENSORPRODUCT = 99
 
 
+def lattice_iter(start, finish, depth):
+    """Generator iterating over the depth-dimensional lattice of
+    integers between start and (finish-1).  This works on simplices in
+    1d, 2d, 3d, and beyond"""
+    if depth == 0:
+        return
+    elif depth == 1:
+        for ii in range(start, finish):
+            yield [ii]
+    else:
+        for ii in range(start, finish):
+            for jj in lattice_iter(start, finish - ii, depth - 1):
+                yield jj + [ii]
+
+
+def make_lattice(verts, n, interior=0):
+    """Constructs a lattice of points on the simplex defined by verts.
+    For example, the 1:st order lattice will be just the vertices.
+    The optional argument interior specifies how many points from
+    the boundary to omit.  For example, on a line with n = 2,
+    and interior = 0, this function will return the vertices and
+    midpoint, but with interior = 1, it will only return the
+    midpoint."""
+
+    vs = numpy.array(verts)
+    hs = (vs - vs[0])[1:, :] / n
+
+    m = hs.shape[0]
+    result = [tuple(vs[0] + numpy.array(indices).dot(hs))
+              for indices in lattice_iter(interior, n + 1 - interior, m)]
+
+    return result
+
+
 def linalg_subspace_intersection(A, B):
     """Computes the intersection of the subspaces spanned by the
     columns of 2-dimensional arrays A,B using the algorithm found in
@@ -64,33 +98,18 @@ def linalg_subspace_intersection(A, B):
 
     # Compute the principal vectors/angles between the subspaces, G&vL
     # p.604
-    (qa, ra) = numpy.linalg.qr(A)
-    (qb, rb) = numpy.linalg.qr(B)
+    (qa, _ra) = numpy.linalg.qr(A)
+    (qb, _rb) = numpy.linalg.qr(B)
 
     C = numpy.dot(numpy.transpose(qa), qb)
 
-    (y, c, zt) = numpy.linalg.svd(C)
+    (y, c, _zt) = numpy.linalg.svd(C)
 
     U = numpy.dot(qa, y)
 
     rank_c = len([s for s in c if numpy.abs(1.0 - s) < 1.e-10])
 
     return U[:, :rank_c]
-
-
-def lattice_iter(start, finish, depth):
-    """Generator iterating over the depth-dimensional lattice of
-    integers between start and (finish-1).  This works on simplices in
-    1d, 2d, 3d, and beyond"""
-    if depth == 0:
-        return
-    elif depth == 1:
-        for ii in range(start, finish):
-            yield [ii]
-    else:
-        for ii in range(start, finish):
-            for jj in lattice_iter(start, finish - ii, depth - 1):
-                yield [ii] + jj
 
 
 class Cell(object):
@@ -342,55 +361,21 @@ class Simplex(Cell):
                 edge_ts.append(vert_coords[dest] - vert_coords[source])
         return edge_ts
 
-    def make_lattice(self, n, interior=0):
-        """Constructs a lattice of points on the simplex.  For
-        example, the 1:st order lattice will be just the vertices.
-        The optional argument interior specifies how many points from
-        the boundary to omit.  For example, on a line with n = 2,
-        and interior = 0, this function will return the vertices and
-        midpoint, but with interior = 1, it will only return the
-        midpoint."""
-        verts = self.get_vertices()
-        nverts = len(verts)
-        vs = [numpy.array(v) for v in verts]
-        hs = [(vs[i] - vs[0]) / n for i in range(1, nverts)]
-
-        result = []
-
-        m = len(hs)
-
-        for indices in lattice_iter(interior, n + 1 - interior, m):
-            res_cur = vs[0].copy()
-            for i in range(len(indices)):
-                res_cur += indices[i] * hs[m - i - 1]
-            result.append(tuple(res_cur))
-
-        return result
-
     def make_points(self, dim, entity_id, order):
         """Constructs a lattice of points on the entity_id:th
         facet of dimension dim.  Order indicates how many points to
         include in each direction."""
         if dim == 0:
             return (self.get_vertices()[entity_id], )
-        elif dim > self.get_spatial_dimension():
-            raise Exception("illegal dimension")
-        elif dim == self.get_spatial_dimension():
-            return self.make_lattice(order, 1)
-        else:
-            base_el = default_simplex(dim)
-            base_verts = base_el.get_vertices()
-            facet_verts = \
+        elif 0 < dim < self.get_spatial_dimension():
+            entity_verts = \
                 self.get_vertices_of_subcomplex(
                     self.get_topology()[dim][entity_id])
-
-            (A, b) = make_affine_mapping(base_verts, facet_verts)
-
-            f = lambda x: (numpy.dot(A, x) + b)
-            base_pts = base_el.make_lattice(order, 1)
-            image_pts = tuple([tuple(f(x)) for x in base_pts])
-
-            return image_pts
+            return make_lattice(entity_verts, order, 1)
+        elif dim == self.get_spatial_dimension():
+            return make_lattice(self.get_vertices(), order, 1)
+        else:
+            raise ValueError("illegal dimension")
 
     def volume(self):
         """Computes the volume of the simplex in the appropriate
