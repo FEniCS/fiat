@@ -181,9 +181,9 @@ def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
         EL = tuple([-leg(j, y_mid) * dy[0] * dy[1] * a for a in dx for j in range(i-1)]
                    + [-leg(j, x_mid) * dx[0] * dx[1] * b for b in dy for j in range(i-1)])
     else:
-        EL = tuple([leg(j, x_mid) * dx[0] * dx[1] * b * c for b in dy for c in dz for j in range(i-1)]
-                   + [dy[0]*dy[1]*a*c*y_mid**j for c in dz for a in dx for j in range(i-1)]
-                   + [dz[0]*dz[1]*a*b*z_mid**j for a in dx for b in dy for j in range(i-1)])
+        EL = tuple([-leg(j, x_mid) * dx[0] * dx[1] * b * c for b in dy for c in dz for j in range(i-1)]
+                   + [-leg(j, y_mid) * dy[0] * dy[1] * a * c for c in dz for a in dx for j in range(i-1)]
+                   + [-leg(j, z_mid) * dz[0] * dz[1] * a * b for a in dx for b in dy for j in range(i-1)])
 
     return EL
 
@@ -193,12 +193,12 @@ def f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
         FL = tuple([leg(j, x_mid) * leg(k-4-j, y_mid) * dx[0] * dx[1] * dy[0] * dy[1]
                     for k in range(4, i + 1) for j in range(k-3)])
     else:
-        FL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*(x_mid**(i-4-j))*(y_mid**j)*c
-                    for j in range(i-3) for c in dz]
-                   + [dx[0]*dx[1]*dz[0]*dz[1]*(x_mid**(i-4-j))*(z_mid**j)*b
-                    for j in range(i-3) for b in dy]
-                   + [dy[0]*dy[1]*dz[0]*dz[1]*(y_mid**(i-4-j))*(z_mid**j)*a
-                    for j in range(i-3) for a in dx])
+        FL = tuple([leg(j, x_mid) * leg(k-4-j, y_mid) * dx[0] * dx[1] * dy[0] * dy[1] * c
+                    for k in range(4, i + 1) for j in range(i-3) for c in dz]
+                   + [leg(j, z_mid) * leg(k-4-j, x_mid) * dx[0] * dx[1] * dz[0] * dz[1] * b
+                    for k in range(4, i + 1) for j in range(i-3) for b in dy]
+                   + [leg(j, y_mid) * leg(k-4-j, z_mid) * dy[0] * dy[1] * dz[0] * dz[1] * a
+                    for k in range(4, i + 1) for j in range(i-3) for a in dx])
 
     return FL
 
@@ -207,7 +207,8 @@ def i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid):
     assert i >= 6, 'invalid value for i'
     assert dim == 3, 'reference element must be dimension 3'
 
-    IL = tuple([dx[0]*dx[1]*dy[0]*dy[1]*dz[0]*dz[1]*(x_mid**(i-6-j))*(y_mid**(j-k))*(z_mid**k)
-                for j in range(i-5) for k in range(j+1)])
+    IL = tuple([-leg(l-6-j, x_mid) * leg(j-k, y_mid) * leg(k, z_mid) \
+                * dx[0] * dx[1] * dy[0] * dy[1] * dz[0] * dz[1]
+                for l in range(6, i + 1) for j in range(i-5) for k in range(j+1)])
 
     return IL
