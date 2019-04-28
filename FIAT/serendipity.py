@@ -1,3 +1,22 @@
+# Copyright (C) 2019 Cyrus Cheng (Imperial College London)
+#
+# This file is part of FIAT.
+#
+# FIAT is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# FIAT is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+#
+# Modified by David A. Ham (david.ham@imperial.ac.uk), 2019
+
 from sympy import *
 import numpy as np
 from FIAT.finite_element import FiniteElement
@@ -81,8 +100,7 @@ class Serendipity(FiniteElement):
             cur = cur + tr(degree)
 
         if dim == 3:
-            for i in range(6, degree + 1):
-                IL += i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid)
+            IL += i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid)
 
             entity_ids[3] = {}
             entity_ids[3][0] = list(range(cur, cur + len(IL)))
@@ -175,6 +193,7 @@ def v_lambda_0(dim, dx, dy, dz):
 
     return VL
 
+
 def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 
     if dim == 2:
@@ -186,6 +205,7 @@ def e_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
                    + [-leg(j, z_mid) * dz[0] * dz[1] * a * b for a in dx for b in dy for j in range(i-1)])
 
     return EL
+
 
 def f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 
@@ -201,6 +221,7 @@ def f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
                     for k in range(4, i + 1) for j in range(i-3) for a in dx])
 
     return FL
+
 
 def i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid):
 
