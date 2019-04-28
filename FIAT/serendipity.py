@@ -17,15 +17,12 @@
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2019
 
-from sympy import *
+from sympy import symbols, legendre, Array, diff
 import numpy as np
 from FIAT.finite_element import FiniteElement
-from FIAT import dual_set, reference_element
 from FIAT.lagrange import Lagrange
-from FIAT.tensor_product import TensorProductElement
 from FIAT.dual_set import make_entity_closure_ids
 from FIAT.polynomial_set import mis
-from FIAT.reference_element import UFCInterval, Point
 
 x, y, z = symbols('x y z')
 variables = (x, y, z)
@@ -100,7 +97,7 @@ class Serendipity(FiniteElement):
             cur = cur + tr(degree)
 
         if dim == 3:
-            IL += i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid)
+            IL += i_lambda_0(degree, dx, dy, dz, x_mid, y_mid, z_mid)
 
             entity_ids[3] = {}
             entity_ids[3][0] = list(range(cur, cur + len(IL)))
@@ -111,11 +108,10 @@ class Serendipity(FiniteElement):
 
         super(Serendipity, self).__init__(ref_el=ref_el, dual=None, order=degree, formdegree=formdegree)
 
-        self.basis = {(0,)*dim:Array(s_list)}
+        self.basis = {(0,)*dim: Array(s_list)}
         self.entity_ids = entity_ids
         self.entity_closure_ids = make_entity_closure_ids(ref_el, entity_ids)
         self._degree = degree
-
 
     def degree(self):
         return self._degree + 1
@@ -216,9 +212,9 @@ def f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
         FL = tuple([leg(j, x_mid) * leg(k-4-j, y_mid) * dx[0] * dx[1] * dy[0] * dy[1] * c
                     for k in range(4, i + 1) for j in range(i-3) for c in dz]
                    + [leg(j, z_mid) * leg(k-4-j, x_mid) * dx[0] * dx[1] * dz[0] * dz[1] * b
-                    for k in range(4, i + 1) for j in range(i-3) for b in dy]
+                      for k in range(4, i + 1) for j in range(i-3) for b in dy]
                    + [leg(j, y_mid) * leg(k-4-j, z_mid) * dy[0] * dy[1] * dz[0] * dz[1] * a
-                    for k in range(4, i + 1) for j in range(i-3) for a in dx])
+                      for k in range(4, i + 1) for j in range(i-3) for a in dx])
 
     return FL
 
@@ -226,9 +222,8 @@ def f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
 def i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid):
 
     assert i >= 6, 'invalid value for i'
-    assert dim == 3, 'reference element must be dimension 3'
 
-    IL = tuple([-leg(l-6-j, x_mid) * leg(j-k, y_mid) * leg(k, z_mid) \
+    IL = tuple([-leg(l-6-j, x_mid) * leg(j-k, y_mid) * leg(k, z_mid)
                 * dx[0] * dx[1] * dy[0] * dy[1] * dz[0] * dz[1]
                 for l in range(6, i + 1) for j in range(i-5) for k in range(j+1)])
 
