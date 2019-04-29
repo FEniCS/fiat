@@ -64,3 +64,19 @@ class DualSet(object):
             self.mat[i][:] = self.nodes[i].to_riesz(poly_set)
 
         return self.mat
+
+
+def make_entity_closure_ids(ref_el, entity_ids):
+    entity_closure_ids = {}
+    for dim, entities in ref_el.sub_entities.items():
+        entity_closure_ids[dim] = {}
+
+        for e, sub_entities in entities.items():
+            ids = []
+
+            for d, se in sub_entities:
+                ids += entity_ids[d][se]
+            ids.sort()
+            entity_closure_ids[d][e] = ids
+
+    return entity_closure_ids
