@@ -26,6 +26,7 @@ from FIAT.reference_element import (Point,
                                     UFCTriangle,
                                     UFCTetrahedron,
                                     make_affine_mapping)
+from FIAT.P0 import P0Dual
 import numpy as np
 
 hypercube_simplex_map = {Point(): Point(),
