@@ -18,7 +18,6 @@
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2018
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
-from FIAT.P0 import P0Dual
 from FIAT.reference_element import (Point,
                                     DefaultLine,
                                     UFCInterval,
