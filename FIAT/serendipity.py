@@ -101,6 +101,7 @@ class Serendipity(FiniteElement):
 
             entity_ids[3] = {}
             entity_ids[3][0] = list(range(cur, cur + len(IL)))
+            cur = cur + len(IL)
 
         s_list = VL + EL + FL + IL
         assert len(s_list) == cur
@@ -210,21 +211,19 @@ def f_lambda_0(i, dim, dx, dy, dz, x_mid, y_mid, z_mid):
                     for k in range(4, i + 1) for j in range(k-3)])
     else:
         FL = tuple([leg(j, x_mid) * leg(k-4-j, y_mid) * dx[0] * dx[1] * dy[0] * dy[1] * c
-                    for k in range(4, i + 1) for j in range(i-3) for c in dz]
+                    for k in range(4, i + 1) for j in range(k-3) for c in dz]
                    + [leg(j, z_mid) * leg(k-4-j, x_mid) * dx[0] * dx[1] * dz[0] * dz[1] * b
-                      for k in range(4, i + 1) for j in range(i-3) for b in dy]
+                      for k in range(4, i + 1) for j in range(k-3) for b in dy]
                    + [leg(j, y_mid) * leg(k-4-j, z_mid) * dy[0] * dy[1] * dz[0] * dz[1] * a
-                      for k in range(4, i + 1) for j in range(i-3) for a in dx])
+                      for k in range(4, i + 1) for j in range(k-3) for a in dx])
 
     return FL
 
 
 def i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid):
 
-    assert i >= 6, 'invalid value for i'
-
     IL = tuple([-leg(l-6-j, x_mid) * leg(j-k, y_mid) * leg(k, z_mid)
                 * dx[0] * dx[1] * dy[0] * dy[1] * dz[0] * dz[1]
-                for l in range(6, i + 1) for j in range(i-5) for k in range(j+1)])
+                for l in range(6, i + 1) for j in range(l-5) for k in range(j+1)])
 
     return IL
