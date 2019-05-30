@@ -41,7 +41,7 @@ class P0Dual(dual_set.DualSet):
             for entity in sorted(top[dim]):
                 entity_ids[dim][entity] = []
 
-        entity_ids[sd] = {0: [0]}
+        entity_ids[dim] = {0: [0]}
 
         super(P0Dual, self).__init__(nodes, ref_el, entity_ids)
 
