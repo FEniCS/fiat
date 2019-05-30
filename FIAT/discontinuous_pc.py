@@ -36,9 +36,21 @@ hypercube_simplex_map = {Point(): Point(),
                          UFCHexahedron(): UFCTetrahedron()}
 
 
+def flatten_reference_element(ref_el):
+    """Returns a flattened cube corresponding to a given tensor product cell."""
+    print(np.sum(ref_el.get_dimension()))
+    if np.sum(ref_el.get_dimension()) == 2:
+        return UFCQuadrilateral()
+    elif np.sum(ref_el.get_dimension()) == 3:
+        return UFCHexahedron()
+    else:
+        raise TypeError('Invalid cell type')
+
+
 class DPC0(finite_element.CiarletElement):
     def __init__(self, ref_el):
-        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[ref_el], 0)
+        flat_el = flatten_reference_element(ref_el)
+        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[flat_el], 0)
         dual = P0Dual(ref_el)
         degree = 0
         formdegree = ref_el.get_spatial_dimension()  # n-form
@@ -55,42 +67,44 @@ class DPCDualSet(dual_set.DualSet):
     equispaced points.  This is the discontinuous version where
     all nodes are topologically associated with the cell itself"""
 
-    def __init__(self, ref_el, degree):
+    def __init__(self, ref_el, flat_el, degree):
         entity_ids = {}
         nodes = []
 
         # Change coordinates here.
         # Vertices of the simplex corresponding to the reference element.
-        v_simplex = hypercube_simplex_map[ref_el].get_vertices()
+        v_simplex = hypercube_simplex_map[flat_el].get_vertices()
         # Vertices of the reference element.
-        v_hypercube = ref_el.get_vertices()
+        v_hypercube = flat_el.get_vertices()
         # For the mapping, first two vertices are unchanged in all dimensions.
         v_ = [v_hypercube[0], v_hypercube[int(-0.5*len(v_hypercube))]]
 
         # For dimension 1 upwards,
         # take the next vertex and map it to the midpoint of the edge/face it belongs to, and shares
         # with no other points.
-        for d in range(1, ref_el.get_dimension()):
-            v_.append(tuple(np.asarray(v_hypercube[ref_el.get_dimension() - d] +
+        for d in range(1, flat_el.get_dimension()):
+            v_.append(tuple(np.asarray(v_hypercube[flat_el.get_dimension() - d] +
                             np.average(np.asarray(v_hypercube[::2]), axis=0))))
         A, b = make_affine_mapping(v_simplex, tuple(v_))  # Make affine mapping to be used later.
 
         # make nodes by getting points
         # need to do this dimension-by-dimension, facet-by-facet
-        top = hypercube_simplex_map[ref_el].get_topology()
-        cube_topology = ref_el.get_topology()
+        top = hypercube_simplex_map[flat_el].get_topology()
 
         cur = 0
         for dim in sorted(top):
             entity_ids[dim] = {}
             for entity in sorted(top[dim]):
-                pts_cur = hypercube_simplex_map[ref_el].make_points(dim, entity, degree)
+                pts_cur = hypercube_simplex_map[flat_el].make_points(dim, entity, degree)
                 pts_cur = [tuple(np.matmul(A, np.array(x)) + b) for x in pts_cur]
-                nodes_cur = [functional.PointEvaluation(ref_el, x)
+                nodes_cur = [functional.PointEvaluation(flat_el, x)
                              for x in pts_cur]
                 nnodes_cur = len(nodes_cur)
                 nodes += nodes_cur
                 cur += nnodes_cur
+
+        cube_topology = ref_el.get_topology()
+        for dim in sorted(cube_topology):
             for entity in sorted(cube_topology[dim]):
                 entity_ids[dim][entity] = []
 
@@ -102,9 +116,10 @@ class HigherOrderDPC(finite_element.CiarletElement):
     """The DPC finite element.  It is what it is."""
 
     def __init__(self, ref_el, degree):
-        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[ref_el], degree)
-        dual = DPCDualSet(ref_el, degree)
-        formdegree = ref_el.get_spatial_dimension()  # n-form
+        flat_el = flatten_reference_element(ref_el)
+        poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[flat_el], degree)
+        dual = DPCDualSet(ref_el, flat_el, degree)
+        formdegree = flat_el.get_spatial_dimension()  # n-form
         super(HigherOrderDPC, self).__init__(poly_set=poly_set,
                                              dual=dual,
                                              order=degree,
