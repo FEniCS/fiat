@@ -38,7 +38,6 @@ hypercube_simplex_map = {Point(): Point(),
 
 def flatten_reference_element(ref_el):
     """Returns a flattened cube corresponding to a given tensor product cell."""
-    print(np.sum(ref_el.get_dimension()))
     if np.sum(ref_el.get_dimension()) == 2:
         return UFCQuadrilateral()
     elif np.sum(ref_el.get_dimension()) == 3:
@@ -93,7 +92,6 @@ class DPCDualSet(dual_set.DualSet):
 
         cur = 0
         for dim in sorted(top):
-            entity_ids[dim] = {}
             for entity in sorted(top[dim]):
                 pts_cur = hypercube_simplex_map[flat_el].make_points(dim, entity, degree)
                 pts_cur = [tuple(np.matmul(A, np.array(x)) + b) for x in pts_cur]
@@ -105,6 +103,7 @@ class DPCDualSet(dual_set.DualSet):
 
         cube_topology = ref_el.get_topology()
         for dim in sorted(cube_topology):
+            entity_ids[dim] = {}
             for entity in sorted(cube_topology[dim]):
                 entity_ids[dim][entity] = []
 
