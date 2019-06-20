@@ -25,7 +25,8 @@ from FIAT.reference_element import (Point,
                                     UFCHexahedron,
                                     UFCTriangle,
                                     UFCTetrahedron,
-                                    make_affine_mapping)
+                                    make_affine_mapping,
+                                    flatten_reference_element)
 from FIAT.P0 import P0Dual
 import numpy as np
 
@@ -34,16 +35,6 @@ hypercube_simplex_map = {Point(): Point(),
                          UFCInterval(): UFCInterval(),
                          UFCQuadrilateral(): UFCTriangle(),
                          UFCHexahedron(): UFCTetrahedron()}
-
-
-def flatten_reference_element(ref_el):
-    """Returns a flattened cube corresponding to a given tensor product cell."""
-    if np.sum(ref_el.get_dimension()) == 2:
-        return UFCQuadrilateral()
-    elif np.sum(ref_el.get_dimension()) == 3:
-        return UFCHexahedron()
-    else:
-        raise TypeError('Invalid cell type')
 
 
 class DPC0(finite_element.CiarletElement):

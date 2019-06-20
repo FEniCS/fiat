@@ -1025,6 +1025,18 @@ def tuple_sum(tree):
         return tree
 
 
+def flatten_reference_element(ref_el):
+    """Returns a flattened cube corresponding to a given tensor product cell."""
+    if numpy.sum(ref_el.get_dimension()) == 1:
+        return UFCInterval()
+    elif numpy.sum(ref_el.get_dimension()) == 2:
+        return UFCQuadrilateral()
+    elif numpy.sum(ref_el.get_dimension()) == 3:
+        return UFCHexahedron()
+    else:
+        raise TypeError('Invalid cell type')
+
+
 def flatten_entities(topology_dict):
     """This function flattens topology dict of TensorProductCell and entity_dofs dict of TensorProductElement"""
 
