@@ -23,8 +23,8 @@ from FIAT.finite_element import FiniteElement
 from FIAT.lagrange import Lagrange
 from FIAT.dual_set import make_entity_closure_ids
 from FIAT.polynomial_set import mis
-from FIAT.discontinuous_pc import flatten_reference_element
-from FIAT.reference_element import compute_unflattening_map
+from FIAT.reference_element import (compute_unflattening_map,
+                                    flatten_reference_element)
 
 x, y, z = symbols('x y z')
 variables = (x, y, z)
