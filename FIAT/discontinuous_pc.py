@@ -26,7 +26,7 @@ from FIAT.reference_element import (Point,
                                     UFCTriangle,
                                     UFCTetrahedron,
                                     make_affine_mapping,
-                                    flatten_reference_element)
+                                    flatten_reference_cube)
 from FIAT.P0 import P0Dual
 import numpy as np
 
@@ -39,7 +39,7 @@ hypercube_simplex_map = {Point(): Point(),
 
 class DPC0(finite_element.CiarletElement):
     def __init__(self, ref_el):
-        flat_el = flatten_reference_element(ref_el)
+        flat_el = flatten_reference_cube(ref_el)
         poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[flat_el], 0)
         dual = P0Dual(ref_el)
         degree = 0
@@ -106,7 +106,7 @@ class HigherOrderDPC(finite_element.CiarletElement):
     """The DPC finite element.  It is what it is."""
 
     def __init__(self, ref_el, degree):
-        flat_el = flatten_reference_element(ref_el)
+        flat_el = flatten_reference_cube(ref_el)
         poly_set = polynomial_set.ONPolynomialSet(hypercube_simplex_map[flat_el], degree)
         dual = DPCDualSet(ref_el, flat_el, degree)
         formdegree = flat_el.get_spatial_dimension()  # n-form

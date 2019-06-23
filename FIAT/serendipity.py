@@ -24,7 +24,7 @@ from FIAT.lagrange import Lagrange
 from FIAT.dual_set import make_entity_closure_ids
 from FIAT.polynomial_set import mis
 from FIAT.reference_element import (compute_unflattening_map,
-                                    flatten_reference_element)
+                                    flatten_reference_cube)
 
 x, y, z = symbols('x y z')
 variables = (x, y, z)
@@ -52,7 +52,7 @@ class Serendipity(FiniteElement):
 
     def __init__(self, ref_el, degree):
 
-        flat_el = flatten_reference_element(ref_el)
+        flat_el = flatten_reference_cube(ref_el)
         dim = flat_el.get_spatial_dimension()
         flat_topology = flat_el.get_topology()
 
