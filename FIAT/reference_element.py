@@ -1025,16 +1025,27 @@ def tuple_sum(tree):
         return tree
 
 
-def flatten_reference_cube(ref_el):
-    """Returns a flattened cube corresponding to a given tensor product cell."""
-    if numpy.sum(ref_el.get_dimension()) <= 1:
-        return ref_el
-    elif numpy.sum(ref_el.get_dimension()) == 2 and len(ref_el.vertices) == 4:
-        return UFCQuadrilateral()
-    elif numpy.sum(ref_el.get_dimension()) == 3 and len(ref_el.vertices) == 8:
-        return UFCHexahedron()
+def is_hypercube(cell):
+    if isinstance(cell, (DefaultLine, UFCInterval, UFCQuadrilateral, UFCHexahedron)):
+        return True
+    elif isinstance(cell, TensorProductCell):
+        return reduce(lambda a, b: a and b, [is_hypercube(c) for c in cell.cells])
     else:
-        raise TypeError('Invalid cell type')
+        return False
+
+def flatten_reference_cube(ref_el):
+    """ ... """
+    flattened_cube = {2: UFCQuadrilateral(), 3: UFCHexahedron()}
+    if numpy.sum(ref_el.get_dimension()) <= 1:
+        # Just return point/interval cell arguments
+        return ref_el
+    else:
+        # Handle cases where cell is a quad/cube constructed from a tensor product or
+        # an already flattened element
+        if is_hypercube(ref_el):
+            return flattened_cube[numpy.sum(ref_el.get_dimension())]
+        else:
+            raise TypeError('Invalid cell type')
 
 
 def flatten_entities(topology_dict):
