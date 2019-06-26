@@ -1033,6 +1033,7 @@ def is_hypercube(cell):
     else:
         return False
 
+
 def flatten_reference_cube(ref_el):
     """ ... """
     flattened_cube = {2: UFCQuadrilateral(), 3: UFCHexahedron()}
