@@ -1026,12 +1026,10 @@ def tuple_sum(tree):
 
 
 def is_hypercube(cell):
-    if isinstance(cell, (DefaultLine, UFCInterval, UFCQuadrilateral, UFCHexahedron)):
-        return True
-    elif isinstance(cell, TensorProductCell):
+    if isinstance(cell, TensorProductCell):
         return reduce(lambda a, b: a and b, [is_hypercube(c) for c in cell.cells])
     else:
-        return False
+        return isinstance(cell, (DefaultLine, UFCInterval, UFCQuadrilateral, UFCHexahedron))
 
 
 def flatten_reference_cube(ref_el):
