@@ -108,7 +108,7 @@ class GaussLobattoLegendreQuadratureLineRule(QuadratureRule):
 
 
 class GaussLegendreQuadratureLineRule(QuadratureRule):
-    """Produce the Gauss--Legendre quadrature rules on the interval using
+    """Produce the Gauss-Legendre quadrature rules on the interval using
     the implementation in numpy. This facilitates implementing
     discontinuous spectral elements.
 
@@ -132,6 +132,39 @@ class GaussLegendreQuadratureLineRule(QuadratureRule):
         ws = tuple([scale * w for w in ws_ref])
 
         QuadratureRule.__init__(self, ref_el, xs, ws)
+
+
+class ExtendedGaussLegendreQuadratureLineRule(QuadratureRule):
+    """Produce the Extended-Gauss-Legendre quadrature rules on the interval using
+    the implementation in numpy. This facilitates implementing
+    dual continuous mimetic spectral elements.
+
+    The quadrature rule uses m points for a degree of precision of 2(m-2)-3 = 2m - 7.
+    Thus, not recommend for actual use (but is useful to define the Extended-Gauss-Legendre elements)
+    """
+    def __init__(self, ref_el, m):
+        if m < 3:
+            raise ValueError(
+                "Extended-Gauss-Legendre quadrature invalid for fewer than 3 points")
+
+        xs_ref, ws_ref = numpy.polynomial.legendre.leggauss(m-2)
+        A, b = reference_element.make_affine_mapping(((-1.,), (1.)),
+                                                     ref_el.get_vertices())
+
+        mapping = lambda x: numpy.dot(A, x) + b
+
+        scale = numpy.linalg.det(A)
+
+        ws = list([scale * w for w in ws_ref])
+        xs = [tuple(mapping(x_ref)[0]) for x_ref in xs_ref]
+
+        xs.insert(0, (0.,))
+        xs.append((1.,))
+        # The integral of these basis functions over the interval is 0!
+        ws.insert(0, 0.)
+        ws.append(0.)
+
+        QuadratureRule.__init__(self, ref_el, tuple(xs), tuple(ws))
 
 
 class CollapsedQuadratureTriangleRule(QuadratureRule):

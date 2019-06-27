@@ -38,6 +38,8 @@ from FIAT.hdiv_trace import HDivTrace
 from FIAT.mixed import MixedElement                       # noqa: F401
 from FIAT.restricted import RestrictedElement             # noqa: F401
 from FIAT.quadrature_element import QuadratureElement     # noqa: F401
+from FIAT.extended_gauss_legendre import ExtendedGaussLegendre
+from FIAT.edge import EdgeGaussLobattoLegendre, EdgeExtendedGaussLegendre
 
 # Important functionality
 from FIAT.quadrature import make_quadrature               # noqa: F401
@@ -65,6 +67,9 @@ supported_elements = {"Argyris": Argyris,
                       "Lagrange": Lagrange,
                       "Gauss-Lobatto-Legendre": GaussLobattoLegendre,
                       "Gauss-Legendre": GaussLegendre,
+                      "Extended-Gauss-Legendre": ExtendedGaussLegendre,
+                      "Gauss-Lobatto-Legendre Edge": EdgeGaussLobattoLegendre,
+                      "Extended-Gauss-Legendre Edge": EdgeExtendedGaussLegendre,
                       "Morley": Morley,
                       "Nedelec 1st kind H(curl)": Nedelec,
                       "Nedelec 2nd kind H(curl)": NedelecSecondKind,
