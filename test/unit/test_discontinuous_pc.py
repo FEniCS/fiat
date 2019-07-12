@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Imperial College London and others
+# Copyright (C) 2018 Imperial College London and others
 #
 # This file is part of FIAT.
 #
