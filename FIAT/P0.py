@@ -34,14 +34,13 @@ class P0Dual(dual_set.DualSet):
 
         nodes = [functional.PointEvaluation(ref_el, bary)]
         entity_ids = {}
-        sd = ref_el.get_spatial_dimension()
         top = ref_el.get_topology()
         for dim in sorted(top):
             entity_ids[dim] = {}
             for entity in sorted(top[dim]):
                 entity_ids[dim][entity] = []
 
-        entity_ids[sd] = {0: [0]}
+        entity_ids[dim] = {0: [0]}
 
         super(P0Dual, self).__init__(nodes, ref_el, entity_ids)
 
