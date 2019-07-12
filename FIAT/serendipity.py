@@ -56,7 +56,6 @@ class Serendipity(FiniteElement):
         dim = flat_el.get_spatial_dimension()
         flat_topology = flat_el.get_topology()
 
-        x, y, z = symbols('x y z')
         verts = flat_el.get_vertices()
 
         dx = ((verts[-1][0] - x)/(verts[-1][0] - verts[0][0]), (x - verts[0][0])/(verts[-1][0] - verts[0][0]))
