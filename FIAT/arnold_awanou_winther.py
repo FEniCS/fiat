@@ -21,7 +21,8 @@
 from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONSymTensorPolynomialSet
-from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct
+from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct, IntegralMoment
+from FIAT.quadrature import GaussLegendreQuadratureLineRule
 import numpy
 
 
@@ -42,6 +43,24 @@ def ArnoldAwanouWintherSpace(cell, degree):
     # function over each edge (three constraints). So we write down three functionals
     # whose kernels describe this space. We then compute the SVD, as described
     # in section 2.4 of the FIAT paper.
+    # ...
+    return P2
+
+
+class IntegralNormalNormalLegendreMoment(IntegralMoment):
+    def __init__(self, cell, entity, degree):
+        sd = ref_el.get_spatial_dimension()
+        shp = (sd, sd)
+
+        n = cell.compute_scaled_normal(entity)
+        nnT = numpy.outer(n, n)
+        Q = GaussLegendreQuadratureLineRule(ref_el, degree + 1)
+        #legendre = ...
+
+        #f_at_qpts = 
+
+        IntegralMoment.__init__(self, Q, f_at_qpts, shp=shp)
+
 
 class ArnoldAwanouWintherDual(DualSet):
     """Degrees of freedom for Arnold-Awanou-Winther elements."""
