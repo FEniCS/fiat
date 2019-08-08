@@ -266,6 +266,7 @@ class IntegralMoment(Functional):
           shp  (tuple)
               The shape ??? (Optional)
         """
+        self.Q = Q
         qpts, qwts = Q.get_points(), Q.get_weights()
         pt_dict = OrderedDict()
         self.comp = comp

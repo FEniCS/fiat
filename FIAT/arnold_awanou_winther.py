@@ -23,6 +23,7 @@ from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONSymTensorPolynomialSet
 from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct, IntegralMoment
 from FIAT.quadrature import GaussLegendreQuadratureLineRule
+from FIAT.reference_element import UFCInterval as interval
 import numpy
 
 
@@ -44,22 +45,32 @@ def ArnoldAwanouWintherSpace(cell, degree):
     # whose kernels describe this space. We then compute the SVD, as described
     # in section 2.4 of the FIAT paper.
     # ...
+
+    # Loop over facets
+    for entity in range(dim+1):
+        nnl = IntegralNormalNormalLegendreMoment(cell, entity, degree)
+        # Evaluate P2 basis functions at quadrature points along entity
+
     return P2
 
 
 class IntegralNormalNormalLegendreMoment(IntegralMoment):
+    """Enforce that n \cdot tau \cdot n is of degree n - 1 on entity."""
     def __init__(self, cell, entity, degree):
-        sd = ref_el.get_spatial_dimension()
+        sd = cell.get_spatial_dimension()
         shp = (sd, sd)
 
         n = cell.compute_scaled_normal(entity)
         nnT = numpy.outer(n, n)
-        Q = GaussLegendreQuadratureLineRule(ref_el, degree + 1)
-        #legendre = ...
+        quadpoints = degree + 1
+        Q = GaussLegendreQuadratureLineRule(interval(), quadpoints)
+        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*degree + [1])
 
-        #f_at_qpts = 
+        # Missing a constant factor for transformation of domain, but it doesn't matter
+        # for the kernel of the functional
+        f_at_qpts = [nnT*legendre[i] for i in range(quadpoints)]
 
-        IntegralMoment.__init__(self, Q, f_at_qpts, shp=shp)
+        IntegralMoment.__init__(self, cell, Q, f_at_qpts, shp=shp)
 
 
 class ArnoldAwanouWintherDual(DualSet):
