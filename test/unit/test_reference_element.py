@@ -17,6 +17,7 @@
 
 import pytest
 import numpy as np
+import sys
 
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.reference_element import Point, TensorProductCell, UFCQuadrilateral, UFCHexahedron
@@ -79,7 +80,7 @@ def test_ufc_connectivity_Dx(cell):
 
 
 @pytest.mark.parametrize(('cell', 'volume'),
-                         [(point, 1),
+                         [pytest.param(point, 1, marks=pytest.mark.xfail(conditional=sys.version_info < (3, 6))),
                           (interval, 1),
                           (triangle, 1/2),
                           (quadrilateral, 1),
