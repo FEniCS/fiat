@@ -22,36 +22,9 @@ from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONSymTensorPolynomialSet
 from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct, IntegralMoment
-from FIAT.quadrature import GaussLegendreQuadratureLineRule
+from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
 from FIAT.reference_element import UFCInterval as interval
 import numpy
-
-
-def ArnoldAwanouWintherSpace(cell, degree):
-    dim = cell.get_spatial_dimension()
-    if not dim == 2:
-        raise ValueError("Arnold-Awanou-Winther elements are only"
-                         "defined in dimension 2, for now! The theory"
-                         "is there in 3D, I just haven't implemented it.")
-
-
-    if not degree == 2:
-        raise ValueError("Arnold-Awanou-Winther elements are only defined"
-                         "for degree 2.")
-
-    P2 = ONSymTensorPolynomialSet(cell, degree)
-    # We need to take the subspace of P2 with n \cdot tau \cdot n a linear
-    # function over each edge (three constraints). So we write down three functionals
-    # whose kernels describe this space. We then compute the SVD, as described
-    # in section 2.4 of the FIAT paper.
-    # ...
-
-    # Loop over facets
-    for entity in range(dim+1):
-        nnl = IntegralNormalNormalLegendreMoment(cell, entity, degree)
-        # Evaluate P2 basis functions at quadrature points along entity
-
-    return P2
 
 
 class IntegralNormalNormalLegendreMoment(IntegralMoment):
@@ -70,7 +43,12 @@ class IntegralNormalNormalLegendreMoment(IntegralMoment):
         # for the kernel of the functional
         f_at_qpts = [nnT*legendre[i] for i in range(quadpoints)]
 
-        IntegralMoment.__init__(self, cell, Q, f_at_qpts, shp=shp)
+        # Map the quadrature points
+        fmap = cell.get_entity_transform(sd-1, entity)
+        mappedqpts = [fmap(pt) for pt in Q.get_points()]
+        mappedQ = QuadratureRule(cell, mappedqpts, Q.get_weights())
+
+        IntegralMoment.__init__(self, cell, mappedQ, f_at_qpts, shp=shp)
 
 
 class ArnoldAwanouWintherDual(DualSet):
@@ -94,16 +72,26 @@ class ArnoldAwanouWintherDual(DualSet):
 
         # no vertex dof
         dof_ids[0] = {i: [] for i in range(dim + 1)}
+
         # edge dofs
         (_dofs, _dof_ids) = self._generate_edge_dofs(cell, degree)
         dofs.extend(_dofs)
         dof_ids[1] = _dof_ids
+
         # cell dofs
         (_dofs, _dof_ids) = self._generate_trig_dofs(cell, degree, len(dofs))
         dofs.extend(_dofs)
         dof_ids[dim] = _dof_ids
 
+        # extra dofs for enforcing linearity of dot(n, dot(sigma, n)) on edges
+        (_dofs, _dof_ids) = self._generate_constraint_dofs(cell, degree, len(dofs))
+        dofs.extend(_dofs)
+
+        for entity_id in range(3):
+            dof_ids[1][entity_id] = dof_ids[1][entity_id] + _dof_ids[entity_id]
+
         super(ArnoldAwanouWintherDual, self).__init__(dofs, cell, dof_ids)
+
 
     @staticmethod
     def _generate_edge_dofs(cell, degree):
@@ -113,18 +101,38 @@ class ArnoldAwanouWintherDual(DualSet):
         """
         dofs = []
         dof_ids = {}
-        e1 = numpy.array([1.0, 0.0])              # euclidean basis 1
-        e2 = numpy.array([0.0, 1.0])              # euclidean basis 2
         offset = 0
 
         for entity_id in range(3):                  # a triangle has 3 edges
             pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
             normal = cell.compute_scaled_normal(entity_id)
-            dofs += [InnerProduct(cell, normal, basis, pt) for pt in pts for basis in [e1, e2]]
+            tangent = cell.compute_normalized_tangents(1, entity_id)[0]
+            dofs += [InnerProduct(cell, normal, dir, pt) for pt in pts for dir in [normal, tangent]]
             num_new_dofs = 2*len(pts)               # 2 dof per point on edge
             dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
             offset += num_new_dofs
         return (dofs, dof_ids)
+
+
+    @staticmethod
+    def _generate_constraint_dofs(cell, degree, offset):
+        """
+        Generate constraint dofs on edges.
+        dot(n, dot(sigma, n)) must be linear on each edge.
+        So we introduce functionals whose kernel describes this property,
+        as described in the FIAT paper.
+        """
+        dofs = []
+        dof_ids = {}
+
+        for entity_id in range(3):
+            dof = IntegralNormalNormalLegendreMoment(cell, entity_id, degree)
+            dofs += [dof]
+            dof_ids[entity_id] = [offset]
+            offset += 1
+
+        return (dofs, dof_ids)
+
 
     @staticmethod
     def _generate_trig_dofs(cell, degree, offset):
@@ -152,7 +160,7 @@ class ArnoldAwanouWinther(CiarletElement):
     def __init__(self, cell, degree):
         assert degree == 2, "Only defined for degree 2"
         # polynomial space
-        Ps = ArnoldAwanouWintherSpace(cell, degree)
+        Ps = ONSymTensorPolynomialSet(cell, degree)
         # degrees of freedom
         Ls = ArnoldAwanouWintherDual(cell, degree)
         # mapping under affine transformation
