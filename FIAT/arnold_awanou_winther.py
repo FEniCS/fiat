@@ -28,7 +28,7 @@ import numpy
 
 
 class IntegralNormalNormalLegendreMoment(IntegralMoment):
-    """Enforce that n \cdot tau \cdot n is of degree n - 1 on entity."""
+    """Enforce that dot(n, dot(tau, n)) is of degree n - 1 on entity."""
     def __init__(self, cell, entity, degree):
         sd = cell.get_spatial_dimension()
         shp = (sd, sd)
