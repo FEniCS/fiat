@@ -51,6 +51,21 @@ class IntegralNormalNormalLegendreMoment(IntegralMoment):
         IntegralMoment.__init__(self, cell, mappedQ, f_at_qpts, shp=shp)
 
 
+    def to_riesz(self, poly_set):
+        es = poly_set.get_expansion_set()
+        ed = poly_set.get_embedded_degree()
+        pts = list(self.pt_dict.keys())
+        bfs = es.tabulate(ed, pts)
+        wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
+        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
+
+        for i in range(result.shape[0]):
+            for j in range(result.shape[1]):
+                result[i, j, :] = numpy.dot(bfs, wts[:, i, j])
+
+        return result
+
+
 class ArnoldAwanouWintherDual(DualSet):
     """Degrees of freedom for Arnold-Awanou-Winther elements."""
     def __init__(self, cell, degree):
