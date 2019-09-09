@@ -32,10 +32,9 @@ Automated Testing
 We use CircleCI to perform automated
 testing.
 
-.. image:: https://bitbucket-badges.useast.atlassian.io/badge/fenics-project/fiat.svg
-   :target: https://bitbucket.org/fenics-project/fiat/addon/pipelines/home
-   :alt: Pipelines Build Status
-
+.. image:: https://circleci.com/gh/FEniCS/fiat.svg?style=shield
+    :target: https://circleci.com/gh/FEniCS/fiat
+   :alt: Build Status
 
 
 Code Coverage
