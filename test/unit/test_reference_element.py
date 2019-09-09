@@ -17,6 +17,7 @@
 
 import pytest
 import numpy as np
+import sys
 
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.reference_element import Point, TensorProductCell, UFCQuadrilateral, UFCHexahedron
@@ -39,8 +40,8 @@ ufc_hexahedron_21connectivity = [(0, 1, 4, 5), (2, 3, 6, 7), (0, 2, 8, 9),
 @pytest.mark.parametrize(('cell', 'connectivity'),
                          [(tetrahedron, ufc_tetrahedron_21connectivity),
                           (hexahedron, ufc_hexahedron_21connectivity),
-                          pytest.mark.xfail((triangle_x_interval, [])),
-                          pytest.mark.xfail((quadrilateral_x_interval, []))])
+                          pytest.param(triangle_x_interval, [], marks=pytest.mark.xfail),
+                          pytest.param(quadrilateral_x_interval, [], marks=pytest.mark.xfail)])
 def test_ufc_connectivity_21(cell, connectivity):
     """Check face-edge connectivity builds what UFC expects.
     This is only non-trivial case ; the rest is x-0 and D-x,
@@ -51,9 +52,9 @@ def test_ufc_connectivity_21(cell, connectivity):
 @pytest.mark.parametrize('cell',
                          [point, interval, triangle, tetrahedron,
                           quadrilateral, hexahedron,
-                          pytest.mark.xfail(interval_x_interval),
-                          pytest.mark.xfail(triangle_x_interval),
-                          pytest.mark.xfail(quadrilateral_x_interval)])
+                          pytest.param(interval_x_interval, marks=pytest.mark.xfail),
+                          pytest.param(triangle_x_interval, marks=pytest.mark.xfail),
+                          pytest.param(quadrilateral_x_interval, marks=pytest.mark.xfail)])
 def test_ufc_connectivity_x0(cell):
     """Check x-0 connectivity is just what get_topology gives"""
     for dim0 in range(cell.get_spatial_dimension()+1):
@@ -66,9 +67,9 @@ def test_ufc_connectivity_x0(cell):
 @pytest.mark.parametrize('cell',
                          [point, interval, triangle, tetrahedron,
                           quadrilateral, hexahedron,
-                          pytest.mark.xfail(interval_x_interval),
-                          pytest.mark.xfail(triangle_x_interval),
-                          pytest.mark.xfail(quadrilateral_x_interval)])
+                          pytest.param(interval_x_interval, marks=pytest.mark.xfail),
+                          pytest.param(triangle_x_interval, marks=pytest.mark.xfail),
+                          pytest.param(quadrilateral_x_interval, marks=pytest.mark.xfail)])
 def test_ufc_connectivity_Dx(cell):
     """Check D-x connectivity is just [(0,1,2,...)]"""
     D = cell.get_spatial_dimension()
@@ -79,7 +80,7 @@ def test_ufc_connectivity_Dx(cell):
 
 
 @pytest.mark.parametrize(('cell', 'volume'),
-                         [pytest.mark.xfail((point, 1)),
+                         [pytest.param(point, 1, marks=pytest.mark.xfail(conditional=sys.version_info < (3, 6))),
                           (interval, 1),
                           (triangle, 1/2),
                           (quadrilateral, 1),

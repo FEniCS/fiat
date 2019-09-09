@@ -96,7 +96,7 @@ def test_basis_derivatives_scaling():
             assert np.isclose(tab[(2,)][1][p], 0.0)
 
 
-xfail_impl = pytest.mark.xfail(strict=True, raises=NotImplementedError)
+xfail_impl = lambda element: pytest.param(element, marks=pytest.mark.xfail(strict=True, raises=NotImplementedError))
 elements = [
     "Lagrange(I, 1)",
     "Lagrange(I, 2)",
