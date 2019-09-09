@@ -33,7 +33,7 @@ We use CircleCI to perform automated
 testing.
 
 .. image:: https://circleci.com/gh/FEniCS/fiat.svg?style=shield
-    :target: https://circleci.com/gh/FEniCS/fiat
+   :target: https://circleci.com/gh/FEniCS/fiat
    :alt: Build Status
 
 
