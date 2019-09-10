@@ -25,7 +25,7 @@ import FIAT
 from FIAT.reference_element import UFCInterval
 
 
-@pytest.mark.parametrize("degree", range(2, 7))
+@pytest.mark.parametrize("degree", list(range(2, 7)))
 def test_egl_basis_values(degree):
     """Ensure that integrating a simple monomial produces the expected results."""
     from FIAT import ufc_simplex, ExtendedGaussLegendre, make_quadrature
@@ -44,9 +44,9 @@ def test_egl_basis_values(degree):
         assert np.allclose(integral, reference, rtol=1e-14)
 
 
-@pytest.mark.parametrize(("points, degree"), ((p, d)
-                                              for p in range(3, 10)
-                                              for d in range(2*p - 7)))
+@pytest.mark.parametrize(("points, degree"), list((p, d)
+                                                  for p in range(3, 10)
+                                                  for d in range(2*p - 7)))
 def test_extended_gauss_legendre_quadrature(points, degree):
     """Check that the quadrature rules correctly integrate all the right
     polynomial degrees."""

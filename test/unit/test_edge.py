@@ -27,7 +27,7 @@ import FIAT
 x = sympy.symbols('x')
 
 
-@pytest.mark.parametrize("degree", range(0, 7))
+@pytest.mark.parametrize("degree", list(range(0, 7)))
 def test_gll_edge_basis_values(degree):
     """Ensure that edge elements are histopolatory"""
 
@@ -47,7 +47,7 @@ def test_gll_edge_basis_values(degree):
                 assert(math.isclose(int_sub, 0., abs_tol=1e-9))
 
 
-@pytest.mark.parametrize("degree", range(2, 7))
+@pytest.mark.parametrize("degree", list(range(2, 7)))
 def test_egl_edge_basis_values(degree):
     """Ensure that edge elements are histopolatory"""
 
