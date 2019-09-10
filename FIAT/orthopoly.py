@@ -312,7 +312,8 @@ def mod_chebyshev(N, mom, alpham, betam):
     represented in terms of its modifed moments which are obtained by
     integrating the monic polynomials against the weight function.
 
-    REFERENCES:
+    References
+    ----------
 
     John C. Wheeler, "Modified moments and Gaussian quadratures"
     Rocky Mountain Journal of Mathematics, Vol. 4, Num. 2 (1974), 287--296
@@ -322,6 +323,7 @@ def mod_chebyshev(N, mom, alpham, betam):
 
     Adapted from the MATLAB implementation:
     https://www.cs.purdue.edu/archives/2002/wxg/codes/chebyshev.m
+
     """
 
     if not isinstance(N, int):

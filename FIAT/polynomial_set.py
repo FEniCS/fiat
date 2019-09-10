@@ -32,7 +32,7 @@ from FIAT.functional import index_iterator
 
 
 def mis(m, n):
-    """returns all m-tuples of nonnegative integers that sum up to n."""
+    """Returns all m-tuples of nonnegative integers that sum up to n."""
     if m == 1:
         return [(n,)]
     elif n == 0:
@@ -197,7 +197,7 @@ def project(f, U, Q):
 
 
 def form_matrix_product(mats, alpha):
-    """forms product over mats[i]**alpha[i]"""
+    """Forms product over mats[i]**alpha[i]"""
     m = mats[0].shape[0]
     result = numpy.eye(m)
     for i in range(len(alpha)):

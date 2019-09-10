@@ -57,7 +57,7 @@ class ReggeDual(DualSet):
 
     @staticmethod
     def _generate_dofs(cell, entity_dim, degree, offset):
-        """generate degrees of freedom for enetities of dimension entity_dim
+        """Generate degrees of freedom for enetities of dimension entity_dim
 
         Input: all obvious except
            offset  -- the current first available dof id.
