@@ -21,4 +21,6 @@ jobs:
           name: Run unit tests
           command: |
               DATA_REPO_GIT="" coverage run --source FIAT -m pytest -v test/
-              coveralls
+              if [ -v COVERALLS_REPO_TOKEN ]; then
+                coveralls
+              fi
