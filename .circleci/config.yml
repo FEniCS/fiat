@@ -13,8 +13,10 @@ jobs:
           name: Install FIAT
           command: pip install . --user
       - run:
-          name: Run flake8 tests
-          command: python -m flake8 .
+          name: Run flake8 and pydocstyle tests
+          command: |
+          python -m flake8 .
+          python -m pydocstyle .
       - run:
           name: Run unit tests
           command: |

@@ -152,7 +152,7 @@ def NedelecSpace3D(ref_el, k):
 
 
 class NedelecDual2D(dual_set.DualSet):
-    """Dual basis for first-kind Nedelec in 2d """
+    """Dual basis for first-kind Nedelec in 2D."""
 
     def __init__(self, ref_el, degree):
         sd = ref_el.get_spatial_dimension()
@@ -213,7 +213,7 @@ class NedelecDual2D(dual_set.DualSet):
 
 
 class NedelecDual3D(dual_set.DualSet):
-    """Dual basis for first-kind Nedelec in 3d """
+    """Dual basis for first-kind Nedelec in 3D."""
 
     def __init__(self, ref_el, degree):
         sd = ref_el.get_spatial_dimension()
