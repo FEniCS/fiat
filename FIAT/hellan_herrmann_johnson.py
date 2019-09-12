@@ -54,7 +54,7 @@ class HellanHerrmannJohnsonDual(DualSet):
 
     @staticmethod
     def _generate_edge_dofs(cell, degree, offset):
-        """generate dofs on edges.
+        """Generate dofs on edges.
         On each edge, let n be its normal. For degree=r, the scalar function
               n^T u n
         is evaluated at points enough to control P(r).
@@ -72,7 +72,7 @@ class HellanHerrmannJohnsonDual(DualSet):
 
     @staticmethod
     def _generate_trig_dofs(cell, degree, offset):
-        """generate dofs on edges.
+        """Generate dofs on edges.
         On each triangle, for degree=r, the three components
               u11, u12, u22
         are evaluated at points enough to control P(r-1).
