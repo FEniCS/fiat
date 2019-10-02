@@ -120,8 +120,8 @@ class ArnoldAwanouWintherDual(DualSet):
 
         for entity_id in range(3):                  # a triangle has 3 edges
             pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
-            normal = cell.compute_normal(entity_id)
-            tangent = cell.compute_normalized_tangents(1, entity_id)[0]
+            normal = cell.compute_scaled_normal(entity_id)
+            tangent = cell.compute_tangents(1, entity_id)[0]
             dofs += [InnerProduct(cell, normal, dir, pt) for pt in pts for dir in [normal, tangent]]
             num_new_dofs = 2*len(pts)               # 2 dof per point on edge
             dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
