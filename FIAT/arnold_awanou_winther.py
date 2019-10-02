@@ -28,12 +28,12 @@ import numpy
 
 
 class IntegralNormalNormalLegendreMoment(IntegralMoment):
-    """Enforce that dot(n, dot(tau, n)) is of degree n - 1 on entity."""
+    """Enforce that dot(n, dot(tau, n)) is of degree 1 on entity."""
     def __init__(self, cell, entity, degree):
         sd = cell.get_spatial_dimension()
         shp = (sd, sd)
 
-        n = cell.compute_scaled_normal(entity)
+        n = cell.compute_normal(entity)
         nnT = numpy.outer(n, n)
         quadpoints = degree + 1
         Q = GaussLegendreQuadratureLineRule(interval(), quadpoints)
@@ -120,7 +120,7 @@ class ArnoldAwanouWintherDual(DualSet):
 
         for entity_id in range(3):                  # a triangle has 3 edges
             pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
-            normal = cell.compute_scaled_normal(entity_id)
+            normal = cell.compute_normal(entity_id)
             tangent = cell.compute_normalized_tangents(1, entity_id)[0]
             dofs += [InnerProduct(cell, normal, dir, pt) for pt in pts for dir in [normal, tangent]]
             num_new_dofs = 2*len(pts)               # 2 dof per point on edge
