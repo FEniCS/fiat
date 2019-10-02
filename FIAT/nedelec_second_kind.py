@@ -43,7 +43,7 @@ class NedelecSecondKindDual(DualSet):
       cell:     L(f) = \int f * g * dx   for g in RT_{k-1}
 
 
-   d = 3:
+    d = 3:
 
       vertices: None
 

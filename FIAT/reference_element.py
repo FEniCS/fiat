@@ -308,7 +308,7 @@ class Simplex(Cell):
             return -nfoo
 
     def compute_tangents(self, dim, i):
-        """computes tangents in any dimension based on differences
+        """Computes tangents in any dimension based on differences
         between vertices and the first vertex of the i:th facet
         of dimension dim.  Returns a (possibly empty) list.
         These tangents are *NOT* normalized to have unit length."""
@@ -318,7 +318,7 @@ class Simplex(Cell):
         return ts
 
     def compute_normalized_tangents(self, dim, i):
-        """computes tangents in any dimension based on differences
+        """Computes tangents in any dimension based on differences
         between vertices and the first vertex of the i:th facet
         of dimension dim.  Returns a (possibly empty) list.
         These tangents are normalized to have unit length."""
