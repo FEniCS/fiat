@@ -27,21 +27,20 @@ from FIAT.reference_element import UFCInterval as interval
 import numpy
 
 
-class IntegralNormalNormalLegendreMoment(IntegralMoment):
-    """Enforce that dot(n, dot(tau, n)) is of degree 1 on entity."""
-    def __init__(self, cell, entity, degree):
+class IntegralBidirectionalLegendreMoment(IntegralMoment):
+    """Moment of dot(s1, dot(tau, s2)) against Legendre on entity."""
+    def __init__(self, cell, s1, s2, entity, mom_deg, comp_deg):
         sd = cell.get_spatial_dimension()
         shp = (sd, sd)
 
-        n = cell.compute_normal(entity)
-        nnT = numpy.outer(n, n)
-        quadpoints = degree + 1
+        s1s2T = numpy.outer(s1, s2)
+        quadpoints = comp_deg + 1
         Q = GaussLegendreQuadratureLineRule(interval(), quadpoints)
-        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*degree + [1])
+        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1])
 
         # Missing a constant factor for transformation of domain, but it doesn't matter
         # for the kernel of the functional
-        f_at_qpts = [nnT*legendre[i] for i in range(quadpoints)]
+        f_at_qpts = [s1s2T*legendre[i] for i in range(quadpoints)]
 
         # Map the quadrature points
         fmap = cell.get_entity_transform(sd-1, entity)
@@ -63,7 +62,24 @@ class IntegralNormalNormalLegendreMoment(IntegralMoment):
             for j in range(result.shape[1]):
                 result[i, j, :] = numpy.dot(bfs, wts[:, i, j])
 
-        return result
+        return result    
+    
+
+class IntegralNormalNormalLegendreMoment(IntegralBidirectionalLegendreMoment):
+    """Moment of dot(n, dot(tau, n)) against Legendre on entity."""
+    def __init__(self, cell, entity, mom_deg, comp_deg):
+        n = cell.compute_scaled_normal(entity)
+        IntegralBidirectionalLegendreMoment.__init__(self, cell, n, n,
+                                                     entity, mom_deg, comp_deg)
+
+
+class IntegralNormalTangentialLegendreMoment(IntegralBidirectionalLegendreMoment):
+    """Moment of dot(n, dot(tau, n)) against Legendre on entity."""
+    def __init__(self, cell, entity, mom_deg, comp_deg):
+        n = cell.compute_scaled_normal(entity)
+        t = cell.compute_edge_tangent(entity)
+        IntegralBidirectionalLegendreMoment.__init__(self, cell, n, t,
+                                                     entity, mom_deg, comp_deg)
 
 
 class ArnoldAwanouWintherDual(DualSet):
@@ -108,6 +124,26 @@ class ArnoldAwanouWintherDual(DualSet):
         super(ArnoldAwanouWintherDual, self).__init__(dofs, cell, dof_ids)
 
 
+    # @staticmethod
+    # def _generate_edge_dofs(cell, degree):
+    #     """generate dofs on edges.
+    #     On each edge, let n be its normal. The components of dot(u, n)
+    #     are evaluated at two different points.
+    #     """
+    #     dofs = []
+    #     dof_ids = {}
+    #     offset = 0
+
+    #     for entity_id in range(3):                  # a triangle has 3 edges
+    #         pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
+    #         normal = cell.compute_scaled_normal(entity_id)
+    #         tangent = cell.compute_tangents(1, entity_id)[0]
+    #         dofs += [InnerProduct(cell, normal, dir, pt) for pt in pts for dir in [normal, tangent]]
+    #         num_new_dofs = 2*len(pts)               # 2 dof per point on edge
+    #         dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
+    #         offset += num_new_dofs
+    #     return (dofs, dof_ids)
+
     @staticmethod
     def _generate_edge_dofs(cell, degree):
         """generate dofs on edges.
@@ -119,11 +155,10 @@ class ArnoldAwanouWintherDual(DualSet):
         offset = 0
 
         for entity_id in range(3):                  # a triangle has 3 edges
-            pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
-            normal = cell.compute_scaled_normal(entity_id)
-            tangent = cell.compute_tangents(1, entity_id)[0]
-            dofs += [InnerProduct(cell, normal, dir, pt) for pt in pts for dir in [normal, tangent]]
-            num_new_dofs = 2*len(pts)               # 2 dof per point on edge
+            for order in (0,1):
+                dofs += [IntegralNormalNormalLegendreMoment(cell, entity_id, order, 2),
+                         IntegralNormalTangentialLegendreMoment(cell, entity_id, order, 2)]
+            num_new_dofs = 4                # 2 dof per order on edge
             dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
             offset += num_new_dofs
         return (dofs, dof_ids)
@@ -141,7 +176,7 @@ class ArnoldAwanouWintherDual(DualSet):
         dof_ids = {}
 
         for entity_id in range(3):
-            dof = IntegralNormalNormalLegendreMoment(cell, entity_id, degree)
+            dof = IntegralNormalNormalLegendreMoment(cell, entity_id, degree, 2)
             dofs += [dof]
             dof_ids[entity_id] = [offset]
             offset += 1
