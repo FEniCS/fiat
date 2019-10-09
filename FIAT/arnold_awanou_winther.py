@@ -20,9 +20,9 @@
 
 from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
-from FIAT.polynomial_set import ONSymTensorPolynomialSet
-from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct, IntegralMoment
-from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
+from FIAT.polynomial_set import ONSymTensorPolynomialSet, ONPolynomialSet
+from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct, IntegralMoment, FrobeniusIntegralMoment as FIM
+from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule, make_quadrature
 from FIAT.reference_element import UFCInterval as interval
 import numpy
 
@@ -124,26 +124,6 @@ class ArnoldAwanouWintherDual(DualSet):
         super(ArnoldAwanouWintherDual, self).__init__(dofs, cell, dof_ids)
 
 
-    # @staticmethod
-    # def _generate_edge_dofs(cell, degree):
-    #     """generate dofs on edges.
-    #     On each edge, let n be its normal. The components of dot(u, n)
-    #     are evaluated at two different points.
-    #     """
-    #     dofs = []
-    #     dof_ids = {}
-    #     offset = 0
-
-    #     for entity_id in range(3):                  # a triangle has 3 edges
-    #         pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
-    #         normal = cell.compute_scaled_normal(entity_id)
-    #         tangent = cell.compute_tangents(1, entity_id)[0]
-    #         dofs += [InnerProduct(cell, normal, dir, pt) for pt in pts for dir in [normal, tangent]]
-    #         num_new_dofs = 2*len(pts)               # 2 dof per point on edge
-    #         dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
-    #         offset += num_new_dofs
-    #     return (dofs, dof_ids)
-
     @staticmethod
     def _generate_edge_dofs(cell, degree):
         """generate dofs on edges.
@@ -193,13 +173,24 @@ class ArnoldAwanouWintherDual(DualSet):
         """
         dofs = []
         dof_ids = {}
-        pts = cell.make_points(2, 0, 3)           # 2D trig #0
+        momdeg = degree - 2
+        # Tabulate all ON polys of certain degree
+        Q = make_quadrature(cell, 2*(degree+momdeg))
+        sd = cell.get_spatial_dimension()
+        Pkm2 = ONPolynomialSet(cell, momdeg)
+        pkm2vals = Pkm2.tabulate(Q.get_points())[tuple([0 for i in range(sd)])]
+
         e1 = numpy.array([1.0, 0.0])              # euclidean basis 1
         e2 = numpy.array([0.0, 1.0])              # euclidean basis 2
         basis = [(e1, e1), (e1, e2), (e2, e2)]    # basis for symmetric matrix
         for (v1, v2) in basis:
-            dofs += [InnerProduct(cell, v1, v2, pt) for pt in pts]
-        num_dofs = 3 * len(pts)                   # 3 dofs per trig
+            v1v2t = numpy.outer(v1, v2)
+            for i in range(pkm2vals.shape[0]):
+                fatqp = numpy.asarray([[[x * p for p in pkm2vals[i, :]]
+                                        for x in y] for y in v1v2t])
+                dofs.append(FIM(cell, Q, fatqp))
+
+        num_dofs = len(dofs)
         dof_ids[0] = list(range(offset, offset + num_dofs))
         return (dofs, dof_ids)
 

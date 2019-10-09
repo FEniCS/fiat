@@ -358,19 +358,19 @@ class IntegralMomentOfNormalDerivative(Functional):
 class FrobeniusIntegralMoment(Functional):
 
     def __init__(self, ref_el, Q, f_at_qpts):
-        # f_at_qpts is num components x num_qpts
-        if len(Q.get_points()) != f_at_qpts.shape[1]:
+        # f_at_qpts is (some shape) x num_qpts
+        shp = tuple(f_at_qpts.shape[:-1])
+        if len(Q.get_points()) != f_at_qpts.shape[-1]:
             raise Exception("Mismatch in number of quadrature points and values")
-
-        # make sure that shp is same shape as f given
-        shp = (f_at_qpts.shape[0],)
 
         qpts, qwts = Q.get_points(), Q.get_weights()
         pt_dict = {}
-        for i in range(len(qpts)):
-            pt_cur = tuple(qpts[i])
-            pt_dict[pt_cur] = [(qwts[i] * f_at_qpts[j, i], (j,))
-                               for j in range(f_at_qpts.shape[0])]
+
+        for i, (pt_cur, wt_cur) in enumerate(zip(map(tuple, qpts), qwts)):
+            pt_dict[pt_cur] = []
+            for alfa in index_iterator(shp):
+                qpidx = tuple(alfa + [i])
+                pt_dict[pt_cur].append((wt_cur * f_at_qpts[qpidx], tuple(alfa)))
 
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment")
 
@@ -482,3 +482,31 @@ class PointwiseInnerProductEvaluation(Functional):
 
         shp = (sd, sd)
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
+
+
+class TensorBidirectionalMomentInnerProductEvaluation(Functional):
+    """
+    This is a functional on symmetric 2-tensor fields. Let u be such a
+    field, f a function tabulated at points, and v,w be vectors. This implements the evaluation
+    \int v^T u(x) w f(x).
+
+    Clearly v^iu_{ij}w^j = u_{ij}v^iw^j. Thus the value can be computed
+    from the Frobenius inner product of u with wv^T. This gives the
+    correct weights.
+    """
+
+    def __init__(self, ref_el, v, w, Q, f_at_qpts, comp_deg):
+        sd = ref_el.get_spatial_dimension()
+
+        wvT = numpy.outer(w, v)
+
+        qpts, qwts = Q.get_points(), Q.get_weights()
+
+        for k, pt in enumerate(map(tuple(qpts))):
+            pt_dict[pt] = []
+            for i, j in index_iterator((sd, sd)):
+                pt_dict[pt].append((qwts[k] * wvT[i][j] * f_at_qpts[i, j, k]),
+                                   (i, j))
+
+        shp = (sd, sd)
+        Functional.__init__(self, ref_el, shp, pt_dict, {}, "TensorBidirectionalMomentInnerProductEvaluation")
