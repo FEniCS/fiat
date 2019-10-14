@@ -124,26 +124,6 @@ class ArnoldAwanouWintherDual(DualSet):
         super(ArnoldAwanouWintherDual, self).__init__(dofs, cell, dof_ids)
 
 
-    # @staticmethod
-    # def _generate_edge_dofs(cell, degree):
-    #     """generate dofs on edges.
-    #     On each edge, let n be its normal. The components of dot(u, n)
-    #     are evaluated at two different points.
-    #     """
-    #     dofs = []
-    #     dof_ids = {}
-    #     offset = 0
-
-    #     for entity_id in range(3):                  # a triangle has 3 edges
-    #         pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
-    #         normal = cell.compute_scaled_normal(entity_id)
-    #         tangent = cell.compute_tangents(1, entity_id)[0]
-    #         dofs += [InnerProduct(cell, normal, dir, pt) for pt in pts for dir in [normal, tangent]]
-    #         num_new_dofs = 2*len(pts)               # 2 dof per point on edge
-    #         dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
-    #         offset += num_new_dofs
-    #     return (dofs, dof_ids)
-
     @staticmethod
     def _generate_edge_dofs(cell, degree):
         """generate dofs on edges.
@@ -155,13 +135,33 @@ class ArnoldAwanouWintherDual(DualSet):
         offset = 0
 
         for entity_id in range(3):                  # a triangle has 3 edges
-            for order in (0,1):
-                dofs += [IntegralNormalNormalLegendreMoment(cell, entity_id, order, 2),
-                         IntegralNormalTangentialLegendreMoment(cell, entity_id, order, 2)]
-            num_new_dofs = 4                # 2 dof per order on edge
+            pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
+            normal = cell.compute_scaled_normal(entity_id)
+            tangent = cell.compute_tangents(1, entity_id)[0]
+            dofs += [InnerProduct(cell, normal, dir, pt) for pt in pts for dir in [normal, tangent]]
+            num_new_dofs = 2*len(pts)               # 2 dof per point on edge
             dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
             offset += num_new_dofs
         return (dofs, dof_ids)
+
+    # @staticmethod
+    # def _generate_edge_dofs(cell, degree):
+    #     """generate dofs on edges.
+    #     On each edge, let n be its normal. The components of dot(u, n)
+    #     are evaluated at two different points.
+    #     """
+    #     dofs = []
+    #     dof_ids = {}
+    #     offset = 0
+
+    #     for entity_id in range(3):                  # a triangle has 3 edges
+    #         for order in (0,1):
+    #             dofs += [IntegralNormalNormalLegendreMoment(cell, entity_id, order, 2),
+    #                      IntegralNormalTangentialLegendreMoment(cell, entity_id, order, 2)]
+    #         num_new_dofs = 4                # 2 dof per order on edge
+    #         dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
+    #         offset += num_new_dofs
+    #     return (dofs, dof_ids)
 
 
     @staticmethod
