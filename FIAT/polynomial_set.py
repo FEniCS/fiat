@@ -1,19 +1,8 @@
 # Copyright (C) 2008-2012 Robert C. Kirby (Texas Tech University)
 #
-# This file is part of FIAT.
+# This file is part of FIAT (https://www.fenicsproject.org)
 #
-# FIAT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# FIAT is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+# SPDX-License-Identifier:    LGPL-3.0-or-later
 
 # polynomial sets
 # basic interface:
@@ -32,7 +21,7 @@ from FIAT.functional import index_iterator
 
 
 def mis(m, n):
-    """returns all m-tuples of nonnegative integers that sum up to n."""
+    """Returns all m-tuples of nonnegative integers that sum up to n."""
     if m == 1:
         return [(n,)]
     elif n == 0:
@@ -197,7 +186,7 @@ def project(f, U, Q):
 
 
 def form_matrix_product(mats, alpha):
-    """forms product over mats[i]**alpha[i]"""
+    """Forms product over mats[i]**alpha[i]"""
     m = mats[0].shape[0]
     result = numpy.eye(m)
     for i in range(len(alpha)):

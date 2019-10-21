@@ -29,26 +29,22 @@ Documentation can be viewed at http://fenics-fiat.readthedocs.org/.
 Automated Testing
 -----------------
 
-We use Bitbucket Pipelines and Atlassian Bamboo to perform automated
+We use CircleCI to perform automated
 testing.
 
-.. image:: https://bitbucket-badges.useast.atlassian.io/badge/fenics-project/fiat.svg
-   :target: https://bitbucket.org/fenics-project/fiat/addon/pipelines/home
-   :alt: Pipelines Build Status
-
-.. image:: http://magpie.bpi.cam.ac.uk:8085/plugins/servlet/wittified/build-status/FIAT-FD
-   :target: http://magpie.bpi.cam.ac.uk:8085/browse/FIAT-FD
-   :alt: Bamboo Build Status
+.. image:: https://circleci.com/gh/FEniCS/fiat.svg?style=shield
+   :target: https://circleci.com/gh/FEniCS/fiat
+   :alt: Build Status
 
 
 Code Coverage
 -------------
 
 Code coverage reports can be viewed at
-https://coveralls.io/bitbucket/fenics-project/fiat.
+https://coveralls.io/github/FEniCS/fiat.
 
-.. image:: https://coveralls.io/repos/bitbucket/fenics-project/fiat/badge.svg?branch=master
-   :target: https://coveralls.io/bitbucket/fenics-project/fiat?branch=master
+.. image:: https://coveralls.io/repos/github/FEniCS/fiat/badge.svg?branch=master
+   :target: https://coveralls.io/github/FEniCS/fiat?branch=master
    :alt: Coverage Status
 
 

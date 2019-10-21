@@ -1,19 +1,8 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
 #
-# This file is part of FIAT.
+# This file is part of FIAT (https://www.fenicsproject.org)
 #
-# FIAT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# FIAT is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+# SPDX-License-Identifier:    LGPL-3.0-or-later
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 # Modified by Lizao Li (lzlarryli@gmail.com), 2016
@@ -308,7 +297,7 @@ class Simplex(Cell):
             return -nfoo
 
     def compute_tangents(self, dim, i):
-        """computes tangents in any dimension based on differences
+        """Computes tangents in any dimension based on differences
         between vertices and the first vertex of the i:th facet
         of dimension dim.  Returns a (possibly empty) list.
         These tangents are *NOT* normalized to have unit length."""
@@ -318,7 +307,7 @@ class Simplex(Cell):
         return ts
 
     def compute_normalized_tangents(self, dim, i):
-        """computes tangents in any dimension based on differences
+        """Computes tangents in any dimension based on differences
         between vertices and the first vertex of the i:th facet
         of dimension dim.  Returns a (possibly empty) list.
         These tangents are normalized to have unit length."""
