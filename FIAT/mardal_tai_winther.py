@@ -36,7 +36,7 @@ class IntegralLegendreDirectionalMoment(IntegralMoment):
         shp = (sd,)
         quadpoints = comp_deg + 1
         Q = GaussLegendreQuadratureLineRule(interval(), quadpoints)
-        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1]) * numpy.abs(cell.volume_of_subcomplex(1, entity))
+        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1]) * cell.volume_of_subcomplex(1, entity)
         f_at_qpts = numpy.array([s*legendre[i] for i in range(quadpoints)])
         fmap = cell.get_entity_transform(sd-1, entity)
         mappedqpts = [fmap(pt) for pt in Q.get_points()]
@@ -70,8 +70,8 @@ class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
 class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
     """Momement of v.t against a Legendre polynomial over an edge"""
     def __init__(self, cell, entity, mom_deg, comp_deg):
-        n = cell.compute_normalized_edge_tangent(entity)
-        IntegralLegendreDirectionalMoment.__init__(self, cell, n, entity,
+        t = cell.compute_normalized_edge_tangent(entity)
+        IntegralLegendreDirectionalMoment.__init__(self, cell, t, entity,
                                                    mom_deg, comp_deg)
 
 
@@ -194,8 +194,8 @@ class MardalTaiWintherDual(DualSet):
 class MardalTaiWinther(CiarletElement):
     """The definition of the Mardal-Tai-Winther element.
     """
-    def __init__(self, cell, degree):
-        assert degree == 3, "Only defined for degree 2"
+    def __init__(self, cell, degree=3):
+        assert degree == 3, "Only defined for degree 3"
         assert cell.get_spatial_dimension() == 2,  "Only defined for dimension 2"
         # polynomial space
         Ps = ONPolynomialSet(cell, degree, (2,))
