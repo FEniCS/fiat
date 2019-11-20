@@ -344,6 +344,51 @@ class IntegralMomentOfNormalDerivative(Functional):
         return result
 
 
+class IntegralMomentOfDivergence(Functional):
+    def __init__(self, ref_el, Q, f_at_qpts):
+        self.f_at_qpts = f_at_qpts
+        self.Q = Q
+
+        sd = ref_el.get_spatial_dimension()
+
+        qpts, qwts = Q.get_points(), Q.get_weights()
+        dpts = qpts
+        self.dpts = dpts
+
+        dpt_dict = OrderedDict()
+
+        alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
+        for j, pt in enumerate(dpts):
+            dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
+
+        Functional.__init__(self, ref_el, tuple(),
+                            {}, dpt_dict, "IntegralMomentOfDivergence")
+    
+    def to_riesz(self, poly_set):
+        es = poly_set.get_expansion_set()
+        ed = poly_set.get_embedded_degree()
+
+        sd = self.ref_el.get_spatial_dimension()
+        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
+
+        X = sympy.DeferredVector('x')
+        dX = numpy.asarray([X[i] for i in range(sd)])
+
+        # evaluate bfs symbolically
+        bfs = es.tabulate(ed, [dX])[:, 0]
+
+        qwts = self.Q.get_weights()
+
+        # Just works for vectors. fixme for tensors
+        for j in range(len(bfs)):
+            grad_phi = [sympy.lambdify(X, sympy.diff(bfs[j], dXcur))
+                        for dXcur in dX]
+            for i in range(sd):
+                for k, pt in enumerate(self.deriv_dict.keys()):
+                    result[i, j] += qwts[k] * self.f_at_qpts[k] * grad_phi[i](pt)
+        return result
+
+
 class FrobeniusIntegralMoment(Functional):
 
     def __init__(self, ref_el, Q, f_at_qpts):
