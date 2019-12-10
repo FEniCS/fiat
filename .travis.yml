@@ -5,7 +5,7 @@ python:
 
 before_install:
   - pip install flake8
-  - pip install pytest pytest-cases
+  - pip install pytest
 
 install:
   - pip install .
