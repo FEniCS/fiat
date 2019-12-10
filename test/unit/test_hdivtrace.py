@@ -106,7 +106,6 @@ def test_gradient_traceerror(dim, order, degree):
     """Ensure that the TraceError appears in the appropriate dict entries when
     attempting to tabulate certain orders of derivatives."""
     from FIAT import ufc_simplex, HDivTrace, make_quadrature
-    from FIAT.hdiv_trace import TraceError
 
     fiat_element = HDivTrace(ufc_simplex(dim), degree)
     pts = make_quadrature(ufc_simplex(dim - 1), degree + 1).pts
@@ -116,7 +115,7 @@ def test_gradient_traceerror(dim, order, degree):
 
         for key in tab.keys():
             if key != (0,)*dim:
-                assert isinstance(tab[key], TraceError)
+                assert np.isnan(tab[key]).all()
 
 
 @pytest.mark.parametrize("dim", (2, 3))
