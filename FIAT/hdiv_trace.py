@@ -201,7 +201,7 @@ class HDivTrace(FiniteElement):
                 # Retrieve values by tabulating the DG element
                 element = self.dg_elements[facet_sd]
                 nf = element.space_dimension()
-                nonzerovals, = element.tabulate(order, new_points).values()
+                nonzerovals, = element.tabulate(0, new_points).values()
                 indices = slice(nf * unique_facet, nf * (unique_facet + 1))
 
         else:
@@ -234,13 +234,12 @@ class HDivTrace(FiniteElement):
 
                         offset += nf
 
-        # If asking for gradient evaluations, insert TraceError in
-        # gradient slots
+        # If asking for gradient evaluations, return NaN
         if order > 0:
-            msg = "Gradients on trace elements are not well-defined."
             for key in phivals:
                 if key != evalkey:
-                    phivals[key] = TraceError(msg)
+                    phivals[key] = np.full(shape=(self.space_dimension(),
+                                                  len(points)), fill_value=np.nan)
 
         # Insert non-zero values in appropriate place
         phivals[evalkey][indices, :] = nonzerovals
