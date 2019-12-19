@@ -234,12 +234,13 @@ class HDivTrace(FiniteElement):
 
                         offset += nf
 
-        # If asking for gradient evaluations, return NaN
+        # If asking for gradient evaluations, insert TraceError in
+        # gradient slots
         if order > 0:
+            msg = "Gradients on trace elements are not well-defined."
             for key in phivals:
                 if key != evalkey:
-                    phivals[key] = np.full(shape=(self.space_dimension(),
-                                                  len(points)), fill_value=np.nan)
+                    phivals[key] = TraceError(msg)
 
         # Insert non-zero values in appropriate place
         phivals[evalkey][indices, :] = nonzerovals
