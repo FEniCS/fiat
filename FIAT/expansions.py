@@ -115,7 +115,7 @@ def get_pointlist_type(ls):
         for c in p:
             if not isinstance(c, int):
                 return type(c)
-    return type(ls[0][0])
+    return numpy.double
 
 
 class LineExpansionSet(object):
