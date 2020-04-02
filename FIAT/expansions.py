@@ -109,6 +109,15 @@ def xi_tetrahedron(eta):
     return xi1, xi2, xi3
 
 
+def get_pointlist_type(ls):
+    """Gets the float type of values in a list of points."""
+    for p in ls:
+        for c in p:
+            if not isinstance(c, int):
+                return type(c)
+    return type(ls[0][0])
+
+
 class LineExpansionSet(object):
     """Evaluates the Legendre basis on a line reference element."""
 
@@ -132,7 +141,7 @@ class LineExpansionSet(object):
             ref_pts = numpy.array([self.mapping(pt) for pt in pts])
             psitilde_as = jacobi.eval_jacobi_batch(0, 0, n, ref_pts)
 
-            results = numpy.zeros((n + 1, len(pts)), type(pts[0][0]))
+            results = numpy.zeros((n + 1, len(pts)), get_pointlist_type(pts))
             for k in range(n + 1):
                 results[k, :] = psitilde_as[k, :] * math.sqrt(k + 0.5)
 
