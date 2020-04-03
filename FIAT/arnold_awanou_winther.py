@@ -86,27 +86,24 @@ class IntegralNormalTangentialLegendreMoment(IntegralBidirectionalLegendreMoment
                                                      entity, mom_deg, comp_deg)
 
 
-class ArnoldAwanouWintherDual(DualSet):
-    """Degrees of freedom for Arnold-Awanou-Winther elements."""
+class ArnoldAwanouWintherNCDual(DualSet):
+    """Degrees of freedom for nonconforming Arnold-Awanou-Winther elements."""
     def __init__(self, cell, degree):
         dim = cell.get_spatial_dimension()
         if not dim == 2:
-            raise ValueError("Arnold-Awanou-Winther elements are only"
+            raise ValueError("Nonconforming Arnold-Awanou-Winther elements are only"
                              "defined in dimension 2, for now! The theory"
                              "is there in 3D, I just haven't implemented it.")
 
         if not degree == 2:
-            raise ValueError("Arnold-Awanou-Winther elements are only defined"
+            raise ValueError("Nonconforming Arnold-Awanou-Winther elements are only defined"
                              "for degree 2.")
 
-        # construct the degrees of freedoms
+        # construct the degrees of freedom
         dofs = []               # list of functionals
         # dof_ids[i][j] contains the indices of dofs that are associated with
         # entity j in dim i
         dof_ids = {}
-
-        # no vertex dof
-        dof_ids[0] = {i: [] for i in range(dim + 1)}
 
         # edge dofs
         (_dofs, _dof_ids) = self._generate_edge_dofs(cell, degree)
@@ -118,6 +115,11 @@ class ArnoldAwanouWintherDual(DualSet):
         dofs.extend(_dofs)
         dof_ids[dim] = _dof_ids
 
+        # no vertex dofs for nonconforming, but is called by conforming
+        (_dofs, _dof_ids) = self._generate_vertex_dofs(cell, degree, len(dofs))
+        dofs.extend(_dofs)
+        dof_ids[0] = _dof_ids
+
         # extra dofs for enforcing linearity of dot(n, dot(sigma, n)) on edges
         (_dofs, _dof_ids) = self._generate_constraint_dofs(cell, degree, len(dofs))
         dofs.extend(_dofs)
@@ -125,7 +127,7 @@ class ArnoldAwanouWintherDual(DualSet):
         for entity_id in range(3):
             dof_ids[1][entity_id] = dof_ids[1][entity_id] + _dof_ids[entity_id]
 
-        super(ArnoldAwanouWintherDual, self).__init__(dofs, cell, dof_ids)
+        super(ArnoldAwanouWintherNCDual, self).__init__(dofs, cell, dof_ids)
 
 
     @staticmethod
@@ -206,7 +208,7 @@ class ArnoldAwanouWintherDual(DualSet):
 
         e1 = numpy.array([1.0, 0.0])              # euclidean basis 1
         e2 = numpy.array([0.0, 1.0])              # euclidean basis 2
-        basis = [(e1, e1), (e1, e2), (e2, e2)]    # basis for symmetric matrix
+        basis = [(e1, e1), (e1, e2), (e2, e2)]    # basis for symmetric matrices
         for (v1, v2) in basis:
             v1v2t = numpy.outer(v1, v2)
             for i in range(pkm2vals.shape[0]):
@@ -218,9 +220,61 @@ class ArnoldAwanouWintherDual(DualSet):
         dof_ids[0] = list(range(offset, offset + num_dofs))
         return (dofs, dof_ids)
 
+    @staticmethod
+    def _generate_vertex_dofs(cell, degree, offset):
+        _dofs = []
+        dim = cell.get_spatial_dimension()
+        _dof_ids = {i: [] for i in range(dim + 1)}
+        return (_dofs, _dof_ids)
+
+class ArnoldAwanouWintherNC(CiarletElement):
+    """The definition of the nonconforming Arnold-Awanou-Winther element.
+    """
+    def __init__(self, cell, degree):
+        assert degree == 2, "Only defined for degree 2"
+        # polynomial space
+        Ps = ONSymTensorPolynomialSet(cell, degree)
+        # degrees of freedom
+        Ls = ArnoldAwanouWintherNCDual(cell, degree)
+        # mapping under affine transformation
+        mapping = "double contravariant piola"
+
+        super(ArnoldAwanouWintherNC, self).__init__(Ps, Ls, degree,
+                                                  mapping=mapping)
+
+class ArnoldAwanouWintherCDual(ArnoldAwanouWintherNCDual):
+    """Degrees of freedom for conforming Arnold-Awanou-Winther elements."""
+    @staticmethod
+    def __generate_vertex_dofs(cell, degree)
+        """generate dofs of evaluation at vertices.
+
+        """
+        dofs = []
+        dof_ids = {}
+        offset = 0
+
+        vs = numpy.array(cell.get_vertices())
+        e1 = numpy.array([1.0, 0.0])
+        e2 = numpy.array([0.0, 1.0])
+        basis = [(e1, e1), (e1, e2), (e2, e2)]
+
+        for entity_id in range(3):
+            node = vs[entity_id]
+            for (v1, v2) in basis:
+                dofs.append(PointwiseInnerProductEvaluation(cell, v1, v2, node)
+
+            num_new_dofs = 3                # 3 components to evaluate per vertex
+            dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
+            offset += num_new_dofs
+
+        return (dofs, dof_ids)
+
+    @staticmethod
+    def _generate_constraint_dofs(cell, degree, offset):
+        return ([], None)
 
 class ArnoldAwanouWinther(CiarletElement):
-    """The definition of the Arnold-Awanou-Winther element.
+    """The definition of the conforming Arnold-Awanou-Winther element.
     """
     def __init__(self, cell, degree):
         assert degree == 2, "Only defined for degree 2"
@@ -232,4 +286,4 @@ class ArnoldAwanouWinther(CiarletElement):
         mapping = "double contravariant piola"
 
         super(ArnoldAwanouWinther, self).__init__(Ps, Ls, degree,
-                                                  mapping=mapping)
+                                                mapping=mapping)
