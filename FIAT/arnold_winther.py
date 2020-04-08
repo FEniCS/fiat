@@ -233,7 +233,7 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
     """Degrees of freedom for conforming Arnold-Winther elements."""
 
     @staticmethod
-    def __generate_vertex_dofs(cell, degree)
+    def __generate_vertex_dofs(cell, degree):
         """generate dofs of evaluation at vertices.
 
         """
@@ -249,7 +249,7 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         for entity_id in range(3):
             node = vs[entity_id]
             for (v1, v2) in basis:
-                dofs.append(PointwiseInnerProductEvaluation(cell, v1, v2, node)
+                dofs.append(PointwiseInnerProductEvaluation(cell, v1, v2, node))
 
             num_new_dofs = 3                # 3 components to evaluate per vertex
             dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
