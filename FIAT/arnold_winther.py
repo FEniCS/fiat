@@ -285,7 +285,15 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         dofs = []
         dof_ids = {}
 
-        #for 
+        Q = make_quadrature(cell, )
+
+        dof = IntegralMomentOfDivergence(cell, ) 
+        dofs += dof
+        dof_ids[0] = [offset]
+
+        dof = IntegralMomentOfDivergence(cell, )
+        dofs += dof
+        dof_ids[1] = [offset]
 
 
         #return (dofs, dof_ids)
