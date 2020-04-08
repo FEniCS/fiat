@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Implementation of the Arnold-Awanou-Winther finite elements."""
+"""Implementation of the Arnold-Winther finite elements."""
 
 # Copyright (C) 2016-2018 Lizao Li <lzlarryli@gmail.com>
 #
@@ -85,18 +85,19 @@ class IntegralNormalTangentialLegendreMoment(IntegralBidirectionalLegendreMoment
         IntegralBidirectionalLegendreMoment.__init__(self, cell, n, t,
                                                      entity, mom_deg, comp_deg)
 
+class ArnoldWintherBaseDual(DualSet):
+    """Parent class for the dofs of the conforming and 
+    nonconforming Arnold-Winther elements. """
 
-class ArnoldAwanouWintherNCDual(DualSet):
-    """Degrees of freedom for nonconforming Arnold-Awanou-Winther elements."""
     def __init__(self, cell, degree):
         dim = cell.get_spatial_dimension()
         if not dim == 2:
-            raise ValueError("Nonconforming Arnold-Awanou-Winther elements are only"
+            raise ValueError("Arnold-Winther elements are only"
                              "defined in dimension 2, for now! The theory"
                              "is there in 3D, I just haven't implemented it.")
 
         if not degree == 2:
-            raise ValueError("Nonconforming Arnold-Awanou-Winther elements are only defined"
+            raise ValueError("Arnold-Winther elements are only defined"
                              "for degree 2.")
 
         # construct the degrees of freedom
@@ -121,14 +122,14 @@ class ArnoldAwanouWintherNCDual(DualSet):
         dof_ids[0] = _dof_ids
 
         # extra dofs for enforcing linearity of dot(n, dot(sigma, n)) on edges
+        # (nonconforming case), or linearity of div (conforming case)
         (_dofs, _dof_ids) = self._generate_constraint_dofs(cell, degree, len(dofs))
         dofs.extend(_dofs)
 
         for entity_id in range(3):
             dof_ids[1][entity_id] = dof_ids[1][entity_id] + _dof_ids[entity_id]
 
-        super(ArnoldAwanouWintherNCDual, self).__init__(dofs, cell, dof_ids)
-
+        super(ArnoldWintherBaseDual, self).__init__(dofs, cell, dof_ids)
 
     @staticmethod
     def _generate_edge_dofs(cell, degree):
@@ -149,6 +150,7 @@ class ArnoldAwanouWintherNCDual(DualSet):
             offset += num_new_dofs
         return (dofs, dof_ids)
 
+    # Delete the below?
 
     # @staticmethod
     # def _generate_edge_dofs(cell, degree):
@@ -159,7 +161,7 @@ class ArnoldAwanouWintherNCDual(DualSet):
     #     dofs = []
     #     dof_ids = {}
     #     offset = 0
-
+    #
     #     for entity_id in range(3):                  # a triangle has 3 edges
     #         pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
     #         normal = cell.compute_scaled_normal(entity_id)
@@ -170,30 +172,11 @@ class ArnoldAwanouWintherNCDual(DualSet):
     #         offset += num_new_dofs
     #     return (dofs, dof_ids)
 
-    @staticmethod
-    def _generate_constraint_dofs(cell, degree, offset):
-        """
-        Generate constraint dofs on edges.
-        dot(n, dot(sigma, n)) must be linear on each edge.
-        So we introduce functionals whose kernel describes this property,
-        as described in the FIAT paper.
-        """
-        dofs = []
-        dof_ids = {}
-
-        for entity_id in range(3):
-            dof = IntegralNormalNormalLegendreMoment(cell, entity_id, degree, 2)
-            dofs += [dof]
-            dof_ids[entity_id] = [offset]
-            offset += 1
-
-        return (dofs, dof_ids)
-
 
     @staticmethod
     def _generate_trig_dofs(cell, degree, offset):
         """generate dofs on edges.
-        On each triangle, for degree=r, the three components
+        On each triangle, for degree = r, the three components
               u11, u12, u22
         are evaluated at a single point.
         """
@@ -220,30 +203,55 @@ class ArnoldAwanouWintherNCDual(DualSet):
         dof_ids[0] = list(range(offset, offset + num_dofs))
         return (dofs, dof_ids)
 
+
+class ArnoldWintherNCDual(ArnoldWintherBaseDual):
+    """Degrees of freedom for nonconforming Arnold-Winther elements."""
+
+    @staticmethod
+    def _generate_constraint_dofs(cell, degree, offset):
+        """
+        Generate constraint dofs on edges.
+        dot(n, dot(sigma, n)) must be linear on each edge.
+        So we introduce functionals whose kernel describes this property,
+        as described in the FIAT paper.
+        """
+        dofs = []
+        dof_ids = {}
+
+        for entity_id in range(3):
+            dof = IntegralNormalNormalLegendreMoment(cell, entity_id, degree, 2)
+            dofs += [dof]
+            dof_ids[entity_id] = [offset]
+            offset += 1
+
+        return (dofs, dof_ids)
+
     @staticmethod
     def _generate_vertex_dofs(cell, degree, offset):
+        """No vertex dofs for the nonconforming element."""
         _dofs = []
         dim = cell.get_spatial_dimension()
         _dof_ids = {i: [] for i in range(dim + 1)}
         return (_dofs, _dof_ids)
 
-class ArnoldAwanouWintherNC(CiarletElement):
-    """The definition of the nonconforming Arnold-Awanou-Winther element.
+class ArnoldWintherNC(CiarletElement):
+    """The definition of the nonconforming Arnold-Winther element.
     """
     def __init__(self, cell, degree):
         assert degree == 2, "Only defined for degree 2"
         # polynomial space
         Ps = ONSymTensorPolynomialSet(cell, degree)
         # degrees of freedom
-        Ls = ArnoldAwanouWintherNCDual(cell, degree)
+        Ls = ArnoldWintherNCDual(cell, degree)
         # mapping under affine transformation
         mapping = "double contravariant piola"
 
-        super(ArnoldAwanouWintherNC, self).__init__(Ps, Ls, degree,
+        super(ArnoldWintherNC, self).__init__(Ps, Ls, degree,
                                                   mapping=mapping)
 
-class ArnoldAwanouWintherCDual(ArnoldAwanouWintherNCDual):
-    """Degrees of freedom for conforming Arnold-Awanou-Winther elements."""
+class ArnoldWintherDual(ArnoldWintherBaseDual):
+    """Degrees of freedom for conforming Arnold-Winther elements."""
+
     @staticmethod
     def __generate_vertex_dofs(cell, degree)
         """generate dofs of evaluation at vertices.
@@ -271,19 +279,29 @@ class ArnoldAwanouWintherCDual(ArnoldAwanouWintherNCDual):
 
     @staticmethod
     def _generate_constraint_dofs(cell, degree, offset):
+        """Generate constraint dofs. div(sigma) must be
+        linear, so we introduce functionals whose kernel
+        describes this property."""
+        dofs = []
+        dof_ids = {}
+
+        #for 
+
+
+        #return (dofs, dof_ids)
         return ([], None)
 
-class ArnoldAwanouWinther(CiarletElement):
-    """The definition of the conforming Arnold-Awanou-Winther element.
+class ArnoldWinther(CiarletElement):
+    """The definition of the conforming Arnold-Winther element.
     """
     def __init__(self, cell, degree):
         assert degree == 2, "Only defined for degree 2"
         # polynomial space
         Ps = ONSymTensorPolynomialSet(cell, degree)
         # degrees of freedom
-        Ls = ArnoldAwanouWintherDual(cell, degree)
+        Ls = ArnoldWintherDual(cell, degree)
         # mapping under affine transformation
         mapping = "double contravariant piola"
 
-        super(ArnoldAwanouWinther, self).__init__(Ps, Ls, degree,
+        super(ArnoldWinther, self).__init__(Ps, Ls, degree,
                                                 mapping=mapping)
