@@ -106,6 +106,11 @@ class ArnoldWintherBaseDual(DualSet):
         # entity j in dim i
         dof_ids = {}
 
+        # no vertex dofs for nonconforming, but is called by conforming
+        (_dofs, _dof_ids) = self._generate_vertex_dofs(cell, degree, len(dofs))
+        dofs.extend(_dofs)
+        dof_ids[0] = _dof_ids
+
         # edge dofs
         (_dofs, _dof_ids) = self._generate_edge_dofs(cell, degree)
         dofs.extend(_dofs)
@@ -115,11 +120,6 @@ class ArnoldWintherBaseDual(DualSet):
         (_dofs, _dof_ids) = self._generate_trig_dofs(cell, degree, len(dofs))
         dofs.extend(_dofs)
         dof_ids[dim] = _dof_ids
-
-        # no vertex dofs for nonconforming, but is called by conforming
-        (_dofs, _dof_ids) = self._generate_vertex_dofs(cell, degree, len(dofs))
-        dofs.extend(_dofs)
-        dof_ids[0] = _dof_ids
 
         # extra dofs for enforcing linearity of dot(n, dot(sigma, n)) on edges
         # (nonconforming case), or linearity of div (conforming case)
@@ -149,28 +149,6 @@ class ArnoldWintherBaseDual(DualSet):
             dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
             offset += num_new_dofs
         return (dofs, dof_ids)
-
-    # Delete the below?
-
-    # @staticmethod
-    # def _generate_edge_dofs(cell, degree):
-    #     """generate dofs on edges.
-    #     On each edge, let n be its normal. The components of dot(u, n)
-    #     are evaluated at two different points.
-    #     """
-    #     dofs = []
-    #     dof_ids = {}
-    #     offset = 0
-    #
-    #     for entity_id in range(3):                  # a triangle has 3 edges
-    #         pts = cell.make_points(1, entity_id, degree + 1)  # edges are 1D
-    #         normal = cell.compute_scaled_normal(entity_id)
-    #         tangent = cell.compute_tangents(1, entity_id)[0]
-    #         dofs += [InnerProduct(cell, normal, dir, pt) for pt in pts for dir in [normal, tangent]]
-    #         num_new_dofs = 2*len(pts)               # 2 dof per point on edge
-    #         dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
-    #         offset += num_new_dofs
-    #     return (dofs, dof_ids)
 
 
     @staticmethod
@@ -226,6 +204,7 @@ class ArnoldWintherNCDual(ArnoldWintherBaseDual):
 
         return (dofs, dof_ids)
 
+
     @staticmethod
     def _generate_vertex_dofs(cell, degree, offset):
         """No vertex dofs for the nonconforming element."""
@@ -233,6 +212,7 @@ class ArnoldWintherNCDual(ArnoldWintherBaseDual):
         dim = cell.get_spatial_dimension()
         _dof_ids = {i: [] for i in range(dim + 1)}
         return (_dofs, _dof_ids)
+
 
 class ArnoldWintherNC(CiarletElement):
     """The definition of the nonconforming Arnold-Winther element.
