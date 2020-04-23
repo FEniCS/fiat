@@ -96,10 +96,6 @@ class ArnoldWintherBaseDual(DualSet):
                              "defined in dimension 2, for now! The theory"
                              "is there in 3D, I just haven't implemented it.")
 
-        if not degree == 2:
-            raise ValueError("Arnold-Winther elements are only defined"
-                             "for degree 2.")
-
         # construct the degrees of freedom
         dofs = []               # list of functionals
         # dof_ids[i][j] contains the indices of dofs that are associated with
@@ -184,6 +180,13 @@ class ArnoldWintherBaseDual(DualSet):
 
 class ArnoldWintherNCDual(ArnoldWintherBaseDual):
     """Degrees of freedom for nonconforming Arnold-Winther elements."""
+    
+    def __init__(self, cell, degree):
+        if not degree == 2:
+            raise ValueError("Nonconforming Arnold-Winther elements are 
+                              only defined for degree 2.")
+
+        ArnoldWintherBaseDual.__init__(self, cell, degree)
 
     @staticmethod
     def _generate_constraint_dofs(cell, degree, offset):
@@ -232,6 +235,20 @@ class ArnoldWintherNC(CiarletElement):
 class ArnoldWintherDual(ArnoldWintherBaseDual):
     """Degrees of freedom for conforming Arnold-Winther elements."""
 
+    def __init__(self, cell, degree):
+        if not degree == 3:
+            raise ValueError("Conforming Arnold-Winther elements 
+                             are only defined for degree 3.")
+
+        ArnoldWintherBaseDual.__init__(self, cell, degree)
+
+    @staticmethod
+    def _generate_trig_dofs(cell, degree, offset):
+        """ This is as for the nonconforming element, except the 
+        degree of the original polynomial space is 1 higher
+        here. """
+        return ArnoldWintherBaseDual._generate_trig_dofs(cell, degree - 1, offset)
+
     @staticmethod
     def __generate_vertex_dofs(cell, degree):
         """generate dofs of evaluation at vertices.
@@ -260,21 +277,40 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
     @staticmethod
     def _generate_constraint_dofs(cell, degree, offset):
         """Generate constraint dofs. div(sigma) must be
-        linear, so we introduce functionals whose kernel
-        describes this property."""
+        of degree "degree - 2", so we introduce functionals 
+        whose kernel describes this property."""
         dofs = []
         dof_ids = {}
 
-        Q = make_quadrature(cell, )
+        dim = cell.get_spatial_dimension()
 
-        dof = IntegralMomentOfDivergence(cell, ) 
-        dofs += dof
-        dof_ids[0] = [offset]
+        onp = ONPolynomialSet(cell, degree-1)
+        pts = Q.get_points()
+        onp = onp.tabulate(pts)[tuple([0 for i in range(dim)])]
 
-        dof = IntegralMomentOfDivergence(cell, )
-        dofs += dof
-        dof_ids[1] = [offset]
+        # [DELETE] 2nd argument is how many quad points are required per spatial
+        #          dimension? which is the degree of the integrand.
+        Q = make_quadrature(cell, 2*(degree-1))
+        
+        for i in range(dim):
+            """Extract the rows of the divergence."""
+            e_i = numpy.zeros((1, dim), dtype=object)
+            e_i[i+1] = 1.0
+            row_i_at_qpts = numpy.asarray([[x * p for p in onp[i, :]]
+                                            for x in e_i]) 
+            dof = IntegralMomentOfDivergence(cell, Q, row_i_at_qpts)
+            dofs += dof
+            dof_ids[i] = [offset]
+            offset += 1
 
+        #dof1 = IntegralMomentOfDivergence(cell, Q, row1_at_qpts) 
+        #dofs += dof1
+        #dof_ids[0] = [offset]
+        #offset += 1
+        #dof2 = IntegralMomentOfDivergence(cell, Q, row2_at_qpts)
+        #dofs += dof2
+        #dof_ids[1] = [offset]
+        #offset += 1
 
         #return (dofs, dof_ids)
         return ([], None)
@@ -283,7 +319,7 @@ class ArnoldWinther(CiarletElement):
     """The definition of the conforming Arnold-Winther element.
     """
     def __init__(self, cell, degree):
-        assert degree == 2, "Only defined for degree 2"
+        assert degree == 3, "Only defined for degree 3"
         # polynomial space
         Ps = ONSymTensorPolynomialSet(cell, degree)
         # degrees of freedom
