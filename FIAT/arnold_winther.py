@@ -183,8 +183,8 @@ class ArnoldWintherNCDual(ArnoldWintherBaseDual):
     
     def __init__(self, cell, degree):
         if not degree == 2:
-            raise ValueError("Nonconforming Arnold-Winther elements are 
-                              only defined for degree 2.")
+            raise ValueError("Nonconforming Arnold-Winther elements are" 
+                             "only defined for degree 2.")
 
         ArnoldWintherBaseDual.__init__(self, cell, degree)
 
@@ -237,8 +237,8 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
 
     def __init__(self, cell, degree):
         if not degree == 3:
-            raise ValueError("Conforming Arnold-Winther elements 
-                             are only defined for degree 3.")
+            raise ValueError("Conforming Arnold-Winther elements"
+                             "are only defined for degree 3.")
 
         ArnoldWintherBaseDual.__init__(self, cell, degree)
 
