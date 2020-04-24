@@ -283,37 +283,51 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         dof_ids = {}
 
         dim = cell.get_spatial_dimension()
-
+        
+        # [DELETE] ONPs need to have degree 1 more than
+        #          what is required of div.
+        # or ONSymTensorPolynomialSet?
         onp = ONPolynomialSet(cell, degree-1)
         pts = Q.get_points()
-        onp = onp.tabulate(pts)[tuple([0 for i in range(dim)])]
+        # [DELETE] should quad pts be tabulated into a
+        #          tensor?
+        #onp = onp.tabulate(pts)[tuple([[0 for j in range(dim)] for i in range(dim)])]
+        onp = onp.tabulate(pts)[0, 0]
 
         # [DELETE] 2nd argument is how many quad points are required per spatial
-        #          dimension? which is the degree of the integrand.
-        Q = make_quadrature(cell, 2*(degree-1))
+        #          dimension. If N is the degree of the integrand, this is
+        #          ceil( (N + 1)/2 )
+        #          Here, N = 2*(degree - 1). So for general "degree", 2nd arg
+        #          here should be    numpy.ceil(degree-0.5)
+
+        #Q = make_quadrature(cell, numpy.ceil(degree-0.5))
+        Q = make_quadrature(cell, 3)
         
-        for i in range(dim):
-            """Extract the rows of the divergence."""
-            e_i = numpy.zeros((1, dim), dtype=object)
-            e_i[i+1] = 1.0
-            row_i_at_qpts = numpy.asarray([[x * p for p in onp[i, :]]
-                                            for x in e_i]) 
-            dof = IntegralMomentOfDivergence(cell, Q, row_i_at_qpts)
-            dofs += dof
-            dof_ids[i] = [offset]
-            offset += 1
+        #for i in range(dim):
+        #    """Extract the rows of the divergence."""
+        #    e_i = numpy.zeros((1, dim), dtype=object)
+        #    e_i[i+1] = 1.0
+        #    row_i_at_qpts = numpy.asarray([[x * p for p in onp[i, :]]
+        #                                    for x in e_i]) 
+        #    dof = IntegralMomentOfDivergence(cell, Q, row_i_at_qpts)
+        #    dofs += dof
+        #    dof_ids[i] = [offset]
+        #    offset += 1
 
-        #dof1 = IntegralMomentOfDivergence(cell, Q, row1_at_qpts) 
-        #dofs += dof1
-        #dof_ids[0] = [offset]
-        #offset += 1
-        #dof2 = IntegralMomentOfDivergence(cell, Q, row2_at_qpts)
-        #dofs += dof2
-        #dof_ids[1] = [offset]
-        #offset += 1
+        # [DELETE] Could use DivergenceDubinerMoments from mardal_tai_winther
+        #          here? Or, simply put that into functional.py
 
-        #return (dofs, dof_ids)
-        return ([], None)
+        # Take divergence against all the ONPs of degree exactly 
+        # "degree-1".
+        for i in range((degree-2)*(degree-1)//2, 
+                           (degree-1)*degree//2):
+            dofs.append(IntegralMomentOfDivergence(cell, Q, onp[i, :]))
+
+        DOF_ids = list(range(offset, offset+len(dofs)))
+        dof_ids.extend(DOF_ids)
+
+        return (dofs, dof_ids)
+        #return ([], None)
 
 class ArnoldWinther(CiarletElement):
     """The definition of the conforming Arnold-Winther element.
