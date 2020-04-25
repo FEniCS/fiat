@@ -32,5 +32,5 @@ jobs:
         run: pip install .
       - name: Test with pytest
         run: |
-          pip install pytest pytest-xdist
-          DATA_REPO_GIT="" pytest -v -n auto test/
+          pip install pytest
+          DATA_REPO_GIT="" pytest -v test/
