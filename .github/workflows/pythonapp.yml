@@ -33,4 +33,4 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest pytest-xdist
-          pytest -v -n auto test/
+          DATA_REPO_GIT="" pytest -v -n auto test/
