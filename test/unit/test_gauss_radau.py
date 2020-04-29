@@ -18,7 +18,7 @@
 # Authors:
 #
 # Robert Kirby, based on work of David A. Ham
-# 
+#
 
 import pytest
 import numpy as np
