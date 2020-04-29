@@ -19,7 +19,7 @@ from FIAT.functional import PointEvaluation
 class QuadratureElement(FiniteElement):
     """A set of quadrature points pretending to be a finite element."""
 
-    def __init__(self, ref_el, points):
+    def __init__(self, ref_el, points, weights=None):
         # Create entity dofs.
         entity_dofs = {dim: {entity: [] for entity in entities}
                        for dim, entities in ref_el.get_topology().items()}
@@ -33,7 +33,8 @@ class QuadratureElement(FiniteElement):
         dual = DualSet(nodes, ref_el, entity_dofs)
 
         super(QuadratureElement, self).__init__(ref_el, dual, order=None)
-        self._points = points  # save the quadrature points
+        self._points = points  # save the quadrature points & weights
+        self._weights = weights
 
     def value_shape(self):
         "The QuadratureElement is scalar valued"
