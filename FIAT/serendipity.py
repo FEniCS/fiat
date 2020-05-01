@@ -101,7 +101,7 @@ class Serendipity(FiniteElement):
         super(Serendipity, self).__init__(ref_el=ref_el, dual=None, order=degree, formdegree=formdegree)
 
         self.basis = {(0,)*dim: Array(s_list)}
-        self.basis_callable = {(0,)*dim: lambdify(variables, Array(s_list),
+        self.basis_callable = {(0,)*dim: lambdify(variables[:dim], Array(s_list),
                                                   modules="numpy", dummify=True)}
         topology = ref_el.get_topology()
         unflattening_map = compute_unflattening_map(topology)
@@ -157,7 +157,7 @@ class Serendipity(FiniteElement):
                     callable = self.basis_callable[alpha]
                 except KeyError:
                     polynomials = diff(self.basis[(0,)*dim], *zip(variables, alpha))
-                    callable = lambdify(variables, polynomials, modules="numpy", dummify=True)
+                    callable = lambdify(variables[:dim], polynomials, modules="numpy", dummify=True)
                     self.basis[alpha] = polynomials
                     self.basis_callable[alpha] = callable
                 points = np.asarray(points)
