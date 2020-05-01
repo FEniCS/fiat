@@ -6,7 +6,7 @@
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2019
 
-from sympy import symbols, legendre, Array, diff
+from sympy import symbols, legendre, Array, diff, lambdify
 import numpy as np
 from FIAT.finite_element import FiniteElement
 from FIAT.lagrange import Lagrange
@@ -101,7 +101,8 @@ class Serendipity(FiniteElement):
         super(Serendipity, self).__init__(ref_el=ref_el, dual=None, order=degree, formdegree=formdegree)
 
         self.basis = {(0,)*dim: Array(s_list)}
-
+        self.basis_callable = {(0,)*dim: lambdify(variables, Array(s_list),
+                                                  modules="numpy", dummify=True)}
         topology = ref_el.get_topology()
         unflattening_map = compute_unflattening_map(topology)
         unflattened_entity_ids = {}
@@ -153,17 +154,15 @@ class Serendipity(FiniteElement):
             alphas = mis(dim, o)
             for alpha in alphas:
                 try:
-                    polynomials = self.basis[alpha]
+                    callable = self.basis_callable[alpha]
                 except KeyError:
                     polynomials = diff(self.basis[(0,)*dim], *zip(variables, alpha))
+                    callable = lambdify(variables, polynomials, modules="numpy", dummify=True)
                     self.basis[alpha] = polynomials
-                T = np.zeros((len(polynomials), len(points)))
-                for i in range(len(points)):
-                    subs = {v: points[i][k] for k, v in enumerate(variables[:dim])}
-                    for j, f in enumerate(polynomials):
-                        T[j, i] = f.evalf(subs=subs)
+                    self.basis_callable[alpha] = callable
+                points = np.asarray(points)
+                T = np.asarray(callable(*(points[:, i] for i in range(points.shape[1]))))
                 phivals[alpha] = T
-
         return phivals
 
     def entity_dofs(self):
