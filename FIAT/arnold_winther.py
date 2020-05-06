@@ -247,7 +247,7 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         """ This is as for the nonconforming element, except the 
         degree of the original polynomial space is 1 higher
         here. """
-        return ArnoldWintherBaseDual._generate_trig_dofs(cell, degree - 1, offset)
+        return ArnoldWintherBaseDual._generate_trig_dofs(cell, degree-1, offset)
 
     @staticmethod
     def _generate_vertex_dofs(cell, degree, offset):
@@ -315,7 +315,8 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         #    offset += 1
 
         # [DELETE] Could use DivergenceDubinerMoments from mardal_tai_winther
-        #          here? Or, simply put that into functional.py
+        #          here, which the loop below mimics? Or, simply put that
+        #          into functional.py
 
         # Take divergence against all the ONPs of degree exactly 
         # "degree-1".

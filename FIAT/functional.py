@@ -357,10 +357,16 @@ class IntegralMomentOfDivergence(Functional):
 
         dpt_dict = OrderedDict()
 
-        alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
-        for j, pt in enumerate(dpts):
-            dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
-
+        #if f_at_qpts:
+        #    for i in range(sd):
+        #        e_i = numpy.zeros((1, dim), dtype=object)
+        #        e_i[i] = 1.0
+        #            = IntegralMomentOfDivergence(ref_el, Q, f_at_qpts*e_i)
+        #else
+            alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
+            for j, pt in enumerate(dpts):
+                dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
+    
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfDivergence")
     
@@ -388,6 +394,11 @@ class IntegralMomentOfDivergence(Functional):
                     result[i, j] += qwts[k] * self.f_at_qpts[k] * grad_phi[i](pt)
         return result
 
+#class IntegralMomentOfTensorDivergence(IntegralMomentOfDivergence):
+#    """Extends IntegralMomentOfDivergence to work row-wise on
+#    symmetric tensors."""
+
+#    def __init__(self, ref_el, Q, row_at_qpts, row_index):
 
 class FrobeniusIntegralMoment(Functional):
 
