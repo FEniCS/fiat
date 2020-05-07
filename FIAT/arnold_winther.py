@@ -113,7 +113,7 @@ class ArnoldWintherBaseDual(DualSet):
         dof_ids[1] = _dof_ids
 
         # cell dofs
-        (_dofs, _dof_ids) = self._generate_trig_dofs(cell, degree, len(dofs))
+        (_dofs, _dof_ids) = self._generate_internal_dofs(cell, degree, len(dofs))
         dofs.extend(_dofs)
         dof_ids[dim] = _dof_ids
 
@@ -148,8 +148,8 @@ class ArnoldWintherBaseDual(DualSet):
 
 
     @staticmethod
-    def _generate_trig_dofs(cell, degree, offset):
-        """generate dofs on edges.
+    def _generate_internal_dofs(cell, degree, offset):
+        """generate internal dofs on the cell.
         On each triangle, for degree = r, the three components
               u11, u12, u22
         are evaluated at a single point.
@@ -243,11 +243,11 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         ArnoldWintherBaseDual.__init__(self, cell, degree)
 
     @staticmethod
-    def _generate_trig_dofs(cell, degree, offset):
+    def _generate_internal_dofs(cell, degree, offset):
         """ This is as for the nonconforming element, except the 
         degree of the original polynomial space is 1 higher
         here. """
-        return ArnoldWintherBaseDual._generate_trig_dofs(cell, degree-1, offset)
+        return ArnoldWintherBaseDual._generate_internal_dofs(cell, degree-1, offset)
 
     @staticmethod
     def _generate_vertex_dofs(cell, degree, offset):
