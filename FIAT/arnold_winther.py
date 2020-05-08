@@ -21,7 +21,7 @@
 from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONSymTensorPolynomialSet, ONPolynomialSet
-from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct, IntegralMoment, FrobeniusIntegralMoment as FIM
+from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct, IntegralMoment, FrobeniusIntegralMoment as FIM, IntegralMomentOfTensorDivergence
 from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule, make_quadrature
 from FIAT.reference_element import UFCInterval as interval
 import numpy
@@ -258,7 +258,8 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         dof_ids = {}
         offset = 0
 
-        vs = numpy.array(cell.get_vertices())
+        #vs = numpy.array(cell.get_vertices())
+        vs = cell.get_vertices()
         e1 = numpy.array([1.0, 0.0])
         e2 = numpy.array([0.0, 1.0])
         basis = [(e1, e1), (e1, e2), (e2, e2)]
@@ -283,13 +284,6 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         dof_ids = {}
 
         dim = cell.get_spatial_dimension()
-        
-        # ONPs need to have degree 1 more than what is
-        # required of div.
-        onp = ONPolynomialSet(cell, degree-1)
-        pts = Q.get_points()
-        #onp = onp.tabulate(pts)[tuple([[0 for j in range(dim)] for i in range(dim)])]
-        onp = onp.tabulate(pts)[0, 0]
 
         # [DELETE] 2nd argument is how many quad points are required per spatial
         #          dimension. If N is the degree of the integrand, this is
@@ -299,6 +293,15 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
 
         #Q = make_quadrature(cell, numpy.ceil(degree-0.5))
         Q = make_quadrature(cell, 3)
+
+        # ONPs need to have degree 1 more than what is
+        # required of div.
+        onp = ONPolynomialSet(cell, degree-1)
+        pts = Q.get_points()
+        #onp = onp.tabulate(pts)[tuple([[0 for j in range(dim)] for i in range(dim)])]
+        onp = onp.tabulate(pts)[0, 0]
+
+       
         
         #for i in range(dim):
         #    """Extract the rows of the divergence."""
@@ -321,9 +324,14 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
             for i in range((degree-2)*(degree-1)//2, 
                                (degree-1)*degree//2):
                 dofs.append(IntegralMomentOfTensorDivergence(cell, Q, onp[i, :], row_index))
+            num_new_dofs = 3        # at least in the lowest-order case, this represents 
+                                    # 3 dofs per row
+            dof_ids[row_index] = list(range(offset, offset+num_new_dofs)) 
 
-        DOF_ids = list(range(offset, offset+len(dofs)))
-        dof_ids.extend(DOF_ids)
+        #DOF_ids = list(range(offset, offset+len(dofs)))
+        #dof_ids.extend(DOF_ids)
+        #dof_ids[0] = DOF_ids
+
 
         return (dofs, dof_ids)
 
@@ -340,4 +348,4 @@ class ArnoldWinther(CiarletElement):
         mapping = "double contravariant piola"
 
         super(ArnoldWinther, self).__init__(Ps, Ls, degree,
-                                                mapping=mapping)
+                                        mapping=mapping)

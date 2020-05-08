@@ -403,7 +403,7 @@ class IntegralMomentOfTensorDivergence(IntegralMomentOfDivergence):
 
     def to_riesz(self, poly_set):
         j = self.get_row_index
-        result = numpy.zeros((2, poly_set.coeffs.shape[:1]) "d")
+        result = numpy.zeros(poly_set.coeffs.shape[:1], "d")
 
         result[j, :] = IntegralMomentOfDivergence.to_riesz(self, poly_set)
 
