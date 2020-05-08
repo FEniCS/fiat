@@ -284,13 +284,10 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
 
         dim = cell.get_spatial_dimension()
         
-        # [DELETE] ONPs need to have degree 1 more than
-        #          what is required of div.
-        # or ONSymTensorPolynomialSet?
+        # ONPs need to have degree 1 more than what is
+        # required of div.
         onp = ONPolynomialSet(cell, degree-1)
         pts = Q.get_points()
-        # [DELETE] should quad pts be tabulated into a
-        #          tensor?
         #onp = onp.tabulate(pts)[tuple([[0 for j in range(dim)] for i in range(dim)])]
         onp = onp.tabulate(pts)[0, 0]
 
@@ -314,21 +311,21 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         #    dof_ids[i] = [offset]
         #    offset += 1
 
-        # [DELETE] Could use DivergenceDubinerMoments from mardal_tai_winther
-        #          here, which the loop below mimics? Or, simply put that
-        #          into functional.py
+        # Note the similarity of this code to DivergenceDubinerMoments 
+        # from mardal_tai_winther.py. Perhaps that, or a subroutine made
+        # from this, should go into functional.py.
 
-        # Take divergence against all the ONPs of degree exactly 
+        # Test divergence of each row against all the ONPs of degree exactly 
         # "degree-1".
-        for i in range((degree-2)*(degree-1)//2, 
-                           (degree-1)*degree//2):
-            dofs.append(IntegralMomentOfDivergence(cell, Q, onp[i, :]))
+        for row_index in range(dim):
+            for i in range((degree-2)*(degree-1)//2, 
+                               (degree-1)*degree//2):
+                dofs.append(IntegralMomentOfTensorDivergence(cell, Q, onp[i, :], row_index))
 
         DOF_ids = list(range(offset, offset+len(dofs)))
         dof_ids.extend(DOF_ids)
 
         return (dofs, dof_ids)
-        #return ([], None)
 
 class ArnoldWinther(CiarletElement):
     """The definition of the conforming Arnold-Winther element.

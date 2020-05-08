@@ -357,15 +357,9 @@ class IntegralMomentOfDivergence(Functional):
 
         dpt_dict = OrderedDict()
 
-        #if f_at_qpts:
-        #    for i in range(sd):
-        #        e_i = numpy.zeros((1, dim), dtype=object)
-        #        e_i[i] = 1.0
-        #            = IntegralMomentOfDivergence(ref_el, Q, f_at_qpts*e_i)
-        #else
-            alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
-            for j, pt in enumerate(dpts):
-                dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
+        alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
+        for j, pt in enumerate(dpts):
+            dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
     
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfDivergence")
@@ -385,7 +379,6 @@ class IntegralMomentOfDivergence(Functional):
 
         qwts = self.Q.get_weights()
 
-        # Just works for vectors. fixme for tensors
         for j in range(len(bfs)):
             grad_phi = [sympy.lambdify(X, sympy.diff(bfs[j], dXcur))
                         for dXcur in dX]
@@ -394,11 +387,27 @@ class IntegralMomentOfDivergence(Functional):
                     result[i, j] += qwts[k] * self.f_at_qpts[k] * grad_phi[i](pt)
         return result
 
-#class IntegralMomentOfTensorDivergence(IntegralMomentOfDivergence):
-#    """Extends IntegralMomentOfDivergence to work row-wise on
-#    symmetric tensors."""
+class IntegralMomentOfTensorDivergence(IntegralMomentOfDivergence):
+    """Extends IntegralMomentOfDivergence to work row-wise on
+    symmetric tensors."""
 
-#    def __init__(self, ref_el, Q, row_at_qpts, row_index):
+    def __init__(self, ref_el, Q, f_at_qpts, row_index):
+        self.row_index = row_index
+        IntegralMomentOfDivergence.__init__(self, ref_el, Q,
+                                        f_at_qpts)
+
+    def get_row_index(self):
+        """Returns the index of the row of the tensor, the moment of
+        whose divergence is required. This count is zero-based."""
+        return self.row_index
+
+    def to_riesz(self, poly_set):
+        j = self.get_row_index
+        result = numpy.zeros((2, poly_set.coeffs.shape[:1]) "d")
+
+        result[j, :] = IntegralMomentOfDivergence.to_riesz(self, poly_set)
+
+        return result
 
 class FrobeniusIntegralMoment(Functional):
 
