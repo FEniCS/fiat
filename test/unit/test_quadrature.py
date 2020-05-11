@@ -195,6 +195,18 @@ def test_gauss_lobatto_legendre_quadrature(interval, points, degree):
 
 @pytest.mark.parametrize(("points, degree"), tuple((p, d)
                                                    for p in range(2, 10)
+                                                   for d in range(2*p - 1)))
+def test_radau_legendre_quadrature(interval, points, degree):
+    """Check that the quadrature rules correctly integrate all the right
+    polynomial degrees."""
+
+    q = FIAT.quadrature.RadauQuadratureLineRule(interval, points)
+
+    assert numpy.round(q.integrate(lambda x: x[0]**degree) - 1./(degree+1), 14) == 0.
+
+
+@pytest.mark.parametrize(("points, degree"), tuple((p, d)
+                                                   for p in range(2, 10)
                                                    for d in range(2*p)))
 def test_gauss_legendre_quadrature(interval, points, degree):
     """Check that the quadrature rules correctly integrate all the right
