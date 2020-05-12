@@ -156,7 +156,7 @@ class ArnoldWintherBaseDual(DualSet):
         are evaluated at a single point.
         """
         dofs = []
-       dof_ids = {}
+        dof_ids = {}
         momdeg = degree - 2
         # Tabulate all ON polys of certain degree
         Q = make_quadrature(cell, 2*(degree+momdeg))
