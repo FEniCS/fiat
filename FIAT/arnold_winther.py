@@ -156,7 +156,7 @@ class ArnoldWintherBaseDual(DualSet):
         are evaluated at a single point.
         """
         dofs = []
-        dof_ids = {}
+       dof_ids = {}
         momdeg = degree - 2
         # Tabulate all ON polys of certain degree
         Q = make_quadrature(cell, 2*(degree+momdeg))
@@ -322,8 +322,8 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         # Test divergence of each row against all the ONPs of degree exactly 
         # "degree-1".
         for row_index in range(dim):
-            for i in range((degree-2)*(degree-1)//2, 
-                               (degree-1)*degree//2):
+            for i in range((degree-1)*(degree)//2, 
+                               degree*(degree+1)//2):
                 dofs.append(IntegralMomentOfTensorDivergence(cell, Q, onp[i, :], row_index))
             num_new_dofs = 3        # at least in the lowest-order case, this represents 
                                     # 3 dofs per row
