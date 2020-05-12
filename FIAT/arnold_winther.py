@@ -122,7 +122,8 @@ class ArnoldWintherBaseDual(DualSet):
         (_dofs, _dof_ids) = self._generate_constraint_dofs(cell, degree, len(dofs))
         dofs.extend(_dofs)
 
-        for entity_id in range(3):
+        #for entity_id in range(3):
+        for entity_id in range(len(_dof_ids)):
             dof_ids[1][entity_id] = dof_ids[1][entity_id] + _dof_ids[entity_id]
 
         super(ArnoldWintherBaseDual, self).__init__(dofs, cell, dof_ids)
@@ -327,6 +328,7 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
             num_new_dofs = 3        # at least in the lowest-order case, this represents 
                                     # 3 dofs per row
             dof_ids[row_index] = list(range(offset, offset+num_new_dofs)) 
+            offset += num_new_dofs
 
         #DOF_ids = list(range(offset, offset+len(dofs)))
         #dof_ids.extend(DOF_ids)

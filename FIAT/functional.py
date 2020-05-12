@@ -369,22 +369,31 @@ class IntegralMomentOfDivergence(Functional):
         ed = poly_set.get_embedded_degree()
 
         sd = self.ref_el.get_spatial_dimension()
-        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-
+        #result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
+        result = numpy.zeros(poly_set.coeffs.shape[2:], "d")
+        #print(poly_set.coeffs.shape)
+        #print(result.shape)
         X = sympy.DeferredVector('x')
         dX = numpy.asarray([X[i] for i in range(sd)])
 
         # evaluate bfs symbolically
         bfs = es.tabulate(ed, [dX])[:, 0]
-
+        #print(bfs.shape)
         qwts = self.Q.get_weights()
 
+        #if len(result.shape) == 2:
         for j in range(len(bfs)):
             grad_phi = [sympy.lambdify(X, sympy.diff(bfs[j], dXcur))
                         for dXcur in dX]
             for i in range(sd):
                 for k, pt in enumerate(self.deriv_dict.keys()):
+                    #print('___')
+                    #print(j)
+                    #print(i)
+                    #print(k)
                     result[i, j] += qwts[k] * self.f_at_qpts[k] * grad_phi[i](pt)
+        #else:
+        #    for j in range(len(bfs)):
         return result
 
 class IntegralMomentOfTensorDivergence(IntegralMomentOfDivergence):
@@ -402,10 +411,10 @@ class IntegralMomentOfTensorDivergence(IntegralMomentOfDivergence):
         return self.row_index
 
     def to_riesz(self, poly_set):
-        j = self.get_row_index
-        result = numpy.zeros(poly_set.coeffs.shape[:1], "d")
-
-        result[j, :] = IntegralMomentOfDivergence.to_riesz(self, poly_set)
+        j = self.get_row_index()
+        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
+        #print(poly_set.coeffs.shape)
+        result[j, :, :] = IntegralMomentOfDivergence.to_riesz(self, poly_set)
 
         return result
 
