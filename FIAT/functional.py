@@ -360,63 +360,83 @@ class IntegralMomentOfDivergence(Functional):
         alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
         for j, pt in enumerate(dpts):
             dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
-    
+
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfDivergence")
-    
+
     def to_riesz(self, poly_set):
         es = poly_set.get_expansion_set()
         ed = poly_set.get_embedded_degree()
 
         sd = self.ref_el.get_spatial_dimension()
-        #result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-        result = numpy.zeros(poly_set.coeffs.shape[2:], "d")
-        #print(poly_set.coeffs.shape)
-        #print(result.shape)
+        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
         X = sympy.DeferredVector('x')
         dX = numpy.asarray([X[i] for i in range(sd)])
 
         # evaluate bfs symbolically
         bfs = es.tabulate(ed, [dX])[:, 0]
-        #print(bfs.shape)
         qwts = self.Q.get_weights()
 
-        #if len(result.shape) == 2:
         for j in range(len(bfs)):
             grad_phi = [sympy.lambdify(X, sympy.diff(bfs[j], dXcur))
                         for dXcur in dX]
             for i in range(sd):
                 for k, pt in enumerate(self.deriv_dict.keys()):
-                    #print('___')
-                    #print(j)
-                    #print(i)
-                    #print(k)
                     result[i, j] += qwts[k] * self.f_at_qpts[k] * grad_phi[i](pt)
-        #else:
-        #    for j in range(len(bfs)):
+
         return result
 
-class IntegralMomentOfTensorDivergence(IntegralMomentOfDivergence):
+
+class IntegralMomentOfTensorDivergence(Functional):
     """Extends IntegralMomentOfDivergence to work row-wise on
     symmetric tensors."""
 
-    def __init__(self, ref_el, Q, f_at_qpts, row_index):
-        self.row_index = row_index
-        IntegralMomentOfDivergence.__init__(self, ref_el, Q,
-                                        f_at_qpts)
+    def __init__(self, ref_el, Q, f_at_qpts):
+        self.f_at_qpts = f_at_qpts
+        self.Q = Q
+        qpts, qwts = Q.get_points(), Q.get_weights()
+        nqp = len(qpts)
+        dpts = qpts
+        self.dpts = dpts
 
-    def get_row_index(self):
-        """Returns the index of the row of the tensor, the moment of
-        whose divergence is required. This count is zero-based."""
-        return self.row_index
+        assert len(f_at_qpts.shape) == 2
+        assert f_at_qpts.shape[0] == 2
+        assert f_at_qpts.shape[1] == nqp
+
+        sd = ref_el.get_spatial_dimension()
+
+        dpt_dict = OrderedDict()
+
+        alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
+        for j, pt in enumerate(dpts):
+            dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[k, j], alphas[i], (k, i)) for i in range(sd) for k in range(sd)]
+
+        Functional.__init__(self, ref_el, tuple(),
+                            {}, dpt_dict, "IntegralMomentOfDivergence")
 
     def to_riesz(self, poly_set):
-        j = self.get_row_index()
+        es = poly_set.get_expansion_set()
+        ed = poly_set.get_embedded_degree()
+
+        sd = self.ref_el.get_spatial_dimension()
         result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-        #print(poly_set.coeffs.shape)
-        result[j, :, :] = IntegralMomentOfDivergence.to_riesz(self, poly_set)
+        X = sympy.DeferredVector('x')
+        dX = numpy.asarray([X[i] for i in range(sd)])
+
+        # evaluate bfs symbolically
+        bfs = es.tabulate(ed, [dX])[:, 0]
+        qwts = self.Q.get_weights()
+
+        for j in range(len(bfs)):
+            grad_phi = [sympy.lambdify(X, sympy.diff(bfs[j], dXcur))
+                        for dXcur in dX]
+            for i0 in range(sd):
+                for i1 in range(sd):
+                    for k, pt in enumerate(self.deriv_dict.keys()):
+                        result[i0, i1, j] += qwts[k] * self.f_at_qpts[i1, k] * grad_phi[i0](pt)
 
         return result
+
 
 class FrobeniusIntegralMoment(Functional):
 
@@ -565,6 +585,7 @@ class TensorBidirectionalMomentInnerProductEvaluation(Functional):
 
         qpts, qwts = Q.get_points(), Q.get_weights()
 
+        pt_dict = {}
         for k, pt in enumerate(map(tuple(qpts))):
             pt_dict[pt] = []
             for i, j in index_iterator((sd, sd)):

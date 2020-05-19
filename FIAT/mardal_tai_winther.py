@@ -21,7 +21,7 @@
 from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONPolynomialSet
-from FIAT.functional import IntegralMoment, Functional, IntegralMomentOfDivergence
+from FIAT.functional import IntegralMoment, IntegralMomentOfDivergence
 
 from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule, make_quadrature
 from FIAT.reference_element import UFCInterval as interval
@@ -44,7 +44,6 @@ class IntegralLegendreDirectionalMoment(IntegralMoment):
 
         IntegralMoment.__init__(self, cell, mappedQ, f_at_qpts, shp=shp)
 
-
     def to_riesz(self, poly_set):
         es = poly_set.get_expansion_set()
         ed = poly_set.get_embedded_degree()
@@ -57,7 +56,7 @@ class IntegralLegendreDirectionalMoment(IntegralMoment):
             result[i, :] = numpy.dot(bfs, wts[:, i])
 
         return result
-        
+
 
 class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
     """Momement of v.n against a Legendre polynomial over an edge"""
@@ -65,7 +64,7 @@ class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
         n = cell.compute_normal(entity)
         IntegralLegendreDirectionalMoment.__init__(self, cell, n, entity,
                                                    mom_deg, comp_deg)
-        
+
 
 class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
     """Momement of v.t against a Legendre polynomial over an edge"""
@@ -79,17 +78,18 @@ def DivergenceDubinerMoments(cell, start_deg, stop_deg, comp_deg):
     onp = ONPolynomialSet(cell, stop_deg)
     Q = make_quadrature(cell, comp_deg)
 
-    pts, wts = Q.get_points(), Q.get_weights()
-    onp = onp.tabulate(pts, 0)[0,0]
+    pts = Q.get_points()
+    onp = onp.tabulate(pts, 0)[0, 0]
 
     ells = []
-        
+
     for ii in range((start_deg)*(start_deg+1)//2,
                     (stop_deg+1)*(stop_deg+2)//2):
-        ells.append(IntegralMomentOfDivergence(cell, Q, onp[ii,:]))
+        ells.append(IntegralMomentOfDivergence(cell, Q, onp[ii, :]))
 
     return ells
-        
+
+
 class MardalTaiWintherDual(DualSet):
     """Degrees of freedom for Mardal-Tai-Winther elements."""
     def __init__(self, cell, degree):
@@ -130,15 +130,14 @@ class MardalTaiWintherDual(DualSet):
             dof_ids[1][entity_id] = dof_ids[1][entity_id] + _edge_dof_ids[entity_id]
 
         dof_ids[2][0] = dof_ids[2][0] + _cell_dof_ids
-            
-        super(MardalTaiWintherDual, self).__init__(dofs, cell, dof_ids)
 
+        super(MardalTaiWintherDual, self).__init__(dofs, cell, dof_ids)
 
     @staticmethod
     def _generate_edge_dofs(cell, degree):
         """generate dofs on edges.
         On each edge, let n be its normal.  We need to integrate
-        u.n and u.t against the first Legendre polynomial (constant) 
+        u.n and u.t against the first Legendre polynomial (constant)
         and u.n against the second (linear).
         """
         dofs = []
@@ -156,13 +155,12 @@ class MardalTaiWintherDual(DualSet):
 
         return (dofs, dof_ids)
 
-
     @staticmethod
     def _generate_constraint_dofs(cell, degree, offset):
         """
         Generate constraint dofs on the cell and edges
         * div(v) must be constant on the cell.  Since v is a cubic and
-          div(v) is quadratic, we need the integral of div(v) against the 
+          div(v) is quadratic, we need the integral of div(v) against the
           linear and quadratic Dubiner polynomials to vanish.
           There are two linear and three quadratics, so these are five
           constraints
@@ -174,21 +172,20 @@ class MardalTaiWintherDual(DualSet):
         as described in the FIAT paper.
         """
         dofs = []
-        
+
         edge_dof_ids = {}
         for entity_id in range(3):
             dofs += [IntegralLegendreNormalMoment(cell, entity_id, 2, 6),
-                    IntegralLegendreNormalMoment(cell, entity_id, 3, 6)]
-            
+                     IntegralLegendreNormalMoment(cell, entity_id, 3, 6)]
+
             edge_dof_ids[entity_id] = [offset, offset+1]
             offset += 2
 
         cell_dofs = DivergenceDubinerMoments(cell, 1, 2, 6)
         dofs.extend(cell_dofs)
         cell_dof_ids = list(range(offset, offset+len(cell_dofs)))
-        
-        return (dofs, edge_dof_ids, cell_dof_ids)
 
+        return (dofs, edge_dof_ids, cell_dof_ids)
 
 
 class MardalTaiWinther(CiarletElement):
@@ -196,7 +193,7 @@ class MardalTaiWinther(CiarletElement):
     """
     def __init__(self, cell, degree=3):
         assert degree == 3, "Only defined for degree 3"
-        assert cell.get_spatial_dimension() == 2,  "Only defined for dimension 2"
+        assert cell.get_spatial_dimension() == 2, "Only defined for dimension 2"
         # polynomial space
         Ps = ONPolynomialSet(cell, degree, (2,))
 

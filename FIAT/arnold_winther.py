@@ -44,15 +44,13 @@ class IntegralBidirectionalLegendreMoment(IntegralMoment):
         legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1]) * numpy.abs(cell.volume_of_subcomplex(1, entity))**2
 
         f_at_qpts = numpy.array([s1s2T*legendre[i] for i in range(quadpoints)])
-        
-        
+
         # Map the quadrature points
         fmap = cell.get_entity_transform(sd-1, entity)
         mappedqpts = [fmap(pt) for pt in Q.get_points()]
         mappedQ = QuadratureRule(cell, mappedqpts, Q.get_weights())
 
         IntegralMoment.__init__(self, cell, mappedQ, f_at_qpts, shp=shp)
-
 
     def to_riesz(self, poly_set):
         es = poly_set.get_expansion_set()
@@ -66,8 +64,8 @@ class IntegralBidirectionalLegendreMoment(IntegralMoment):
             for j in range(result.shape[1]):
                 result[i, j, :] = numpy.dot(bfs, wts[:, i, j])
 
-        return result    
-    
+        return result
+
 
 class IntegralNormalNormalLegendreMoment(IntegralBidirectionalLegendreMoment):
     """Moment of dot(n, dot(tau, n)) against Legendre on entity."""
@@ -85,8 +83,9 @@ class IntegralNormalTangentialLegendreMoment(IntegralBidirectionalLegendreMoment
         IntegralBidirectionalLegendreMoment.__init__(self, cell, n, t,
                                                      entity, mom_deg, comp_deg)
 
+
 class ArnoldWintherBaseDual(DualSet):
-    """Parent class for the dofs of the conforming and 
+    """Parent class for the dofs of the conforming and
     nonconforming Arnold-Winther elements. """
 
     def __init__(self, cell, degree):
@@ -122,7 +121,6 @@ class ArnoldWintherBaseDual(DualSet):
         (_dofs, _dof_ids) = self._generate_constraint_dofs(cell, degree, len(dofs))
         dofs.extend(_dofs)
 
-        #for entity_id in range(3):
         for entity_id in range(len(_dof_ids)):
             dof_ids[1][entity_id] = dof_ids[1][entity_id] + _dof_ids[entity_id]
 
@@ -139,14 +137,13 @@ class ArnoldWintherBaseDual(DualSet):
         offset = 0
 
         for entity_id in range(3):                  # a triangle has 3 edges
-            for order in (0,1):
+            for order in (0, 1):
                 dofs += [IntegralNormalNormalLegendreMoment(cell, entity_id, order, 3),
                          IntegralNormalTangentialLegendreMoment(cell, entity_id, order, 3)]
             num_new_dofs = 4                # 2 dof per order on edge
             dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
             offset += num_new_dofs
         return (dofs, dof_ids)
-
 
     @staticmethod
     def _generate_internal_dofs(cell, degree, offset):
@@ -181,10 +178,10 @@ class ArnoldWintherBaseDual(DualSet):
 
 class ArnoldWintherNCDual(ArnoldWintherBaseDual):
     """Degrees of freedom for nonconforming Arnold-Winther elements."""
-    
+
     def __init__(self, cell, degree):
         if not degree == 2:
-            raise ValueError("Nonconforming Arnold-Winther elements are" 
+            raise ValueError("Nonconforming Arnold-Winther elements are"
                              "only defined for degree 2.")
 
         ArnoldWintherBaseDual.__init__(self, cell, degree)
@@ -208,7 +205,6 @@ class ArnoldWintherNCDual(ArnoldWintherBaseDual):
 
         return (dofs, dof_ids)
 
-
     @staticmethod
     def _generate_vertex_dofs(cell, degree, offset):
         """No vertex dofs for the nonconforming element."""
@@ -231,7 +227,8 @@ class ArnoldWintherNC(CiarletElement):
         mapping = "double contravariant piola"
 
         super(ArnoldWintherNC, self).__init__(Ps, Ls, degree,
-                                                  mapping=mapping)
+                                              mapping=mapping)
+
 
 class ArnoldWintherDual(ArnoldWintherBaseDual):
     """Degrees of freedom for conforming Arnold-Winther elements."""
@@ -245,7 +242,7 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
 
     @staticmethod
     def _generate_internal_dofs(cell, degree, offset):
-        """ This is as for the nonconforming element, except the 
+        """ This is as for the nonconforming element, except the
         degree of the original polynomial space is 1 higher
         here. """
         return ArnoldWintherBaseDual._generate_internal_dofs(cell, degree-1, offset)
@@ -259,7 +256,6 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         dof_ids = {}
         offset = 0
 
-        #vs = numpy.array(cell.get_vertices())
         vs = cell.get_vertices()
         e1 = numpy.array([1.0, 0.0])
         e2 = numpy.array([0.0, 1.0])
@@ -279,12 +275,10 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
     @staticmethod
     def _generate_constraint_dofs(cell, degree, offset):
         """Generate constraint dofs. div(sigma) must be
-        of degree "degree - 2", so we introduce functionals 
+        of degree "degree - 2", so we introduce functionals
         whose kernel describes this property."""
         dofs = []
         dof_ids = {}
-
-        dim = cell.get_spatial_dimension()
 
         # [DELETE] 2nd argument is how many quad points are required per spatial
         #          dimension. If N is the degree of the integrand, this is
@@ -292,50 +286,25 @@ class ArnoldWintherDual(ArnoldWintherBaseDual):
         #          Here, N = 2*(degree - 1). So for general "degree", 2nd arg
         #          here should be    numpy.ceil(degree-0.5)
 
-        #Q = make_quadrature(cell, numpy.ceil(degree-0.5))
         Q = make_quadrature(cell, 3)
 
         # ONPs need to have degree 1 more than what is
         # required of div.
-        onp = ONPolynomialSet(cell, degree-1)
+        onp = ONPolynomialSet(cell, degree-1, (2,))
         pts = Q.get_points()
-        #onp = onp.tabulate(pts)[tuple([[0 for j in range(dim)] for i in range(dim)])]
-        onp = onp.tabulate(pts)[0, 0]
+        onpvals = onp.tabulate(pts)[0, 0]
 
-       
-        
-        #for i in range(dim):
-        #    """Extract the rows of the divergence."""
-        #    e_i = numpy.zeros((1, dim), dtype=object)
-        #    e_i[i+1] = 1.0
-        #    row_i_at_qpts = numpy.asarray([[x * p for p in onp[i, :]]
-        #                                    for x in e_i]) 
-        #    dof = IntegralMomentOfDivergence(cell, Q, row_i_at_qpts)
-        #    dofs += dof
-        #    dof_ids[i] = [offset]
-        #    offset += 1
-
-        # Note the similarity of this code to DivergenceDubinerMoments 
+        # Note the similarity of this code to DivergenceDubinerMoments
         # from mardal_tai_winther.py. Perhaps that, or a subroutine made
         # from this, should go into functional.py.
+        for i in list(range(3, 6)) + list(range(9, 12)):
+            dofs.append(IntegralMomentOfTensorDivergence(cell, Q,
+                                                         onpvals[i, :, :]))
 
-        # Test divergence of each row against all the ONPs of degree exactly 
-        # "degree-1".
-        for row_index in range(dim):
-            for i in range((degree-1)*(degree)//2, 
-                               degree*(degree+1)//2):
-                dofs.append(IntegralMomentOfTensorDivergence(cell, Q, onp[i, :], row_index))
-            num_new_dofs = 3        # at least in the lowest-order case, this represents 
-                                    # 3 dofs per row
-            dof_ids[row_index] = list(range(offset, offset+num_new_dofs)) 
-            offset += num_new_dofs
-
-        #DOF_ids = list(range(offset, offset+len(dofs)))
-        #dof_ids.extend(DOF_ids)
-        #dof_ids[0] = DOF_ids
-
+        dof_ids = [list(range(offset, offset+len(dofs)))]
 
         return (dofs, dof_ids)
+
 
 class ArnoldWinther(CiarletElement):
     """The definition of the conforming Arnold-Winther element.
@@ -348,6 +317,4 @@ class ArnoldWinther(CiarletElement):
         Ls = ArnoldWintherDual(cell, degree)
         # mapping under affine transformation
         mapping = "double contravariant piola"
-
-        super(ArnoldWinther, self).__init__(Ps, Ls, degree,
-                                        mapping=mapping)
+        super(ArnoldWinther, self).__init__(Ps, Ls, degree, mapping=mapping)

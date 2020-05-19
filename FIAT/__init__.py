@@ -21,7 +21,7 @@ from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre
 from FIAT.gauss_legendre import GaussLegendre
-from FIAT.mardal_tai_winther import MardalTaiWinther # noqa:F401
+from FIAT.mardal_tai_winther import MardalTaiWinther  # noqa:F401
 from FIAT.morley import Morley
 from FIAT.nedelec import Nedelec
 from FIAT.nedelec_second_kind import NedelecSecondKind
