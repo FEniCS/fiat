@@ -1,5 +1,7 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
 #
+# Modified 2020 by the same from Baylor University
+#
 # This file is part of FIAT (https://www.fenicsproject.org)
 #
 # SPDX-License-Identifier:    LGPL-3.0-or-later
@@ -36,7 +38,8 @@ def index_iterator(shp):
 
 # Note: morally, a functional on discrete spaces is always a weighted
 # linear combination of function values and derivatives at particular
-# points.  Because the notation is a little different, we store
+# points.  Because the notation is a little different between function
+# values and derivatives, we store
 # separate data structures describing the function values and
 # derivatives that are needed.
 #
@@ -273,8 +276,7 @@ class IntegralMoment(Functional):
               The reference element (cell)
           Q (QuadratureRule)
               A quadrature rule for the integral
-          f_at_qpts
-              ???
+          f_at_qpts: the function against which the moment is being taken.
           comp (tuple)
               A component ??? (Optional)
           shp  (tuple)
