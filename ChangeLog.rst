@@ -1,8 +1,13 @@
 Changelog
 =========
 
-2018.2.0.dev0
+2019.2.0.dev0
 -------------
+
+- No changes yet.
+
+2019.1.0 (2019-04-17)
+---------------------
 
 - Added an implementation of the Bell finite element (K. Bell 1969
   doi:10.1002/nme.1620010180), with extra basis functions for

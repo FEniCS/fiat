@@ -15,11 +15,13 @@ from FIAT.brezzi_douglas_fortin_marini import BrezziDouglasFortinMarini
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 from FIAT.discontinuous_taylor import DiscontinuousTaylor
 from FIAT.discontinuous_raviart_thomas import DiscontinuousRaviartThomas
+from FIAT.serendipity import Serendipity
 from FIAT.discontinuous_pc import DPC
 from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre
 from FIAT.gauss_legendre import GaussLegendre
+from FIAT.gauss_radau import GaussRadau
 from FIAT.morley import Morley
 from FIAT.nedelec import Nedelec
 from FIAT.nedelec_second_kind import NedelecSecondKind
@@ -56,6 +58,7 @@ supported_elements = {"Argyris": Argyris,
                       "FacetBubble": FacetBubble,
                       "Crouzeix-Raviart": CrouzeixRaviart,
                       "Discontinuous Lagrange": DiscontinuousLagrange,
+                      "S": Serendipity,
                       "DPC": DPC,
                       "Discontinuous Taylor": DiscontinuousTaylor,
                       "Discontinuous Raviart-Thomas": DiscontinuousRaviartThomas,
@@ -63,6 +66,7 @@ supported_elements = {"Argyris": Argyris,
                       "Lagrange": Lagrange,
                       "Gauss-Lobatto-Legendre": GaussLobattoLegendre,
                       "Gauss-Legendre": GaussLegendre,
+                      "Gauss-Radau": GaussRadau,
                       "Morley": Morley,
                       "Nedelec 1st kind H(curl)": Nedelec,
                       "Nedelec 2nd kind H(curl)": NedelecSecondKind,

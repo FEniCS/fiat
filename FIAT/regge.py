@@ -3,20 +3,9 @@
 
 # Copyright (C) 2015-2018 Lizao Li
 #
-# This file is part of FIAT.
+# This file is part of FIAT (https://www.fenicsproject.org)
 #
-# FIAT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# FIAT is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+# SPDX-License-Identifier:    LGPL-3.0-or-later
 from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONSymTensorPolynomialSet
@@ -57,7 +46,7 @@ class ReggeDual(DualSet):
 
     @staticmethod
     def _generate_dofs(cell, entity_dim, degree, offset):
-        """generate degrees of freedom for enetities of dimension entity_dim
+        """Generate degrees of freedom for enetities of dimension entity_dim
 
         Input: all obvious except
            offset  -- the current first available dof id.
