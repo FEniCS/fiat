@@ -388,8 +388,7 @@ class IntegralMomentOfDivergence(Functional):
 
 
 class IntegralMomentOfTensorDivergence(Functional):
-    """Extends IntegralMomentOfDivergence to work row-wise on
-    symmetric tensors."""
+    """Like IntegralMomentOfDivergence, but on symmetric tensors."""
 
     def __init__(self, ref_el, Q, f_at_qpts):
         self.f_at_qpts = f_at_qpts
@@ -408,8 +407,8 @@ class IntegralMomentOfTensorDivergence(Functional):
         dpt_dict = OrderedDict()
 
         alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
-        for j, pt in enumerate(dpts):
-            dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[k, j], alphas[i], (k, i)) for i in range(sd) for k in range(sd)]
+        for q, pt in enumerate(dpts):
+            dpt_dict[tuple(pt)] = [(qwts[q]*f_at_qpts[i, q], alphas[j], (i, j)) for i in range(2) for j in range(2)] 
 
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfDivergence")
@@ -427,13 +426,14 @@ class IntegralMomentOfTensorDivergence(Functional):
         bfs = es.tabulate(ed, [dX])[:, 0]
         qwts = self.Q.get_weights()
 
-        for j in range(len(bfs)):
-            grad_phi = [sympy.lambdify(X, sympy.diff(bfs[j], dXcur))
+        print(self_at_qpts)
+        for k in range(len(bfs)):
+            grad_phi = [sympy.lambdify(X, sympy.diff(bfs[k], dXcur))
                         for dXcur in dX]
-            for i0 in range(sd):
-                for i1 in range(sd):
-                    for k, pt in enumerate(self.deriv_dict.keys()):
-                        result[i0, i1, j] += qwts[k] * self.f_at_qpts[i1, k] * grad_phi[i0](pt)
+            for i in range(sd):
+                for j in range(sd):
+                    for q, pt in enumerate(self.deriv_dict.keys()):
+                        result[i, j, k] += qwts[q] * self.f_at_qpts[i, q] * grad_phi[j](pt)
 
         return result
 
