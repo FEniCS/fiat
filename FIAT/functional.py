@@ -426,7 +426,6 @@ class IntegralMomentOfTensorDivergence(Functional):
         bfs = es.tabulate(ed, [dX])[:, 0]
         qwts = self.Q.get_weights()
 
-        print(self_at_qpts)
         for k in range(len(bfs)):
             grad_phi = [sympy.lambdify(X, sympy.diff(bfs[k], dXcur))
                         for dXcur in dX]
