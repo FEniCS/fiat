@@ -51,9 +51,20 @@ def index_iterator(shp):
 # contains the information such that
 # ell(f) = sum(w*f(pt)[c] for pt in pt_dict for (w, c) in pt_dict[pt])
 #
-# The deriv_dict contains similar information about derivatives, but
-# this support is experimental
+# The deriv_dict contains similar information about derivatives
+# For each point, you have a list of triples (w, a, c) for
+# where w is some weight and a is a multi-index indicating the partial
+# derivative and c is the component.  If there aren't point values, then
+# morally we have
+# ell(f) = sum(w * D_{alpha} f[c](pt)
+#              for pt in pt_dict
+#              for (w, a, c) in pt_dict[pt])
 
+# This eliminates the need in older versions to overload the to_riesz method
+# to use sympy (and gives a speed win)
+#
+# It also allows DualSet to collate information over all its nodes
+# and gives a speed win there as well.
 
 class Functional(object):
     """Class implementing an abstract functional.
@@ -105,7 +116,9 @@ class Functional(object):
     def to_riesz(self, poly_set):
         """Constructs an array representation of the functional over
         the base of the given polynomial_set so that f(phi) for any
-        phi in poly_set is given by a dot product."""
+        phi in poly_set is given by a contraction of phi's coefficients
+        in its expansion set with the array representation.
+        """
         es = poly_set.get_expansion_set()
         ed = poly_set.get_embedded_degree()
         pt_dict = self.get_point_dict()

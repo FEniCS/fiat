@@ -1,5 +1,7 @@
 # Copyright (C) 2008-2012 Robert C. Kirby (Texas Tech University)
 #
+# Modified 2020 by the same at Baylor University.
+#
 # This file is part of FIAT (https://www.fenicsproject.org)
 #
 # SPDX-License-Identifier:    LGPL-3.0-or-later
@@ -49,6 +51,7 @@ class DualSet(object):
         multiplication."""
 
         # This rather technical code queries the low-level information
+        # in pt_dict and deriv_dict
         # for each functional to find out where it evaluates its
         # inputs and/or their derivatives.  Then, it tabulates the
         # expansion set one time for all the function values and
@@ -64,13 +67,9 @@ class DualSet(object):
 
         riesz_shape = tuple([num_nodes] + list(tshape) + [num_exp])
 
-        self.matrix = numpy.zeros(riesz_shape, "d")
+        self.mat = numpy.zeros(riesz_shape, "d")
 
-        # let's amalgamate the pt_dict and deriv_dicts of all the
-        # functionals so we can tabulate the basis functions twice only
-        # (once on pts and once on derivatives)
-
-        # Need: dictionary mapping pts to which functionals they come from
+        # Dictionaries mapping pts to which functionals they come from
         pts_to_ells = collections.OrderedDict()
         dpts_to_ells = collections.OrderedDict()
 
@@ -88,7 +87,7 @@ class DualSet(object):
                 else:
                     dpts_to_ells[pt] = [i]
 
-        # Now tabulate
+        # Now tabulate the function values
         pts = list(pts_to_ells.keys())
         expansion_values = es.tabulate(ed, pts)
 
@@ -101,8 +100,9 @@ class DualSet(object):
 
                 for i in range(num_exp):
                     for (w, c) in wc_list:
-                        self.matrix[k][c][i] += w*expansion_values[i, j]
+                        self.mat[k][c][i] += w*expansion_values[i, j]
 
+        # Tabulate the derivative values that are needed
         max_deriv_order = max([ell.max_deriv_order for ell in self.nodes])
         if max_deriv_order > 0:
             dpts = list(dpts_to_ells.keys())
@@ -121,18 +121,9 @@ class DualSet(object):
 
                     for i in range(num_exp):
                         for (w, alpha, c) in wac_list:
-                            self.matrix[k][c][i] += w*dexpansion_values[alpha][i, j]
+                            self.mat[k][c][i] += w*dexpansion_values[alpha][i, j]
 
-        return self.matrix
-
-    # ======= old version
-
-#         self.mat = numpy.zeros(riesz_shape, "d")
-
-#         for i in range(len(self.nodes)):
-#             self.mat[i][:] = self.nodes[i].to_riesz(poly_set)
-
-#         return self.mat
+        return self.mat
 
 
 def make_entity_closure_ids(ref_el, entity_ids):
