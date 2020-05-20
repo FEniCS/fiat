@@ -52,7 +52,7 @@ def index_iterator(shp):
 # ell(f) = sum(w*f(pt)[c] for pt in pt_dict for (w, c) in pt_dict[pt])
 #
 # The deriv_dict contains similar information about derivatives, but
-# is currently limited to scalar functions (FIXME!)
+# this support is experimental
 
 
 class Functional(object):
@@ -63,8 +63,6 @@ class Functional(object):
 
     def __init__(self, ref_el, target_shape, pt_dict, deriv_dict,
                  functional_type):
-        if target_shape != () and deriv_dict != {}:
-            raise NotImplementedError("We don't support derivatives of vector-valued functions yet.")
         self.ref_el = ref_el
         self.target_shape = target_shape
         self.pt_dict = pt_dict
@@ -112,8 +110,6 @@ class Functional(object):
         ed = poly_set.get_embedded_degree()
         pt_dict = self.get_point_dict()
 
-        nbf = poly_set.get_num_members()
-
         pts = list(pt_dict.keys())
 
         # bfs is matrix that is pdim rows by num_pts cols
@@ -121,7 +117,7 @@ class Functional(object):
 
         bfs = es.tabulate(ed, pts)
         npts = len(pts)
-
+        nexp = es.get_num_members(ed)
         result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
 
         # loop over points
@@ -130,7 +126,7 @@ class Functional(object):
             wc_list = pt_dict[pt_cur]
 
             # loop over expansion functions
-            for i in range(bfs.shape[0]):
+            for i in range(nexp):
                 for (w, c) in wc_list:
                     result[c][i] += w * bfs[i, j]
 
@@ -149,9 +145,9 @@ class Functional(object):
             for j in range(ndpts):
                 dpt_cur = dpts[j]
                 wac_list = dpt_dict[dpt_cur]
-                for i in range(nbf):
+                for i in range(nexp):
                     for (w, alpha, c) in wac_list:
-                        result[c][i] += w * dbfs[alpha][i, j]
+                        result[c][i] += w * dbfs[tuple(alpha)][i, j]
 
         return result
 
@@ -321,9 +317,9 @@ class IntegralMomentOfNormalDerivative(Functional):
 
         dpt_dict = OrderedDict()
 
-        alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
+        alphas = [tuple([1 if j == i else 0 for j in range(sd)]) for i in range(sd)]
         for j, pt in enumerate(dpts):
-            dpt_dict[tuple(pt)] = [(qwts[j]*n[i]*f_at_qpts[j], tuple(alphas[i]), tuple()) for i in range(sd)]
+            dpt_dict[tuple(pt)] = [(qwts[j]*n[i]*f_at_qpts[j], alphas[i], tuple()) for i in range(sd)]
 
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfNormalDerivative")
@@ -440,3 +436,52 @@ class PointwiseInnerProductEvaluation(Functional):
 
         shp = (sd, sd)
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
+
+
+class IntegralMomentOfDivergence(Functional):
+    def __init__(self, ref_el, Q, f_at_qpts):
+        self.f_at_qpts = f_at_qpts
+        self.Q = Q
+
+        sd = ref_el.get_spatial_dimension()
+
+        qpts, qwts = Q.get_points(), Q.get_weights()
+        dpts = qpts
+        self.dpts = dpts
+
+        dpt_dict = OrderedDict()
+
+        alphas = [tuple([1 if j == i else 0 for j in range(sd)]) for i in range(sd)]
+        for j, pt in enumerate(dpts):
+            dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
+
+        Functional.__init__(self, ref_el, tuple(),
+                            {}, dpt_dict, "IntegralMomentOfDivergence")
+
+
+class IntegralMomentOfTensorDivergence(Functional):
+    """Like IntegralMomentOfDivergence, but on symmetric tensors."""
+
+    def __init__(self, ref_el, Q, f_at_qpts):
+        self.f_at_qpts = f_at_qpts
+        self.Q = Q
+        qpts, qwts = Q.get_points(), Q.get_weights()
+        nqp = len(qpts)
+        dpts = qpts
+        self.dpts = dpts
+
+        assert len(f_at_qpts.shape) == 2
+        assert f_at_qpts.shape[0] == 2
+        assert f_at_qpts.shape[1] == nqp
+
+        sd = ref_el.get_spatial_dimension()
+
+        dpt_dict = OrderedDict()
+
+        alphas = [tuple([1 if j == i else 0 for j in range(sd)]) for i in range(sd)]
+        print(alphas)
+        for q, pt in enumerate(dpts):
+            dpt_dict[tuple(pt)] = [(qwts[q]*f_at_qpts[i, q], alphas[j], (i, j)) for i in range(2) for j in range(2)]
+
+        Functional.__init__(self, ref_el, tuple(),
+                            {}, dpt_dict, "IntegralMomentOfTensorDivergence")
