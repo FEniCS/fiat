@@ -277,8 +277,7 @@ class PointNormalSecondDerivative(Functional):
 
 
 class IntegralMoment(Functional):
-    """Functional representing integral the input against some tabulated
-    function f.
+    """Functional representing integral the input against some tabulated function f.
 
     :arg ref_el: a :class:`Cell`.
     :arg Q: a :class:`QuadratureRule`.
@@ -287,7 +286,7 @@ class IntegralMoment(Functional):
     :arg comp: Optional argument indicating that only a particular
          component of the input function should be integrated against f
     :arg shp: Optional argument giving the value shape of input functions.
-"""
+    """
 
     def __init__(self, ref_el, Q, f_at_qpts, comp=tuple(), shp=tuple()):
         qpts, qwts = Q.get_points(), Q.get_weights()
