@@ -36,38 +36,8 @@ def index_iterator(shp):
                 yield [i] + foo
 
 
-# Note: morally, a functional on discrete spaces is always a weighted
-# linear combination of function values and derivatives at particular
-# points.  Because the notation is a little different between function
-# values and derivatives, we store
-# separate data structures describing the function values and
-# derivatives that are needed.
-#
-# pt_dict maps points (tuples of floating-point numbers) to lists
-# of tuples.  Each tuple contains a weight and a particular component
-# (to support functionals on vector- or tensor-valued functions.
-#
-# If the functional does not depend on any derivatives, then pt_dict
-# contains the information such that
-# ell(f) = sum(w*f(pt)[c] for pt in pt_dict for (w, c) in pt_dict[pt])
-#
-# The deriv_dict contains similar information about derivatives
-# For each point, you have a list of triples (w, a, c) for
-# where w is some weight and a is a multi-index indicating the partial
-# derivative and c is the component.  If there aren't point values, then
-# morally we have
-# ell(f) = sum(w * D_{alpha} f[c](pt)
-#              for pt in pt_dict
-#              for (w, a, c) in pt_dict[pt])
-
-# This eliminates the need in older versions to overload the to_riesz method
-# to use sympy (and gives a speed win)
-#
-# It also allows DualSet to collate information over all its nodes
-# and gives a speed win there as well.
-
 class Functional(object):
-    """Abstract class representing a linear functional.
+    r"""Abstract class representing a linear functional.
     All FIAT functionals are discrete in the sense that
     they are written as a weighted sum of (derivatives of components of) their
     argument evaluated at particular points.
@@ -79,7 +49,7 @@ class Functional(object):
          target_shape is ()
     :arg pt_dict: A dict mapping points to lists of information about
          how the functional is evaluated.  Each entry in the list takes
-         the form of a tuple (wt, comp) so that (at least if the 
+         the form of a tuple (wt, comp) so that (at least if the
          deriv_dict argument is empty), the functional takes the form
          :math:`\ell(f) = \sum_{q=1}^{N_q} \sum_{k=1}^{K_q} w^q_k f_{c_k}(x_q)`
          where :math:`f_{c_k}` indicates a particular vector or tensor component
@@ -132,8 +102,8 @@ class Functional(object):
         return self.functional_type
 
     def to_riesz(self, poly_set):
-        """Constructs an array representation of the functional so
-        that the functional may be applied to a function expressed in 
+        r"""Constructs an array representation of the functional so
+        that the functional may be applied to a function expressed in
         in terms of the expansion set underlying  `poly_set` by means
         of contracting coefficients.
 
@@ -150,9 +120,9 @@ class Functional(object):
         :math:`\alpha` produces the effect of :math:`\ell(f)`
 
         In the case of scalar-value functions, :math:`R` is just a
-        vector of the same length as the expansion set, and 
+        vector of the same length as the expansion set, and
         :math:`R_i = \ell(\phi_i)`.  For vector-valued spaces,
-        :math:`R_{ij}` will be :math:`\ell(e^i \phi_j)` where 
+        :math:`R_{ij}` will be :math:`\ell(e^i \phi_j)` where
         :math:`e^i` is the canonical unit vector nonzero only in one
         entry :math:`i`.
         """
@@ -164,7 +134,7 @@ class Functional(object):
 
         pts = list(pt_dict.keys())
         npts = len(pts)
-        
+
         bfs = es.tabulate(ed, pts)
         result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
 
@@ -264,7 +234,7 @@ class PointDerivative(Functional):
 
 
 class PointNormalDerivative(Functional):
-
+    """Represents d/dn at a point on a facet."""
     def __init__(self, ref_el, facet_no, pt):
         n = ref_el.compute_normal(facet_no)
         self.n = n
@@ -281,7 +251,7 @@ class PointNormalDerivative(Functional):
 
 
 class PointNormalSecondDerivative(Functional):
-
+    """Represents d^/dn^2 at a point on a facet."""
     def __init__(self, ref_el, facet_no, pt):
         n = ref_el.compute_normal(facet_no)
         self.n = n
@@ -307,24 +277,19 @@ class PointNormalSecondDerivative(Functional):
 
 
 class IntegralMoment(Functional):
-    """An IntegralMoment is a functional"""
+    """Functional representing integral the input against some tabulated
+    function f.
+
+    :arg ref_el: a :class:`Cell`.
+    :arg Q: a :class:`QuadratureRule`.
+    :arg f_at_qpts: an array tabulating the function f at the quadrature
+         points.
+    :arg comp: Optional argument indicating that only a particular
+         component of the input function should be integrated against f
+    :arg shp: Optional argument giving the value shape of input functions.
+"""
 
     def __init__(self, ref_el, Q, f_at_qpts, comp=tuple(), shp=tuple()):
-        """
-        Create IntegralMoment
-
-        *Arguments*
-
-          ref_el
-              The reference element (cell)
-          Q (QuadratureRule)
-              A quadrature rule for the integral
-          f_at_qpts: the function against which the moment is being taken.
-          comp (tuple)
-              A component ??? (Optional)
-          shp  (tuple)
-              The shape ??? (Optional)
-        """
         qpts, qwts = Q.get_points(), Q.get_weights()
         pt_dict = OrderedDict()
         self.comp = comp
@@ -392,8 +357,6 @@ class FrobeniusIntegralMoment(Functional):
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment")
 
 
-# point normals happen on a d-1 dimensional facet
-# pt is the "physical" point on that facet
 class PointNormalEvaluation(Functional):
     """Implements the evaluation of the normal component of a vector at a
     point on a facet of codimension 1."""

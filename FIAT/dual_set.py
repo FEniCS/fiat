@@ -44,11 +44,22 @@ class DualSet(object):
         return self.ref_el
 
     def to_riesz(self, poly_set):
-        """This method gives the action of the entire dual set
+        r"""This method gives the action of the entire dual set
         on each member of the expansion set underlying poly_set.
         Then, applying the linear functionals of the dual set to an
-        arbitrary polynomial in poly_set is accomplished by matrix
-        multiplication."""
+        arbitrary polynomial in poly_set is accomplished by (generalized)
+        matrix multiplication.
+
+        For scalar-valued spaces, this produces a
+        This method produces a matrix R_{i, j} such that
+        :\math:`\ell_i(f) = \sum_{j} a_j \ell_i(\phi_j)`
+        for :\math:`f=\sum_{j} a_j \phi_j`.
+
+        More generally, it will have shape concatenating
+        the number of functionals in the dual set, the value shape
+        of functions it takes, and the number of members of the
+        expansion set.
+        """
 
         # This rather technical code queries the low-level information
         # in pt_dict and deriv_dict
