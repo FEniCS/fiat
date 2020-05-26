@@ -645,7 +645,7 @@ class TensorBidirectionalMomentInnerProductEvaluation(Functional):
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "TensorBidirectionalMomentInnerProductEvaluation")
 
 
-class IntegralMomentOfScaledNormalEvaluation(Functional):
+class IntegralMomentOfNormalEvaluation(Functional):
 
     r"""
     \int_F v\cdot n p ds
@@ -656,6 +656,8 @@ class IntegralMomentOfScaledNormalEvaluation(Functional):
     :arg facet: which facet.
     """
     def __init__(self, ref_el, Q, P_at_qpts, facet):
+        # scaling on the normal is ok because edge length then weights
+        # the reference element quadrature appropriately
         n = ref_el.compute_scaled_normal(facet)
         sd = ref_el.get_spatial_dimension()
         transform = ref_el.get_entity_transform(sd - 1, facet)
@@ -667,7 +669,7 @@ class IntegralMomentOfScaledNormalEvaluation(Functional):
         super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfScaledNormalEvaluation")
 
 
-class IntegralMomentOfScaledTangentialEvaluation(Functional):
+class IntegralMomentOfTangentialEvaluation(Functional):
 
     r"""
     \int_F v\cdot n p ds
@@ -678,6 +680,8 @@ class IntegralMomentOfScaledTangentialEvaluation(Functional):
     :arg facet: which facet.
     """
     def __init__(self, ref_el, Q, P_at_qpts, facet):
+        # scaling on the tangent is ok because edge length then weights
+        # the reference element quadrature appropriately
         sd = ref_el.get_spatial_dimension()
         assert sd == 2
         t = ref_el.compute_edge_tangent(facet)

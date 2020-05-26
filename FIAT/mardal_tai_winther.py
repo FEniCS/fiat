@@ -21,8 +21,8 @@
 from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONPolynomialSet
-from FIAT.functional import (IntegralMomentOfScaledNormalEvaluation,
-                             IntegralMomentOfScaledTangentialEvaluation,
+from FIAT.functional import (IntegralMomentOfNormalEvaluation,
+                             IntegralMomentOfTangentialEvaluation,
                              IntegralLegendreNormalMoment,
                              IntegralMomentOfDivergence)
 
@@ -109,8 +109,8 @@ class MardalTaiWintherDual(DualSet):
         Pq_at_qpts = Pq.tabulate(Q.get_points())[tuple([0]*(sd - 1))]
         for f in range(3):
             phi0 = Pq_at_qpts[0, :]
-            dofs.append(IntegralMomentOfScaledNormalEvaluation(cell, Q, phi0, f))
-            dofs.append(IntegralMomentOfScaledTangentialEvaluation(cell, Q, phi0, f))
+            dofs.append(IntegralMomentOfNormalEvaluation(cell, Q, phi0, f))
+            dofs.append(IntegralMomentOfTangentialEvaluation(cell, Q, phi0, f))
             phi1 = Pq_at_qpts[1, :]
             dofs.append(IntegralMomentOfScaledNormalEvaluation(cell, Q, phi1, f))
 
