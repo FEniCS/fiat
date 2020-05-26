@@ -112,7 +112,7 @@ class MardalTaiWintherDual(DualSet):
             dofs.append(IntegralMomentOfNormalEvaluation(cell, Q, phi0, f))
             dofs.append(IntegralMomentOfTangentialEvaluation(cell, Q, phi0, f))
             phi1 = Pq_at_qpts[1, :]
-            dofs.append(IntegralMomentOfScaledNormalEvaluation(cell, Q, phi1, f))
+            dofs.append(IntegralMomentOfNormalEvaluation(cell, Q, phi1, f))
 
             num_new_dofs = 3
             dof_ids[f] = list(range(offset, offset + num_new_dofs))
