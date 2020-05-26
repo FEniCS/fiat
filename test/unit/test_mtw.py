@@ -14,9 +14,9 @@ def test_dofs():
     linevals = linebfs.tabulate(1, Qline.pts)
 
     for ed in range(3):
-        n = T.compute_reference_normal(1, ed)
-        edlen = T.volume_of_subcomplex(1, ed)
-        wts = np.asarray(Qline.wts) * edlen
+        n = T.compute_scaled_normal(ed)
+        print(n)
+        wts = np.asarray(Qline.wts)
 
         vals = MTW.tabulate(0, Qline.pts, (1, ed))[(0, 0)]
         nvals = np.dot(np.transpose(vals, (0, 2, 1)), n)
@@ -25,12 +25,13 @@ def test_dofs():
             for k in range(len(Qline.wts)):
                 for m in (0, 1):
                     normal_moments[bf, m] += wts[k] * nvals[bf, k] * linevals[m, k]
-
+        print(normal_moments)
+        print()
+    print()
     for ed in range(3):
         t = T.compute_edge_tangent(ed)
         print(t)
-        edlen = T.volume_of_subcomplex(1, ed)
-        wts = np.asarray(Qline.wts) * edlen
+        wts = np.asarray(Qline.wts)
 
         vals = MTW.tabulate(0, Qline.pts, (1, ed))[(0, 0)]
         tvals = np.dot(np.transpose(vals, (0, 2, 1)), t)
