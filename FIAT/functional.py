@@ -344,6 +344,56 @@ class IntegralMomentOfNormalDerivative(Functional):
         return result
 
 
+class IntegralLegendreDirectionalMoment(IntegralMoment):
+    """Momement of v.s against a Legendre polynomial over an edge"""
+    def __init__(self, cell, s, entity, mom_deg, comp_deg):
+        from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
+        from FIAT.reference_element import UFCInterval as interval
+        sd = cell.get_spatial_dimension()
+        assert sd == 2
+        shp = (sd,)
+        quadpoints = comp_deg + 1
+        Q = GaussLegendreQuadratureLineRule(interval(), quadpoints)
+        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1])# * cell.volume_of_subcomplex(1, entity)
+        f_at_qpts = numpy.array([s*legendre[i] for i in range(quadpoints)])
+        fmap = cell.get_entity_transform(sd-1, entity)
+        mappedqpts = [fmap(pt) for pt in Q.get_points()]
+        mappedQ = QuadratureRule(cell, mappedqpts, Q.get_weights())
+
+        IntegralMoment.__init__(self, cell, mappedQ, f_at_qpts, shp=shp)
+
+    def to_riesz(self, poly_set):
+        es = poly_set.get_expansion_set()
+        ed = poly_set.get_embedded_degree()
+        pts = list(self.pt_dict.keys())
+        bfs = es.tabulate(ed, pts)
+        wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
+        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
+
+        for i in range(result.shape[0]):
+            result[i, :] = numpy.dot(bfs, wts[:, i])
+
+        return result
+
+
+class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
+    """Momement of v.n against a Legendre polynomial over an edge"""
+    def __init__(self, cell, entity, mom_deg, comp_deg):
+        # n = cell.compute_normal(entity)
+        n = cell.compute_scaled_normal(entity)
+        IntegralLegendreDirectionalMoment.__init__(self, cell, n, entity,
+                                                   mom_deg, comp_deg)
+
+
+class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
+    """Momement of v.t against a Legendre polynomial over an edge"""
+    def __init__(self, cell, entity, mom_deg, comp_deg):
+        # t = cell.compute_normalized_edge_tangent(entity)
+        t = cell.compute_edge_tangent(entity)
+        IntegralLegendreDirectionalMoment.__init__(self, cell, t, entity,
+                                                   mom_deg, comp_deg)
+    
+
 class IntegralMomentOfDivergence(Functional):
     def __init__(self, ref_el, Q, f_at_qpts):
         self.f_at_qpts = f_at_qpts
@@ -593,3 +643,48 @@ class TensorBidirectionalMomentInnerProductEvaluation(Functional):
 
         shp = (sd, sd)
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "TensorBidirectionalMomentInnerProductEvaluation")
+
+
+class IntegralMomentOfScaledNormalEvaluation(Functional):
+
+    r"""
+    \int_F v\cdot n p ds
+    p \in Polynomials
+    :arg ref_el: reference element for which F is a codim-1 entity
+    :arg Q: quadrature rule on the face
+    :arg P_at_qpts: polynomials evaluated at quad points
+    :arg facet: which facet.
+    """
+    def __init__(self, ref_el, Q, P_at_qpts, facet):
+        n = ref_el.compute_scaled_normal(facet)
+        sd = ref_el.get_spatial_dimension()
+        transform = ref_el.get_entity_transform(sd - 1, facet)
+        pts = tuple(map(lambda p: tuple(transform(p)), Q.get_points()))
+        weights = Q.get_weights()
+        pt_dict = OrderedDict()
+        for pt, wgt, phi in zip(pts, weights, P_at_qpts):
+            pt_dict[pt] = [(wgt*phi*n[i], (i, )) for i in range(sd)]
+        super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfScaledNormalEvaluation")
+
+
+class IntegralMomentOfScaledTangentialEvaluation(Functional):
+
+    r"""
+    \int_F v\cdot n p ds
+    p \in Polynomials
+    :arg ref_el: reference element for which F is a codim-1 entity
+    :arg Q: quadrature rule on the face
+    :arg P_at_qpts: polynomials evaluated at quad points
+    :arg facet: which facet.
+    """
+    def __init__(self, ref_el, Q, P_at_qpts, facet):
+        sd = ref_el.get_spatial_dimension()
+        assert sd == 2
+        t = ref_el.compute_edge_tangent(facet)
+        transform = ref_el.get_entity_transform(sd - 1, facet)
+        pts = tuple(map(lambda p: tuple(transform(p)), Q.get_points()))
+        weights = Q.get_weights()
+        pt_dict = OrderedDict()
+        for pt, wgt, phi in zip(pts, weights, P_at_qpts):
+            pt_dict[pt] = [(wgt*phi*t[i], (i, )) for i in range(sd)]
+        super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfScaledTangentialEvaluation")

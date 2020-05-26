@@ -21,57 +21,13 @@
 from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONPolynomialSet
-from FIAT.functional import IntegralMoment, IntegralMomentOfDivergence
+from FIAT.functional import (IntegralMomentOfScaledNormalEvaluation,
+                             IntegralMomentOfScaledTangentialEvaluation,
+                             IntegralLegendreNormalMoment,
+                             IntegralMomentOfDivergence)
 
-from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule, make_quadrature
-from FIAT.reference_element import UFCInterval as interval
-import numpy
-
-
-class IntegralLegendreDirectionalMoment(IntegralMoment):
-    """Momement of v.s against a Legendre polynomial over an edge"""
-    def __init__(self, cell, s, entity, mom_deg, comp_deg):
-        sd = cell.get_spatial_dimension()
-        assert sd == 2
-        shp = (sd,)
-        quadpoints = comp_deg + 1
-        Q = GaussLegendreQuadratureLineRule(interval(), quadpoints)
-        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1]) * cell.volume_of_subcomplex(1, entity)
-        f_at_qpts = numpy.array([s*legendre[i] for i in range(quadpoints)])
-        fmap = cell.get_entity_transform(sd-1, entity)
-        mappedqpts = [fmap(pt) for pt in Q.get_points()]
-        mappedQ = QuadratureRule(cell, mappedqpts, Q.get_weights())
-
-        IntegralMoment.__init__(self, cell, mappedQ, f_at_qpts, shp=shp)
-
-    def to_riesz(self, poly_set):
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-        pts = list(self.pt_dict.keys())
-        bfs = es.tabulate(ed, pts)
-        wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
-        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-
-        for i in range(result.shape[0]):
-            result[i, :] = numpy.dot(bfs, wts[:, i])
-
-        return result
-
-
-class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
-    """Momement of v.n against a Legendre polynomial over an edge"""
-    def __init__(self, cell, entity, mom_deg, comp_deg):
-        n = cell.compute_normal(entity)
-        IntegralLegendreDirectionalMoment.__init__(self, cell, n, entity,
-                                                   mom_deg, comp_deg)
-
-
-class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
-    """Momement of v.t against a Legendre polynomial over an edge"""
-    def __init__(self, cell, entity, mom_deg, comp_deg):
-        t = cell.compute_normalized_edge_tangent(entity)
-        IntegralLegendreDirectionalMoment.__init__(self, cell, t, entity,
-                                                   mom_deg, comp_deg)
+from FIAT.quadrature import make_quadrature
+# import numpy
 
 
 def DivergenceDubinerMoments(cell, start_deg, stop_deg, comp_deg):
@@ -143,14 +99,23 @@ class MardalTaiWintherDual(DualSet):
         dofs = []
         dof_ids = {}
         offset = 0
+        sd = 2
 
-        for entity_id in range(3):     # a triangle has 3 edges
-            dofs += [IntegralLegendreNormalMoment(cell, entity_id, 0, 6),
-                     IntegralLegendreTangentialMoment(cell, entity_id, 0, 6),
-                     IntegralLegendreNormalMoment(cell, entity_id, 1, 6)]
+        facet = cell.get_facet_element()
+        # Facet nodes are \int_F v\cdot n p ds where p \in P_{q-1}
+        # degree is q - 1
+        Q = make_quadrature(facet, 6)
+        Pq = ONPolynomialSet(facet, 1)
+        Pq_at_qpts = Pq.tabulate(Q.get_points())[tuple([0]*(sd - 1))]
+        for f in range(3):
+            phi0 = Pq_at_qpts[0, :]
+            dofs.append(IntegralMomentOfScaledNormalEvaluation(cell, Q, phi0, f))
+            dofs.append(IntegralMomentOfScaledTangentialEvaluation(cell, Q, phi0, f))
+            phi1 = Pq_at_qpts[1, :]
+            dofs.append(IntegralMomentOfScaledNormalEvaluation(cell, Q, phi1, f))
 
             num_new_dofs = 3
-            dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
+            dof_ids[f] = list(range(offset, offset + num_new_dofs))
             offset += num_new_dofs
 
         return (dofs, dof_ids)
