@@ -6,6 +6,7 @@ def test_dofs():
 
     line = ufc_simplex(1)
     T = ufc_simplex(2)
+    T.vertices = np.random.rand(3, 2)
     MTW = MardalTaiWinther(T, 3)
 
     Qline = make_quadrature(line, 6)
