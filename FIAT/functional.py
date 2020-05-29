@@ -277,7 +277,7 @@ class PointNormalSecondDerivative(Functional):
 
 
 class IntegralMoment(Functional):
-    """Functional representing integral the input against some tabulated function f.
+    """Functional representing integral of the input against some tabulated function f.
 
     :arg ref_el: a :class:`Cell`.
     :arg Q: a :class:`QuadratureRule`.

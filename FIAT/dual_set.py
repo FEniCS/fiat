@@ -50,8 +50,8 @@ class DualSet(object):
         arbitrary polynomial in poly_set is accomplished by (generalized)
         matrix multiplication.
 
-        For scalar-valued spaces, this produces a
-        This method produces a matrix R_{i, j} such that
+        For scalar-valued spaces, this produces a matrix 
+        :\math:`R_{i, j}` such that
         :\math:`\ell_i(f) = \sum_{j} a_j \ell_i(\phi_j)`
         for :\math:`f=\sum_{j} a_j \phi_j`.
 
@@ -91,7 +91,6 @@ class DualSet(object):
                 else:
                     pts_to_ells[pt] = [i]
 
-        for i, ell in enumerate(self.nodes):
             for pt in ell.deriv_dict:
                 if pt in dpts_to_ells:
                     dpts_to_ells[pt].append(i)
