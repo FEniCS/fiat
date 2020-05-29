@@ -692,3 +692,27 @@ class IntegralMomentOfTangentialEvaluation(Functional):
         for pt, wgt, phi in zip(pts, weights, P_at_qpts):
             pt_dict[pt] = [(wgt*phi*t[i], (i, )) for i in range(sd)]
         super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfScaledTangentialEvaluation")
+
+
+class IntegralMomentOfNormalNormalEvaluation(Functional):
+
+    r"""
+    \int_F (n^T tau n) p ds
+    p \in Polynomials
+    :arg ref_el: reference element for which F is a codim-1 entity
+    :arg Q: quadrature rule on the face
+    :arg P_at_qpts: polynomials evaluated at quad points
+    :arg facet: which facet.
+    """
+    def __init__(self, ref_el, Q, P_at_qpts, facet):
+        # scaling on the normal is ok because edge length then weights
+        # the reference element quadrature appropriately
+        n = ref_el.compute_scaled_normal(facet)
+        sd = ref_el.get_spatial_dimension()
+        transform = ref_el.get_entity_transform(sd - 1, facet)
+        pts = tuple(map(lambda p: tuple(transform(p)), Q.get_points()))
+        weights = Q.get_weights()
+        pt_dict = OrderedDict()
+        for pt, wgt, phi in zip(pts, weights, P_at_qpts):
+            pt_dict[pt] = [(wgt*phi*n[i], (i, )) for i in range(sd)]
+        super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfScaledNormalEvaluation")
