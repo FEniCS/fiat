@@ -365,8 +365,6 @@ class ArnoldWintherDual(DualSet):
             fatqp = numpy.zeros((2, 2, len(Q.pts)))
             for k in range(len(Q.pts)):
                 fatqp[:, :, k] = v1v2t
-                print(fatqp[:, :, k])
-            print()
             dofs.append(FIM(cell, Q, fatqp))
         dof_ids[2][0] = list(range(dof_cur, dof_cur + 3))
         dof_cur += 3
