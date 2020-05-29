@@ -50,7 +50,7 @@ class DualSet(object):
         arbitrary polynomial in poly_set is accomplished by (generalized)
         matrix multiplication.
 
-        For scalar-valued spaces, this produces a matrix 
+        For scalar-valued spaces, this produces a matrix
         :\math:`R_{i, j}` such that
         :\math:`\ell_i(f) = \sum_{j} a_j \ell_i(\phi_j)`
         for :\math:`f=\sum_{j} a_j \phi_j`.
