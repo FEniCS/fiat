@@ -85,5 +85,39 @@ def test_dofs():
     assert np.allclose(const_moms[21:24, 1, 1], np.asarray([0, 0, 1]))
 
 
+def frob(a, b):
+    return a.ravel() @ b.ravel()
+
+
+def test_projection():
+    from FIAT import ufc_simplex, ArnoldWinther, make_quadrature, expansions
+
+    T = ufc_simplex(2)
+    # T.vertices = np.random.rand(3, 2)
+    AW = ArnoldWinther(T, 3)
+
+    Q = make_quadrature(T, 3)
+    qpts = Q.pts
+    qwts = Q.wts
+    nqp = len(Q.wts)
+
+    nbf = 24
+    m = np.zeros((24, 24))
+    # b = np.zeros((24,))
+
+    bfvals = AW.tabulate(0, qpts)[(0, 0)]
+
+    for i in range(nbf):
+        for j in range(nbf):
+            for k in range(nqp):
+                for ell in range(2):
+                    for em in range(2):
+                        m[i, j] += qwts[k] * frob(bfvals[i, :, :, k],
+                                                  bfvals[j, :, :, k])
+
+    print(np.linalg.cond(m))
+    print(np.linalg.svd(m, compute_uv=False))
+
 if __name__ == "__main__":
-    test_dofs()
+    # test_dofs()
+    test_projection()
