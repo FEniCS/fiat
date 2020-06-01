@@ -97,15 +97,16 @@ def test_projection():
     AW = ArnoldWinther(T, 3)
 
     Q = make_quadrature(T, 4)
-    qpts = Q.pts
-    qwts = Q.wts
+    qpts = np.asarray(Q.pts)
+    qwts = np.asarray(Q.wts)
     nqp = len(Q.wts)
 
     nbf = 24
     m = np.zeros((nbf, nbf))
-    # b = np.zeros((24,))
+    b = np.zeros((24,))
+    rhs_vals = np.zeros((2, 2, nqp))
 
-    bfvals = AW.tabulate(0, qpts)[(0, 0)]
+    bfvals = AW.tabulate(0, qpts)[(0, 0)][:nbf, :, :, :]
 
     for i in range(nbf):
         for j in range(nbf):
@@ -115,6 +116,35 @@ def test_projection():
 
     assert np.linalg.cond(m) < 1.e10
 
+    comps = [(0, 0), (0, 1), (0, 0)]
+
+    # loop over monomials up to degree 2
+    for deg in range(3):
+        for jj in range(deg+1):
+            ii = deg-jj
+            for comp in comps:
+                b[:] = 0.0
+                # set RHS (symmetrically) to be the monomial in
+                # the proper component.
+                rhs_vals[comp] = qpts[:, 0]**ii * qpts[:, 1]**jj
+                rhs_vals[tuple(reversed(comp))] = rhs_vals[comp]
+                for i in range(nbf):
+                    for k in range(nqp):
+                        b[i] += qwts[k] * frob(bfvals[i, :, :, k],
+                                               rhs_vals[:, :, k])
+                x = np.linalg.solve(m, b)
+
+                sol_at_qpts = np.zeros(rhs_vals.shape)
+                for i in range(nbf):
+                    for k in range(nqp):
+                        sol_at_qpts[:, :, k] += x[i] * bfvals[i, :, :, k]
+
+                diff = sol_at_qpts - rhs_vals
+                err = 0.0
+                for k in range(nqp):
+                    err += qwts[k] * frob(diff[:, :, k], diff[:, :, k])
+
+                assert np.sqrt(err) < 1.e-12
 
 
 if __name__ == "__main__":
