@@ -90,19 +90,19 @@ def frob(a, b):
 
 
 def test_projection():
-    from FIAT import ufc_simplex, ArnoldWinther, make_quadrature, expansions
+    from FIAT import ufc_simplex, ArnoldWinther, make_quadrature
 
     T = ufc_simplex(2)
     # T.vertices = np.random.rand(3, 2)
     AW = ArnoldWinther(T, 3)
 
-    Q = make_quadrature(T, 3)
+    Q = make_quadrature(T, 4)
     qpts = Q.pts
     qwts = Q.wts
     nqp = len(Q.wts)
 
     nbf = 24
-    m = np.zeros((24, 24))
+    m = np.zeros((nbf, nbf))
     # b = np.zeros((24,))
 
     bfvals = AW.tabulate(0, qpts)[(0, 0)]
@@ -110,13 +110,12 @@ def test_projection():
     for i in range(nbf):
         for j in range(nbf):
             for k in range(nqp):
-                for ell in range(2):
-                    for em in range(2):
-                        m[i, j] += qwts[k] * frob(bfvals[i, :, :, k],
-                                                  bfvals[j, :, :, k])
+                m[i, j] += qwts[k] * frob(bfvals[i, :, :, k],
+                                          bfvals[j, :, :, k])
 
-    print(np.linalg.cond(m))
-    print(np.linalg.svd(m, compute_uv=False))
+    assert np.linalg.cond(m) < 1.e10
+
+
 
 if __name__ == "__main__":
     # test_dofs()
