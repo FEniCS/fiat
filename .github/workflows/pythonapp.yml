@@ -37,7 +37,7 @@ jobs:
           DATA_REPO_GIT="" pytest --cov=FIAT/ test/unit/test_bernstein.py
       - name: Coveralls
         # if: ${{ matrix.os == 'ubuntu-latest' && matrix.python_version == '3.8' }}
-        if: ${{ matrix.os == 'ubuntu-latest' }}}
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: coveralls
