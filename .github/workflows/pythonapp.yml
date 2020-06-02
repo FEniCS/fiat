@@ -35,8 +35,7 @@ jobs:
       - name: Test with pytest
         run: |
           pip install coveralls pytest pytest-cov pytest-xdist
-          # DATA_REPO_GIT="" pytest -cov=FIAT/ test/
-          DATA_REPO_GIT="" pytest --cov=FIAT/ test/unit/test_bernstein.py
+          DATA_REPO_GIT="" pytest --cov=FIAT/ test/
       - name: Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
