@@ -12,7 +12,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.7, 3.8]
+        # python-version: [3.7, 3.8]
+        python-version: [3.8]
 
     steps:
       - uses: actions/checkout@v2
@@ -35,7 +36,8 @@ jobs:
           pip install coveralls pytest pytest-cov pytest-xdist
           DATA_REPO_GIT="" pytest --cov=FIAT/ test/unit/test_bernstein.py
       - name: Coveralls
-        if: matrix.os == 'ubuntu-latest' && matrix.python_version == 3.8
+        # if: ${{ matrix.os == 'ubuntu-latest' && matrix.python_version == '3.8' }}
+        if: ${{ matrix.os == 'ubuntu-latest' }}}
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: coveralls
