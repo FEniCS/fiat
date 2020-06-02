@@ -34,7 +34,7 @@ jobs:
         run: |
           pip install pytest pytest-cov pytest-xdist
           # DATA_REPO_GIT="" pytest -cov=FIAT/ test/
-          DATA_REPO_GIT="" pytest -n auto --cov=FIAT/ test/
+          DATA_REPO_GIT="" pytest --cov=FIAT/ test/
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
