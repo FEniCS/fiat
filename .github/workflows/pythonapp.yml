@@ -34,12 +34,8 @@ jobs:
         run: pip install .
       - name: Test with pytest
         run: |
-          pip install pytest pytest-cov pytest-xdist
+          pip install coveralls pytest pytest-cov pytest-xdist
           # DATA_REPO_GIT="" pytest -cov=FIAT/ test/
           DATA_REPO_GIT="" pytest --cov=FIAT/ test/unit/test_bernstein.py
       - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # flag-name: run-${{ matrix.os }}-${{ matrix.python-version }}
-          # parallel: true
+        run: coveralls
