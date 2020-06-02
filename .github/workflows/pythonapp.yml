@@ -11,8 +11,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.7, 3.8]
+        # os: [ubuntu-latest, macos-latest]
+        # python-version: [3.7, 3.8]
+        os: [ubuntu-latest]
+        python-version: [3.8]
 
     steps:
       - uses: actions/checkout@v2
@@ -39,5 +41,5 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          flag-name: run-${{ matrix.os }}-${{ matrix.python-version }}
-          parallel: true
+          # flag-name: run-${{ matrix.os }}-${{ matrix.python-version }}
+          # parallel: true
