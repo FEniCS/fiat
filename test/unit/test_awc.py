@@ -93,7 +93,7 @@ def test_projection():
     from FIAT import ufc_simplex, ArnoldWinther, make_quadrature
 
     T = ufc_simplex(2)
-    # T.vertices = np.random.rand(3, 2)
+    T.vertices = np.random.rand(3, 2)
     AW = ArnoldWinther(T, 3)
 
     Q = make_quadrature(T, 4)
@@ -148,5 +148,5 @@ def test_projection():
 
 
 if __name__ == "__main__":
-    # test_dofs()
+    test_dofs()
     test_projection()
