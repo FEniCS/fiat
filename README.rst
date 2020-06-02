@@ -36,6 +36,10 @@ testing.
    :target: https://circleci.com/gh/FEniCS/fiat
    :alt: Build Status
 
+.. image:: https://github.com/FEniCS/fiat/workflows/FIAT/badge.svg
+   :target: https://github.com/FEniCS/fiat/actions?query=workflow%3AFIAT
+   :alt: Build Status
+
 
 Code Coverage
 -------------
