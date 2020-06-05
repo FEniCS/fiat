@@ -354,7 +354,7 @@ class IntegralLegendreDirectionalMoment(IntegralMoment):
         shp = (sd,)
         quadpoints = comp_deg + 1
         Q = GaussLegendreQuadratureLineRule(interval(), quadpoints)
-        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1])# * cell.volume_of_subcomplex(1, entity)
+        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1])
         f_at_qpts = numpy.array([s*legendre[i] for i in range(quadpoints)])
         fmap = cell.get_entity_transform(sd-1, entity)
         mappedqpts = [fmap(pt) for pt in Q.get_points()]
@@ -392,7 +392,7 @@ class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
         t = cell.compute_edge_tangent(entity)
         IntegralLegendreDirectionalMoment.__init__(self, cell, t, entity,
                                                    mom_deg, comp_deg)
-    
+
 
 class IntegralMomentOfDivergence(Functional):
     def __init__(self, ref_el, Q, f_at_qpts):
@@ -458,7 +458,7 @@ class IntegralMomentOfTensorDivergence(Functional):
 
         alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
         for q, pt in enumerate(dpts):
-            dpt_dict[tuple(pt)] = [(qwts[q]*f_at_qpts[i, q], alphas[j], (i, j)) for i in range(2) for j in range(2)] 
+            dpt_dict[tuple(pt)] = [(qwts[q]*f_at_qpts[i, q], alphas[j], (i, j)) for i in range(2) for j in range(2)]
 
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfDivergence")
@@ -617,7 +617,7 @@ class PointwiseInnerProductEvaluation(Functional):
 
 
 class TensorBidirectionalMomentInnerProductEvaluation(Functional):
-    """
+    r"""
     This is a functional on symmetric 2-tensor fields. Let u be such a
     field, f a function tabulated at points, and v,w be vectors. This implements the evaluation
     \int v^T u(x) w f(x).
