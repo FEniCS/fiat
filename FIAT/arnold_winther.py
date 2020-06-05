@@ -84,98 +84,6 @@ class IntegralNormalTangentialLegendreMoment(IntegralBidirectionalLegendreMoment
                                                      entity, mom_deg, comp_deg)
 
 
-# class ArnoldWintherBaseDual(DualSet):
-#     """Parent class for the dofs of the conforming and
-#     nonconforming Arnold-Winther elements. """
-
-#     def __init__(self, cell, degree):
-#         dim = cell.get_spatial_dimension()
-#         if not dim == 2:
-#             raise ValueError("Arnold-Winther elements are only"
-#                              "defined in dimension 2, for now! The theory"
-#                              "is there in 3D, I just haven't implemented it.")
-
-#         # construct the degrees of freedom
-#         dofs = []               # list of functionals
-#         # dof_ids[i][j] contains the indices of dofs that are associated with
-#         # entity j in dim i
-#         dof_ids = {}
-
-#         # no vertex dofs for nonconforming, but is called by conforming
-#         (_dofs, _dof_ids) = self._generate_vertex_dofs(cell, degree, len(dofs))
-#         dofs.extend(_dofs)
-#         dof_ids[0] = _dof_ids
-
-#         # edge dofs
-#         (_dofs, _dof_ids) = self._generate_edge_dofs(cell, degree)
-#         dofs.extend(_dofs)
-#         dof_ids[1] = _dof_ids
-
-#         # cell dofs
-#         (_dofs, _dof_ids) = self._generate_internal_dofs(cell, degree, len(dofs))
-#         dofs.extend(_dofs)
-#         dof_ids[dim] = _dof_ids
-
-#         # extra dofs for enforcing linearity of dot(n, dot(sigma, n)) on edges
-#         # (nonconforming case), or linearity of div (conforming case)
-#         (_dofs, _dof_ids) = self._generate_constraint_dofs(cell, degree, len(dofs))
-#         dofs.extend(_dofs)
-
-#         for entity_id in range(len(_dof_ids)):
-#             dof_ids[1][entity_id] = dof_ids[1][entity_id] + _dof_ids[entity_id]
-
-#         super(ArnoldWintherBaseDual, self).__init__(dofs, cell, dof_ids)
-
-#     @staticmethod
-#     def _generate_edge_dofs(cell, degree):
-#         """generate dofs on edges.
-#         On each edge, let n be its normal. The components of dot(u, n)
-#         are evaluated at two different points.
-#         """
-#         dofs = []
-#         dof_ids = {}
-#         offset = 0
-
-#         for entity_id in range(3):                  # a triangle has 3 edges
-#             for order in (0, 1):
-#                 dofs += [IntegralNormalNormalLegendreMoment(cell, entity_id, order, 3),
-#                          IntegralNormalTangentialLegendreMoment(cell, entity_id, order, 3)]
-#             num_new_dofs = 4                # 2 dof per order on edge
-#             dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
-#             offset += num_new_dofs
-#         return (dofs, dof_ids)
-
-#     @staticmethod
-#     def _generate_internal_dofs(cell, degree, offset):
-#         """generate internal dofs on the cell.
-#         On each triangle, for degree = r, the three components
-#               u11, u12, u22
-#         are evaluated at a single point.
-#         """
-#         dofs = []
-#         dof_ids = {}
-#         momdeg = degree - 2
-#         # Tabulate all ON polys of certain degree
-#         Q = make_quadrature(cell, 2*(degree+momdeg))
-#         sd = cell.get_spatial_dimension()
-#         Pkm2 = ONPolynomialSet(cell, momdeg)
-#         pkm2vals = Pkm2.tabulate(Q.get_points())[tuple([0 for i in range(sd)])]
-
-#         e1 = numpy.array([1.0, 0.0])              # euclidean basis 1
-#         e2 = numpy.array([0.0, 1.0])              # euclidean basis 2
-#         basis = [(e1, e1), (e1, e2), (e2, e2)]    # basis for symmetric matrices
-#         for (v1, v2) in basis:
-#             v1v2t = numpy.outer(v1, v2)
-#             for i in range(pkm2vals.shape[0]):
-#                 fatqp = numpy.asarray([[[x * p for p in pkm2vals[i, :]]
-#                                         for x in y] for y in v1v2t])
-#                 dofs.append(FIM(cell, Q, fatqp))
-
-#         num_dofs = len(dofs)
-#         dof_ids[0] = list(range(offset, offset + num_dofs))
-#         return (dofs, dof_ids)
-
-
 class ArnoldWintherNCDual(DualSet):
     def __init__(self, cell, degree):
         if not degree == 2:
@@ -230,91 +138,12 @@ class ArnoldWintherNC(CiarletElement):
     """
     def __init__(self, cell, degree):
         assert degree == 2, "Only defined for degree 2"
-        # polynomial space
         Ps = ONSymTensorPolynomialSet(cell, degree)
-        # degrees of freedom
         Ls = ArnoldWintherNCDual(cell, degree)
-        # mapping under affine transformation
         mapping = "double contravariant piola"
 
         super(ArnoldWintherNC, self).__init__(Ps, Ls, degree,
                                               mapping=mapping)
-
-
-# class ArnoldWintherDual(ArnoldWintherBaseDual):
-#     """Degrees of freedom for conforming Arnold-Winther elements."""
-
-#     def __init__(self, cell, degree):
-#         if not degree == 3:
-#             raise ValueError("Conforming Arnold-Winther elements"
-#                              "are only defined for degree 3.")
-
-#         ArnoldWintherBaseDual.__init__(self, cell, degree)
-
-#     @staticmethod
-#     def _generate_internal_dofs(cell, degree, offset):
-#         """ This is as for the nonconforming element, except the
-#         degree of the original polynomial space is 1 higher
-#         here. """
-#         return ArnoldWintherBaseDual._generate_internal_dofs(cell, degree-1, offset)
-
-#     @staticmethod
-#     def _generate_vertex_dofs(cell, degree, offset):
-#         """generate dofs of evaluation at vertices.
-
-#         """
-#         dofs = []
-#         dof_ids = {}
-#         offset = 0
-
-#         vs = cell.get_vertices()
-#         e1 = numpy.array([1.0, 0.0])
-#         e2 = numpy.array([0.0, 1.0])
-#         basis = [(e1, e1), (e1, e2), (e2, e2)]
-
-#         for entity_id in range(3):
-#             node = vs[entity_id]
-#             for (v1, v2) in basis:
-#                 dofs.append(InnerProduct(cell, v1, v2, node))
-
-#             num_new_dofs = 3                # 3 components to evaluate per vertex
-#             dof_ids[entity_id] = list(range(offset, offset + num_new_dofs))
-#             offset += num_new_dofs
-
-#         return (dofs, dof_ids)
-
-#     @staticmethod
-#     def _generate_constraint_dofs(cell, degree, offset):
-#         """Generate constraint dofs. div(sigma) must be
-#         of degree "degree - 2", so we introduce functionals
-#         whose kernel describes this property."""
-#         dofs = []
-#         dof_ids = {}
-
-#         # [DELETE] 2nd argument is how many quad points are required per spatial
-#         #          dimension. If N is the degree of the integrand, this is
-#         #          ceil( (N + 1)/2 )
-#         #          Here, N = 2*(degree - 1). So for general "degree", 2nd arg
-#         #          here should be    numpy.ceil(degree-0.5)
-
-#         Q = make_quadrature(cell, 3)
-
-#         # ONPs need to have degree 1 more than what is
-#         # required of div.
-#         onp = ONPolynomialSet(cell, degree-1, (2,))
-#         pts = Q.get_points()
-#         onpvals = onp.tabulate(pts)[0, 0]
-
-#         # Note the similarity of this code to DivergenceDubinerMoments
-#         # from mardal_tai_winther.py. Perhaps that, or a subroutine made
-#         # from this, should go into functional.py.
-#         for i in list(range(3, 6)) + list(range(9, 12)):
-#             dofs.append(IntegralMomentOfTensorDivergence(cell, Q,
-#                                                          onpvals[i, :, :]))
-
-#         dof_ids = [list(range(offset, offset+len(dofs)))]
-
-#         return (dofs, dof_ids)
 
 
 class ArnoldWintherDual(DualSet):
@@ -345,9 +174,9 @@ class ArnoldWintherDual(DualSet):
             dof_ids[0][entity_id] = list(range(dof_cur, dof_cur + 3))
             dof_cur += 3
 
-        # edge dofs now 
+        # edge dofs now
         # moments of normal . sigma against constants and linears.
-        for entity_id in range(3):                  
+        for entity_id in range(3):
             for order in (0, 1):
                 dofs += [IntegralNormalNormalLegendreMoment(cell, entity_id, order, 6),
                          IntegralNormalTangentialLegendreMoment(cell, entity_id, order, 6)]
@@ -369,8 +198,7 @@ class ArnoldWintherDual(DualSet):
         dof_ids[2][0] = list(range(dof_cur, dof_cur + 3))
         dof_cur += 3
 
-        # put the constraint dofs last.  These are moments of each component against
-        # the three Dubiner quadratics.
+        # Constraint dofs
 
         Q = make_quadrature(cell, 5)
 
@@ -378,9 +206,6 @@ class ArnoldWintherDual(DualSet):
         pts = Q.get_points()
         onpvals = onp.tabulate(pts)[0, 0]
 
-        # Note the similarity of this code to DivergenceDubinerMoments
-        # from mardal_tai_winther.py. Perhaps that, or a subroutine made
-        # from this, should go into functional.py.
         for i in list(range(3, 6)) + list(range(9, 12)):
             dofs.append(IntegralMomentOfTensorDivergence(cell, Q,
                                                          onpvals[i, :, :]))
@@ -395,10 +220,7 @@ class ArnoldWinther(CiarletElement):
     """
     def __init__(self, cell, degree):
         assert degree == 3, "Only defined for degree 3"
-        # polynomial space
         Ps = ONSymTensorPolynomialSet(cell, degree)
-        # degrees of freedom
         Ls = ArnoldWintherDual(cell, degree)
-        # mapping under affine transformation
         mapping = "double contravariant piola"
         super(ArnoldWinther, self).__init__(Ps, Ls, degree, mapping=mapping)

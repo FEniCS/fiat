@@ -21,7 +21,7 @@ from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre
 from FIAT.gauss_legendre import GaussLegendre
-from FIAT.mardal_tai_winther import MardalTaiWinther  # noqa:F401
+from FIAT.gauss_radau import GaussRadau
 from FIAT.morley import Morley
 from FIAT.nedelec import Nedelec
 from FIAT.nedelec_second_kind import NedelecSecondKind
@@ -32,6 +32,7 @@ from FIAT.regge import Regge
 from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson
 from FIAT.arnold_winther import ArnoldWinther
 from FIAT.arnold_winther import ArnoldWintherNC
+from FIAT.mardal_tai_winther import MardalTaiWinther  # noqa:F401
 from FIAT.bubble import Bubble, FacetBubble
 from FIAT.tensor_product import TensorProductElement
 from FIAT.enriched import EnrichedElement
@@ -68,6 +69,7 @@ supported_elements = {"Argyris": Argyris,
                       "Lagrange": Lagrange,
                       "Gauss-Lobatto-Legendre": GaussLobattoLegendre,
                       "Gauss-Legendre": GaussLegendre,
+                      "Gauss-Radau": GaussRadau,
                       "Morley": Morley,
                       "Nedelec 1st kind H(curl)": Nedelec,
                       "Nedelec 2nd kind H(curl)": NedelecSecondKind,

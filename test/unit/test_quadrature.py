@@ -19,7 +19,6 @@
 
 import numpy
 import pytest
-from pytest_cases import pytest_parametrize_plus, fixture_ref
 import FIAT
 from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.reference_element import UFCQuadrilateral, UFCHexahedron, TensorProductCell
@@ -50,6 +49,22 @@ def hexahedron():
     return UFCHexahedron()
 
 
+# This unified fixture enables tests parametrised over different cells.
+@pytest.fixture(params=["interval",
+                        "triangle",
+                        "quadrilateral",
+                        "hexahedron"])
+def cell(request):
+    if request.param == "interval":
+        return UFCInterval()
+    elif request.param == "triangle":
+        return UFCTriangle()
+    elif request.param == "quadrilateral":
+        return UFCTriangle()
+    elif request.param == "hexahedron":
+        return UFCTriangle()
+
+
 @pytest.fixture(scope='module')
 def extr_interval():
     """Extruded interval = interval x interval"""
@@ -66,6 +81,19 @@ def extr_triangle():
 def extr_quadrilateral():
     """Extruded quadrilateral = quadrilateral x interval"""
     return TensorProductCell(UFCQuadrilateral(), UFCInterval())
+
+
+# This unified fixture enables tests parametrised over different extruded cells.
+@pytest.fixture(params=["extr_interval",
+                        "extr_triangle",
+                        "extr_quadrilateral"])
+def extr_cell(request):
+    if request.param == "extr_interval":
+        return TensorProductCell(UFCInterval(), UFCInterval())
+    elif request.param == "extr_triangle":
+        return TensorProductCell(UFCTriangle(), UFCInterval())
+    elif request.param == "extr_quadrilateral":
+        return TensorProductCell(UFCQuadrilateral(), UFCInterval())
 
 
 @pytest.fixture(params=["canonical", "default"])
@@ -135,21 +163,14 @@ def test_create_quadrature_extr_quadrilateral(extr_quadrilateral, basedeg, extrd
                           (2**(basedeg + 2) - 2) / ((basedeg + 1)*(basedeg + 2)) * 1/(extrdeg + 1))
 
 
-@pytest_parametrize_plus("cell", [fixture_ref(interval),
-                                  fixture_ref(triangle),
-                                  fixture_ref(tetrahedron),
-                                  fixture_ref(quadrilateral)])
 def test_invalid_quadrature_degree(cell, scheme):
     with pytest.raises(ValueError):
         FIAT.create_quadrature(cell, -1, scheme)
 
 
-@pytest_parametrize_plus("cell", [fixture_ref(extr_interval),
-                                  fixture_ref(extr_triangle),
-                                  fixture_ref(extr_quadrilateral)])
-def test_invalid_quadrature_degree_tensor_prod(cell):
+def test_invalid_quadrature_degree_tensor_prod(extr_cell):
     with pytest.raises(ValueError):
-        FIAT.create_quadrature(cell, (-1, -1))
+        FIAT.create_quadrature(extr_cell, (-1, -1))
 
 
 def test_tensor_product_composition(interval, triangle, extr_triangle, scheme):
@@ -168,6 +189,18 @@ def test_gauss_lobatto_legendre_quadrature(interval, points, degree):
     polynomial degrees."""
 
     q = FIAT.quadrature.GaussLobattoLegendreQuadratureLineRule(interval, points)
+
+    assert numpy.round(q.integrate(lambda x: x[0]**degree) - 1./(degree+1), 14) == 0.
+
+
+@pytest.mark.parametrize(("points, degree"), tuple((p, d)
+                                                   for p in range(2, 10)
+                                                   for d in range(2*p - 1)))
+def test_radau_legendre_quadrature(interval, points, degree):
+    """Check that the quadrature rules correctly integrate all the right
+    polynomial degrees."""
+
+    q = FIAT.quadrature.RadauQuadratureLineRule(interval, points)
 
     assert numpy.round(q.integrate(lambda x: x[0]**degree) - 1./(degree+1), 14) == 0.
 
