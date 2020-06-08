@@ -35,7 +35,7 @@ jobs:
           pip install coveralls pytest pytest-cov pytest-xdist
           DATA_REPO_GIT="" pytest --cov=FIAT/ test/
       - name: Coveralls
-        if: ${{ github.repository == 'FEniCS/fiat' && githib.head_ref == '' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8' }}
+        if: ${{ github.repository == 'FEniCS/fiat' && github.head_ref == '' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8' }}
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: coveralls
