@@ -21,67 +21,11 @@
 from FIAT.finite_element import CiarletElement
 from FIAT.dual_set import DualSet
 from FIAT.polynomial_set import ONSymTensorPolynomialSet, ONPolynomialSet
-from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct, IntegralMoment, FrobeniusIntegralMoment as FIM, IntegralMomentOfTensorDivergence
-from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule, make_quadrature
-from FIAT.reference_element import UFCInterval as interval
+from FIAT.functional import PointwiseInnerProductEvaluation as InnerProduct, FrobeniusIntegralMoment as FIM, IntegralMomentOfTensorDivergence, IntegralLegendreNormalNormalMoment, IntegralLegendreNormalTangentialMoment
+
+from FIAT.quadrature import make_quadrature
+
 import numpy
-
-
-class IntegralBidirectionalLegendreMoment(IntegralMoment):
-    """Moment of dot(s1, dot(tau, s2)) against Legendre on entity, multiplied by the size of the reference facet"""
-    def __init__(self, cell, s1, s2, entity, mom_deg, comp_deg):
-        # mom_deg is degree of moment, comp_deg is the total degree of
-        # polynomial you might need to integrate (or something like that)
-        sd = cell.get_spatial_dimension()
-        shp = (sd, sd)
-
-        s1s2T = numpy.outer(s1, s2)
-        quadpoints = comp_deg + 1
-        Q = GaussLegendreQuadratureLineRule(interval(), quadpoints)
-
-        # The volume squared gets the Jacobian mapping from line interval
-        # and the edge length into the functional.
-        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1]) * numpy.abs(cell.volume_of_subcomplex(1, entity))**2
-
-        f_at_qpts = numpy.array([s1s2T*legendre[i] for i in range(quadpoints)])
-
-        # Map the quadrature points
-        fmap = cell.get_entity_transform(sd-1, entity)
-        mappedqpts = [fmap(pt) for pt in Q.get_points()]
-        mappedQ = QuadratureRule(cell, mappedqpts, Q.get_weights())
-
-        IntegralMoment.__init__(self, cell, mappedQ, f_at_qpts, shp=shp)
-
-    def to_riesz(self, poly_set):
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-        pts = list(self.pt_dict.keys())
-        bfs = es.tabulate(ed, pts)
-        wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
-        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-
-        for i in range(result.shape[0]):
-            for j in range(result.shape[1]):
-                result[i, j, :] = numpy.dot(bfs, wts[:, i, j])
-
-        return result
-
-
-class IntegralNormalNormalLegendreMoment(IntegralBidirectionalLegendreMoment):
-    """Moment of dot(n, dot(tau, n)) against Legendre on entity."""
-    def __init__(self, cell, entity, mom_deg, comp_deg):
-        n = cell.compute_normal(entity)
-        IntegralBidirectionalLegendreMoment.__init__(self, cell, n, n,
-                                                     entity, mom_deg, comp_deg)
-
-
-class IntegralNormalTangentialLegendreMoment(IntegralBidirectionalLegendreMoment):
-    """Moment of dot(n, dot(tau, n)) against Legendre on entity."""
-    def __init__(self, cell, entity, mom_deg, comp_deg):
-        n = cell.compute_normal(entity)
-        t = cell.compute_normalized_edge_tangent(entity)
-        IntegralBidirectionalLegendreMoment.__init__(self, cell, n, t,
-                                                     entity, mom_deg, comp_deg)
 
 
 class ArnoldWintherNCDual(DualSet):
@@ -101,8 +45,8 @@ class ArnoldWintherNCDual(DualSet):
         # moments of normal . sigma against constants and linears.
         for entity_id in range(3):                  # a triangle has 3 edges
             for order in (0, 1):
-                dofs += [IntegralNormalNormalLegendreMoment(cell, entity_id, order, 6),
-                         IntegralNormalTangentialLegendreMoment(cell, entity_id, order, 6)]
+                dofs += [IntegralLegendreNormalNormalMoment(cell, entity_id, order, 6),
+                         IntegralLegendreNormalTangentialMoment(cell, entity_id, order, 6)]
             dof_ids[1][entity_id] = list(range(dof_cur, dof_cur+4))
             dof_cur += 4
 
@@ -125,7 +69,7 @@ class ArnoldWintherNCDual(DualSet):
 
         # put the constraint dofs last.
         for entity_id in range(3):
-            dof = IntegralNormalNormalLegendreMoment(cell, entity_id, 2, 6)
+            dof = IntegralLegendreNormalNormalMoment(cell, entity_id, 2, 6)
             dofs.append(dof)
             dof_ids[1][entity_id].append(dof_cur)
             dof_cur += 1
@@ -178,8 +122,8 @@ class ArnoldWintherDual(DualSet):
         # moments of normal . sigma against constants and linears.
         for entity_id in range(3):
             for order in (0, 1):
-                dofs += [IntegralNormalNormalLegendreMoment(cell, entity_id, order, 6),
-                         IntegralNormalTangentialLegendreMoment(cell, entity_id, order, 6)]
+                dofs += [IntegralLegendreNormalNormalMoment(cell, entity_id, order, 6),
+                         IntegralLegendreNormalTangentialMoment(cell, entity_id, order, 6)]
             dof_ids[1][entity_id] = list(range(dof_cur, dof_cur+4))
             dof_cur += 4
 

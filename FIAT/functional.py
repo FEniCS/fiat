@@ -15,6 +15,8 @@ from itertools import chain
 import numpy
 import sympy
 
+from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
+
 
 def index_iterator(shp):
     """Constructs a generator iterating over all indices in
@@ -344,9 +346,9 @@ class IntegralMomentOfNormalDerivative(Functional):
         return result
 
 
-class IntegralLegendreDirectionalMoment(IntegralMoment):
+class IntegralLegendreDirectionalMoment(Functional):
     """Momement of v.s against a Legendre polynomial over an edge"""
-    def __init__(self, cell, s, entity, mom_deg, comp_deg):
+    def __init__(self, cell, s, entity, mom_deg, comp_deg, nm=""):
         from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
         from FIAT.reference_element import UFCInterval as interval
         sd = cell.get_spatial_dimension()
@@ -359,21 +361,17 @@ class IntegralLegendreDirectionalMoment(IntegralMoment):
         fmap = cell.get_entity_transform(sd-1, entity)
         mappedqpts = [fmap(pt) for pt in Q.get_points()]
         mappedQ = QuadratureRule(cell, mappedqpts, Q.get_weights())
+        qwts = mappedQ.wts
+        qpts = mappedQ.pts
 
-        IntegralMoment.__init__(self, cell, mappedQ, f_at_qpts, shp=shp)
+        pt_dict = OrderedDict()
 
-    def to_riesz(self, poly_set):
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-        pts = list(self.pt_dict.keys())
-        bfs = es.tabulate(ed, pts)
-        wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
-        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
+        for k in range(len(qpts)):
+            pt_cur = tuple(qpts[k])
+            pt_dict[pt_cur] = [(qwts[k] * f_at_qpts[k, i], (i,))
+                               for i in range(2)]
 
-        for i in range(result.shape[0]):
-            result[i, :] = numpy.dot(bfs, wts[:, i])
-
-        return result
+        Functional.__init__(self, cell, shp, pt_dict, {}, nm)
 
 
 class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
@@ -382,7 +380,8 @@ class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
         # n = cell.compute_normal(entity)
         n = cell.compute_scaled_normal(entity)
         IntegralLegendreDirectionalMoment.__init__(self, cell, n, entity,
-                                                   mom_deg, comp_deg)
+                                                   mom_deg, comp_deg,
+                                                   "IntegralLegendreNormalMoment")
 
 
 class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
@@ -391,7 +390,64 @@ class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
         # t = cell.compute_normalized_edge_tangent(entity)
         t = cell.compute_edge_tangent(entity)
         IntegralLegendreDirectionalMoment.__init__(self, cell, t, entity,
-                                                   mom_deg, comp_deg)
+                                                   mom_deg, comp_deg,
+                                                   "IntegralLegendreTangentialMoment")
+
+
+class IntegralLegendreBidirectionalMoment(Functional):
+    """Moment of dot(s1, dot(tau, s2)) against Legendre on entity, multiplied by the size of the reference facet"""
+    def __init__(self, cell, s1, s2, entity, mom_deg, comp_deg, nm=""):
+        from FIAT.reference_element import UFCInterval as interval
+        # mom_deg is degree of moment, comp_deg is the total degree of
+        # polynomial you might need to integrate (or something like that)
+        sd = cell.get_spatial_dimension()
+        shp = (sd, sd)
+
+        s1s2T = numpy.outer(s1, s2)
+        quadpoints = comp_deg + 1
+        Q = GaussLegendreQuadratureLineRule(interval(), quadpoints)
+
+        # The volume squared gets the Jacobian mapping from line interval
+        # and the edge length into the functional.
+        legendre = numpy.polynomial.legendre.legval(2*Q.get_points()-1, [0]*mom_deg + [1]) * numpy.abs(cell.volume_of_subcomplex(1, entity))**2
+
+        f_at_qpts = numpy.array([s1s2T*legendre[i] for i in range(quadpoints)])
+
+        # Map the quadrature points
+        fmap = cell.get_entity_transform(sd-1, entity)
+        mappedqpts = [fmap(pt) for pt in Q.get_points()]
+        mappedQ = QuadratureRule(cell, mappedqpts, Q.get_weights())
+
+        pt_dict = OrderedDict()
+
+        qpts = mappedQ.pts
+        qwts = mappedQ.wts
+
+        for k in range(len(qpts)):
+            pt_cur = tuple(qpts[k])
+            pt_dict[pt_cur] = [(qwts[k] * f_at_qpts[k, i, j], (i, j))
+                               for (i, j) in index_iterator(shp)]
+
+        Functional.__init__(self, cell, shp, pt_dict, {}, nm)
+
+
+class IntegralLegendreNormalNormalMoment(IntegralLegendreBidirectionalMoment):
+    """Moment of dot(n, dot(tau, n)) against Legendre on entity."""
+    def __init__(self, cell, entity, mom_deg, comp_deg):
+        n = cell.compute_normal(entity)
+        IntegralLegendreBidirectionalMoment.__init__(self, cell, n, n,
+                                                     entity, mom_deg, comp_deg,
+                                                     "IntegralNormalNormalLegendreMoment")
+
+
+class IntegralLegendreNormalTangentialMoment(IntegralLegendreBidirectionalMoment):
+    """Moment of dot(n, dot(tau, n)) against Legendre on entity."""
+    def __init__(self, cell, entity, mom_deg, comp_deg):
+        n = cell.compute_normal(entity)
+        t = cell.compute_normalized_edge_tangent(entity)
+        IntegralLegendreBidirectionalMoment.__init__(self, cell, n, t,
+                                                     entity, mom_deg, comp_deg,
+                                                     "IntegralNormalTangentialLegendreMoment")
 
 
 class IntegralMomentOfDivergence(Functional):
