@@ -6,6 +6,7 @@
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 # Modified by Lizao Li (lzlarryli@gmail.com), 2016
+
 """
 Abstract class and particular implementations of finite element
 reference simplex geometry/topology.
@@ -481,6 +482,15 @@ class Point(Simplex):
         verts = ((),)
         topology = {0: {0: (0,)}}
         super(Point, self).__init__(POINT, verts, topology)
+
+    def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: subentity dimension (integer). Must be zero.
+        """
+        assert dimension == 0
+        return self
 
 
 class DefaultLine(Simplex):
@@ -968,6 +978,8 @@ def ufc_cell(cell):
         return UFCQuadrilateral()
     elif celltype == "hexahedron":
         return UFCHexahedron()
+    elif celltype == "vertex":
+        return ufc_simplex(0)
     elif celltype == "interval":
         return ufc_simplex(1)
     elif celltype == "triangle":

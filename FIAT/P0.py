@@ -19,7 +19,10 @@ class P0Dual(dual_set.DualSet):
         entity_ids = {}
         nodes = []
         vs = numpy.array(ref_el.get_vertices())
-        bary = tuple(numpy.average(vs, 0))
+        if ref_el.get_dimension() == 0:
+            bary = ()
+        else:
+            bary = tuple(numpy.average(vs, 0))
 
         nodes = [functional.PointEvaluation(ref_el, bary)]
         entity_ids = {}
