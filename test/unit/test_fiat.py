@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 
 from FIAT.reference_element import LINE, ReferenceElement
-from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
+from FIAT.reference_element import Point, UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.lagrange import Lagrange
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange   # noqa: F401
 from FIAT.discontinuous_taylor import DiscontinuousTaylor       # noqa: F401
@@ -49,7 +49,7 @@ from FIAT.bubble import Bubble
 from FIAT.enriched import EnrichedElement                       # noqa: F401
 from FIAT.nodal_enriched import NodalEnrichedElement
 
-
+P = Point()
 I = UFCInterval()  # noqa: E741
 T = UFCTriangle()
 S = UFCTetrahedron()
@@ -110,6 +110,7 @@ elements = [
     "P0(I)",
     "P0(T)",
     "P0(S)",
+    "DiscontinuousLagrange(P, 0)",
     "DiscontinuousLagrange(I, 0)",
     "DiscontinuousLagrange(I, 1)",
     "DiscontinuousLagrange(I, 2)",

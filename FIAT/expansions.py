@@ -109,6 +109,34 @@ def xi_tetrahedron(eta):
     return xi1, xi2, xi3
 
 
+class PointExpansionSet(object):
+    """Evaluates the point basis on a point reference element."""
+
+    def __init__(self, ref_el):
+        if ref_el.get_spatial_dimension() != 0:
+            raise ValueError("Must have a point")
+        self.ref_el = ref_el
+        self.base_ref_el = reference_element.Point()
+
+    def get_num_members(self, n):
+        return 1
+
+    def tabulate(self, n, pts):
+        """Returns a numpy array A[i,j] = phi_i(pts[j]) = 1.0."""
+        assert n == 0
+        return numpy.ones((1, len(pts)))
+
+    def tabulate_derivatives(self, n, pts):
+        """Returns a numpy array of size A where A[i,j] = phi_i(pts[j])
+        but where each element is an empty tuple (). This maintains
+        compatibility with the interfaces of the interval, triangle and
+        tetrahedron expansions."""
+        deriv_vals = numpy.empty_like(self.tabulate(n, pts), dtype=tuple)
+        deriv_vals.fill(())
+
+        return deriv_vals
+
+
 class LineExpansionSet(object):
     """Evaluates the Legendre basis on a line reference element."""
 
@@ -377,7 +405,9 @@ class TetrahedronExpansionSet(object):
 def get_expansion_set(ref_el):
     """Returns an ExpansionSet instance appopriate for the given
     reference element."""
-    if ref_el.get_shape() == reference_element.LINE:
+    if ref_el.get_shape() == reference_element.POINT:
+        return PointExpansionSet(ref_el)
+    elif ref_el.get_shape() == reference_element.LINE:
         return LineExpansionSet(ref_el)
     elif ref_el.get_shape() == reference_element.TRIANGLE:
         return TriangleExpansionSet(ref_el)
@@ -390,11 +420,15 @@ def get_expansion_set(ref_el):
 def polynomial_dimension(ref_el, degree):
     """Returns the dimension of the space of polynomials of degree no
     greater than degree on the reference element."""
-    if ref_el.get_shape() == reference_element.LINE:
+    if ref_el.get_shape() == reference_element.POINT:
+        if degree > 0:
+            raise ValueError("Only degree zero polynomials supported on point elements.")
+        return 1
+    elif ref_el.get_shape() == reference_element.LINE:
         return max(0, degree + 1)
     elif ref_el.get_shape() == reference_element.TRIANGLE:
         return max((degree + 1) * (degree + 2) // 2, 0)
     elif ref_el.get_shape() == reference_element.TETRAHEDRON:
         return max(0, (degree + 1) * (degree + 2) * (degree + 3) // 6)
     else:
-        raise Exception("Unknown reference element type.")
+        raise ValueError("Unknown reference element type.")
