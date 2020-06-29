@@ -496,6 +496,15 @@ def test_facet_nodality_tabulate(element):
             assert np.isclose(basis[i], 1.0 if i == j else 0.0)
 
 
+@pytest.mark.parametrize('element', [
+    'Nedelec(S, 3, variant="integral(2)")',
+    'NedelecSecondKind(S, 3, variant="integral(3)")'
+])
+def test_error_quadrature_degree(element):
+    with pytest.raises(ValueError):
+        eval(element)
+
+
 if __name__ == '__main__':
     import os
     pytest.main(os.path.abspath(__file__))
