@@ -17,8 +17,8 @@ from itertools import chain
 import numpy
 import sympy
 
-
 from FIAT import polynomial_set
+from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
 
 
 def index_iterator(shp):
@@ -70,7 +70,7 @@ class Functional(object):
         self.functional_type = functional_type
         if len(deriv_dict) > 0:
             per_point = list(chain(*deriv_dict.values()))
-            alphas = [foo[1] for foo in per_point]
+            alphas = [tuple(foo[1]) for foo in per_point]
             self.max_deriv_order = max([sum(foo) for foo in alphas])
         else:
             self.max_deriv_order = 0
@@ -455,7 +455,7 @@ class IntegralMomentOfDivergence(Functional):
 
         dpt_dict = OrderedDict()
 
-        alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
+        alphas = [tuple([1 if j == i else 0 for j in range(sd)]) for i in range(sd)]
         for j, pt in enumerate(dpts):
             dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
 
@@ -504,7 +504,7 @@ class IntegralMomentOfTensorDivergence(Functional):
 
         dpt_dict = OrderedDict()
 
-        alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
+        alphas = [tuple([1 if j == i else 0 for j in range(sd)]) for i in range(sd)]
         for q, pt in enumerate(dpts):
             dpt_dict[tuple(pt)] = [(qwts[q]*f_at_qpts[i, q], alphas[j], (i, j)) for i in range(2) for j in range(2)]
 
@@ -646,7 +646,6 @@ class PointwiseInnerProductEvaluation(Functional):
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
 
 
-<<<<<<< HEAD
 class TensorBidirectionalMomentInnerProductEvaluation(Functional):
     r"""
     This is a functional on symmetric 2-tensor fields. Let u be such a
