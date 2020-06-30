@@ -746,4 +746,3 @@ class IntegralMomentOfNormalNormalEvaluation(Functional):
         for pt, wgt, phi in zip(pts, weights, P_at_qpts):
             pt_dict[pt] = [(wgt*phi*n[i], (i, )) for i in range(sd)]
         super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfScaledNormalEvaluation")
-
