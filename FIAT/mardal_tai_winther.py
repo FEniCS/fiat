@@ -91,7 +91,7 @@ class MardalTaiWintherDual(DualSet):
 
     @staticmethod
     def _generate_edge_dofs(cell, degree):
-        """generate dofs on edges.
+        """Generate dofs on edges.
         On each edge, let n be its normal.  We need to integrate
         u.n and u.t against the first Legendre polynomial (constant)
         and u.n against the second (linear).

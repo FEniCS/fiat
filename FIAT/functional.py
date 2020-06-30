@@ -676,7 +676,6 @@ class TensorBidirectionalMomentInnerProductEvaluation(Functional):
 
 
 class IntegralMomentOfNormalEvaluation(Functional):
-
     r"""
     \int_F v\cdot n p ds
     p \in Polynomials
@@ -700,7 +699,6 @@ class IntegralMomentOfNormalEvaluation(Functional):
 
 
 class IntegralMomentOfTangentialEvaluation(Functional):
-
     r"""
     \int_F v\cdot n p ds
     p \in Polynomials
@@ -725,7 +723,6 @@ class IntegralMomentOfTangentialEvaluation(Functional):
 
 
 class IntegralMomentOfNormalNormalEvaluation(Functional):
-
     r"""
     \int_F (n^T tau n) p ds
     p \in Polynomials
