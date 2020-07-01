@@ -93,7 +93,8 @@ def test_projection():
     from FIAT import ufc_simplex, ArnoldWinther, make_quadrature
 
     T = ufc_simplex(2)
-    T.vertices = np.random.rand(3, 2)
+    T.vertices = np.asarray([(0.0, 0.0), (1.0, 0.0), (0.5, 2.1)])
+        
     AW = ArnoldWinther(T, 3)
 
     Q = make_quadrature(T, 4)
@@ -114,7 +115,7 @@ def test_projection():
                 m[i, j] += qwts[k] * frob(bfvals[i, :, :, k],
                                           bfvals[j, :, :, k])
 
-    assert np.linalg.cond(m) < 1.e10
+    assert np.linalg.cond(m) < 1.e12
 
     comps = [(0, 0), (0, 1), (0, 0)]
 
