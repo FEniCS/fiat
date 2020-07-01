@@ -94,7 +94,7 @@ def test_projection():
 
     T = ufc_simplex(2)
     T.vertices = np.asarray([(0.0, 0.0), (1.0, 0.0), (0.5, 2.1)])
-        
+
     AW = ArnoldWinther(T, 3)
 
     Q = make_quadrature(T, 4)
