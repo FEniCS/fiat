@@ -125,7 +125,7 @@ class Serendipity(FiniteElement):
         self.entity_closure_ids = unflattened_entity_closure_ids
         self._degree = degree
         self.flat_el = flat_el
-        self.dual = self.get_dual_set()
+        self.dual = self._get_dual_set()
 
     def degree(self):
         return self._degree + 1
@@ -134,6 +134,17 @@ class Serendipity(FiniteElement):
         raise NotImplementedError("get_nodal_basis not implemented for serendipity")
 
     def get_dual_set(self):
+        return self.dual
+
+    def _get_dual_set(self):
+        """Since Serendipity elements are defined by their basis and
+        not as a Ciarlet element, we have some work to do if we want
+        to enable FIAT clients to do interpolation or Dirichlet BCs.
+        This function constructs a set of functionals that are dual to
+        the given serendipity basis by taking linear combinations
+        of point evaluation at a suitable set of unisolvent points
+        for the serendipity space.
+        """
         T = self.ref_el
         deg = self._degree
         L = T.construct_subelement(1)
@@ -158,7 +169,7 @@ class Serendipity(FiniteElement):
             if np.abs(val) < 1.e-11:
                 Vinv[idx] = 0.0
         nds = []
-        for i, coeffs in enumerate(Vinv):
+        for i, coeffs in enumerate(Vinv.T):
             pt_dict = {pt: [(c, tuple())] for c, pt in zip(coeffs, pts) if np.abs(c) > 1.e-12}
             nds.append(Functional(T, (), pt_dict, {}, "S node"))
 
