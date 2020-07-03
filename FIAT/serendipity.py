@@ -5,6 +5,8 @@
 # SPDX-License-Identifier:    LGPL-3.0-or-later
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2019
+#
+# Modified by Robert C Kirby (robert_kirby@baylor.edu), 2020
 
 from sympy import symbols, legendre, Array, diff, lambdify
 import numpy as np
