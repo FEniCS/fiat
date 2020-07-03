@@ -10,10 +10,13 @@ from sympy import symbols, legendre, Array, diff, lambdify
 import numpy as np
 from FIAT.finite_element import FiniteElement
 from FIAT.lagrange import Lagrange
-from FIAT.dual_set import make_entity_closure_ids
+from FIAT.dual_set import DualSet, make_entity_closure_ids
 from FIAT.polynomial_set import mis
 from FIAT.reference_element import (compute_unflattening_map,
-                                    flatten_reference_cube)
+                                    flatten_reference_cube,
+                                    make_lattice)
+from FIAT.functional import Functional
+
 
 x, y, z = symbols('x y z')
 variables = (x, y, z)
@@ -122,6 +125,7 @@ class Serendipity(FiniteElement):
         self.entity_closure_ids = unflattened_entity_closure_ids
         self._degree = degree
         self.flat_el = flat_el
+        self.dual = self.get_dual_set()
 
     def degree(self):
         return self._degree + 1
@@ -130,7 +134,36 @@ class Serendipity(FiniteElement):
         raise NotImplementedError("get_nodal_basis not implemented for serendipity")
 
     def get_dual_set(self):
-        raise NotImplementedError("get_dual_set is not implemented for serendipity")
+        T = self.ref_el
+        deg = self._degree
+        L = T.construct_subelement(1)
+        vs = np.asarray(T.vertices)
+        pts = [pt for pt in T.vertices]
+        Lpts = make_lattice(L.vertices, deg, 1)
+        for e in T.topology[1]:
+            Fmap = T.get_entity_transform(1, e)
+            epts = [tuple(Fmap(pt)) for pt in Lpts]
+            pts.extend(epts)
+        if deg > 3:
+            dx0 = (vs[1, :] - vs[0, :]) / (deg-2)
+            dx1 = (vs[2, :] - vs[0, :]) / (deg-2)
+
+            internal_nodes = [tuple(vs[0, :] + dx0 * i + dx1 * j)
+                              for i in range(1, deg-2)
+                              for j in range(1, deg-1-i)]
+            pts.extend(internal_nodes)
+        V = self.tabulate(0, pts)[0, 0]
+        Vinv = np.linalg.inv(V)
+        for idx, val in np.ndenumerate(Vinv):
+            if np.abs(val) < 1.e-11:
+                Vinv[idx] = 0.0
+        nds = []
+        for i, coeffs in enumerate(Vinv):
+            pt_dict = {j: c for j, c in enumerate(coeffs) if np.abs(c) > 1.e-12}
+            nds.append(Functional(T, (), pt_dict, {}, "S node"))
+
+        Sdual = DualSet(nds, T, self.entity_ids)
+        return Sdual
 
     def get_coeffs(self):
         raise NotImplementedError("get_coeffs not implemented for serendipity")
