@@ -125,7 +125,10 @@ class Serendipity(FiniteElement):
         self.entity_closure_ids = unflattened_entity_closure_ids
         self._degree = degree
         self.flat_el = flat_el
-        self.dual = self._get_dual_set()
+        if ref_el.get_spatial_dimension() == 2:
+            self.dual = self._get_dual_set_quad()
+        elif ref_el.get_spatial_dimension() == 3:
+            self.dual = self._get_dual_set_hex()
 
     def degree(self):
         return self._degree + 1
@@ -136,14 +139,10 @@ class Serendipity(FiniteElement):
     def get_dual_set(self):
         return self.dual
 
-    def _get_dual_set(self):
-        """Since Serendipity elements are defined by their basis and
-        not as a Ciarlet element, we have some work to do if we want
-        to enable FIAT clients to do interpolation or Dirichlet BCs.
-        This function constructs a set of functionals that are dual to
-        the given serendipity basis by taking linear combinations
-        of point evaluation at a suitable set of unisolvent points
-        for the serendipity space.
+    def _get_dual_set_quad(self):
+        """Constructs a set of functionals to which self.basis is dual
+        by building linear combinations of point evaluations at a set
+        of points unisolvent for the S space.  This version is for quads.
         """
         T = self.ref_el
         deg = self._degree
@@ -164,6 +163,58 @@ class Serendipity(FiniteElement):
                               for j in range(1, deg-1-i)]
             pts.extend(internal_nodes)
         V = self.tabulate(0, pts)[0, 0]
+        Vinv = np.linalg.inv(V)
+        for idx, val in np.ndenumerate(Vinv):
+            if np.abs(val) < 1.e-11:
+                Vinv[idx] = 0.0
+        nds = []
+        for i, coeffs in enumerate(Vinv.T):
+            pt_dict = {pt: [(c, tuple())] for c, pt in zip(coeffs, pts) if np.abs(c) > 1.e-12}
+            nds.append(Functional(T, (), pt_dict, {}, "S node"))
+
+        Sdual = DualSet(nds, T, self.entity_ids)
+        return Sdual
+
+    def _get_dual_set_hex(self):
+        """Constructs a set of functionals to which self.basis is dual
+        by building linear combinations of point evaluations at a set
+        of points unisolvent for the S space.  This version is for hexes.
+        """
+        T = self.ref_el
+        deg = self._degree
+        L = T.construct_subelement(1)
+        F = T.construct_subelement(2)
+        vs = np.asarray(T.vertices)
+        pts = [pt for pt in T.vertices]
+        Lpts = make_lattice(L.vertices, deg, 1)
+        for e in T.topology[1]:
+            Fmap = T.get_entity_transform(1, e)
+            epts = [tuple(Fmap(pt)) for pt in Lpts]
+            pts.extend(epts)
+        if deg > 3:
+            fvs = np.asarray(F.vertices)
+            # Planar points to map to each face
+            dx0 = (fvs[1, :] - fvs[0, :]) / (deg-2)
+            dx1 = (fvs[2, :] - fvs[0, :]) / (deg-2)
+
+            Fpts = [tuple(fvs[0, :] + dx0 * i + dx1 * j)
+                    for i in range(1, deg-2)
+                    for j in range(1, deg-1-i)]
+            for f in T.topology[2]:
+                Fmap = T.get_entity_transform(2, f)
+                pts.extend([tuple(Fmap(pt)) for pt in Fpts])
+        if deg > 5:
+            dx0 = np.asarray([1., 0, 0]) / (deg-4)
+            dx1 = np.asarray([0, 1., 0]) / (deg-4)
+            dx2 = np.asarray([0, 0, 1.]) / (deg-4)
+
+            Ipts = [tuple(vs[0, :] + dx0 * i + dx1 * j + dx2 * k)
+                    for i in range(1, deg-4)
+                    for j in range(1, deg-3-i)
+                    for k in range(1, deg-2-i-j)]
+            pts.extend(Ipts)
+
+        V = self.tabulate(0, pts)[0, 0, 0]
         Vinv = np.linalg.inv(V)
         for idx, val in np.ndenumerate(Vinv):
             if np.abs(val) < 1.e-11:
