@@ -10,8 +10,7 @@ from FIAT import Serendipity
 import numpy as np
 import pytest
 
-# There are internal dofs for the hex starting at degree 6.
-# So we want to make sure we get those right.
+
 @pytest.mark.parametrize("cell", ("quadrilateral", "hexahedron"))
 @pytest.mark.parametrize("degree", range(1, 7))
 def test_nodes(cell, degree):
