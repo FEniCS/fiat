@@ -159,7 +159,7 @@ class Serendipity(FiniteElement):
                 Vinv[idx] = 0.0
         nds = []
         for i, coeffs in enumerate(Vinv):
-            pt_dict = {j: c for j, c in enumerate(coeffs) if np.abs(c) > 1.e-12}
+            pt_dict = {pt: [(c, tuple())] for c, pt in zip(coeffs, pts) if np.abs(c) > 1.e-12}
             nds.append(Functional(T, (), pt_dict, {}, "S node"))
 
         Sdual = DualSet(nds, T, self.entity_ids)
