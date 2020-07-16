@@ -2,10 +2,8 @@ from FIAT.reference_element import UFCQuadrilateral
 from FIAT import Serendipity
 import numpy as np
 import sympy
-import pytest
 
 
-@pytest.mark.xfail(reason="Higher derivatives drop shape")
 def test_serendipity_derivatives():
     cell = UFCQuadrilateral()
     S = Serendipity(cell, 2)

@@ -150,6 +150,8 @@ class Serendipity(FiniteElement):
             raise NotImplementedError('no tabulate method for serendipity elements of dimension 1 or less.')
         if dim >= 4:
             raise NotImplementedError('tabulate does not support higher dimensions than 3.')
+        points = np.asarray(points)
+        npoints, pointdim = points.shape
         for o in range(order + 1):
             alphas = mis(dim, o)
             for alpha in alphas:
@@ -160,8 +162,9 @@ class Serendipity(FiniteElement):
                     callable = lambdify(variables[:dim], polynomials, modules="numpy", dummify=True)
                     self.basis[alpha] = polynomials
                     self.basis_callable[alpha] = callable
-                points = np.asarray(points)
-                T = np.asarray(callable(*(points[:, i] for i in range(points.shape[1]))))
+                tabulation = callable(*(points[:, i] for i in range(pointdim)))
+                T = np.asarray([np.broadcast_to(tab, (npoints, ))
+                                for tab in tabulation])
                 phivals[alpha] = T
         return phivals
 
