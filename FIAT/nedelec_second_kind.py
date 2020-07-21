@@ -15,6 +15,9 @@ from FIAT.functional import FrobeniusIntegralMoment as IntegralMoment
 from FIAT.raviart_thomas import RaviartThomas
 from FIAT.quadrature import make_quadrature, UFCTetrahedronFaceQuadratureRule
 from FIAT.reference_element import UFCTetrahedron
+from FIAT.check_format_variant import check_format_variant
+
+from FIAT import polynomial_set, quadrature, functional
 
 
 class NedelecSecondKindDual(DualSet):
@@ -46,15 +49,14 @@ class NedelecSecondKindDual(DualSet):
     these elements coincide with the CG_k elements.)
     """
 
-    def __init__(self, cell, degree):
+    def __init__(self, cell, degree, variant, quad_deg):
 
         # Define degrees of freedom
-        (dofs, ids) = self.generate_degrees_of_freedom(cell, degree)
-
+        (dofs, ids) = self.generate_degrees_of_freedom(cell, degree, variant, quad_deg)
         # Call init of super-class
         super(NedelecSecondKindDual, self).__init__(dofs, cell, ids)
 
-    def generate_degrees_of_freedom(self, cell, degree):
+    def generate_degrees_of_freedom(self, cell, degree, variant, quad_deg):
         "Generate dofs and geometry-to-dof maps (ids)."
 
         dofs = []
@@ -68,25 +70,25 @@ class NedelecSecondKindDual(DualSet):
         ids[0] = dict(list(zip(list(range(d + 1)), ([] for i in range(d + 1)))))
 
         # (d+1) degrees of freedom per entity of codimension 1 (edges)
-        (edge_dofs, edge_ids) = self._generate_edge_dofs(cell, degree, 0)
+        (edge_dofs, edge_ids) = self._generate_edge_dofs(cell, degree, 0, variant, quad_deg)
         dofs.extend(edge_dofs)
         ids[1] = edge_ids
 
         # Include face degrees of freedom if 3D
         if d == 3:
             (face_dofs, face_ids) = self._generate_face_dofs(cell, degree,
-                                                             len(dofs))
+                                                             len(dofs), variant, quad_deg)
             dofs.extend(face_dofs)
             ids[2] = face_ids
 
         # Varying degrees of freedom (possibly zero) per cell
-        (cell_dofs, cell_ids) = self._generate_cell_dofs(cell, degree, len(dofs))
+        (cell_dofs, cell_ids) = self._generate_cell_dofs(cell, degree, len(dofs), variant, quad_deg)
         dofs.extend(cell_dofs)
         ids[d] = cell_ids
 
         return (dofs, ids)
 
-    def _generate_edge_dofs(self, cell, degree, offset):
+    def _generate_edge_dofs(self, cell, degree, offset, variant, quad_deg):
         """Generate degrees of freedoms (dofs) for entities of
         codimension 1 (edges)."""
 
@@ -94,21 +96,35 @@ class NedelecSecondKindDual(DualSet):
         # freedom per entity of codimension 1 (edges)
         dofs = []
         ids = {}
-        for edge in range(len(cell.get_topology()[1])):
 
-            # Create points for evaluation of tangential components
-            points = cell.make_points(1, edge, degree + 2)
+        if variant == "integral":
+            edge = cell.construct_subelement(1)
+            Q = quadrature.make_quadrature(edge, quad_deg)
+            Pq = polynomial_set.ONPolynomialSet(edge, degree)
+            Pq_at_qpts = Pq.tabulate(Q.get_points())[tuple([0]*(1))]
+            for e in range(len(cell.get_topology()[1])):
+                for i in range(Pq_at_qpts.shape[0]):
+                    phi = Pq_at_qpts[i, :]
+                    dofs.append(functional.IntegralMomentOfEdgeTangentEvaluation(cell, Q, phi, e))
+                jj = Pq_at_qpts.shape[0] * e
+                ids[e] = list(range(offset + jj, offset + jj + Pq_at_qpts.shape[0]))
 
-            # A tangential component evaluation for each point
-            dofs += [Tangent(cell, edge, point) for point in points]
+        elif variant == "point":
+            for edge in range(len(cell.get_topology()[1])):
 
-            # Associate these dofs with this edge
-            i = len(points) * edge
-            ids[edge] = list(range(offset + i, offset + i + len(points)))
+                # Create points for evaluation of tangential components
+                points = cell.make_points(1, edge, degree + 2)
+
+                # A tangential component evaluation for each point
+                dofs += [Tangent(cell, edge, point) for point in points]
+
+                # Associate these dofs with this edge
+                i = len(points) * edge
+                ids[edge] = list(range(offset + i, offset + i + len(points)))
 
         return (dofs, ids)
 
-    def _generate_face_dofs(self, cell, degree, offset):
+    def _generate_face_dofs(self, cell, degree, offset, variant, quad_deg):
         """Generate degrees of freedoms (dofs) for faces."""
 
         # Initialize empty dofs and identifiers (ids)
@@ -134,7 +150,7 @@ class NedelecSecondKindDual(DualSet):
             # Construct Raviart-Thomas of (degree - 1) on the
             # reference face
             reference_face = Q_face.reference_rule().ref_el
-            RT = RaviartThomas(reference_face, degree - 1)
+            RT = RaviartThomas(reference_face, degree - 1, variant)
             num_rts = RT.space_dimension()
 
             # Evaluate RT basis functions at reference quadrature
@@ -168,7 +184,7 @@ class NedelecSecondKindDual(DualSet):
 
         return (dofs, ids)
 
-    def _generate_cell_dofs(self, cell, degree, offset):
+    def _generate_cell_dofs(self, cell, degree, offset, variant, quad_deg):
         """Generate degrees of freedoms (dofs) for entities of
         codimension d (cells)."""
 
@@ -182,7 +198,7 @@ class NedelecSecondKindDual(DualSet):
         qs = Q.get_points()
 
         # Create Raviart-Thomas nodal basis
-        RT = RaviartThomas(cell, degree + 1 - d)
+        RT = RaviartThomas(cell, degree + 1 - d, variant)
         phi = RT.get_nodal_basis()
 
         # Evaluate Raviart-Thomas basis at quadrature points
@@ -203,21 +219,35 @@ class NedelecSecondKind(CiarletElement):
     tetrahedra: the polynomial space described by the full polynomials
     of degree k, with a suitable set of degrees of freedom to ensure
     H(curl) conformity.
+
+    :arg ref_el: The reference element.
+    :arg k: The degree.
+    :arg variant: optional variant specifying the types of nodes.
+
+    variant can be chosen from ["point", "integral", "integral(quadrature_degree)"]
+    "point" -> dofs are evaluated by point evaluation. Note that this variant has suboptimal
+    convergence order in the H(curl)-norm
+    "integral" -> dofs are evaluated by quadrature rule. The quadrature degree is chosen to integrate
+    polynomials of degree 5*k so that most expressions will be interpolated exactly. This is important
+    when you want to have (nearly) curl-preserving interpolation.
+    "integral(quadrature_degree)" -> dofs are evaluated by quadrature rule of degree quadrature_degree
     """
 
-    def __init__(self, cell, degree):
+    def __init__(self, cell, k, variant=None):
+
+        (variant, quad_deg) = check_format_variant(variant, k, "Nedelec Second Kind")
 
         # Check degree
-        assert degree >= 1, "Second kind Nedelecs start at 1!"
+        assert k >= 1, "Second kind Nedelecs start at 1!"
 
         # Get dimension
         d = cell.get_spatial_dimension()
 
         # Construct polynomial basis for d-vector fields
-        Ps = ONPolynomialSet(cell, degree, (d, ))
+        Ps = ONPolynomialSet(cell, k, (d, ))
 
         # Construct dual space
-        Ls = NedelecSecondKindDual(cell, degree)
+        Ls = NedelecSecondKindDual(cell, k, variant, quad_deg)
 
         # Set form degree
         formdegree = 1  # 1-form
@@ -226,4 +256,4 @@ class NedelecSecondKind(CiarletElement):
         mapping = "covariant piola"
 
         # Call init of super-class
-        super(NedelecSecondKind, self).__init__(Ps, Ls, degree, formdegree, mapping=mapping)
+        super(NedelecSecondKind, self).__init__(Ps, Ls, k, formdegree, mapping=mapping)
