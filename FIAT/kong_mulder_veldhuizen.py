@@ -16,8 +16,6 @@ from FIAT import (
     RestrictedElement
 )
 from FIAT.quadrature_schemes import create_quadrature  # noqa: F401
-from FIAT.polynomial_set import ONPolynomialSet, PolynomialSet
-import numpy as np
 
 
 def _get_topology(ref_el, degree):
@@ -55,20 +53,10 @@ def _get_topology(ref_el, degree):
     return entity_ids
 
 
-def _enrich(ref_el, degree):
-    """Pair spaces using bubbles following rules in ref listed below"""
-    if degree == 1:
-        return lagrange.Lagrange(ref_el, degree)
-    elif degree < 5:
-        P = Lagrange(ref_el, degree)
-        B = Bubble(ref_el, degree + 1)
-    return NodalEnrichedElement(P, B)
-
-
 def KongMulderVeldhuizenSpace(T, deg):
     if T.get_spatial_dimension() == 2:
         if deg == 1:
-            return ONPolynomialSet(T, 1)
+            return Lagrange(T, 1).poly_set
         elif deg < 5:
             # Toss the bubble from Lagrange since it's dependent
             # on the higher-dimensional bubbles
