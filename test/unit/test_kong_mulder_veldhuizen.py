@@ -61,3 +61,30 @@ def test_edge_degree(degree):
         # degree edge should be orthogonal to degree+1 ONpoly edge values
         result = edge_values @ W @ interval_vals.T
         assert np.allclose(np.sum(result), 0.0)
+
+
+@pytest.mark.parametrize("element_degree", [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4)]
+)
+def test_interpolate_monomials(element_degree):
+    element, degree = element_degree
+    T = UFCTriangle()
+
+    # ordered the same way as KMV nodes
+    pts = create_quadrature(T, degree, "KMV").pts
+
+    Q = make_quadrature(T, 2 * degree)
+    phis = element.tabulate(0, Q.pts)[0, 0]
+    print("deg", degree)
+    for i in range(degree + 1):
+        for j in range(degree + 1 - i):
+            m = lambda x: x[0]**i * x[1]**j
+            dofs = np.array([m(pt) for pt in pts])
+            interp = phis.T @ dofs
+            matqp = np.array([m(pt) for pt in Q.pts])
+            err = 0.0
+            for k in range(phis.shape[1]):
+                err += Q.wts[k] * (interp[k] - matqp[k])** 2
+            print(np.sqrt(err))
+            
+            
+            

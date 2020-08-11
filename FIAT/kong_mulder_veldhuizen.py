@@ -34,7 +34,7 @@ def _get_topology(ref_el, degree):
             }
     elif degree == 3:
         if sd == 2:
-            etop = [[3, 4], [5, 6], [7, 8]]
+            etop = [[3, 4], [6, 5], [7, 8]]
             entity_ids = {
                 0: dict((i, [i]) for i in range(3)),
                 1: dict((i, etop[i]) for i in range(3)),
@@ -97,7 +97,7 @@ class KongMulderVeldhuizen(finite_element.CiarletElement):
             )
         elif degree == 2:
             super(KongMulderVeldhuizen, self).__init__(
-                poly_set, dual, 3 , formdegree
+                poly_set, dual, 3, formdegree
             )
         # Bubble elements for cubic KMV have a dimension of 12 (but NodalEnrichedElement has a dimension of 13)
         elif degree == 3:
