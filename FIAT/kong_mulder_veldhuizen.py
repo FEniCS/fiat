@@ -10,11 +10,14 @@ from FIAT import (
     finite_element,
     dual_set,
     functional,
-    bubble,
-    lagrange,
+    Bubble,
+    Lagrange,
     NodalEnrichedElement,
+    RestrictedElement
 )
 from FIAT.quadrature_schemes import create_quadrature  # noqa: F401
+from FIAT.polynomial_set import ONPolynomialSet, PolynomialSet
+import numpy as np
 
 
 def _get_topology(ref_el, degree):
@@ -57,9 +60,25 @@ def _enrich(ref_el, degree):
     if degree == 1:
         return lagrange.Lagrange(ref_el, degree)
     elif degree < 5:
-        P = lagrange.Lagrange(ref_el, degree)
-        B = bubble.Bubble(ref_el, degree + 1)
+        P = Lagrange(ref_el, degree)
+        B = Bubble(ref_el, degree + 1)
     return NodalEnrichedElement(P, B)
+
+
+def KongMulderVeldhuizenSpace(T, deg):
+    if T.get_spatial_dimension() == 2:
+        if deg == 1:
+            return ONPolynomialSet(T, 1)
+        elif deg < 5:
+            # Toss the bubble from Lagrange since it's dependent
+            # on the higher-dimensional bubbles
+            L = Lagrange(T, deg)
+            inds = [i for i in range(L.space_dimension())
+                    if i not in L.dual.entity_ids[2][0]]
+
+            RL = RestrictedElement(L, inds)
+            bubs = Bubble(T, deg+1)
+            return NodalEnrichedElement(RL, bubs).poly_set
 
 
 class KongMulderVeldhuizenDualSet(dual_set.DualSet):
@@ -87,25 +106,15 @@ class KongMulderVeldhuizen(finite_element.CiarletElement):
             raise NotImplementedError("Only triangles are currently implemented.")
         if degree > 4:
             raise NotImplementedError("Only P < 5 are currently implemented.")
-        S = _enrich(ref_el, degree)
-        poly_set = S.get_nodal_basis()
+        S = KongMulderVeldhuizenSpace(ref_el, degree)
+
         dual = KongMulderVeldhuizenDualSet(ref_el, degree)
         formdegree = 0  # 0-form
         if degree == 1:
             super(KongMulderVeldhuizen, self).__init__(
-                poly_set, dual, 1, formdegree
+                S, dual, 1, formdegree
             )
-        elif degree == 2:
+        elif degree < 5:
             super(KongMulderVeldhuizen, self).__init__(
-                poly_set, dual, 3, formdegree
-            )
-        # Bubble elements for cubic KMV have a dimension of 12 (but NodalEnrichedElement has a dimension of 13)
-        elif degree == 3:
-            super(KongMulderVeldhuizen, self).__init__(
-                poly_set.take(range(12)), dual, 4, formdegree
-            )
-        # Bubble elements for cubic KMV have a dimension of 18 (but NodalEnrichedElement has a dimension of 21)
-        elif degree == 4:
-            super(KongMulderVeldhuizen, self).__init__(
-                poly_set.take(range(18)), dual, 5, formdegree
+                S, dual, degree+1, formdegree
             )
