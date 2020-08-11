@@ -63,8 +63,7 @@ def test_edge_degree(degree):
         assert np.allclose(np.sum(result), 0.0)
 
 
-@pytest.mark.parametrize("element_degree", [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4)]
-)
+@pytest.mark.parametrize("element_degree", [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4)])
 def test_interpolate_monomials(element_degree):
     element, degree = element_degree
     T = UFCTriangle()
