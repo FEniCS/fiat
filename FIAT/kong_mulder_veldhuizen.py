@@ -43,7 +43,7 @@ def _get_topology(ref_el, degree):
             }
     elif degree == 4:
         if sd == 2:
-            etop = [[6, 3, 7], [8, 4, 9], [10, 5, 11]]
+            etop = [[6, 3, 7], [9, 4, 8], [10, 5, 11]]
             entity_ids = {
                 0: dict((i, [i]) for i in range(3)),
                 1: dict((i, etop[i]) for i in range(3)),
