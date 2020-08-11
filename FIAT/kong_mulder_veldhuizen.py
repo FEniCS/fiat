@@ -19,7 +19,7 @@ from FIAT.quadrature_schemes import create_quadrature  # noqa: F401
 
 
 def _get_topology(ref_el, degree):
-    """the topological association in a dictionary"""
+    """The topological association in a dictionary"""
     T = ref_el.topology
     sd = ref_el.get_spatial_dimension()
     if degree == 1:  # works for any spatial dimension.
