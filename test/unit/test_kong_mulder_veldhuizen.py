@@ -83,8 +83,5 @@ def test_interpolate_monomials(element_degree):
             matqp = np.array([m(pt) for pt in Q.pts])
             err = 0.0
             for k in range(phis.shape[1]):
-                err += Q.wts[k] * (interp[k] - matqp[k])** 2
+                err += Q.wts[k] * (interp[k] - matqp[k]) ** 2
             print(np.sqrt(err))
-            
-            
-            
