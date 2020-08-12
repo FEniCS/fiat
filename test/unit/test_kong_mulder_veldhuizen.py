@@ -9,21 +9,22 @@ I = UFCInterval()
 T = UFCTriangle()
 
 
-@pytest.mark.parametrize("p_d", [(1, 1), (2, 3), (3, 5), (4, 7)])
+@pytest.mark.parametrize("p_d", [(1, 1), (2, 3), (3, 5), (4, 7), (5, 9)])
 def test_kmv_quad_schemes(p_d):
     fct = np.math.factorial
     p, d = p_d
     q = create_quadrature(T, p, "KMV")
-    for i in range(d+1):
-        for j in range(d+1-i):
-            trueval = fct(i) * fct(j) / fct(i+j+2)
-            assert(np.abs(trueval-q.integrate(lambda x: x[0]**i *
-                                              x[1]**j)) <
-                   1.0e-10)
+    for i in range(d + 1):
+        for j in range(d + 1 - i):
+            trueval = fct(i) * fct(j) / fct(i + j + 2)
+            assert (
+                np.abs(trueval - q.integrate(lambda x: x[0] ** i * x[1] ** j)) < 1.0e-10
+            )
 
 
 @pytest.mark.parametrize(
-    "element_degree", [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4)]
+    "element_degree",
+    [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4), (KMV(T, 5), 5)],
 )
 def test_Kronecker_property(element_degree):
     """
@@ -63,7 +64,10 @@ def test_edge_degree(degree):
         assert np.allclose(np.sum(result), 0.0)
 
 
-@pytest.mark.parametrize("element_degree", [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4)])
+@pytest.mark.parametrize(
+    "element_degree",
+    [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4), (KMV(T, 5), 5)],
+)
 def test_interpolate_monomials(element_degree):
     element, degree = element_degree
     T = UFCTriangle()
@@ -76,7 +80,7 @@ def test_interpolate_monomials(element_degree):
     print("deg", degree)
     for i in range(degree + 1):
         for j in range(degree + 1 - i):
-            m = lambda x: x[0]**i * x[1]**j
+            m = lambda x: x[0] ** i * x[1] ** j
             dofs = np.array([m(pt) for pt in pts])
             interp = phis.T @ dofs
             matqp = np.array([m(pt) for pt in Q.pts])
