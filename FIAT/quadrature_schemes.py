@@ -105,7 +105,7 @@ def _fiat_scheme(ref_el, degree):
 
 
 def _kmv_lump_scheme(ref_el, degree):
-    """Specialized quadrature schemes for P < 5 for KMV-type elements.
+    """Specialized quadrature schemes for P < 6 for KMV-type elements.
 
        Reference:
        Higher-order triangular and tetrahedral finite elements with mass
@@ -179,6 +179,63 @@ def _kmv_lump_scheme(ref_el, degree):
             w[6:12] = 0.01071428571428571  # chk 0.01071428571428571
             w[12:15] = 0.07878121446939182  # chk 0.07878121446939182
             w[15:18] = 0.05058386489568756  # chk 0.05058386489568756
+    elif degree == 5:
+        if sd == 2:
+            alpha1 = 0.3632980741536860e-00
+            alpha2 = 0.1322645816327140e-00
+            beta1 = 0.4578368380791611e-00
+            beta2 = 0.2568591072619591e-00
+            beta3 = 0.5752768441141011e-01
+            gamma1 = 0.7819258362551702e-01
+            delta1 = 0.2210012187598900e-00
+            x = list(ref_el.vertices)
+            x.extend(
+                [
+                    (1 - alpha1, alpha1),
+                    (alpha1, 1 - alpha1),
+                    (0.0, 1 - alpha1),
+                    (0.0, alpha1),
+                    (alpha1, 0.0),
+                    (1 - alpha1, 0.0),
+                ]  # edge points
+            )
+            x.extend(
+                [
+                    (1 - alpha2, alpha2),
+                    (alpha2, 1 - alpha2),
+                    (0.0, 1 - alpha2),
+                    (0.0, alpha2),
+                    (alpha2, 0.0),
+                    (1 - alpha2, 0.0),
+                ]  # edge points
+            )
+            x.extend(
+                [(beta1, beta1), (1 - 2 * beta1, beta1), (beta1, 1 - 2 * beta1)]
+            )  # points in center of cell
+            x.extend(
+                [(beta2, beta2), (1 - 2 * beta2, beta2), (beta2, 1 - 2 * beta2)]
+            )  # points in center of cell
+            x.extend(
+                [(beta3, beta3), (1 - 2 * beta3, beta3), (beta3, 1 - 2 * beta3)]
+            )  # points in center of cell
+            x.extend(
+                [
+                    (gamma1, delta1),
+                    (1 - gamma1 - delta1, delta1),
+                    (gamma1, 1 - gamma1 - delta1),
+                    (delta1, gamma1),
+                    (1 - gamma1 - delta1, gamma1),
+                    (delta1, 1 - gamma1 - delta1),
+                ]  # edge points
+            )
+            w = arange(30, dtype=float64)
+            w[0:3] = 0.7094239706792450e-03
+            w[3:9] = 0.6190565003676629e-02
+            w[9:15] = 0.3480578640489211e-02
+            w[15:18] = 0.3453043037728279e-01
+            w[18:21] = 0.4590123763076286e-01
+            w[21:24] = 0.1162613545961757e-01
+            w[24:30] = 0.2727857596999626e-01
 
     # Return scheme
     return QuadratureRule(UFCTriangle(), x, w)

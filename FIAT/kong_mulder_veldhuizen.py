@@ -13,7 +13,7 @@ from FIAT import (
     Bubble,
     Lagrange,
     NodalEnrichedElement,
-    RestrictedElement
+    RestrictedElement,
 )
 from FIAT.quadrature_schemes import create_quadrature  # noqa: F401
 
@@ -49,6 +49,14 @@ def _get_topology(ref_el, degree):
                 1: dict((i, etop[i]) for i in range(3)),
                 2: {0: [i for i in range(12, 18)]},
             }
+    elif degree == 5:
+        if sd == 2:
+            etop = [[9, 3, 4, 10], [12, 6, 5, 11], [13, 7, 8, 14]]
+            entity_ids = {
+                0: dict((i, [i]) for i in range(3)),
+                1: dict((i, etop[i]) for i in range(3)),
+                2: {0: [i for i in range(15, 30)]},
+            }
 
     return entity_ids
 
@@ -57,15 +65,22 @@ def KongMulderVeldhuizenSpace(T, deg):
     if T.get_spatial_dimension() == 2:
         if deg == 1:
             return Lagrange(T, 1).poly_set
-        elif deg < 5:
+        elif deg < 6:
             # Toss the bubble from Lagrange since it's dependent
             # on the higher-dimensional bubbles
             L = Lagrange(T, deg)
-            inds = [i for i in range(L.space_dimension())
-                    if i not in L.dual.entity_ids[2][0]]
+            inds = [
+                i
+                for i in range(L.space_dimension())
+                if i not in L.dual.entity_ids[2][0]
+            ]
 
             RL = RestrictedElement(L, inds)
-            bubs = Bubble(T, deg+1)
+            if deg < 5:
+                bubs = Bubble(T, deg + 1)
+            else:
+                bubs = Bubble(T, deg + 2)
+
             return NodalEnrichedElement(RL, bubs).poly_set
 
 
@@ -92,17 +107,15 @@ class KongMulderVeldhuizen(finite_element.CiarletElement):
     def __init__(self, ref_el, degree):
         if ref_el.shape != 2:
             raise NotImplementedError("Only triangles are currently implemented.")
-        if degree > 4:
-            raise NotImplementedError("Only P < 5 are currently implemented.")
+        if degree > 5:
+            raise NotImplementedError("Only P < 6 are currently implemented.")
         S = KongMulderVeldhuizenSpace(ref_el, degree)
 
         dual = KongMulderVeldhuizenDualSet(ref_el, degree)
         formdegree = 0  # 0-form
         if degree == 1:
-            super(KongMulderVeldhuizen, self).__init__(
-                S, dual, 1, formdegree
-            )
+            super(KongMulderVeldhuizen, self).__init__(S, dual, 1, formdegree)
         elif degree < 5:
-            super(KongMulderVeldhuizen, self).__init__(
-                S, dual, degree+1, formdegree
-            )
+            super(KongMulderVeldhuizen, self).__init__(S, dual, degree + 1, formdegree)
+        elif degree == 5:
+            super(KongMulderVeldhuizen, self).__init__(S, dual, degree + 2, formdegree)
