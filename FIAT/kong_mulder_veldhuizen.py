@@ -61,11 +61,23 @@ def _get_topology(ref_el, degree):
     return entity_ids
 
 
+def bump(T, deg):
+    """Increase degree of polynomial in interior of cell"""
+    sd = T.get_spatial_dimension()
+    if sd == 2:
+        if deg == 1:
+            return 0
+        elif deg < 5:
+            return 1
+        elif deg == 5:
+            return 2
+
+
 def KongMulderVeldhuizenSpace(T, deg):
     if T.get_spatial_dimension() == 2:
         if deg == 1:
             return Lagrange(T, 1).poly_set
-        elif deg < 6:
+        else:
             # Toss the bubble from Lagrange since it's dependent
             # on the higher-dimensional bubbles
             L = Lagrange(T, deg)
@@ -76,10 +88,7 @@ def KongMulderVeldhuizenSpace(T, deg):
             ]
 
             RL = RestrictedElement(L, inds)
-            if deg < 5:
-                bubs = Bubble(T, deg + 1)
-            else:
-                bubs = Bubble(T, deg + 2)
+            bubs = Bubble(T, deg + bump(T, deg))
 
             return NodalEnrichedElement(RL, bubs).poly_set
 
@@ -113,9 +122,6 @@ class KongMulderVeldhuizen(finite_element.CiarletElement):
 
         dual = KongMulderVeldhuizenDualSet(ref_el, degree)
         formdegree = 0  # 0-form
-        if degree == 1:
-            super(KongMulderVeldhuizen, self).__init__(S, dual, 1, formdegree)
-        elif degree < 5:
-            super(KongMulderVeldhuizen, self).__init__(S, dual, degree + 1, formdegree)
-        elif degree == 5:
-            super(KongMulderVeldhuizen, self).__init__(S, dual, degree + 2, formdegree)
+        super(KongMulderVeldhuizen, self).__init__(
+            S, dual, degree + bump(ref_el, degree), formdegree
+        )
