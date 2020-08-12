@@ -70,7 +70,7 @@ supported_elements = {
     "Kong-Mulder-Veldhuizen": KongMulderVeldhuizen,
     "Gauss-Lobatto-Legendre": GaussLobattoLegendre,
     "Gauss-Legendre": GaussLegendre,
-    # "Gauss-Radau": GaussRadau,
+    "Gauss-Radau": GaussRadau,
     "Morley": Morley,
     "Nedelec 1st kind H(curl)": Nedelec,
     "Nedelec 2nd kind H(curl)": NedelecSecondKind,
