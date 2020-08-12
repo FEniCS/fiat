@@ -22,7 +22,7 @@ from FIAT.lagrange import Lagrange
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre
 from FIAT.gauss_legendre import GaussLegendre
 
-# from FIAT.gauss_radau import GaussRadau
+from FIAT.gauss_radau import GaussRadau
 from FIAT.morley import Morley
 from FIAT.nedelec import Nedelec
 from FIAT.nedelec_second_kind import NedelecSecondKind
