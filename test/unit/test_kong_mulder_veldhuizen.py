@@ -1,19 +1,22 @@
 import numpy as np
 import pytest
 
-from FIAT.reference_element import UFCInterval, UFCTriangle
+from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT import create_quadrature, make_quadrature, polynomial_set
 from FIAT.kong_mulder_veldhuizen import KongMulderVeldhuizen as KMV
 
 I = UFCInterval()
 T = UFCTriangle()
+Te = UFCTetrahedron()
 
 
-@pytest.mark.parametrize("p_d", [(1, 1), (2, 3), (3, 5), (4, 7), (5, 9)])
-def test_kmv_quad_schemes(p_d):
+@pytest.mark.parametrize(
+    "p_d_t", [(1, 1, T), (2, 3, T), (3, 5, T), (4, 7, T), (5, 9, T), (1, 1, Te)]
+)
+def test_kmv_quad_schemes(p_d_t):
     fct = np.math.factorial
-    p, d = p_d
-    q = create_quadrature(T, p, "KMV")
+    p, d, t = p_d_t
+    q = create_quadrature(t, p, "KMV")
     for i in range(d + 1):
         for j in range(d + 1 - i):
             trueval = fct(i) * fct(j) / fct(i + j + 2)
@@ -24,7 +27,7 @@ def test_kmv_quad_schemes(p_d):
 
 @pytest.mark.parametrize(
     "element_degree",
-    [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4), (KMV(T, 5), 5)],
+    [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4), (KMV(T, 5), 5)]
 )
 def test_Kronecker_property(element_degree):
     """
@@ -87,4 +90,4 @@ def test_interpolate_monomials(element_degree):
             err = 0.0
             for k in range(phis.shape[1]):
                 err += Q.wts[k] * (interp[k] - matqp[k]) ** 2
-            assert np.sqrt(err) <= 1.e-12
+            assert np.sqrt(err) <= 1.0e-12

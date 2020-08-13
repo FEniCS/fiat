@@ -105,18 +105,25 @@ def _fiat_scheme(ref_el, degree):
 
 
 def _kmv_lump_scheme(ref_el, degree):
-    """Specialized quadrature schemes for P < 6 for KMV-type elements.
+    """Specialized quadrature schemes for P < 6 for KMV simplical elements.
 
-       Reference:
+       References:
+
        Higher-order triangular and tetrahedral finite elements with mass
        lumping for solving the wave equation
        M. J. S. CHIN-JOE-KONG, W. A. MULDER and M. VAN VELDHUIZEN
+
+       HIGHER-ORDER MASS-LUMPED FINITE ELEMENTS FOR THE WAVE EQUATION
+       W.A. MULDER
     """
     sd = ref_el.get_spatial_dimension()
-    if degree == 1:  # works for any spatial dimension
+    if degree == 1:
         x = ref_el.vertices
-        w = arange(3, dtype=float64)
-        w[:] = 1.0 / 6.0
+        w = arange(sd + 1, dtype=float64)
+        if sd == 2:
+            w[:] = 1.0 / 6.0
+        elif sd == 3:
+            w[:] = 1.0 / 24.0
     elif degree == 2:
         if sd == 2:
             x = list(ref_el.vertices)

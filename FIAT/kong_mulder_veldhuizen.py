@@ -64,37 +64,34 @@ def _get_topology(ref_el, degree):
 def bump(T, deg):
     """Increase degree of polynomial in interior of cell"""
     sd = T.get_spatial_dimension()
+    if deg == 1:
+        return 0
     if sd == 2:
-        if deg == 1:
-            return 0
-        elif deg < 5:
+        if deg < 5:
             return 1
         elif deg == 5:
             return 2
 
 
 def KongMulderVeldhuizenSpace(T, deg):
+    if deg == 1:
+        return Lagrange(T, 1).poly_set
     if T.get_spatial_dimension() == 2:
-        if deg == 1:
-            return Lagrange(T, 1).poly_set
-        else:
-            # Toss the bubble from Lagrange since it's dependent
-            # on the higher-dimensional bubbles
-            L = Lagrange(T, deg)
-            inds = [
-                i
-                for i in range(L.space_dimension())
-                if i not in L.dual.entity_ids[2][0]
-            ]
+        # Toss the bubble from Lagrange since it's dependent
+        # on the higher-dimensional bubbles
+        L = Lagrange(T, deg)
+        inds = [
+            i for i in range(L.space_dimension()) if i not in L.dual.entity_ids[2][0]
+        ]
 
-            RL = RestrictedElement(L, inds)
-            bubs = Bubble(T, deg + bump(T, deg))
+        RL = RestrictedElement(L, inds)
+        bubs = Bubble(T, deg + bump(T, deg))
 
-            return NodalEnrichedElement(RL, bubs).poly_set
+        return NodalEnrichedElement(RL, bubs).poly_set
 
 
 class KongMulderVeldhuizenDualSet(dual_set.DualSet):
-    """the dual basis for KMV simplical elements."""
+    """The dual basis for KMV simplical elements."""
 
     def __init__(self, ref_el, degree):
         entity_ids = {}
@@ -114,10 +111,10 @@ class KongMulderVeldhuizen(finite_element.CiarletElement):
      """
 
     def __init__(self, ref_el, degree):
-        if ref_el.shape != 2:
-            raise NotImplementedError("Only triangles are currently implemented.")
-        if degree > 5:
-            raise NotImplementedError("Only P < 6 are currently implemented.")
+        if degree > 5 and ref_el.shape == 2:
+            raise NotImplementedError("Only P < 6 for triangles are implemented.")
+        if degree > 1 and ref_el.shape == 3:
+            raise NotImplementedError("Only P < 2 for tetrahedrals are implemented.")
         S = KongMulderVeldhuizenSpace(ref_el, degree)
 
         dual = KongMulderVeldhuizenDualSet(ref_el, degree)
