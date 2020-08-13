@@ -117,6 +117,12 @@ def _kmv_lump_scheme(ref_el, degree):
        W.A. MULDER
     """
     sd = ref_el.get_spatial_dimension()
+    # set the unit element
+    if sd == 2:
+        T = UFCTriangle()
+    elif sd == 3:
+        T = UFCTetrahedron()
+
     if degree == 1:
         x = ref_el.vertices
         w = arange(sd + 1, dtype=float64)
@@ -130,10 +136,37 @@ def _kmv_lump_scheme(ref_el, degree):
             for e in range(3):
                 x.extend(ref_el.make_points(1, e, 2))  # edge midpoints
             x.extend(ref_el.make_points(2, 0, 3))  # barycenter
-        w = arange(7, dtype=float64)
-        w[0:3] = 1.0 / 40.0
-        w[3:6] = 1.0 / 15.0
-        w[6] = 9.0 / 40.0
+            w = arange(7, dtype=float64)
+            w[0:3] = 1.0 / 40.0
+            w[3:6] = 1.0 / 15.0
+            w[6] = 9.0 / 40.0
+        elif sd == 3:
+            alpha = 0.18858048469644506095477254348225
+            x = list(ref_el.vertices)
+            for e in range(6):
+                x.extend(ref_el.make_points(1, e, 2))  # edge midpoints
+            x.extend(
+                [
+                    (alpha, alpha, 0),
+                    (1 - alpha, alpha, 0),
+                    (alpha, 1 - alpha, 0),
+                    (alpha, alpha, 1),
+                    (0, alpha, alpha),
+                    (1, alpha, alpha),
+                    (0, 1 - alpha, alpha),
+                    (0, alpha, 1 - alpha),
+                    (alpha, 0, alpha),
+                    (1 - alpha, 0, alpha),
+                    (alpha, 1, alpha),
+                    (alpha, 0, 1 - alpha),
+                ]
+            )
+            x.extend([(1.0 / 4.0, 1.0 / 4.0, 1.0 / 4.0)])
+            w = arange(23, dtype=float64)
+            w[0:4] = 0.00021660180293730485587451461970687
+            w[4:10] = 0.0012522181731301931621735956667862
+            w[10:22] = 0.0080649178256833146949400514813533
+            w[22] = 0.050793650793650793650793650793651
     elif degree == 3:
         if sd == 2:
             alpha = 0.2934695559090401
@@ -245,7 +278,7 @@ def _kmv_lump_scheme(ref_el, degree):
             w[24:30] = 0.2727857596999626e-01
 
     # Return scheme
-    return QuadratureRule(UFCTriangle(), x, w)
+    return QuadratureRule(T, x, w)
 
 
 def _triangle_scheme(degree):

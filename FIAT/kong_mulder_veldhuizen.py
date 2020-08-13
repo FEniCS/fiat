@@ -33,6 +33,9 @@ def _get_topology(ref_el, degree):
                 1: dict((i, [i + 3]) for i in range(3)),
                 2: {0: [6]},
             }
+        elif sd == 3:
+            entity_ids = {}
+
     elif degree == 3:
         if sd == 2:
             etop = [[3, 4], [6, 5], [7, 8]]
@@ -71,12 +74,15 @@ def bump(T, deg):
             return 1
         elif deg == 5:
             return 2
+    elif sd == 3:
+        if deg == 2:
+            return 2
 
 
 def KongMulderVeldhuizenSpace(T, deg):
     if deg == 1:
         return Lagrange(T, 1).poly_set
-    if T.get_spatial_dimension() == 2:
+    else:
         # Toss the bubble from Lagrange since it's dependent
         # on the higher-dimensional bubbles
         L = Lagrange(T, deg)
@@ -86,7 +92,6 @@ def KongMulderVeldhuizenSpace(T, deg):
 
         RL = RestrictedElement(L, inds)
         bubs = Bubble(T, deg + bump(T, deg))
-
         return NodalEnrichedElement(RL, bubs).poly_set
 
 
@@ -102,19 +107,25 @@ class KongMulderVeldhuizenDualSet(dual_set.DualSet):
 
 
 class KongMulderVeldhuizen(finite_element.CiarletElement):
-    """The lumped finite element (NB: requires custom quad. "KMV" points
-       to achieve a diagonal mass matrix).
+    """The "lumped" simplical finite element
+       (NB: requires custom quad. "KMV" points to achieve a diagonal mass matrix).
 
-       Ref: Higher-order triangular and tetrahedral finite elements with mass
+       References:
+
+       Higher-order triangular and tetrahedral finite elements with mass
        lumping for solving the wave equation
        M. J. S. CHIN-JOE-KONG, W. A. MULDER and M. VAN VELDHUIZEN
+
+       HIGHER-ORDER MASS-LUMPED FINITE ELEMENTS FOR THE WAVE EQUATION
+       W.A. MULDER
+
      """
 
     def __init__(self, ref_el, degree):
         if degree > 5 and ref_el.shape == 2:
             raise NotImplementedError("Only P < 6 for triangles are implemented.")
-        if degree > 1 and ref_el.shape == 3:
-            raise NotImplementedError("Only P < 2 for tetrahedrals are implemented.")
+        if degree > 2 and ref_el.shape == 3:
+            raise NotImplementedError("Only P < 3 for tetrahedrals are implemented.")
         S = KongMulderVeldhuizenSpace(ref_el, degree)
 
         dual = KongMulderVeldhuizenDualSet(ref_el, degree)
