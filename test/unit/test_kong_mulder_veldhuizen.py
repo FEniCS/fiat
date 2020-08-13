@@ -10,7 +10,7 @@ T = UFCTriangle()
 Te = UFCTetrahedron()
 
 
-@pytest.mark.parametrize("p_d", [(1, 1), (2, 4)])
+@pytest.mark.parametrize("p_d", [(1, 1)])
 def test_kmv_quad_tet_schemes(p_d):
     fct = np.math.factorial
     p, d = p_d
