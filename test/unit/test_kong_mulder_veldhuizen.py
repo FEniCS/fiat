@@ -10,13 +10,29 @@ T = UFCTriangle()
 Te = UFCTetrahedron()
 
 
-@pytest.mark.parametrize(
-    "p_d_t", [(1, 1, T), (2, 3, T), (3, 5, T), (4, 7, T), (5, 9, T), (1, 1, Te)]
-)
-def test_kmv_quad_schemes(p_d_t):
+@pytest.mark.parametrize("p_d", [(1, 1)])
+def test_kmv_quad_tet_schemes(p_d):
     fct = np.math.factorial
-    p, d, t = p_d_t
-    q = create_quadrature(t, p, "KMV")
+    p, d = p_d
+    q = create_quadrature(Te, p, "KMV")
+    for i in range(d + 1):
+        for j in range(d + 1 - i):
+            for k in range(d + 1 - i - j):
+                trueval = fct(i) * fct(j) * fct(k) / fct(i + j + k + 3)
+                assert (
+                    np.abs(
+                        trueval
+                        - q.integrate(lambda x: x[0] ** i * x[1] ** j * x[2] ** k)
+                    )
+                    < 1.0e-10
+                )
+
+
+@pytest.mark.parametrize("p_d", [(1, 1), (2, 3), (3, 5), (4, 7), (5, 9), (1, 1)])
+def test_kmv_quad_tri_schemes(p_d):
+    fct = np.math.factorial
+    p, d = p_d
+    q = create_quadrature(T, p, "KMV")
     for i in range(d + 1):
         for j in range(d + 1 - i):
             trueval = fct(i) * fct(j) / fct(i + j + 2)
@@ -27,7 +43,7 @@ def test_kmv_quad_schemes(p_d_t):
 
 @pytest.mark.parametrize(
     "element_degree",
-    [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4), (KMV(T, 5), 5)]
+    [(KMV(T, 1), 1), (KMV(T, 2), 2), (KMV(T, 3), 3), (KMV(T, 4), 4), (KMV(T, 5), 5)],
 )
 def test_Kronecker_property(element_degree):
     """
