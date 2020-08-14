@@ -11,6 +11,7 @@ from FIAT import (
     dual_set,
     functional,
     Bubble,
+    FacetBubble,
     Lagrange,
     NodalEnrichedElement,
     RestrictedElement,
@@ -34,8 +35,13 @@ def _get_topology(ref_el, degree):
                 2: {0: [6]},
             }
         elif sd == 3:
-            entity_ids = {}
-
+            ftop = [[10, 11, 12], [13, 14, 15], [16, 17, 18], [19, 20, 21]]
+            entity_ids = {
+                0: dict((i, [i]) for i in range(4)),
+                1: dict((i, [i + 4]) for i in range(6)),
+                2: dict((i, ftop[i]) for i in range(4)),
+                3: {0: [22]},
+            }
     elif degree == 3:
         if sd == 2:
             etop = [[3, 4], [6, 5], [7, 8]]
@@ -80,19 +86,24 @@ def bump(T, deg):
 
 
 def KongMulderVeldhuizenSpace(T, deg):
+    sd = T.get_spatial_dimension()
     if deg == 1:
         return Lagrange(T, 1).poly_set
     else:
+        L = Lagrange(T, deg)
         # Toss the bubble from Lagrange since it's dependent
         # on the higher-dimensional bubbles
-        L = Lagrange(T, deg)
         inds = [
-            i for i in range(L.space_dimension()) if i not in L.dual.entity_ids[2][0]
+            i for i in range(L.space_dimension()) if i not in L.dual.entity_ids[sd][0]
         ]
-
         RL = RestrictedElement(L, inds)
         bubs = Bubble(T, deg + bump(T, deg))
-        return NodalEnrichedElement(RL, bubs).poly_set
+        if sd == 2:
+            return NodalEnrichedElement(RL, bubs).poly_set
+        elif sd == 3:
+            # restricted Lagrange plus a FacetBubble plus a Bubble.
+            fbubs = FacetBubble(T, deg + bump(T, deg))
+            return NodalEnrichedElement(RL, bubs, fbubs).poly_set
 
 
 class KongMulderVeldhuizenDualSet(dual_set.DualSet):

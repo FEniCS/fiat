@@ -10,7 +10,7 @@ T = UFCTriangle()
 Te = UFCTetrahedron()
 
 
-@pytest.mark.parametrize("p_d", [(1, 1)])
+@pytest.mark.parametrize("p_d", [(1, 1), (2, 4)])
 def test_kmv_quad_tet_schemes(p_d):
     fct = np.math.factorial
     p, d = p_d
@@ -58,7 +58,7 @@ def test_Kronecker_property_tris(element_degree):
 
 
 @pytest.mark.parametrize(
-    "element_degree", [(KMV(Te, 1), 1)],
+    "element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2)],
 )
 def test_Kronecker_property_tets(element_degree):
     """
@@ -123,26 +123,26 @@ def test_interpolate_monomials_tris(element_degree):
             assert np.sqrt(err) <= 1.0e-12
 
 
-# @pytest.mark.parametrize(
-#    "element_degree", [(KMV(Te, 1), 1)],
-# )
-# def test_interpolate_monomials_tets(element_degree):
-#    element, degree = element_degree
-#
-#    # ordered the same way as KMV nodes
-#    pts = create_quadrature(Te, degree, "KMV").pts
-#
-#    Q = make_quadrature(Te, 2 * degree)
-#    phis = element.tabulate(0, Q.pts)[0, 0]
-#    print("deg", degree)
-#    for i in range(degree + 1):
-#        for j in range(degree + 1 - i):
-#            for k in range(degree + 1 - i - j):
-#                m = lambda x: x[0] ** i * x[1] ** j * x[2] ** k
-#                dofs = np.array([m(pt) for pt in pts])
-#                interp = phis.T @ dofs
-#                matqp = np.array([m(pt) for pt in Q.pts])
-#                err = 0.0
-#                for kk in range(phis.shape[1]):
-#                    err += Q.wts[kk] * (interp[kk] - matqp[kk]) ** 2
-#                assert np.sqrt(err) <= 1.0e-12
+@pytest.mark.parametrize(
+    "element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2)],
+)
+def test_interpolate_monomials_tets(element_degree):
+    element, degree = element_degree
+
+    # ordered the same way as KMV nodes
+    pts = create_quadrature(Te, degree, "KMV").pts
+
+    Q = make_quadrature(Te, 2 * degree)
+    phis = element.tabulate(0, Q.pts)[0, 0, 0]
+    print("deg", degree)
+    for i in range(degree + 1):
+        for j in range(degree + 1 - i):
+            for k in range(degree + 1 - i - j):
+                m = lambda x: x[0] ** i * x[1] ** j * x[2] ** k
+                dofs = np.array([m(pt) for pt in pts])
+                interp = phis.T @ dofs
+                matqp = np.array([m(pt) for pt in Q.pts])
+                err = 0.0
+                for kk in range(phis.shape[1]):
+                    err += Q.wts[kk] * (interp[kk] - matqp[kk]) ** 2
+                assert np.sqrt(err) <= 1.0e-12
