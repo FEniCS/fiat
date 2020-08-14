@@ -21,10 +21,9 @@ def test_kmv_quad_tet_schemes(p_d):
                 trueval = fct(i) * fct(j) * fct(k) / fct(i + j + k + 3)
                 assert (
                     np.abs(
-                        trueval
-                        - q.integrate(lambda x: x[0] ** i * x[1] ** j * x[2] ** k)
-                    )
-                    < 1.0e-10
+                        trueval -
+                        q.integrate(lambda x: x[0] ** i * x[1] ** j * x[2] ** k)
+                    ) < 1.0e-10
                 )
 
 
