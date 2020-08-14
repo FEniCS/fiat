@@ -201,7 +201,7 @@ class NedelecDual2D(dual_set.DualSet):
                 for d in range(sd):
                     for i in range(Pkm1_at_qpts.shape[0]):
                         phi_cur = Pkm1_at_qpts[i, :]
-                        l_cur = functional.IntegralMoment(ref_el, Q, phi_cur, (d,))
+                        l_cur = functional.IntegralMoment(ref_el, Q, phi_cur, (d,), (sd,))
                         nodes.append(l_cur)
 
         entity_ids = {}
@@ -317,7 +317,7 @@ class NedelecDual3D(dual_set.DualSet):
                 for d in range(sd):
                     for i in range(Pkm2_at_qpts.shape[0]):
                         phi_cur = Pkm2_at_qpts[i, :]
-                        f = functional.IntegralMoment(ref_el, Q, phi_cur, (d,))
+                        f = functional.IntegralMoment(ref_el, Q, phi_cur, (d,), (sd,))
                         nodes.append(f)
 
         entity_ids = {}
