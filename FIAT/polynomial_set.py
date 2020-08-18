@@ -75,7 +75,12 @@ class PolynomialSet(object):
         for i in range(jet_order + 1):
             alphas = mis(self.ref_el.get_spatial_dimension(), i)
             for alpha in alphas:
-                D = form_matrix_product(self.dmats, alpha)
+                if len(self.dmats) > 0:
+                    D = form_matrix_product(self.dmats, alpha)
+                else:
+                    # special for vertex without defined point location
+                    assert pts == [()]
+                    D = numpy.eye(1)
                 result[alpha] = numpy.dot(self.coeffs,
                                           numpy.dot(numpy.transpose(D),
                                                     base_vals))

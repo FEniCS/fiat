@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 
 from FIAT.reference_element import LINE, ReferenceElement
-from FIAT.reference_element import UFCInterval, UFCTriangle, UFCTetrahedron
+from FIAT.reference_element import Point, UFCInterval, UFCTriangle, UFCTetrahedron
 from FIAT.lagrange import Lagrange
 from FIAT.discontinuous_lagrange import DiscontinuousLagrange   # noqa: F401
 from FIAT.discontinuous_taylor import DiscontinuousTaylor       # noqa: F401
@@ -49,7 +49,7 @@ from FIAT.bubble import Bubble
 from FIAT.enriched import EnrichedElement                       # noqa: F401
 from FIAT.nodal_enriched import NodalEnrichedElement
 
-
+P = Point()
 I = UFCInterval()  # noqa: E741
 T = UFCTriangle()
 S = UFCTetrahedron()
@@ -110,6 +110,7 @@ elements = [
     "P0(I)",
     "P0(T)",
     "P0(S)",
+    "DiscontinuousLagrange(P, 0)",
     "DiscontinuousLagrange(I, 0)",
     "DiscontinuousLagrange(I, 1)",
     "DiscontinuousLagrange(I, 2)",
@@ -137,6 +138,24 @@ elements = [
     "RaviartThomas(S, 1)",
     "RaviartThomas(S, 2)",
     "RaviartThomas(S, 3)",
+    'RaviartThomas(T, 1, variant="integral")',
+    'RaviartThomas(T, 2, variant="integral")',
+    'RaviartThomas(T, 3, variant="integral")',
+    'RaviartThomas(S, 1, variant="integral")',
+    'RaviartThomas(S, 2, variant="integral")',
+    'RaviartThomas(S, 3, variant="integral")',
+    'RaviartThomas(T, 1, variant="integral(2)")',
+    'RaviartThomas(T, 2, variant="integral(3)")',
+    'RaviartThomas(T, 3, variant="integral(4)")',
+    'RaviartThomas(S, 1, variant="integral(2)")',
+    'RaviartThomas(S, 2, variant="integral(3)")',
+    'RaviartThomas(S, 3, variant="integral(4)")',
+    'RaviartThomas(T, 1, variant="point")',
+    'RaviartThomas(T, 2, variant="point")',
+    'RaviartThomas(T, 3, variant="point")',
+    'RaviartThomas(S, 1, variant="point")',
+    'RaviartThomas(S, 2, variant="point")',
+    'RaviartThomas(S, 3, variant="point")',
     "DiscontinuousRaviartThomas(T, 1)",
     "DiscontinuousRaviartThomas(T, 2)",
     "DiscontinuousRaviartThomas(T, 3)",
@@ -149,18 +168,72 @@ elements = [
     "BrezziDouglasMarini(S, 1)",
     "BrezziDouglasMarini(S, 2)",
     "BrezziDouglasMarini(S, 3)",
+    'BrezziDouglasMarini(T, 1, variant="integral")',
+    'BrezziDouglasMarini(T, 2, variant="integral")',
+    'BrezziDouglasMarini(T, 3, variant="integral")',
+    'BrezziDouglasMarini(S, 1, variant="integral")',
+    'BrezziDouglasMarini(S, 2, variant="integral")',
+    'BrezziDouglasMarini(S, 3, variant="integral")',
+    'BrezziDouglasMarini(T, 1, variant="integral(2)")',
+    'BrezziDouglasMarini(T, 2, variant="integral(3)")',
+    'BrezziDouglasMarini(T, 3, variant="integral(4)")',
+    'BrezziDouglasMarini(S, 1, variant="integral(2)")',
+    'BrezziDouglasMarini(S, 2, variant="integral(3)")',
+    'BrezziDouglasMarini(S, 3, variant="integral(4)")',
+    'BrezziDouglasMarini(T, 1, variant="point")',
+    'BrezziDouglasMarini(T, 2, variant="point")',
+    'BrezziDouglasMarini(T, 3, variant="point")',
+    'BrezziDouglasMarini(S, 1, variant="point")',
+    'BrezziDouglasMarini(S, 2, variant="point")',
+    'BrezziDouglasMarini(S, 3, variant="point")',
     "Nedelec(T, 1)",
     "Nedelec(T, 2)",
     "Nedelec(T, 3)",
     "Nedelec(S, 1)",
     "Nedelec(S, 2)",
     "Nedelec(S, 3)",
+    'Nedelec(T, 1, variant="integral")',
+    'Nedelec(T, 2, variant="integral")',
+    'Nedelec(T, 3, variant="integral")',
+    'Nedelec(S, 1, variant="integral")',
+    'Nedelec(S, 2, variant="integral")',
+    'Nedelec(S, 3, variant="integral")',
+    'Nedelec(T, 1, variant="integral(2)")',
+    'Nedelec(T, 2, variant="integral(3)")',
+    'Nedelec(T, 3, variant="integral(4)")',
+    'Nedelec(S, 1, variant="integral(2)")',
+    'Nedelec(S, 2, variant="integral(3)")',
+    'Nedelec(S, 3, variant="integral(4)")',
+    'Nedelec(T, 1, variant="point")',
+    'Nedelec(T, 2, variant="point")',
+    'Nedelec(T, 3, variant="point")',
+    'Nedelec(S, 1, variant="point")',
+    'Nedelec(S, 2, variant="point")',
+    'Nedelec(S, 3, variant="point")',
     "NedelecSecondKind(T, 1)",
     "NedelecSecondKind(T, 2)",
     "NedelecSecondKind(T, 3)",
     "NedelecSecondKind(S, 1)",
     "NedelecSecondKind(S, 2)",
     "NedelecSecondKind(S, 3)",
+    'NedelecSecondKind(T, 1, variant="integral")',
+    'NedelecSecondKind(T, 2, variant="integral")',
+    'NedelecSecondKind(T, 3, variant="integral")',
+    'NedelecSecondKind(S, 1, variant="integral")',
+    'NedelecSecondKind(S, 2, variant="integral")',
+    'NedelecSecondKind(S, 3, variant="integral")',
+    'NedelecSecondKind(T, 1, variant="integral(2)")',
+    'NedelecSecondKind(T, 2, variant="integral(3)")',
+    'NedelecSecondKind(T, 3, variant="integral(4)")',
+    'NedelecSecondKind(S, 1, variant="integral(2)")',
+    'NedelecSecondKind(S, 2, variant="integral(3)")',
+    'NedelecSecondKind(S, 3, variant="integral(4)")',
+    'NedelecSecondKind(T, 1, variant="point")',
+    'NedelecSecondKind(T, 2, variant="point")',
+    'NedelecSecondKind(T, 3, variant="point")',
+    'NedelecSecondKind(S, 1, variant="point")',
+    'NedelecSecondKind(S, 2, variant="point")',
+    'NedelecSecondKind(S, 3, variant="point")',
     "Regge(T, 0)",
     "Regge(T, 1)",
     "Regge(T, 2)",
@@ -421,6 +494,15 @@ def test_facet_nodality_tabulate(element):
         basis, = element.tabulate(0, (x,), entity=(facet_dim, facet)).values()
         for i in range(len(basis)):
             assert np.isclose(basis[i], 1.0 if i == j else 0.0)
+
+
+@pytest.mark.parametrize('element', [
+    'Nedelec(S, 3, variant="integral(2)")',
+    'NedelecSecondKind(S, 3, variant="integral(3)")'
+])
+def test_error_quadrature_degree(element):
+    with pytest.raises(ValueError):
+        eval(element)
 
 
 if __name__ == '__main__':
