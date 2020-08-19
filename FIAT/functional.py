@@ -19,6 +19,8 @@ import sympy
 
 from FIAT import polynomial_set
 from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
+from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
+from FIAT.reference_element import UFCInterval as interval
 
 
 def index_iterator(shp):
@@ -341,8 +343,6 @@ class IntegralMomentOfNormalDerivative(Functional):
 class IntegralLegendreDirectionalMoment(Functional):
     """Momement of v.s against a Legendre polynomial over an edge"""
     def __init__(self, cell, s, entity, mom_deg, comp_deg, nm=""):
-        from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
-        from FIAT.reference_element import UFCInterval as interval
         sd = cell.get_spatial_dimension()
         assert sd == 2
         shp = (sd,)
@@ -369,7 +369,6 @@ class IntegralLegendreDirectionalMoment(Functional):
 class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
     """Momement of v.n against a Legendre polynomial over an edge"""
     def __init__(self, cell, entity, mom_deg, comp_deg):
-        # n = cell.compute_normal(entity)
         n = cell.compute_scaled_normal(entity)
         IntegralLegendreDirectionalMoment.__init__(self, cell, n, entity,
                                                    mom_deg, comp_deg,
@@ -379,7 +378,6 @@ class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
 class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
     """Momement of v.t against a Legendre polynomial over an edge"""
     def __init__(self, cell, entity, mom_deg, comp_deg):
-        # t = cell.compute_normalized_edge_tangent(entity)
         t = cell.compute_edge_tangent(entity)
         IntegralLegendreDirectionalMoment.__init__(self, cell, t, entity,
                                                    mom_deg, comp_deg,
@@ -389,7 +387,6 @@ class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
 class IntegralLegendreBidirectionalMoment(Functional):
     """Moment of dot(s1, dot(tau, s2)) against Legendre on entity, multiplied by the size of the reference facet"""
     def __init__(self, cell, s1, s2, entity, mom_deg, comp_deg, nm=""):
-        from FIAT.reference_element import UFCInterval as interval
         # mom_deg is degree of moment, comp_deg is the total degree of
         # polynomial you might need to integrate (or something like that)
         sd = cell.get_spatial_dimension()
