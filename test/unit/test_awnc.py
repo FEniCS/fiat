@@ -1,6 +1,7 @@
 import numpy as np
 from FIAT import ufc_simplex, ArnoldWintherNC, make_quadrature, expansions
 
+
 def test_dofs():
     line = ufc_simplex(1)
     T = ufc_simplex(2)
@@ -69,4 +70,3 @@ def test_dofs():
     assert np.allclose(const_moms[12:15, 0, 1], np.asarray([0, 1, 0]))
     assert np.allclose(const_moms[12:15, 1, 0], np.asarray([0, 1, 0]))
     assert np.allclose(const_moms[12:15, 1, 1], np.asarray([0, 0, 1]))
-
