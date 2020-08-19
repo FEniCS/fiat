@@ -19,7 +19,6 @@ import sympy
 
 from FIAT import polynomial_set
 from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
-from FIAT.quadrature import GaussLegendreQuadratureLineRule, QuadratureRule
 from FIAT.reference_element import UFCInterval as interval
 
 
