@@ -146,8 +146,3 @@ def test_projection():
                     err += qwts[k] * frob(diff[:, :, k], diff[:, :, k])
 
                 assert np.sqrt(err) < 1.e-12
-
-
-if __name__ == "__main__":
-    test_dofs()
-    test_projection()

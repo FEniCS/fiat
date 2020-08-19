@@ -16,7 +16,6 @@ def test_dofs():
 
     for ed in range(3):
         n = T.compute_scaled_normal(ed)
-        print(n)
         wts = np.asarray(Qline.wts)
 
         vals = MTW.tabulate(0, Qline.pts, (1, ed))[(0, 0)]
@@ -26,12 +25,12 @@ def test_dofs():
             for k in range(len(Qline.wts)):
                 for m in (0, 1):
                     normal_moments[bf, m] += wts[k] * nvals[bf, k] * linevals[m, k]
-        print(normal_moments)
-        print()
-    print()
+        right = np.zeros((9, 2))
+        right[3*ed, 0] = 1.0
+        right[3*ed+2, 1] = 1.0
+        assert np.allclose(normal_moments, right)
     for ed in range(3):
         t = T.compute_edge_tangent(ed)
-        print(t)
         wts = np.asarray(Qline.wts)
 
         vals = MTW.tabulate(0, Qline.pts, (1, ed))[(0, 0)]
@@ -40,8 +39,6 @@ def test_dofs():
         for bf in range(9):
             for k in range(len(Qline.wts)):
                 tangent_moments[bf] += wts[k] * tvals[bf, k] * linevals[0, k]
-        print(tangent_moments)
-
-
-if __name__ == "__main__":
-    test_dofs()
+        right = np.zeros(9)
+        right[3*ed + 1] = 1.0
+        assert np.allclose(tangent_moments, right)
