@@ -2,7 +2,7 @@
 """Implementation of the Arnold-Winther finite elements."""
 
 # Copyright (C) 2020 by Robert C. Kirby (Baylor University)
-# Modified by and Francis Aznaran (Oxford University)
+# Modified by Francis Aznaran (Oxford University)
 #
 # This file is part of FIAT (https://www.fenicsproject.org)
 #
