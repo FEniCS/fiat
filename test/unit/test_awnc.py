@@ -70,6 +70,3 @@ def test_dofs():
     assert np.allclose(const_moms[12:15, 1, 0], np.asarray([0, 1, 0]))
     assert np.allclose(const_moms[12:15, 1, 1], np.asarray([0, 0, 1]))
 
-
-if __name__ == "__main__":
-    test_dofs()
