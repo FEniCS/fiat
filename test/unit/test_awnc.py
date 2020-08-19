@@ -1,9 +1,7 @@
 import numpy as np
-
+from FIAT import ufc_simplex, ArnoldWintherNC, make_quadrature, expansions
 
 def test_dofs():
-    from FIAT import ufc_simplex, ArnoldWintherNC, make_quadrature, expansions
-
     line = ufc_simplex(1)
     T = ufc_simplex(2)
     T.vertices = np.random.rand(3, 2)
