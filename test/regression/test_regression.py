@@ -166,83 +166,117 @@ def test_expansions_jet():
         assert (abs(diff) < tolerance).all()
 
 
-def test_quadrature():
+@pytest.fixture(scope="module")
+def quadrature_reference_data():
+    filename = os.path.join(ref_path, "reference.json")
+    try:
+        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
+    except IOError:
+        warnings.warn('Reference file "%s" could not be loaded! '
+                      'Creating a new reference file!' % filename,
+                      RuntimeWarning)
+        # No reference data
+        reference = {}
+    original = reference.copy()
+    # Kind of ugly, we rely on destructively modifying the test data
+    # we produce here to check if we're missing something (and
+    # therefore have to regenerate the reference data).
+    yield reference
+    if original != reference:
+        # Tests introduced some new data, so dump to disk.
+        with open(filename, "w") as f:
+            json.dump(reference, f, cls=NumpyEncoder)
+
+
+def quadrature_test_case_name(test_case):
+    family, dim, degree = test_case
+    return "{}({}, {})".format(family,
+                               {1: "interval",
+                                2: "triangle",
+                                3: "tetrahedron"}[dim],
+                               degree)
+
+
+@pytest.fixture(params=[("Lagrange", 1, 1),
+                        ("Lagrange", 1, 2),
+                        ("Lagrange", 1, 3),
+                        ("Lagrange", 2, 1),
+                        ("Lagrange", 2, 2),
+                        ("Lagrange", 2, 3),
+                        ("Lagrange", 3, 1),
+                        ("Lagrange", 3, 2),
+                        ("Lagrange", 3, 3),
+                        ("Discontinuous Lagrange", 1, 0),
+                        ("Discontinuous Lagrange", 1, 1),
+                        ("Discontinuous Lagrange", 1, 2),
+                        ("Discontinuous Lagrange", 2, 0),
+                        ("Discontinuous Lagrange", 2, 1),
+                        ("Discontinuous Lagrange", 2, 2),
+                        ("Discontinuous Lagrange", 3, 0),
+                        ("Discontinuous Lagrange", 3, 1),
+                        ("Discontinuous Lagrange", 3, 2),
+                        ("Discontinuous Taylor", 1, 0),
+                        ("Discontinuous Taylor", 1, 1),
+                        ("Discontinuous Taylor", 1, 2),
+                        ("Brezzi-Douglas-Marini", 2, 1),
+                        ("Brezzi-Douglas-Marini", 2, 2),
+                        ("Brezzi-Douglas-Marini", 2, 3),
+                        ("Brezzi-Douglas-Marini", 3, 1),
+                        ("Brezzi-Douglas-Marini", 3, 2),
+                        ("Brezzi-Douglas-Marini", 3, 3),
+                        ("Brezzi-Douglas-Fortin-Marini", 2, 2),
+                        ("Raviart-Thomas", 2, 1),
+                        ("Raviart-Thomas", 2, 2),
+                        ("Raviart-Thomas", 2, 3),
+                        ("Raviart-Thomas", 3, 1),
+                        ("Raviart-Thomas", 3, 2),
+                        ("Raviart-Thomas", 3, 3),
+                        ("Discontinuous Raviart-Thomas", 2, 1),
+                        ("Discontinuous Raviart-Thomas", 2, 2),
+                        ("Discontinuous Raviart-Thomas", 2, 3),
+                        ("Discontinuous Raviart-Thomas", 3, 1),
+                        ("Discontinuous Raviart-Thomas", 3, 2),
+                        ("Discontinuous Raviart-Thomas", 3, 3),
+                        ("Nedelec 1st kind H(curl)", 2, 1),
+                        ("Nedelec 1st kind H(curl)", 2, 2),
+                        ("Nedelec 1st kind H(curl)", 2, 3),
+                        ("Nedelec 1st kind H(curl)", 3, 1),
+                        ("Nedelec 1st kind H(curl)", 3, 2),
+                        ("Nedelec 1st kind H(curl)", 3, 3),
+                        ("Nedelec 2nd kind H(curl)", 2, 1),
+                        ("Nedelec 2nd kind H(curl)", 2, 2),
+                        ("Nedelec 2nd kind H(curl)", 2, 3),
+                        ("Nedelec 2nd kind H(curl)", 3, 1),
+                        ("Nedelec 2nd kind H(curl)", 3, 2),
+                        ("Nedelec 2nd kind H(curl)", 3, 3),
+                        ("Crouzeix-Raviart", 1, 1),
+                        ("Crouzeix-Raviart", 2, 1),
+                        ("Crouzeix-Raviart", 3, 1),
+                        ("Regge", 2, 0),
+                        ("Regge", 2, 1),
+                        ("Regge", 2, 2),
+                        ("Regge", 3, 0),
+                        ("Regge", 3, 1),
+                        ("Regge", 3, 2),
+                        ("Bubble", 2, 3),
+                        ("Bubble", 2, 4),
+                        ("Bubble", 2, 5),
+                        ("Bubble", 3, 4),
+                        ("Bubble", 3, 5),
+                        ("Bubble", 3, 6),
+                        ("Hellan-Herrmann-Johnson", 2, 0),
+                        ("Hellan-Herrmann-Johnson", 2, 1),
+                        ("Hellan-Herrmann-Johnson", 2, 2)],
+                ids=quadrature_test_case_name)
+def quadrature_test_case(request):
+    return request.param
+
+
+def test_quadrature(quadrature_reference_data, quadrature_test_case):
     num_points = 3
     max_derivative = 3
-    # Combinations of (family, dim, degree) to test
-    test_cases = (
-        ("Lagrange", 1, 1),
-        ("Lagrange", 1, 2),
-        ("Lagrange", 1, 3),
-        ("Lagrange", 2, 1),
-        ("Lagrange", 2, 2),
-        ("Lagrange", 2, 3),
-        ("Lagrange", 3, 1),
-        ("Lagrange", 3, 2),
-        ("Lagrange", 3, 3),
-        ("Discontinuous Lagrange", 1, 0),
-        ("Discontinuous Lagrange", 1, 1),
-        ("Discontinuous Lagrange", 1, 2),
-        ("Discontinuous Lagrange", 2, 0),
-        ("Discontinuous Lagrange", 2, 1),
-        ("Discontinuous Lagrange", 2, 2),
-        ("Discontinuous Lagrange", 3, 0),
-        ("Discontinuous Lagrange", 3, 1),
-        ("Discontinuous Lagrange", 3, 2),
-        ("Discontinuous Taylor", 1, 0),
-        ("Discontinuous Taylor", 1, 1),
-        ("Discontinuous Taylor", 1, 2),
-        ("Brezzi-Douglas-Marini", 2, 1),
-        ("Brezzi-Douglas-Marini", 2, 2),
-        ("Brezzi-Douglas-Marini", 2, 3),
-        ("Brezzi-Douglas-Marini", 3, 1),
-        ("Brezzi-Douglas-Marini", 3, 2),
-        ("Brezzi-Douglas-Marini", 3, 3),
-        ("Brezzi-Douglas-Fortin-Marini", 2, 2),
-        ("Raviart-Thomas", 2, 1),
-        ("Raviart-Thomas", 2, 2),
-        ("Raviart-Thomas", 2, 3),
-        ("Raviart-Thomas", 3, 1),
-        ("Raviart-Thomas", 3, 2),
-        ("Raviart-Thomas", 3, 3),
-        ("Discontinuous Raviart-Thomas", 2, 1),
-        ("Discontinuous Raviart-Thomas", 2, 2),
-        ("Discontinuous Raviart-Thomas", 2, 3),
-        ("Discontinuous Raviart-Thomas", 3, 1),
-        ("Discontinuous Raviart-Thomas", 3, 2),
-        ("Discontinuous Raviart-Thomas", 3, 3),
-        ("Nedelec 1st kind H(curl)", 2, 1),
-        ("Nedelec 1st kind H(curl)", 2, 2),
-        ("Nedelec 1st kind H(curl)", 2, 3),
-        ("Nedelec 1st kind H(curl)", 3, 1),
-        ("Nedelec 1st kind H(curl)", 3, 2),
-        ("Nedelec 1st kind H(curl)", 3, 3),
-        ("Nedelec 2nd kind H(curl)", 2, 1),
-        ("Nedelec 2nd kind H(curl)", 2, 2),
-        ("Nedelec 2nd kind H(curl)", 2, 3),
-        ("Nedelec 2nd kind H(curl)", 3, 1),
-        ("Nedelec 2nd kind H(curl)", 3, 2),
-        ("Nedelec 2nd kind H(curl)", 3, 3),
-        ("Crouzeix-Raviart", 1, 1),
-        ("Crouzeix-Raviart", 2, 1),
-        ("Crouzeix-Raviart", 3, 1),
-        ("Regge", 2, 0),
-        ("Regge", 2, 1),
-        ("Regge", 2, 2),
-        ("Regge", 3, 0),
-        ("Regge", 3, 1),
-        ("Regge", 3, 2),
-        ("Bubble", 2, 3),
-        ("Bubble", 2, 4),
-        ("Bubble", 2, 5),
-        ("Bubble", 3, 4),
-        ("Bubble", 3, 5),
-        ("Bubble", 3, 6),
-        ("Hellan-Herrmann-Johnson", 2, 0),
-        ("Hellan-Herrmann-Johnson", 2, 1),
-        ("Hellan-Herrmann-Johnson", 2, 2),
-    )
 
+    # Combinations of (family, dim, degree) to test
     def create_data(family, dim, degree):
         '''Create the reference data.
         '''
@@ -258,7 +292,7 @@ def test_quadrature():
         table = element.tabulate(max_derivative, points)
         return table
 
-    def _perform_test(family, dim, degree, reference_table):
+    def _perform_test(family, dim, degree, *, reference_table=None):
         '''Test against reference data.
         '''
         table = create_data(family, dim, degree)
@@ -270,36 +304,17 @@ def test_quadrature():
             assert (abs(diff) < tolerance).all(), \
                 "quadrature case %s %s %s failed!" % (family, dim, degree)
 
-    filename = os.path.join(ref_path, "reference.json")
-
-    # Try comparing against references
+    test_case = quadrature_test_case
     try:
-        reference = json.load(open(filename, "r"), object_hook=json_numpy_obj_hook)
-        for test_case in test_cases:
-            family, dim, degree = test_case
-            yield _perform_test, family, dim, degree, reference[str(test_case)]
-
-    # Update references if missing
-    except (IOError, KeyError) as e:
-        if isinstance(e, IOError):
-            warnings.warn('Reference file "%s" could not be loaded! '
-                          'Creating a new reference file!' % filename,
-                          RuntimeWarning)
-        else:
-            assert isinstance(e, KeyError) and len(e.args) == 1
-            warnings.warn('Reference file "%s" does not contain reference "%s"! '
-                          'Creating a new reference file!'
-                          % (filename, e.args[0]), RuntimeWarning)
-        reference = {}
-        for test_case in test_cases:
-            family, dim, degree = test_case
-            ref = dict([(str(k), v) for k, v in create_data(family, dim, degree).items()])
-            reference[str(test_case)] = ref
-        # Store the data for the future
-        json.dump(reference, open(filename, "w"), cls=NumpyEncoder)
-
-        # Report failure
-        pytest.fail('Comparison to "%s" failed!' % filename)
+        reference = quadrature_reference_data[str(test_case)]
+        _perform_test(*test_case, reference_table=reference)
+    except KeyError:
+        warnings.warn('Reference file does not contain reference "%s"! '
+                      'Creating a new reference file!'
+                      % (str(test_case)), RuntimeWarning)
+        ref = dict([(str(k), v) for k, v in create_data(*test_case).items()])
+        quadrature_reference_data[str(test_case)] = ref
+        pytest.fail('No reference data for "%s" available' % str(test_case))
 
 
 if __name__ == '__main__':

@@ -1,22 +1,12 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
 #
-# This file is part of FIAT.
+# This file is part of FIAT (https://www.fenicsproject.org)
 #
-# FIAT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# FIAT is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+# SPDX-License-Identifier:    LGPL-3.0-or-later
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2014
 # Modified by Lizao Li (lzlarryli@gmail.com), 2016
+
 """
 Abstract class and particular implementations of finite element
 reference simplex geometry/topology.
@@ -492,6 +482,15 @@ class Point(Simplex):
         verts = ((),)
         topology = {0: {0: (0,)}}
         super(Point, self).__init__(POINT, verts, topology)
+
+    def construct_subelement(self, dimension):
+        """Constructs the reference element of a cell subentity
+        specified by subelement dimension.
+
+        :arg dimension: subentity dimension (integer). Must be zero.
+        """
+        assert dimension == 0
+        return self
 
 
 class DefaultLine(Simplex):
@@ -979,6 +978,8 @@ def ufc_cell(cell):
         return UFCQuadrilateral()
     elif celltype == "hexahedron":
         return UFCHexahedron()
+    elif celltype == "vertex":
+        return ufc_simplex(0)
     elif celltype == "interval":
         return ufc_simplex(1)
     elif celltype == "triangle":

@@ -3,20 +3,9 @@
 # Copyright (C) 2007-2016 Kristian B. Oelgaard
 # Copyright (C) 2017 Miklós Homolya
 #
-# This file is part of FIAT.
+# This file is part of FIAT (https://www.fenicsproject.org)
 #
-# FIAT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# FIAT is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+# SPDX-License-Identifier:    LGPL-3.0-or-later
 #
 # Modified by Garth N. Wells 2006-2009
 
@@ -30,7 +19,7 @@ from FIAT.functional import PointEvaluation
 class QuadratureElement(FiniteElement):
     """A set of quadrature points pretending to be a finite element."""
 
-    def __init__(self, ref_el, points):
+    def __init__(self, ref_el, points, weights=None):
         # Create entity dofs.
         entity_dofs = {dim: {entity: [] for entity in entities}
                        for dim, entities in ref_el.get_topology().items()}
@@ -44,7 +33,8 @@ class QuadratureElement(FiniteElement):
         dual = DualSet(nodes, ref_el, entity_dofs)
 
         super(QuadratureElement, self).__init__(ref_el, dual, order=None)
-        self._points = points  # save the quadrature points
+        self._points = points  # save the quadrature points & weights
+        self._weights = weights
 
     def value_shape(self):
         "The QuadratureElement is scalar valued"

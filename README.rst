@@ -16,37 +16,22 @@ FIAT is part of the FEniCS Project.
 For more information, visit http://www.fenicsproject.org
 
 
-Documentation
-=============
-
-Documentation can be viewed at http://fenics-fiat.readthedocs.org/.
-
-.. image:: https://readthedocs.org/projects/fenics-fiat/badge/?version=latest
-   :target: http://fenics.readthedocs.io/projects/fiat/en/latest/?badge=latest
-   :alt: Documentation Status
-
-
-Automated Testing
------------------
-
-We use CircleCI to perform automated
-testing.
-
-.. image:: https://circleci.com/gh/FEniCS/fiat.svg?style=shield
-   :target: https://circleci.com/gh/FEniCS/fiat
+.. image:: https://github.com/FEniCS/fiat/workflows/FIAT%20CI/badge.svg
+   :target: https://github.com/FEniCS/fiat/actions?query=workflow%3A%22FIAT+CI%22
    :alt: Build Status
-
-
-Code Coverage
--------------
-
-Code coverage reports can be viewed at
-https://coveralls.io/github/FEniCS/fiat.
 
 .. image:: https://coveralls.io/repos/github/FEniCS/fiat/badge.svg?branch=master
    :target: https://coveralls.io/github/FEniCS/fiat?branch=master
    :alt: Coverage Status
 
+.. image:: https://readthedocs.org/projects/fenics-fiat/badge/?version=latest
+   :target: http://fenics.readthedocs.io/projects/fiat/en/latest/?badge=latest
+   :alt: Documentation Status
+
+Documentation
+=============
+
+Documentation can be viewed at http://fenics-fiat.readthedocs.org/.
 
 License
 =======

@@ -1,19 +1,10 @@
 # Copyright (C) 2008 Robert C. Kirby (Texas Tech University)
 #
-# This file is part of FIAT.
+# Modified 2020 by the same from Baylor University
 #
-# FIAT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This file is part of FIAT (https://www.fenicsproject.org)
 #
-# FIAT is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+# SPDX-License-Identifier:    LGPL-3.0-or-later
 
 # functionals require:
 # - a degree of accuracy (-1 indicates that it works for all functions
@@ -25,6 +16,8 @@ from collections import OrderedDict
 from itertools import chain
 import numpy
 import sympy
+
+from FIAT import polynomial_set
 
 
 def index_iterator(shp):
@@ -42,19 +35,33 @@ def index_iterator(shp):
             for foo in index_iterator(shp_foo):
                 yield [i] + foo
 
-# also put in a "jet_dict" that maps
-# pt --> {wt, multiindex, comp}
-# the multiindex is an iterable of nonnegative
-# integers
-
 
 class Functional(object):
-    """Class implementing an abstract functional.
-    All functionals are discrete in the sense that
-    the are written as a weighted sum of (components of) their
-    argument evaluated at particular points."""
+    r"""Abstract class representing a linear functional.
+    All FIAT functionals are discrete in the sense that
+    they are written as a weighted sum of (derivatives of components of) their
+    argument evaluated at particular points.
 
-    def __init__(self, ref_el, target_shape, pt_dict, deriv_dict, functional_type):
+    :arg ref_el: a :class:`Cell`
+    :arg target_shape: a tuple indicating the value shape of functions on
+         the functional operates (e.g. if the function eats 2-vectors
+         then target_shape is (2,) and if it eats scalars then
+         target_shape is ()
+    :arg pt_dict: A dict mapping points to lists of information about
+         how the functional is evaluated.  Each entry in the list takes
+         the form of a tuple (wt, comp) so that (at least if the
+         deriv_dict argument is empty), the functional takes the form
+         :math:`\ell(f) = \sum_{q=1}^{N_q} \sum_{k=1}^{K_q} w^q_k f_{c_k}(x_q)`
+         where :math:`f_{c_k}` indicates a particular vector or tensor component
+    :arg deriv_dict: A dict that is similar to `pt_dict`, although the entries
+         of each list are tuples (wt, alpha, comp) with alpha a tuple
+         of nonnegative integers corresponding to the order of partial
+         differentiation in each spatial direction.
+    :arg functional_type: a string labeling the kind of functional
+         this is.
+    """
+    def __init__(self, ref_el, target_shape, pt_dict, deriv_dict,
+                 functional_type):
         self.ref_el = ref_el
         self.target_shape = target_shape
         self.pt_dict = pt_dict
@@ -94,36 +101,70 @@ class Functional(object):
         normal component, which is probably handy for clients of FIAT"""
         return self.functional_type
 
-    # overload me in subclasses to make life easier!!
     def to_riesz(self, poly_set):
-        """Constructs an array representation of the functional over
-        the base of the given polynomial_set so that f(phi) for any
-        phi in poly_set is given by a dot product."""
+        r"""Constructs an array representation of the functional so
+        that the functional may be applied to a function expressed in
+        in terms of the expansion set underlying  `poly_set` by means
+        of contracting coefficients.
+
+        That is, `poly_set` will have members all expressed in the
+        form :math:`p = \sum_{i} \alpha^i \phi_i`
+        where :math:`\{\phi_i\}_{i}` is some orthonormal expansion set
+        and :math:`\alpha^i` are coefficients.  Note: the orthonormal
+        expansion set is always scalar-valued but if the members of
+        `poly_set` are vector or tensor valued the :math:`\alpha^i`
+        will be scalars or vectors.
+
+        This function constructs a tensor :math:`R` such that the
+        contraction of :math:`R` with the array of coefficients
+        :math:`\alpha` produces the effect of :math:`\ell(f)`
+
+        In the case of scalar-value functions, :math:`R` is just a
+        vector of the same length as the expansion set, and
+        :math:`R_i = \ell(\phi_i)`.  For vector-valued spaces,
+        :math:`R_{ij}` will be :math:`\ell(e^i \phi_j)` where
+        :math:`e^i` is the canonical unit vector nonzero only in one
+        entry :math:`i`.
+        """
         es = poly_set.get_expansion_set()
         ed = poly_set.get_embedded_degree()
+        nexp = es.get_num_members(ed)
+
         pt_dict = self.get_point_dict()
 
         pts = list(pt_dict.keys())
-
-        # bfs is matrix that is pdim rows by num_pts cols
-        # where pdim is the polynomial dimension
+        npts = len(pts)
 
         bfs = es.tabulate(ed, pts)
-
         result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
 
         # loop over points
-        for j in range(len(pts)):
+        for j in range(npts):
             pt_cur = pts[j]
             wc_list = pt_dict[pt_cur]
 
             # loop over expansion functions
-            for i in range(bfs.shape[0]):
+            for i in range(nexp):
                 for (w, c) in wc_list:
                     result[c][i] += w * bfs[i, j]
 
         if self.deriv_dict:
-            raise NotImplementedError("Generic to_riesz implementation does not support derivatives")
+            dpt_dict = self.deriv_dict
+
+            # this makes things quicker since it uses dmats after
+            # instantiation
+            es_foo = polynomial_set.ONPolynomialSet(self.ref_el, ed)
+            dpts = list(dpt_dict.keys())
+
+            dbfs = es_foo.tabulate(dpts, self.max_deriv_order)
+
+            ndpts = len(dpts)
+            for j in range(ndpts):
+                dpt_cur = dpts[j]
+                wac_list = dpt_dict[dpt_cur]
+                for i in range(nexp):
+                    for (w, alpha, c) in wac_list:
+                        result[c][i] += w * dbfs[tuple(alpha)][i, j]
 
         return result
 
@@ -172,8 +213,8 @@ class PointDerivative(Functional):
     functions at a particular point x."""
 
     def __init__(self, ref_el, x, alpha):
-        dpt_dict = {x: [(1.0, alpha, tuple())]}
-        self.alpha = alpha
+        dpt_dict = {x: [(1.0, tuple(alpha), tuple())]}
+        self.alpha = tuple(alpha)
         self.order = sum(self.alpha)
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointDeriv")
@@ -191,28 +232,9 @@ class PointDerivative(Functional):
 
         return sympy.diff(fn(X), *dvars).evalf(subs=dict(zip(dX, x)))
 
-    def to_riesz(self, poly_set):
-        x = list(self.deriv_dict.keys())[0]
-
-        X = sympy.DeferredVector('x')
-        dx = numpy.asarray([X[i] for i in range(len(x))])
-
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-
-        bfs = es.tabulate(ed, [dx])[:, 0]
-
-        # Expand the multi-index as a series of variables to
-        # differentiate with respect to.
-        dvars = tuple(d for d, a in zip(dx, self.alpha)
-                      for count in range(a))
-
-        return numpy.asarray([sympy.lambdify(X, sympy.diff(b, *dvars))(x)
-                              for b in bfs])
-
 
 class PointNormalDerivative(Functional):
-
+    """Represents d/dn at a point on a facet."""
     def __init__(self, ref_el, facet_no, pt):
         n = ref_el.compute_normal(facet_no)
         self.n = n
@@ -223,49 +245,50 @@ class PointNormalDerivative(Functional):
             alpha = [0] * sd
             alpha[i] = 1
             alphas.append(alpha)
+        dpt_dict = {pt: [(n[i], tuple(alphas[i]), tuple()) for i in range(sd)]}
+
+        Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
+
+
+class PointNormalSecondDerivative(Functional):
+    """Represents d^/dn^2 at a point on a facet."""
+    def __init__(self, ref_el, facet_no, pt):
+        n = ref_el.compute_normal(facet_no)
+        self.n = n
+        sd = ref_el.get_spatial_dimension()
+        tau = numpy.zeros((sd*(sd+1)//2,))
+
+        alphas = []
+        cur = 0
+        for i in range(sd):
+            for j in range(i, sd):
+                alpha = [0] * sd
+                alpha[i] += 1
+                alpha[j] += 1
+                alphas.append(tuple(alpha))
+                tau[cur] = n[i]*n[j]
+                cur += 1
+
+        self.tau = tau
+        self.alphas = alphas
         dpt_dict = {pt: [(n[i], alphas[i], tuple()) for i in range(sd)]}
 
         Functional.__init__(self, ref_el, tuple(), {}, dpt_dict, "PointNormalDeriv")
 
-    def to_riesz(self, poly_set):
-        x = list(self.deriv_dict.keys())[0]
-
-        X = sympy.DeferredVector('x')
-        dx = numpy.asarray([X[i] for i in range(len(x))])
-
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-
-        bfs = es.tabulate(ed, [dx])[:, 0]
-
-        # We need the gradient dotted with the normal.
-        return numpy.asarray(
-            [sympy.lambdify(
-                X, sum([sympy.diff(b, dxi)*ni
-                        for dxi, ni in zip(dx, self.n)]))(x)
-             for b in bfs])
-
 
 class IntegralMoment(Functional):
-    """An IntegralMoment is a functional"""
+    """Functional representing integral of the input against some tabulated function f.
+
+    :arg ref_el: a :class:`Cell`.
+    :arg Q: a :class:`QuadratureRule`.
+    :arg f_at_qpts: an array tabulating the function f at the quadrature
+         points.
+    :arg comp: Optional argument indicating that only a particular
+         component of the input function should be integrated against f
+    :arg shp: Optional argument giving the value shape of input functions.
+    """
 
     def __init__(self, ref_el, Q, f_at_qpts, comp=tuple(), shp=tuple()):
-        """
-        Create IntegralMoment
-
-        *Arguments*
-
-          ref_el
-              The reference element (cell)
-          Q (QuadratureRule)
-              A quadrature rule for the integral
-          f_at_qpts
-              ???
-          comp (tuple)
-              A component ??? (Optional)
-          shp  (tuple)
-              The shape ??? (Optional)
-        """
         qpts, qwts = Q.get_points(), Q.get_weights()
         pt_dict = OrderedDict()
         self.comp = comp
@@ -282,21 +305,6 @@ class IntegralMoment(Functional):
 
         if self.comp:
             result = result[self.comp]
-        return result
-
-    def to_riesz(self, poly_set):
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-        pts = list(self.pt_dict.keys())
-        bfs = es.tabulate(ed, pts)
-        wts = numpy.array([foo[0][0] for foo in list(self.pt_dict.values())])
-        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-
-        if len(self.comp) == 0:
-            result[:] = numpy.dot(bfs, wts)
-        else:
-            result[self.comp, :] = numpy.dot(bfs, wts)
-
         return result
 
 
@@ -320,38 +328,12 @@ class IntegralMomentOfNormalDerivative(Functional):
 
         dpt_dict = OrderedDict()
 
-        alphas = [[1 if j == i else 0 for j in range(sd)] for i in range(sd)]
+        alphas = [tuple([1 if j == i else 0 for j in range(sd)]) for i in range(sd)]
         for j, pt in enumerate(dpts):
-            dpt_dict[tuple(pt)] = [(qwts[j]*n[i], alphas[i], tuple()) for i in range(sd)]
+            dpt_dict[tuple(pt)] = [(qwts[j]*n[i]*f_at_qpts[j], alphas[i], tuple()) for i in range(sd)]
 
         Functional.__init__(self, ref_el, tuple(),
                             {}, dpt_dict, "IntegralMomentOfNormalDerivative")
-
-    def to_riesz(self, poly_set):
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-
-        result = numpy.zeros(es.get_num_members(ed))
-        sd = self.ref_el.get_spatial_dimension()
-
-        X = sympy.DeferredVector('x')
-        dX = numpy.asarray([X[i] for i in range(sd)])
-
-        # evaluate bfs symbolically
-        bfs = es.tabulate(ed, [dX])[:, 0]
-
-        n = self.n
-        qwts = self.Q.get_weights()
-
-        for i in range(len(result)):
-            thing = sympy.lambdify(
-                X, sum([sympy.diff(bfs[i], dxi)*ni
-                        for dxi, ni in zip(dX, n)]))
-
-            for j, pt in enumerate(self.deriv_dict.keys()):
-                result[i] += qwts[j] * self.f_at_qpts[j] * thing(pt)
-
-        return result
 
 
 class FrobeniusIntegralMoment(Functional):
@@ -374,8 +356,6 @@ class FrobeniusIntegralMoment(Functional):
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment")
 
 
-# point normals happen on a d-1 dimensional facet
-# pt is the "physical" point on that facet
 class PointNormalEvaluation(Functional):
     """Implements the evaluation of the normal component of a vector at a
     point on a facet of codimension 1."""
@@ -407,11 +387,28 @@ class PointEdgeTangentEvaluation(Functional):
         x = list(map(str, list(self.pt_dict.keys())[0]))
         return "(u.t)(%s)" % (','.join(x),)
 
-    def to_riesz(self, poly_set):
-        # should be singleton
-        xs = list(self.pt_dict.keys())
-        phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
-        return numpy.outer(self.t, phis)
+
+class IntegralMomentOfEdgeTangentEvaluation(Functional):
+    r"""
+    \int_e v\cdot t p ds
+
+    p \in Polynomials
+
+    :arg ref_el: reference element for which e is a dim-1 entity
+    :arg Q: quadrature rule on the face
+    :arg P_at_qpts: polynomials evaluated at quad points
+    :arg edge: which edge.
+    """
+    def __init__(self, ref_el, Q, P_at_qpts, edge):
+        t = ref_el.compute_edge_tangent(edge)
+        sd = ref_el.get_spatial_dimension()
+        transform = ref_el.get_entity_transform(1, edge)
+        pts = tuple(map(lambda p: tuple(transform(p)), Q.get_points()))
+        weights = Q.get_weights()
+        pt_dict = OrderedDict()
+        for pt, wgt, phi in zip(pts, weights, P_at_qpts):
+            pt_dict[pt] = [(wgt*phi*t[i], (i, )) for i in range(sd)]
+        super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfEdgeTangentEvaluation")
 
 
 class PointFaceTangentEvaluation(Functional):
@@ -431,10 +428,58 @@ class PointFaceTangentEvaluation(Functional):
         x = list(map(str, list(self.pt_dict.keys())[0]))
         return "(u.t%d)(%s)" % (self.tno, ','.join(x),)
 
-    def to_riesz(self, poly_set):
-        xs = list(self.pt_dict.keys())
-        phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
-        return numpy.outer(self.t, phis)
+
+class IntegralMomentOfFaceTangentEvaluation(Functional):
+    r"""
+    \int_F v \times n \cdot p ds
+
+    p \in Polynomials
+
+    :arg ref_el: reference element for which F is a codim-1 entity
+    :arg Q: quadrature rule on the face
+    :arg P_at_qpts: polynomials evaluated at quad points
+    :arg facet: which facet.
+    """
+    def __init__(self, ref_el, Q, P_at_qpts, facet):
+        P_at_qpts = [[P_at_qpts[0][i], P_at_qpts[1][i], P_at_qpts[2][i]]
+                     for i in range(P_at_qpts.shape[1])]
+        n = ref_el.compute_scaled_normal(facet)
+        sd = ref_el.get_spatial_dimension()
+        transform = ref_el.get_entity_transform(sd-1, facet)
+        pts = tuple(map(lambda p: tuple(transform(p)), Q.get_points()))
+        weights = Q.get_weights()
+        pt_dict = OrderedDict()
+        for pt, wgt, phi in zip(pts, weights, P_at_qpts):
+            phixn = [phi[1]*n[2] - phi[2]*n[1],
+                     phi[2]*n[0] - phi[0]*n[2],
+                     phi[0]*n[1] - phi[1]*n[0]]
+            pt_dict[pt] = [(wgt*(-n[2]*phixn[1]+n[1]*phixn[2]), (0, )),
+                           (wgt*(n[2]*phixn[0]-n[0]*phixn[2]), (1, )),
+                           (wgt*(-n[1]*phixn[0]+n[0]*phixn[1]), (2, ))]
+        super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfFaceTangentEvaluation")
+
+
+class MonkIntegralMoment(Functional):
+    r"""
+    face nodes are \int_F v\cdot p dA where p \in P_{q-2}(f)^3 with p \cdot n = 0
+    (cmp. Peter Monk - Finite Element Methods for Maxwell's equations p. 129)
+    Note that we don't scale by the area of the facet
+
+    :arg ref_el: reference element for which F is a codim-1 entity
+    :arg Q: quadrature rule on the face
+    :arg P_at_qpts: polynomials evaluated at quad points
+    :arg facet: which facet.
+    """
+
+    def __init__(self, ref_el, Q, P_at_qpts, facet):
+        sd = ref_el.get_spatial_dimension()
+        weights = Q.get_weights()
+        pt_dict = OrderedDict()
+        transform = ref_el.get_entity_transform(sd-1, facet)
+        pts = tuple(map(lambda p: tuple(transform(p)), Q.get_points()))
+        for pt, wgt, phi in zip(pts, weights, P_at_qpts):
+            pt_dict[pt] = [(wgt*phi[i], (i, )) for i in range(sd)]
+        super().__init__(ref_el, (sd, ), pt_dict, {}, "MonkIntegralMoment")
 
 
 class PointScaledNormalEvaluation(Functional):
@@ -454,10 +499,28 @@ class PointScaledNormalEvaluation(Functional):
         x = list(map(str, list(self.pt_dict.keys())[0]))
         return "(u.n)(%s)" % (','.join(x),)
 
-    def to_riesz(self, poly_set):
-        xs = list(self.pt_dict.keys())
-        phis = poly_set.get_expansion_set().tabulate(poly_set.get_embedded_degree(), xs)
-        return numpy.outer(self.n, phis)
+
+class IntegralMomentOfScaledNormalEvaluation(Functional):
+    r"""
+    \int_F v\cdot n p ds
+
+    p \in Polynomials
+
+    :arg ref_el: reference element for which F is a codim-1 entity
+    :arg Q: quadrature rule on the face
+    :arg P_at_qpts: polynomials evaluated at quad points
+    :arg facet: which facet.
+    """
+    def __init__(self, ref_el, Q, P_at_qpts, facet):
+        n = ref_el.compute_scaled_normal(facet)
+        sd = ref_el.get_spatial_dimension()
+        transform = ref_el.get_entity_transform(sd - 1, facet)
+        pts = tuple(map(lambda p: tuple(transform(p)), Q.get_points()))
+        weights = Q.get_weights()
+        pt_dict = OrderedDict()
+        for pt, wgt, phi in zip(pts, weights, P_at_qpts):
+            pt_dict[pt] = [(wgt*phi*n[i], (i, )) for i in range(sd)]
+        super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfScaledNormalEvaluation")
 
 
 class PointwiseInnerProductEvaluation(Functional):
@@ -481,3 +544,51 @@ class PointwiseInnerProductEvaluation(Functional):
 
         shp = (sd, sd)
         Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
+
+
+class IntegralMomentOfDivergence(Functional):
+    def __init__(self, ref_el, Q, f_at_qpts):
+        self.f_at_qpts = f_at_qpts
+        self.Q = Q
+
+        sd = ref_el.get_spatial_dimension()
+
+        qpts, qwts = Q.get_points(), Q.get_weights()
+        dpts = qpts
+        self.dpts = dpts
+
+        dpt_dict = OrderedDict()
+
+        alphas = [tuple([1 if j == i else 0 for j in range(sd)]) for i in range(sd)]
+        for j, pt in enumerate(dpts):
+            dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
+
+        Functional.__init__(self, ref_el, tuple(),
+                            {}, dpt_dict, "IntegralMomentOfDivergence")
+
+
+class IntegralMomentOfTensorDivergence(Functional):
+    """Like IntegralMomentOfDivergence, but on symmetric tensors."""
+
+    def __init__(self, ref_el, Q, f_at_qpts):
+        self.f_at_qpts = f_at_qpts
+        self.Q = Q
+        qpts, qwts = Q.get_points(), Q.get_weights()
+        nqp = len(qpts)
+        dpts = qpts
+        self.dpts = dpts
+
+        assert len(f_at_qpts.shape) == 2
+        assert f_at_qpts.shape[0] == 2
+        assert f_at_qpts.shape[1] == nqp
+
+        sd = ref_el.get_spatial_dimension()
+
+        dpt_dict = OrderedDict()
+
+        alphas = [tuple([1 if j == i else 0 for j in range(sd)]) for i in range(sd)]
+        for q, pt in enumerate(dpts):
+            dpt_dict[tuple(pt)] = [(qwts[q]*f_at_qpts[i, q], alphas[j], (i, j)) for i in range(2) for j in range(2)]
+
+        Functional.__init__(self, ref_el, tuple(),
+                            {}, dpt_dict, "IntegralMomentOfTensorDivergence")

@@ -21,6 +21,7 @@ from FIAT.hermite import CubicHermite
 from FIAT.lagrange import Lagrange
 from FIAT.gauss_lobatto_legendre import GaussLobattoLegendre
 from FIAT.gauss_legendre import GaussLegendre
+from FIAT.gauss_radau import GaussRadau
 from FIAT.morley import Morley
 from FIAT.nedelec import Nedelec
 from FIAT.nedelec_second_kind import NedelecSecondKind
@@ -70,6 +71,7 @@ supported_elements = {"Argyris": Argyris,
                       "Extended-Gauss-Legendre": ExtendedGaussLegendre,
                       "Gauss-Lobatto-Legendre Edge": EdgeGaussLobattoLegendre,
                       "Extended-Gauss-Legendre Edge": EdgeExtendedGaussLegendre,
+                      "Gauss-Radau": GaussRadau,
                       "Morley": Morley,
                       "Nedelec 1st kind H(curl)": Nedelec,
                       "Nedelec 2nd kind H(curl)": NedelecSecondKind,

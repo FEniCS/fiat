@@ -1,23 +1,12 @@
 # Copyright (C) 2019 Cyrus Cheng (Imperial College London)
 #
-# This file is part of FIAT.
+# This file is part of FIAT (https://www.fenicsproject.org)
 #
-# FIAT is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# FIAT is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with FIAT. If not, see <http://www.gnu.org/licenses/>.
+# SPDX-License-Identifier:    LGPL-3.0-or-later
 #
 # Modified by David A. Ham (david.ham@imperial.ac.uk), 2019
 
-from sympy import symbols, legendre, Array, diff
+from sympy import symbols, legendre, Array, diff, lambdify
 import numpy as np
 from FIAT.finite_element import FiniteElement
 from FIAT.lagrange import Lagrange
@@ -112,7 +101,8 @@ class Serendipity(FiniteElement):
         super(Serendipity, self).__init__(ref_el=ref_el, dual=None, order=degree, formdegree=formdegree)
 
         self.basis = {(0,)*dim: Array(s_list)}
-
+        self.basis_callable = {(0,)*dim: lambdify(variables[:dim], Array(s_list),
+                                                  modules="numpy", dummify=True)}
         topology = ref_el.get_topology()
         unflattening_map = compute_unflattening_map(topology)
         unflattened_entity_ids = {}
@@ -160,21 +150,22 @@ class Serendipity(FiniteElement):
             raise NotImplementedError('no tabulate method for serendipity elements of dimension 1 or less.')
         if dim >= 4:
             raise NotImplementedError('tabulate does not support higher dimensions than 3.')
+        points = np.asarray(points)
+        npoints, pointdim = points.shape
         for o in range(order + 1):
             alphas = mis(dim, o)
             for alpha in alphas:
                 try:
-                    polynomials = self.basis[alpha]
+                    callable = self.basis_callable[alpha]
                 except KeyError:
                     polynomials = diff(self.basis[(0,)*dim], *zip(variables, alpha))
+                    callable = lambdify(variables[:dim], polynomials, modules="numpy", dummify=True)
                     self.basis[alpha] = polynomials
-                T = np.zeros((len(polynomials), len(points)))
-                for i in range(len(points)):
-                    subs = {v: points[i][k] for k, v in enumerate(variables[:dim])}
-                    for j, f in enumerate(polynomials):
-                        T[j, i] = f.evalf(subs=subs)
+                    self.basis_callable[alpha] = callable
+                tabulation = callable(*(points[:, i] for i in range(pointdim)))
+                T = np.asarray([np.broadcast_to(tab, (npoints, ))
+                                for tab in tabulation])
                 phivals[alpha] = T
-
         return phivals
 
     def entity_dofs(self):
