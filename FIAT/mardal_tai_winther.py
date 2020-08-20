@@ -17,7 +17,6 @@ from FIAT.functional import (IntegralMomentOfNormalEvaluation,
                              IntegralMomentOfDivergence)
 
 from FIAT.quadrature import make_quadrature
-# import numpy
 
 
 def DivergenceDubinerMoments(cell, start_deg, stop_deg, comp_deg):

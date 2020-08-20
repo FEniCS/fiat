@@ -89,8 +89,6 @@ def frob(a, b):
 
 
 def test_projection():
-    from FIAT import ufc_simplex, ArnoldWinther, make_quadrature
-
     T = ufc_simplex(2)
     T.vertices = np.asarray([(0.0, 0.0), (1.0, 0.0), (0.5, 2.1)])
 
