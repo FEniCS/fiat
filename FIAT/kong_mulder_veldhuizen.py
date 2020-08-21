@@ -35,12 +35,23 @@ def _get_topology(ref_el, degree):
                 2: {0: [6]},
             }
         elif sd == 3:
-            ftop = [[10, 11, 12], [13, 14, 15], [16, 17, 18], [19, 20, 21]]
+            # older degree-2 element 23 nodes
+            # ftop = [[10, 11, 12], [13, 14, 15], [16, 17, 18], [19, 20, 21]]
+            # entity_ids = {
+            #    0: dict((i, [i]) for i in range(4)),
+            #    1: dict((i, [i + 4]) for i in range(6)),
+            #    2: dict((i, ftop[i]) for i in range(4)),
+            #    3: {0: [22]},
+            # }
+
+            # newer degree-2 (p=3 )elements with 15 nodes
+            # Ref: NEW HIGHER-ORDER MASS-LUMPED TETRAHEDRAL
+            #      ELEMENTS FOR WAVE PROPAGATION MODELLING*
             entity_ids = {
                 0: dict((i, [i]) for i in range(4)),
                 1: dict((i, [i + 4]) for i in range(6)),
-                2: dict((i, ftop[i]) for i in range(4)),
-                3: {0: [22]},
+                2: dict((i, [i + 10]) for i in range(4)),
+                3: {0: [14]},
             }
     elif degree == 3:
         if sd == 2:
@@ -71,18 +82,18 @@ def _get_topology(ref_el, degree):
 
 
 def bump(T, deg):
-    """Increase degree of polynomial in interior of cell"""
+    """Increase degree of polynomial along """
     sd = T.get_spatial_dimension()
     if deg == 1:
-        return 0
+        return (0,)
     if sd == 2:
         if deg < 5:
-            return 1
+            return (1,)
         elif deg == 5:
-            return 2
+            return (2,)
     elif sd == 3:
         if deg == 2:
-            return 2
+            return (1, 2)
 
 
 def KongMulderVeldhuizenSpace(T, deg):
@@ -97,12 +108,12 @@ def KongMulderVeldhuizenSpace(T, deg):
             i for i in range(L.space_dimension()) if i not in L.dual.entity_ids[sd][0]
         ]
         RL = RestrictedElement(L, inds)
-        bubs = Bubble(T, deg + bump(T, deg))
+        bubs = Bubble(T, deg + max(bump(T, deg)))
         if sd == 2:
             return NodalEnrichedElement(RL, bubs).poly_set
         elif sd == 3:
             # restricted Lagrange plus a FacetBubble plus a Bubble.
-            fbubs = FacetBubble(T, deg + bump(T, deg))
+            fbubs = FacetBubble(T, deg + min(bump(T, deg)))
             return NodalEnrichedElement(RL, bubs, fbubs).poly_set
 
 
@@ -123,12 +134,15 @@ class KongMulderVeldhuizen(finite_element.CiarletElement):
 
        References:
 
-       Higher-order triangular and tetrahedral finite elements with mass
+       [1] Higher-order triangular and tetrahedral finite elements with mass
        lumping for solving the wave equation
        M. J. S. CHIN-JOE-KONG, W. A. MULDER and M. VAN VELDHUIZEN
 
-       HIGHER-ORDER MASS-LUMPED FINITE ELEMENTS FOR THE WAVE EQUATION
+       [2] HIGHER-ORDER MASS-LUMPED FINITE ELEMENTS FOR THE WAVE EQUATION
        W.A. MULDER
+
+       [3] NEW HIGHER-ORDER MASS-LUMPED TETRAHEDRAL ELEMENTS
+       S. GEEVERS, W.A. MULDER, AND J.J.W. VAN DER VEGT
 
      """
 
@@ -142,5 +156,5 @@ class KongMulderVeldhuizen(finite_element.CiarletElement):
         dual = KongMulderVeldhuizenDualSet(ref_el, degree)
         formdegree = 0  # 0-form
         super(KongMulderVeldhuizen, self).__init__(
-            S, dual, degree + bump(ref_el, degree), formdegree
+            S, dual, degree + max(bump(ref_el, degree)), formdegree
         )
