@@ -111,15 +111,25 @@ def KongMulderVeldhuizenSpace(T, deg):
         L = Lagrange(T, deg)
         # Toss the bubble from Lagrange since it's dependent
         # on the higher-dimensional bubbles
-        inds = [
-            i for i in range(L.space_dimension()) if i not in L.dual.entity_ids[sd][0]
-        ]
+        if sd == 2:
+            inds = [
+                i
+                for i in range(L.space_dimension())
+                if i not in L.dual.entity_ids[sd][0]
+            ]
+        elif sd == 3:
+            not_inds = [L.dual.entity_ids[sd][0]] + [
+                L.dual.entity_ids[sd - 1][f] for f in L.dual.entity_ids[sd - 1]
+            ]
+            not_inds = [item for sublist in not_inds for item in sublist]
+            inds = [i for i in range(L.space_dimension()) if i not in not_inds]
         RL = RestrictedElement(L, inds)
+        # interior cell bubble
         bubs = Bubble(T, deg + max(bump(T, deg)))
         if sd == 2:
             return NodalEnrichedElement(RL, bubs).poly_set
         elif sd == 3:
-            # restricted Lagrange plus a FacetBubble plus a Bubble.
+            # bubble on the facet
             fbubs = FacetBubble(T, deg + min(bump(T, deg)))
             return NodalEnrichedElement(RL, bubs, fbubs).poly_set
 
