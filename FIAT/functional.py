@@ -454,28 +454,6 @@ class IntegralMomentOfDivergence(Functional):
         super().__init__(ref_el, tuple(), {}, dpt_dict,
                          "IntegralMomentOfDivergence")
 
-    def to_riesz(self, poly_set):
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-
-        sd = self.ref_el.get_spatial_dimension()
-        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-        X = sympy.DeferredVector('x')
-        dX = numpy.asarray([X[i] for i in range(sd)])
-
-        # evaluate bfs symbolically
-        bfs = es.tabulate(ed, [dX])[:, 0]
-        qwts = self.Q.get_weights()
-
-        for j in range(len(bfs)):
-            grad_phi = [sympy.lambdify(X, sympy.diff(bfs[j], dXcur))
-                        for dXcur in dX]
-            for i in range(sd):
-                for k, pt in enumerate(self.deriv_dict.keys()):
-                    result[i, j] += qwts[k] * self.f_at_qpts[k] * grad_phi[i](pt)
-
-        return result
-
 
 class IntegralMomentOfTensorDivergence(Functional):
     """Like IntegralMomentOfDivergence, but on symmetric tensors."""
@@ -502,29 +480,6 @@ class IntegralMomentOfTensorDivergence(Functional):
 
         super().__init__(ref_el, tuple(), {}, dpt_dict,
                          "IntegralMomentOfDivergence")
-
-    def to_riesz(self, poly_set):
-        es = poly_set.get_expansion_set()
-        ed = poly_set.get_embedded_degree()
-
-        sd = self.ref_el.get_spatial_dimension()
-        result = numpy.zeros(poly_set.coeffs.shape[1:], "d")
-        X = sympy.DeferredVector('x')
-        dX = numpy.asarray([X[i] for i in range(sd)])
-
-        # evaluate bfs symbolically
-        bfs = es.tabulate(ed, [dX])[:, 0]
-        qwts = self.Q.get_weights()
-
-        for k in range(len(bfs)):
-            grad_phi = [sympy.lambdify(X, sympy.diff(bfs[k], dXcur))
-                        for dXcur in dX]
-            for i in range(sd):
-                for j in range(sd):
-                    for q, pt in enumerate(self.deriv_dict.keys()):
-                        result[i, j, k] += qwts[q] * self.f_at_qpts[i, q] * grad_phi[j](pt)
-
-        return result
 
 
 class FrobeniusIntegralMoment(Functional):
