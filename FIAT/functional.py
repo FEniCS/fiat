@@ -340,7 +340,7 @@ class IntegralMomentOfNormalDerivative(Functional):
 
 
 class IntegralLegendreDirectionalMoment(Functional):
-    """Momement of v.s against a Legendre polynomial over an edge"""
+    """Moment of v.s against a Legendre polynomial over an edge"""
     def __init__(self, cell, s, entity, mom_deg, comp_deg, nm=""):
         sd = cell.get_spatial_dimension()
         assert sd == 2
@@ -366,7 +366,7 @@ class IntegralLegendreDirectionalMoment(Functional):
 
 
 class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
-    """Momement of v.n against a Legendre polynomial over an edge"""
+    """Moment of v.n against a Legendre polynomial over an edge"""
     def __init__(self, cell, entity, mom_deg, comp_deg):
         n = cell.compute_scaled_normal(entity)
         super().__init__(cell, n, entity, mom_deg, comp_deg,
@@ -374,7 +374,7 @@ class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
 
 
 class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
-    """Momement of v.t against a Legendre polynomial over an edge"""
+    """Moment of v.t against a Legendre polynomial over an edge"""
     def __init__(self, cell, entity, mom_deg, comp_deg):
         t = cell.compute_edge_tangent(entity)
         super().__init__(cell, t, entity, mom_deg, comp_deg,
