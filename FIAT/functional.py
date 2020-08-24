@@ -362,25 +362,23 @@ class IntegralLegendreDirectionalMoment(Functional):
             pt_dict[pt_cur] = [(qwts[k] * f_at_qpts[k, i], (i,))
                                for i in range(2)]
 
-        Functional.__init__(self, cell, shp, pt_dict, {}, nm)
+        super().__init__(cell, shp, pt_dict, {}, nm)
 
 
 class IntegralLegendreNormalMoment(IntegralLegendreDirectionalMoment):
     """Momement of v.n against a Legendre polynomial over an edge"""
     def __init__(self, cell, entity, mom_deg, comp_deg):
         n = cell.compute_scaled_normal(entity)
-        IntegralLegendreDirectionalMoment.__init__(self, cell, n, entity,
-                                                   mom_deg, comp_deg,
-                                                   "IntegralLegendreNormalMoment")
+        super().__init__(cell, n, entity, mom_deg, comp_deg,
+                         "IntegralLegendreNormalMoment")
 
 
 class IntegralLegendreTangentialMoment(IntegralLegendreDirectionalMoment):
     """Momement of v.t against a Legendre polynomial over an edge"""
     def __init__(self, cell, entity, mom_deg, comp_deg):
         t = cell.compute_edge_tangent(entity)
-        IntegralLegendreDirectionalMoment.__init__(self, cell, t, entity,
-                                                   mom_deg, comp_deg,
-                                                   "IntegralLegendreTangentialMoment")
+        super().__init__(cell, t, entity, mom_deg, comp_deg,
+                         "IntegralLegendreTangentialMoment")
 
 
 class IntegralLegendreBidirectionalMoment(Functional):
@@ -416,16 +414,15 @@ class IntegralLegendreBidirectionalMoment(Functional):
             pt_dict[pt_cur] = [(qwts[k] * f_at_qpts[k, i, j], (i, j))
                                for (i, j) in index_iterator(shp)]
 
-        Functional.__init__(self, cell, shp, pt_dict, {}, nm)
+        super().__init__(cell, shp, pt_dict, {}, nm)
 
 
 class IntegralLegendreNormalNormalMoment(IntegralLegendreBidirectionalMoment):
     """Moment of dot(n, dot(tau, n)) against Legendre on entity."""
     def __init__(self, cell, entity, mom_deg, comp_deg):
         n = cell.compute_normal(entity)
-        IntegralLegendreBidirectionalMoment.__init__(self, cell, n, n,
-                                                     entity, mom_deg, comp_deg,
-                                                     "IntegralNormalNormalLegendreMoment")
+        super().__init__(cell, n, n, entity, mom_deg, comp_deg,
+                         "IntegralNormalNormalLegendreMoment")
 
 
 class IntegralLegendreNormalTangentialMoment(IntegralLegendreBidirectionalMoment):
@@ -433,9 +430,8 @@ class IntegralLegendreNormalTangentialMoment(IntegralLegendreBidirectionalMoment
     def __init__(self, cell, entity, mom_deg, comp_deg):
         n = cell.compute_normal(entity)
         t = cell.compute_normalized_edge_tangent(entity)
-        IntegralLegendreBidirectionalMoment.__init__(self, cell, n, t,
-                                                     entity, mom_deg, comp_deg,
-                                                     "IntegralNormalTangentialLegendreMoment")
+        super().__init__(cell, n, t, entity, mom_deg, comp_deg,
+                         "IntegralNormalTangentialLegendreMoment")
 
 
 class IntegralMomentOfDivergence(Functional):
@@ -455,8 +451,8 @@ class IntegralMomentOfDivergence(Functional):
         for j, pt in enumerate(dpts):
             dpt_dict[tuple(pt)] = [(qwts[j]*f_at_qpts[j], alphas[i], (i,)) for i in range(sd)]
 
-        Functional.__init__(self, ref_el, tuple(),
-                            {}, dpt_dict, "IntegralMomentOfDivergence")
+        super().__init__(ref_el, tuple(), {}, dpt_dict,
+                         "IntegralMomentOfDivergence")
 
     def to_riesz(self, poly_set):
         es = poly_set.get_expansion_set()
@@ -504,8 +500,8 @@ class IntegralMomentOfTensorDivergence(Functional):
         for q, pt in enumerate(dpts):
             dpt_dict[tuple(pt)] = [(qwts[q]*f_at_qpts[i, q], alphas[j], (i, j)) for i in range(2) for j in range(2)]
 
-        Functional.__init__(self, ref_el, tuple(),
-                            {}, dpt_dict, "IntegralMomentOfDivergence")
+        super().__init__(ref_el, tuple(), {}, dpt_dict,
+                         "IntegralMomentOfDivergence")
 
     def to_riesz(self, poly_set):
         es = poly_set.get_expansion_set()
@@ -548,7 +544,7 @@ class FrobeniusIntegralMoment(Functional):
                 qpidx = tuple(alfa + [i])
                 pt_dict[pt_cur].append((wt_cur * f_at_qpts[qpidx], tuple(alfa)))
 
-        Functional.__init__(self, ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment")
+        super().__init__(ref_el, shp, pt_dict, {}, "FrobeniusIntegralMoment")
 
 
 class PointNormalEvaluation(Functional):
@@ -563,7 +559,7 @@ class PointNormalEvaluation(Functional):
         pt_dict = {pt: [(n[i], (i,)) for i in range(sd)]}
 
         shp = (sd,)
-        Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointNormalEval")
+        super().__init__(ref_el, shp, pt_dict, {}, "PointNormalEval")
 
 
 class PointEdgeTangentEvaluation(Functional):
@@ -576,7 +572,7 @@ class PointEdgeTangentEvaluation(Functional):
         sd = ref_el.get_spatial_dimension()
         pt_dict = {pt: [(t[i], (i,)) for i in range(sd)]}
         shp = (sd,)
-        Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointEdgeTangent")
+        super().__init__(ref_el, shp, pt_dict, {}, "PointEdgeTangent")
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -603,7 +599,8 @@ class IntegralMomentOfEdgeTangentEvaluation(Functional):
         pt_dict = OrderedDict()
         for pt, wgt, phi in zip(pts, weights, P_at_qpts):
             pt_dict[pt] = [(wgt*phi*t[i], (i, )) for i in range(sd)]
-        super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfEdgeTangentEvaluation")
+        super().__init__(ref_el, (sd, ), pt_dict, {},
+                         "IntegralMomentOfEdgeTangentEvaluation")
 
 
 class PointFaceTangentEvaluation(Functional):
@@ -651,7 +648,8 @@ class IntegralMomentOfFaceTangentEvaluation(Functional):
             pt_dict[pt] = [(wgt*(-n[2]*phixn[1]+n[1]*phixn[2]), (0, )),
                            (wgt*(n[2]*phixn[0]-n[0]*phixn[2]), (1, )),
                            (wgt*(-n[1]*phixn[0]+n[0]*phixn[1]), (2, ))]
-        super().__init__(ref_el, (sd, ), pt_dict, {}, "IntegralMomentOfFaceTangentEvaluation")
+        super().__init__(ref_el, (sd, ), pt_dict, {},
+                         "IntegralMomentOfFaceTangentEvaluation")
 
 
 class MonkIntegralMoment(Functional):
@@ -688,7 +686,7 @@ class PointScaledNormalEvaluation(Functional):
         shp = (sd,)
 
         pt_dict = {pt: [(self.n[i], (i,)) for i in range(sd)]}
-        Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointScaledNormalEval")
+        super().__init__(ref_el, shp, pt_dict, {}, "PointScaledNormalEval")
 
     def tostr(self):
         x = list(map(str, list(self.pt_dict.keys())[0]))
@@ -738,7 +736,7 @@ class PointwiseInnerProductEvaluation(Functional):
                        for i, j in index_iterator((sd, sd))]}
 
         shp = (sd, sd)
-        Functional.__init__(self, ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
+        super().__init__(ref_el, shp, pt_dict, {}, "PointwiseInnerProductEval")
 
 
 class TensorBidirectionalMomentInnerProductEvaluation(Functional):
@@ -767,7 +765,7 @@ class TensorBidirectionalMomentInnerProductEvaluation(Functional):
                                    (i, j))
 
         shp = (sd, sd)
-        Functional.__init__(self, ref_el, shp, pt_dict, {}, "TensorBidirectionalMomentInnerProductEvaluation")
+        super().__init__(ref_el, shp, pt_dict, {}, "TensorBidirectionalMomentInnerProductEvaluation")
 
 
 class IntegralMomentOfNormalEvaluation(Functional):
