@@ -435,7 +435,7 @@ class IntegralLegendreNormalTangentialMoment(IntegralLegendreBidirectionalMoment
 
 
 class IntegralMomentOfDivergence(Functional):
-    """Functional representing integral of the divergence of the input 
+    """Functional representing integral of the divergence of the input
     against some tabulated function f."""
     def __init__(self, ref_el, Q, f_at_qpts):
         self.f_at_qpts = f_at_qpts
