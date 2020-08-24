@@ -426,7 +426,7 @@ class IntegralLegendreNormalNormalMoment(IntegralLegendreBidirectionalMoment):
 
 
 class IntegralLegendreNormalTangentialMoment(IntegralLegendreBidirectionalMoment):
-    """Moment of dot(n, dot(tau, n)) against Legendre on entity."""
+    """Moment of dot(n, dot(tau, t)) against Legendre on entity."""
     def __init__(self, cell, entity, mom_deg, comp_deg):
         n = cell.compute_normal(entity)
         t = cell.compute_normalized_edge_tangent(entity)
@@ -435,6 +435,8 @@ class IntegralLegendreNormalTangentialMoment(IntegralLegendreBidirectionalMoment
 
 
 class IntegralMomentOfDivergence(Functional):
+    """Functional representing integral of the divergence of the input 
+    against some tabulated function f."""
     def __init__(self, ref_el, Q, f_at_qpts):
         self.f_at_qpts = f_at_qpts
         self.Q = Q
