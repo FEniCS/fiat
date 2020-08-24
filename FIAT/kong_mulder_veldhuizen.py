@@ -61,6 +61,15 @@ def _get_topology(ref_el, degree):
                 1: dict((i, etop[i]) for i in range(3)),
                 2: {0: [9, 10, 11]},
             }
+        elif sd == 3:
+            etop = [[4, 5], [7, 6], [8, 9], [12, 13], [14, 15], [11, 10]]
+            ftop = [[16, 17, 18], [19, 20, 21], [22, 23, 24], [25, 26, 27]]
+            entity_ids = {
+                0: dict((i, [i]) for i in range(4)),
+                1: dict((i, etop[i]) for i in range(6)),
+                2: dict((i, ftop[i]) for i in range(4)),
+                3: {0: [28, 29, 30, 31]},
+            }
     elif degree == 4:
         if sd == 2:
             etop = [[6, 3, 7], [9, 4, 8], [10, 5, 11]]
@@ -77,7 +86,6 @@ def _get_topology(ref_el, degree):
                 1: dict((i, etop[i]) for i in range(3)),
                 2: {0: [i for i in range(15, 30)]},
             }
-
     return entity_ids
 
 
@@ -92,8 +100,7 @@ def bump(T, deg):
         elif deg == 5:
             return (2,)
     elif sd == 3:
-        if deg == 2:
-            return (1, 2)
+        return (1, 2)
 
 
 def KongMulderVeldhuizenSpace(T, deg):
@@ -149,8 +156,8 @@ class KongMulderVeldhuizen(finite_element.CiarletElement):
     def __init__(self, ref_el, degree):
         if degree > 5 and ref_el.shape == 2:
             raise NotImplementedError("Only P < 6 for triangles are implemented.")
-        if degree > 2 and ref_el.shape == 3:
-            raise NotImplementedError("Only P < 3 for tetrahedrals are implemented.")
+        if degree > 3 and ref_el.shape == 3:
+            raise NotImplementedError("Only P < 4 for tetrahedrals are implemented.")
         S = KongMulderVeldhuizenSpace(ref_el, degree)
 
         dual = KongMulderVeldhuizenDualSet(ref_el, degree)

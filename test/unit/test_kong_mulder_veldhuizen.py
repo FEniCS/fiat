@@ -10,7 +10,7 @@ T = UFCTriangle()
 Te = UFCTetrahedron()
 
 
-@pytest.mark.parametrize("p_d", [(1, 1), (2, 3)])
+@pytest.mark.parametrize("p_d", [(1, 1), (2, 3), (3, 4)])
 def test_kmv_quad_tet_schemes(p_d):
     fct = np.math.factorial
     p, d = p_d
@@ -57,7 +57,9 @@ def test_Kronecker_property_tris(element_degree):
     assert np.allclose(basis, np.eye(*basis.shape))
 
 
-@pytest.mark.parametrize("element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2)])
+@pytest.mark.parametrize(
+    "element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2), (KMV(Te, 3), 3)]
+)
 def test_Kronecker_property_tets(element_degree):
     """
     Evaluating the nodal basis at the special quadrature points should
@@ -121,7 +123,9 @@ def test_interpolate_monomials_tris(element_degree):
             assert np.sqrt(err) <= 1.0e-12
 
 
-@pytest.mark.parametrize("element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2)])
+@pytest.mark.parametrize(
+    "element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2), (KMV(Te, 3), 3)]
+)
 def test_interpolate_monomials_tets(element_degree):
     element, degree = element_degree
 
