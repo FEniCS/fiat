@@ -6,6 +6,7 @@
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
 from FIAT.reference_element import TRIANGLE
+from FIAT.pointwise_dual import compute_pointwise_dual, make_lattice
 
 
 class ArgyrisDualSet(dual_set.DualSet):

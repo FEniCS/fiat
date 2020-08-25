@@ -6,6 +6,7 @@
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
 from FIAT.reference_element import TRIANGLE
+from FIAT.pointwise_dual import compute_pointwise_dual, make_lattice
 
 
 class MorleyDualSet(dual_set.DualSet):
@@ -57,4 +58,3 @@ class Morley(finite_element.CiarletElement):
         super().__init__(poly_set, dual, 2)
         self.pointwise_dual = compute_pointwise_dual(
             self, make_lattice(ref_el.get_vertices(), 2))
-        
