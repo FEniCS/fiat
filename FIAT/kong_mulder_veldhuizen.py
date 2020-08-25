@@ -35,18 +35,6 @@ def _get_topology(ref_el, degree):
                 2: {0: [6]},
             }
         elif sd == 3:
-            # older degree-2 element 23 nodes
-            # ftop = [[10, 11, 12], [13, 14, 15], [16, 17, 18], [19, 20, 21]]
-            # entity_ids = {
-            #    0: dict((i, [i]) for i in range(4)),
-            #    1: dict((i, [i + 4]) for i in range(6)),
-            #    2: dict((i, ftop[i]) for i in range(4)),
-            #    3: {0: [22]},
-            # }
-
-            # newer degree-2 (p=3 )elements with 15 nodes
-            # Ref: NEW HIGHER-ORDER MASS-LUMPED TETRAHEDRAL
-            #      ELEMENTS FOR WAVE PROPAGATION MODELLING*
             entity_ids = {
                 0: dict((i, [i]) for i in range(4)),
                 1: dict((i, [i + 4]) for i in range(6)),
@@ -62,7 +50,7 @@ def _get_topology(ref_el, degree):
                 2: {0: [9, 10, 11]},
             }
         elif sd == 3:
-            etop = [[4, 5], [7, 6], [8, 9], [12, 13], [14, 15], [11, 10]]
+            etop = [[4, 5], [7, 6], [8, 9], [11, 10], [12, 13], [14, 15]]
             ftop = [[16, 17, 18], [19, 20, 21], [22, 23, 24], [25, 26, 27]]
             entity_ids = {
                 0: dict((i, [i]) for i in range(4)),
