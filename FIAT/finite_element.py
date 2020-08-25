@@ -30,7 +30,7 @@ class FiniteElement(object):
         self.ref_el = ref_el
         self.dual = dual
         self.pointwise_dual = dual
-        
+
         # The appropriate mapping for the finite element space
         self._mapping = mapping
 
@@ -55,7 +55,6 @@ class FiniteElement(object):
         """Return the dual basis (list of functionals) for the finite
         element, where those functionals are rewritten as linear combinations of pointwise values."""
         return self.pointwise_dual.get_nodes()
-        
 
     def entity_dofs(self):
         """Return the map of topological entities to degrees of

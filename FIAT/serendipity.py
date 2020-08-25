@@ -127,11 +127,11 @@ class Serendipity(FiniteElement):
         self.flat_el = flat_el
 
         if dim == 2:
-            self.pointwise_dual = compute_pointwise_dual(self,
-                                               unisolvent_pts_quad(ref_el, degree))
+            self.pointwise_dual = compute_pointwise_dual(
+                self, unisolvent_pts_quad(ref_el, degree))
         elif dim == 3:
-            self.pointwise_dual = compute_pointwise_dual(self,
-                                               unisolvent_pts_hex(ref_el, degree))
+            self.pointwise_dual = compute_pointwise_dual(
+                self, unisolvent_pts_hex(ref_el, degree))
 
     def degree(self):
         return self._degree + 1

@@ -73,7 +73,7 @@ class CubicHermite(finite_element.CiarletElement):
     """The cubic Hermite finite element.  It is what it is."""
 
     def __init__(self, ref_el, deg=3):
-        assert deg==3
+        assert deg == 3
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 3)
         dual = CubicHermiteDualSet(ref_el)
 
