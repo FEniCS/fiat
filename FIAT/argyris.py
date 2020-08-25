@@ -142,4 +142,6 @@ class QuinticArgyris(finite_element.CiarletElement):
     def __init__(self, ref_el):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 5)
         dual = QuinticArgyrisDualSet(ref_el)
-        super(QuinticArgyris, self).__init__(poly_set, dual, 5)
+        super().__init__(poly_set, dual, 5)
+        self.pointwise_dual = compute_pointwise_dual(
+            self, make_lattice(ref_el.get_vertices(), 5))
