@@ -30,6 +30,9 @@ from FIAT.raviart_thomas import RaviartThomas
 from FIAT.crouzeix_raviart import CrouzeixRaviart
 from FIAT.regge import Regge
 from FIAT.hellan_herrmann_johnson import HellanHerrmannJohnson
+from FIAT.arnold_winther import ArnoldWinther
+from FIAT.arnold_winther import ArnoldWintherNC
+from FIAT.mardal_tai_winther import MardalTaiWinther
 from FIAT.bubble import Bubble, FacetBubble
 from FIAT.tensor_product import TensorProductElement
 from FIAT.enriched import EnrichedElement
@@ -77,7 +80,10 @@ supported_elements = {"Argyris": Argyris,
                       "TensorProductElement": TensorProductElement,
                       "BrokenElement": DiscontinuousElement,
                       "HDiv Trace": HDivTrace,
-                      "Hellan-Herrmann-Johnson": HellanHerrmannJohnson}
+                      "Hellan-Herrmann-Johnson": HellanHerrmannJohnson,
+                      "Conforming Arnold-Winther": ArnoldWinther,
+                      "Nonconforming Arnold-Winther": ArnoldWintherNC,
+                      "Mardal-Tai-Winther": MardalTaiWinther}
 
 # List of extra elements
 extra_elements = {"P0": P0,
