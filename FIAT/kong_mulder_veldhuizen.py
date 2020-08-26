@@ -15,11 +15,15 @@ from FIAT import (
     Lagrange,
     NodalEnrichedElement,
     RestrictedElement,
+    reference_element,
 )
 from FIAT.quadrature_schemes import create_quadrature  # noqa: F401
 
+TRIANGLE = reference_element.UFCTriangle()
+TETRAHEDRON = reference_element.UFCTetrahedron()
 
-def _get_topology(ref_el, degree):
+
+def _get_entity_ids(ref_el, degree):
     """The topological association in a dictionary"""
     T = ref_el.topology
     sd = ref_el.get_spatial_dimension()
@@ -78,17 +82,25 @@ def _get_topology(ref_el, degree):
 
 
 def bump(T, deg):
-    """Increase degree of polynomial along"""
+    """Increase degree of polynomial along face/edges"""
     sd = T.get_spatial_dimension()
     if deg == 1:
-        return (0,)
-    if sd == 2:
-        if deg < 5:
-            return (1,)
-        elif deg == 5:
-            return (2,)
-    elif sd == 3:
-        return (1, 2)
+        return (0, 0)
+    else:
+        if sd == 2:
+            if deg < 5:
+                return (1, 1)
+            elif deg == 5:
+                return (2, 2)
+            else:
+                raise ValueError("Degree not supported")
+        elif sd == 3:
+            if deg < 4:
+                return (1, 2)
+            else:
+                raise ValueError("Degree not supported")
+        else:
+            raise ValueError("Dimension of element is not supported")
 
 
 def KongMulderVeldhuizenSpace(T, deg):
@@ -113,12 +125,12 @@ def KongMulderVeldhuizenSpace(T, deg):
             inds = [i for i in range(L.space_dimension()) if i not in not_inds]
         RL = RestrictedElement(L, inds)
         # interior cell bubble
-        bubs = Bubble(T, deg + max(bump(T, deg)))
+        bubs = Bubble(T, deg + bump(T, deg)[1])
         if sd == 2:
             return NodalEnrichedElement(RL, bubs).poly_set
         elif sd == 3:
             # bubble on the facet
-            fbubs = FacetBubble(T, deg + min(bump(T, deg)))
+            fbubs = FacetBubble(T, deg + bump(T, deg)[0])
             return NodalEnrichedElement(RL, bubs, fbubs).poly_set
 
 
@@ -127,7 +139,7 @@ class KongMulderVeldhuizenDualSet(dual_set.DualSet):
 
     def __init__(self, ref_el, degree):
         entity_ids = {}
-        entity_ids = _get_topology(ref_el, degree)
+        entity_ids = _get_entity_ids(ref_el, degree)
         lr = create_quadrature(ref_el, degree, scheme="KMV")
         nodes = [functional.PointEvaluation(ref_el, x) for x in lr.pts]
         super(KongMulderVeldhuizenDualSet, self).__init__(nodes, ref_el, entity_ids)
@@ -152,9 +164,11 @@ class KongMulderVeldhuizen(finite_element.CiarletElement):
      """
 
     def __init__(self, ref_el, degree):
-        if degree > 5 and ref_el.shape == 2:
+        if ref_el != TRIANGLE and ref_el != TETRAHEDRON:
+            raise ValueError("KMV is only valid for triangles and tetrahedrals")
+        if degree > 5 and ref_el == TRIANGLE:
             raise NotImplementedError("Only P < 6 for triangles are implemented.")
-        if degree > 3 and ref_el.shape == 3:
+        if degree > 3 and ref_el == TETRAHEDRON:
             raise NotImplementedError("Only P < 4 for tetrahedrals are implemented.")
         S = KongMulderVeldhuizenSpace(ref_el, degree)
 
