@@ -78,7 +78,7 @@ def _get_topology(ref_el, degree):
 
 
 def bump(T, deg):
-    """Increase degree of polynomial along """
+    """Increase degree of polynomial along"""
     sd = T.get_spatial_dimension()
     if deg == 1:
         return (0,)
@@ -134,20 +134,20 @@ class KongMulderVeldhuizenDualSet(dual_set.DualSet):
 
 
 class KongMulderVeldhuizen(finite_element.CiarletElement):
-    """The "lumped" simplical finite element
-       (NB: requires custom quad. "KMV" points to achieve a diagonal mass matrix).
+    """The "lumped" simplical finite element (NB: requires custom quad. "KMV" points to achieve a diagonal mass matrix).
 
-       References:
+    References
+    ----------
 
-       [1] Higher-order triangular and tetrahedral finite elements with mass
-       lumping for solving the wave equation
-       M. J. S. CHIN-JOE-KONG, W. A. MULDER and M. VAN VELDHUIZEN
+    Higher-order triangular and tetrahedral finite elements with mass
+    lumping for solving the wave equation
+    M. J. S. CHIN-JOE-KONG, W. A. MULDER and M. VAN VELDHUIZEN
 
-       [2] HIGHER-ORDER MASS-LUMPED FINITE ELEMENTS FOR THE WAVE EQUATION
-       W.A. MULDER
+    HIGHER-ORDER MASS-LUMPED FINITE ELEMENTS FOR THE WAVE EQUATION
+    W.A. MULDER
 
-       [3] NEW HIGHER-ORDER MASS-LUMPED TETRAHEDRAL ELEMENTS
-       S. GEEVERS, W.A. MULDER, AND J.J.W. VAN DER VEGT
+    NEW HIGHER-ORDER MASS-LUMPED TETRAHEDRAL ELEMENTS
+    S. GEEVERS, W.A. MULDER, AND J.J.W. VAN DER VEGT
 
      """
 

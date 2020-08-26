@@ -1,4 +1,4 @@
-"""Quadrature schemes on cells
+"""Quadrature schemes on cells.
 
 This module generates quadrature schemes on reference cells that integrate
 exactly a polynomial of a given degree using a specified scheme.
@@ -46,9 +46,8 @@ from FIAT.quadrature import (
 
 
 def create_quadrature(ref_el, degree, scheme="default"):
-    """
-    Generate quadrature rule for given reference element
-    that will integrate an polynomial of order 'degree' exactly.
+    """Generate quadrature rule for given reference element that will integrate
+    an polynomial of order 'degree' exactly.
 
     For low-degree (<=6) polynomials on triangles and tetrahedra, this
     uses hard-coded rules, otherwise it falls back to a collapsed
@@ -95,7 +94,7 @@ def create_quadrature(ref_el, degree, scheme="default"):
 
 
 def _fiat_scheme(ref_el, degree):
-    """Get quadrature scheme from FIAT interface"""
+    """Get quadrature scheme from FIAT interface."""
 
     # Number of points per axis for exact integration
     num_points_per_axis = (degree + 1 + 1) // 2
@@ -105,17 +104,8 @@ def _fiat_scheme(ref_el, degree):
 
 
 def _kmv_lump_scheme(ref_el, degree):
-    """Specialized quadrature schemes for P < 6 for KMV simplical elements.
+    """Specialized quadrature schemes for P < 6 for KMV simplical elements."""
 
-       References:
-
-       Higher-order triangular and tetrahedral finite elements with mass
-       lumping for solving the wave equation
-       M. J. S. CHIN-JOE-KONG, W. A. MULDER and M. VAN VELDHUIZEN
-
-       HIGHER-ORDER MASS-LUMPED FINITE ELEMENTS FOR THE WAVE EQUATION
-       W.A. MULDER
-    """
     sd = ref_el.get_spatial_dimension()
     # set the unit element
     if sd == 2:
@@ -333,8 +323,10 @@ def _kmv_lump_scheme(ref_el, degree):
 
 
 def _triangle_scheme(degree):
-    """Return a quadrature scheme on a triangle of specified order. Falls
-    back on canonical rule for higher orders."""
+    """Return a quadrature scheme on a triangle of specified order.
+
+    Falls back on canonical rule for higher orders.
+    """
 
     if degree == 0 or degree == 1:
         # Scheme from Zienkiewicz and Taylor, 1 point, degree of precision 1
@@ -427,8 +419,10 @@ def _triangle_scheme(degree):
 
 
 def _tetrahedron_scheme(degree):
-    """Return a quadrature scheme on a tetrahedron of specified
-    degree. Falls back on canonical rule for higher orders"""
+    """Return a quadrature scheme on a tetrahedron of specified degree.
+
+    Falls back on canonical rule for higher orders
+    """
 
     if degree == 0 or degree == 1:
         # Scheme from Zienkiewicz and Taylor, 1 point, degree of precision 1
