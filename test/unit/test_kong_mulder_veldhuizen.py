@@ -9,7 +9,6 @@ I = UFCInterval()
 T = UFCTriangle()
 Te = UFCTetrahedron()
 
-
 @pytest.mark.parametrize("p_d", [(1, 1), (2, 3), (3, 4)])
 def test_kmv_quad_tet_schemes(p_d):  # noqa: W503
     fct = np.math.factorial
