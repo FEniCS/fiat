@@ -27,11 +27,13 @@ def compute_pointwise_dual(el, pts):
                 polynomial space
     :returns: a :class `DualSet`
     """
-    # We're only handling square systems:
-    assert el.space_dimension() == len(pts)
-
     # We currently only have implemented this for scalar elements
     assert el.value_shape() == tuple()
+
+    # We're only handling square systems:
+    # This assertion needs to be generalized when we support vector-valued
+    # elements.
+    assert el.space_dimension() == len(pts)
 
     T = el.ref_el
     z = tuple([0] * T.get_dimension())
