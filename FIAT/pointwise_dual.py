@@ -18,7 +18,8 @@ def compute_pointwise_dual(el, pts):
     interpolation difficult in FIAT clients.  The pointwise dual,
     consisting only of pointwise evaluations, will effectively replace
     these derivatives with (automatically determined) finite
-    differences.
+    differences.  This is exact on the polynomial space, but is an
+    approximation if applied to functions outside the space.
 
     :param el: a :class:`FiniteElement`.
     :param pts: an iterable of points with the same length as el's
@@ -43,5 +44,5 @@ def compute_pointwise_dual(el, pts):
         pt_dict = {pt: [(c, tuple())] for c, pt in zip(coeffs, pts) if np.abs(c) > 1.e-12}
         nds.append(Functional(T, (), pt_dict, {}, "node"))
 
-    new_dual = DualSet(nds, T, el.entity_dofs())
-    return new_dual
+    return DualSet(nds, T, el.entity_dofs())
+
