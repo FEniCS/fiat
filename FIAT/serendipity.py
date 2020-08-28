@@ -126,12 +126,7 @@ class Serendipity(FiniteElement):
         self._degree = degree
         self.flat_el = flat_el
 
-        if dim == 2:
-            self.pointwise_dual = compute_pointwise_dual(
-                self, unisolvent_pts_quad(ref_el, degree))
-        elif dim == 3:
-            self.pointwise_dual = compute_pointwise_dual(
-                self, unisolvent_pts_hex(ref_el, degree))
+        self.dual = compute_pointwise_dual(self, unisolvent_pts(ref_el, degree))
 
     def degree(self):
         return self._degree + 1
@@ -247,6 +242,17 @@ def i_lambda_0(i, dx, dy, dz, x_mid, y_mid, z_mid):
                 for l in range(6, i + 1) for j in range(l-5) for k in range(j+1)])
 
     return IL
+
+
+def unisolvent_pts(K, deg):
+    flat_el = flatten_reference_cube(K)
+    dim = flat_el.get_spatial_dimension()
+    if dim == 2:
+        return unisolvent_pts_quad(K, deg)
+    elif dim == 3:
+        return unisolvent_pts_hex(K, deg)
+    else:
+        raise ValueError("Serendipity only defined for quads and hexes")
 
 
 def unisolvent_pts_quad(K, deg):

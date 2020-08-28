@@ -6,7 +6,6 @@
 # SPDX-License-Identifier:    LGPL-3.0-or-later
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
-from FIAT.pointwise_dual import compute_pointwise_dual
 from FIAT.reference_element import make_lattice
 
 
@@ -79,5 +78,3 @@ class CubicHermite(finite_element.CiarletElement):
 
         super(CubicHermite, self).__init__(poly_set, dual, 3)
 
-        self.pointwise_dual = compute_pointwise_dual(self,
-                                                     make_lattice(ref_el.get_vertices(), 3))
