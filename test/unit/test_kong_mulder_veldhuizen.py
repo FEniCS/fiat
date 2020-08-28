@@ -10,8 +10,8 @@ T = UFCTriangle()
 Te = UFCTetrahedron()
 
 
-@pytest.mark.parametrize("p_d", [(1, 1), (2, 4)])
-def test_kmv_quad_tet_schemes(p_d):
+@pytest.mark.parametrize("p_d", [(1, 1), (2, 3), (3, 4)])
+def test_kmv_quad_tet_schemes(p_d):  # noqa: W503
     fct = np.math.factorial
     p, d = p_d
     q = create_quadrature(Te, p, "KMV")
@@ -23,7 +23,8 @@ def test_kmv_quad_tet_schemes(p_d):
                     np.abs(
                         trueval -
                         q.integrate(lambda x: x[0] ** i * x[1] ** j * x[2] ** k)
-                    ) < 1.0e-10
+                    ) <
+                    1.0e-10
                 )
 
 
@@ -57,7 +58,7 @@ def test_Kronecker_property_tris(element_degree):
 
 
 @pytest.mark.parametrize(
-    "element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2)],
+    "element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2), (KMV(Te, 3), 3)]
 )
 def test_Kronecker_property_tets(element_degree):
     """
@@ -123,7 +124,7 @@ def test_interpolate_monomials_tris(element_degree):
 
 
 @pytest.mark.parametrize(
-    "element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2)],
+    "element_degree", [(KMV(Te, 1), 1), (KMV(Te, 2), 2), (KMV(Te, 3), 3)]
 )
 def test_interpolate_monomials_tets(element_degree):
     element, degree = element_degree
