@@ -5,7 +5,7 @@
 # SPDX-License-Identifier:    LGPL-3.0-or-later
 
 from FIAT import finite_element, polynomial_set, dual_set, functional
-from FIAT.reference_element import TRIANGLE, make_lattice
+from FIAT.reference_element import TRIANGLE
 
 
 class ArgyrisDualSet(dual_set.DualSet):
