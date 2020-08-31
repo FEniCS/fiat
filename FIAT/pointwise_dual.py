@@ -50,5 +50,3 @@ def compute_pointwise_dual(el, pts):
         nds.append(Functional(T, el.value_shape(), pt_dict, {}, "node"))
 
     return DualSet(nds, T, el.entity_dofs())
-
-    
