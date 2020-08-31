@@ -27,23 +27,28 @@ def compute_pointwise_dual(el, pts):
                 polynomial space
     :returns: a :class `DualSet`
     """
-    # We currently only have implemented this for scalar elements
-    assert el.value_shape() == tuple()
-
-    # We're only handling square systems:
-    # This assertion needs to be generalized when we support vector-valued
-    # elements.
-    assert el.space_dimension() == len(pts)
+    nbf = el.space_dimension()
 
     T = el.ref_el
     z = tuple([0] * T.get_dimension())
 
-    V = el.tabulate(0, pts)[z]
-    Vinv = np.linalg.inv(V)
-
     nds = []
-    for i, coeffs in enumerate(Vinv.T):
-        pt_dict = {pt: [(c, tuple())] for c, pt in zip(coeffs, pts) if np.abs(c) > 1.e-12}
-        nds.append(Functional(T, (), pt_dict, {}, "node"))
+
+    V = el.tabulate(0, pts)[z]
+
+    alphas = np.linalg.inv(V.reshape((nbf, -1)).T).reshape(V.shape)
+    for _, coeffs in enumerate(alphas):
+        pt_dict = {}
+        for k in range(coeffs.shape[-1]):
+            lst = []
+            for comp in np.ndindex(coeffs.shape[:-1]):
+                blah = tuple(list(comp) + [k])
+                if np.abs(coeffs[blah]) >= 1.e-12:
+                    lst.append((coeffs[blah], comp))
+            if lst != []:
+                pt_dict[pts[k]] = lst
+        nds.append(Functional(T, el.value_shape(), pt_dict, {}, "node"))
 
     return DualSet(nds, T, el.entity_dofs())
+
+    
