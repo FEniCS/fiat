@@ -1,6 +1,6 @@
-# Copyright (C) 20208 Robert C. Kirby (Baylor University)
+# Copyright (C) 2020 Robert C. Kirby (Baylor University)
 #
-# contributions from Keith Roberts (University of Sao Paulo)
+# contributions by Keith Roberts (University of São Paulo)
 #
 # This file is part of FIAT (https://www.fenicsproject.org)
 #
