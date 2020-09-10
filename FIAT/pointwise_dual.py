@@ -35,7 +35,7 @@ def compute_pointwise_dual(el, pts):
     assert np.asarray(pts).shape == (int(nbf / np.prod(el.value_shape())), sd)
 
     z = tuple([0] * sd)
-                         
+
     nds = []
 
     V = el.tabulate(0, pts)[z]
