@@ -40,17 +40,32 @@ def compute_pointwise_dual(el, pts):
 
     V = el.tabulate(0, pts)[z]
 
+    # Make a square system, invert, and then put it back in the right
+    # shape so we have (nbf, ..., npts) with more dimensions
+    # for vector or tensor-valued elements.
     alphas = np.linalg.inv(V.reshape((nbf, -1)).T).reshape(V.shape)
-    for _, coeffs in enumerate(alphas):
+
+    # Each row of alphas gives the coefficients of a functional,
+    # represented, as elsewhere in FIAT, as a summation of
+    # components of the input at particular points.
+
+    for coeffs in alphas:
         pt_dict = {}
+        # Iterates over the points themselves
         for k in range(coeffs.shape[-1]):
             lst = []
+            # Iterates over the components of a vector- or tensor-
+            # valued element
             for comp in np.ndindex(coeffs.shape[:-1]):
                 blah = tuple(list(comp) + [k])
+                # Drop coefficients that are close to zero
                 if np.abs(coeffs[blah]) >= 1.e-12:
                     lst.append((coeffs[blah], comp))
+            # Only add the point to the list if we actually got
+            # a contribution in some component.
             if lst != []:
                 pt_dict[pts[k]] = lst
+
         nds.append(Functional(T, el.value_shape(), pt_dict, {}, "node"))
 
     return DualSet(nds, T, el.entity_dofs())
