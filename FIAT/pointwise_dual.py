@@ -8,6 +8,7 @@ import numpy as np
 from FIAT.functional import Functional
 from FIAT.dual_set import DualSet
 from collections import defaultdict
+from itertools import zip_longest
 
 
 def compute_pointwise_dual(el, pts):
@@ -59,13 +60,10 @@ def compute_pointwise_dual(el, pts):
         nonzero = np.where(np.abs(coeffs) > 1.e-12)
         *comp, pt_index = nonzero
 
-        if comp:
-            for pt, coeff_comp in zip(pts[pt_index],
-                                      zip(coeffs[nonzero], zip(*comp))):
+        for pt, coeff_comp in zip(pts[pt_index],
+                                  zip_longest(coeffs[nonzero],
+                                              zip(*comp), fillvalue=())):
                 pt_dict[tuple(pt)].append(coeff_comp)
-        else:
-            for pt, coeff in zip(pts[pt_index], coeffs[nonzero]):
-                pt_dict[tuple(pt)].append((coeff, ()))
 
         nds.append(Functional(T, el.value_shape(), dict(pt_dict), {}, "node"))
 
