@@ -220,6 +220,15 @@ def polynomial_set_union_normalized(A, B):
         nc = numpy.reshape(new_coeffs, newshape)
         (u, sig, vt) = numpy.linalg.svd(nc, 1)
         num_sv = len([s for s in sig if abs(s) > 1.e-10])
+        numpy.set_printoptions(suppress=True, precision=2)
+        print('vt = \n', vt)
+
+        nc_clamped = nc.copy()
+        nc_clamped[abs(nc_clamped)<1e-16] = 0.0
+        (u, sig, vt_clamped) = numpy.linalg.svd(nc_clamped, 1)
+        print('vt_clamped = \n', vt_clamped)
+
+        vt = vt_clamped
 
         coeffs = numpy.reshape(vt[:num_sv], tuple([num_sv] + list(func_shape)))
 
