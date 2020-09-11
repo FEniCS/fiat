@@ -7,6 +7,7 @@
 import numpy as np
 from FIAT.functional import Functional
 from FIAT.dual_set import DualSet
+from collections import defaultdict
 
 
 def compute_pointwise_dual(el, pts):
@@ -49,23 +50,23 @@ def compute_pointwise_dual(el, pts):
     # represented, as elsewhere in FIAT, as a summation of
     # components of the input at particular points.
 
-    for coeffs in alphas:
-        pt_dict = {}
-        # Iterates over the points themselves
-        for k in range(coeffs.shape[-1]):
-            lst = []
-            # Iterates over the components of a vector- or tensor-
-            # valued element
-            for comp in np.ndindex(coeffs.shape[:-1]):
-                blah = tuple(list(comp) + [k])
-                # Drop coefficients that are close to zero
-                if np.abs(coeffs[blah]) >= 1.e-12:
-                    lst.append((coeffs[blah], comp))
-            # Only add the point to the list if we actually got
-            # a contribution in some component.
-            if lst != []:
-                pt_dict[pts[k]] = lst
+    # This logic picks out the points and components for which the
+    # weights are actually nonzero to construct the functional.
 
-        nds.append(Functional(T, el.value_shape(), pt_dict, {}, "node"))
+    pts = np.asarray(pts)
+    for coeffs in alphas:
+        pt_dict = defaultdict(list)
+        nonzero = np.where(np.abs(coeffs) > 1.e-12)
+        *comp, pt_index = nonzero
+
+        if comp:
+            for pt, coeff_comp in zip(pts[pt_index],
+                                      zip(coeffs[nonzero], zip(*comp))):
+                pt_dict[tuple(pt)].append(coeff_comp)
+        else:
+            for pt, coeff in zip(pts[pt_index], coeffs[nonzero]):
+                pt_dict[tuple(pt)].append((coeff, ()))
+
+        nds.append(Functional(T, el.value_shape(), dict(pt_dict), {}, "node"))
 
     return DualSet(nds, T, el.entity_dofs())

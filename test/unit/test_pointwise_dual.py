@@ -23,7 +23,7 @@ T = UFCTriangle()
                          [CubicHermite(T),
                           Morley(T),
                           QuinticArgyris(T),
-                          BrezziDouglasMarini(T, 2, variant="integral")])
+                          BrezziDouglasMarini(T, 1, variant="integral")])
 def test_pw_dual(element):
     deg = element.degree()
     ref_el = element.ref_el
