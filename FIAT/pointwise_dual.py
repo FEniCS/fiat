@@ -63,7 +63,7 @@ def compute_pointwise_dual(el, pts):
         for pt, coeff_comp in zip(pts[pt_index],
                                   zip_longest(coeffs[nonzero],
                                               zip(*comp), fillvalue=())):
-                pt_dict[tuple(pt)].append(coeff_comp)
+            pt_dict[tuple(pt)].append(coeff_comp)
 
         nds.append(Functional(T, el.value_shape(), dict(pt_dict), {}, "node"))
 
