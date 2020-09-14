@@ -58,7 +58,7 @@ def test_dofs():
 
         for bf in range(18):
             if bf != AW.dual.entity_ids[1][ed][1] and bf != AW.dual.entity_ids[1][ed][3]:
-                assert np.allclose(ntmoments[bf, :], np.zeros(2))
+                assert np.allclose(ntmoments[bf, :], np.zeros(2), atol=1.e-7)
 
     # check internal dofs
     Q = make_quadrature(T, 6)

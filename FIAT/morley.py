@@ -45,7 +45,7 @@ class MorleyDualSet(dual_set.DualSet):
 
         entity_ids[2] = {0: []}
 
-        super(MorleyDualSet, self).__init__(nodes, ref_el, entity_ids)
+        super().__init__(nodes, ref_el, entity_ids)
 
 
 class Morley(finite_element.CiarletElement):
@@ -54,4 +54,4 @@ class Morley(finite_element.CiarletElement):
     def __init__(self, ref_el):
         poly_set = polynomial_set.ONPolynomialSet(ref_el, 2)
         dual = MorleyDualSet(ref_el)
-        super(Morley, self).__init__(poly_set, dual, 2)
+        super().__init__(poly_set, dual, 2)
