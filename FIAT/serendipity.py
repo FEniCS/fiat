@@ -143,7 +143,7 @@ class Serendipity(FiniteElement):
     def tabulate(self, order, points, entity=None):
 
         if entity is None:
-            entity = (self.ref_el.get_spatial_dimension(), 0)
+            entity = (self.ref_el.get_dimension(), 0)
 
         entity_dim, entity_id = entity
         transform = self.ref_el.get_entity_transform(entity_dim, entity_id)
