@@ -32,7 +32,7 @@ def compute_pointwise_dual(el, pts):
     nbf = el.space_dimension()
 
     T = el.ref_el
-    sd = T.get_dimension()
+    sd = T.get_spatial_dimension()
 
     assert np.asarray(pts).shape == (int(nbf / np.prod(el.value_shape())), sd)
 
