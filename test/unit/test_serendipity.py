@@ -1,4 +1,5 @@
-from FIAT.reference_element import UFCQuadrilateral
+from FIAT.reference_element import (
+    UFCQuadrilateral, UFCInterval, TensorProductCell)
 from FIAT import Serendipity
 import numpy as np
 import sympy
@@ -30,3 +31,16 @@ def test_serendipity_derivatives():
         assert actual.shape == (8, 2)
         assert np.allclose(np.asarray(expect, dtype=float),
                            actual.reshape(8, 2))
+
+
+def test_dual_tensor_versus_ufc():
+    K0 = UFCQuadrilateral()
+    ell = UFCInterval()
+    K1 = TensorProductCell(ell, ell)
+    S0 = Serendipity(K0, 2)
+    S1 = Serendipity(K1, 2)
+    # since both elements go through the flattened cell to produce the
+    # dual basis, they ought to do *exactly* the same calculations and
+    # hence form exactly the same nodes.
+    for i in range(S0.space_dimension()):
+        assert S0.dual.nodes[i].pt_dict == S1.dual.nodes[i].pt_dict

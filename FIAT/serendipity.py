@@ -143,7 +143,7 @@ class Serendipity(FiniteElement):
     def tabulate(self, order, points, entity=None):
 
         if entity is None:
-            entity = (self.ref_el.get_spatial_dimension(), 0)
+            entity = (self.ref_el.get_dimension(), 0)
 
         entity_dim, entity_id = entity
         transform = self.ref_el.get_entity_transform(entity_dim, entity_id)
@@ -248,9 +248,9 @@ def unisolvent_pts(K, deg):
     flat_el = flatten_reference_cube(K)
     dim = flat_el.get_spatial_dimension()
     if dim == 2:
-        return unisolvent_pts_quad(K, deg)
+        return unisolvent_pts_quad(flat_el, deg)
     elif dim == 3:
-        return unisolvent_pts_hex(K, deg)
+        return unisolvent_pts_hex(flat_el, deg)
     else:
         raise ValueError("Serendipity only defined for quads and hexes")
 
