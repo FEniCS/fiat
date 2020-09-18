@@ -248,9 +248,9 @@ def unisolvent_pts(K, deg):
     flat_el = flatten_reference_cube(K)
     dim = flat_el.get_spatial_dimension()
     if dim == 2:
-        return unisolvent_pts_quad(K, deg)
+        return unisolvent_pts_quad(flat_el, deg)
     elif dim == 3:
-        return unisolvent_pts_hex(K, deg)
+        return unisolvent_pts_hex(flat_el, deg)
     else:
         raise ValueError("Serendipity only defined for quads and hexes")
 
