@@ -38,7 +38,7 @@ jobs:
         run: |
           pip install coveralls pytest pytest-cov pytest-xdist
           DATA_REPO_GIT="" pytest --cov=../FIAT/ .
-	working-directory: test
+        working-directory: test
       - name: Coveralls
         if: ${{ github.repository == 'FEniCS/fiat' && github.head_ref == '' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8' }}
         env:
