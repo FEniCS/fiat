@@ -16,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -29,11 +31,14 @@ jobs:
           pip install pydocstyle
           python -m pydocstyle .
       - name: Install FIAT
-        run: pip install .
+        run: |
+          pip install setuptools_scm wheel
+          pip install .
       - name: Test with pytest
         run: |
           pip install coveralls pytest pytest-cov pytest-xdist
-          DATA_REPO_GIT="" pytest --cov=FIAT/ test/
+          DATA_REPO_GIT="" pytest --cov=../FIAT/ .
+	working-directory: test
       - name: Coveralls
         if: ${{ github.repository == 'FEniCS/fiat' && github.head_ref == '' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.8' }}
         env:
