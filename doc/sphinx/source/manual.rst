@@ -29,8 +29,8 @@ elements.  It is one thing to ``provide hooks'' for general elements,
 but absent a tool such as FIAT, these hooks remain mainly empty.  As
 these projects mature, I hope to expose users of the finite element
 method to the exotic world of potentially high-degree finite element
-on unstructured grids using the best elements in $H^1$,
-$H(\mathrm{div})$, and $H(\mathrm{curl})$.
+on unstructured grids using the best elements in :math:`H^1`,
+:math:`H(\mathrm{div})`, and :math:`H(\mathrm{curl})`.
 
 In this brief (and still developing) guide, I will first
 present the high-level API for users who wish to instantiate a finite
@@ -52,10 +52,10 @@ roles each of these plays will become clear shortly.
 
 \section{Important note}
 Throughout, FIAT defines the reference elements based on the interval
-$(-1,1)$ rather than the more common $(0,1)$.  So, the one-dimensional
-reference element is $(-1,1)$, the three vertices of the reference
-triangle are $(-1,-1),(1,-1),(1,-1)$, and the four vertices of the
-reference tetrahedron are $(-1,-1,-1),(1,-1,-1),(-1,1,-1),(-1,-1,1)$.
+:math:`(-1,1)` rather than the more common :math:`(0,1)`.  So, the one-dimensional
+reference element is :math:`(-1,1)`, the three vertices of the reference
+triangle are :math:`(-1,-1),(1,-1),(1,-1)`, and the four vertices of the
+reference tetrahedron are :math:`(-1,-1,-1),(1,-1,-1),(-1,1,-1),(-1,-1,1)`.
 
 \section{Instantiating elements}
 FIAT uses a lightweight object-oriented infrastructure to define
