@@ -43,6 +43,7 @@ from FIAT.mixed import MixedElement                       # noqa: F401
 from FIAT.restricted import RestrictedElement             # noqa: F401
 from FIAT.quadrature_element import QuadratureElement     # noqa: F401
 from FIAT.kong_mulder_veldhuizen import KongMulderVeldhuizen  # noqa: F401
+from FIAT.silly import SillyElement
 
 # Important functionality
 from FIAT.quadrature import make_quadrature               # noqa: F401
@@ -85,7 +86,8 @@ supported_elements = {"Argyris": Argyris,
                       "Hellan-Herrmann-Johnson": HellanHerrmannJohnson,
                       "Conforming Arnold-Winther": ArnoldWinther,
                       "Nonconforming Arnold-Winther": ArnoldWintherNC,
-                      "Mardal-Tai-Winther": MardalTaiWinther}
+                      "Mardal-Tai-Winther": MardalTaiWinther,
+                      "SillyElement": SillyElement}
 
 # List of extra elements
 extra_elements = {"P0": P0,
