@@ -9,7 +9,7 @@ import numpy
 ufcint = UFCInterval()
 
 
-class SillyElementDualSet(DualSet):
+class NewElementDualSet(DualSet):
 
     def __init__(self, cell, order):
         assert cell == ufcint and order == 3
@@ -25,13 +25,27 @@ class SillyElementDualSet(DualSet):
         intnodes = [IntegralMoment(ufcint, Q, ones),
                     IntegralMoment(ufcint, Q, xs)]
         nodes = vertnodes + intnodes
-        super(SillyElementDualSet, self).__init__(nodes, ufcint, entity_ids)
+        super(NewElementDualSet, self).__init__(nodes, ufcint, entity_ids)
 
 
-class SillyElement(CiarletElement):
+class NewElement(CiarletElement):
+    """
+    An element, only defined for order 3 on interval cells, with 4 nodes:
+
+    ..math::
+
+     phi_0'(f) = f(0.)
+
+     phi_1'(f) = f(1.)
+
+     pfi_2'(f) = \int_{0}^{1} f(x) \,dx
+
+     pfi_3'(f) = \int_{0}^{1} x f(x) \,dx
+
+     """
 
     def __init__(self, cell, order):
         assert cell == ufcint and order == 3
         poly_set = ONPolynomialSet(ufcint, 3)
-        dual_set = SillyElementDualSet(ufcint, 3)
-        super(SillyElement, self).__init__(poly_set, dual_set, 3, 0)
+        dual_set = NewElementDualSet(ufcint, 3)
+        super(NewElement, self).__init__(poly_set, dual_set, 3, 0)
