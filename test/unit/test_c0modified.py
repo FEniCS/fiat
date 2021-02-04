@@ -1,10 +1,11 @@
-from FIAT.newel import NewElement
+from FIAT.c0modified import C0Modified
 from FIAT.reference_element import UFCInterval
 import numpy
 
-def test_newel():
+
+def test_c0modified():
     # can create
-    el = NewElement(UFCInterval(), 3)
+    el = C0Modified(UFCInterval(), 3)
     # dual eval gives expected values from sum of point evaluations
     fns = (lambda x: x[0], lambda x: x[0]**2)
     expected = ([0, 1, 1/2, 1/3], [0, 1, 1/3, 1/4])

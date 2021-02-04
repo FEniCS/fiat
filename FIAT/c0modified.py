@@ -9,7 +9,7 @@ import numpy
 ufcint = UFCInterval()
 
 
-class NewElementDualSet(DualSet):
+class C0ModifiedDualSet(DualSet):
 
     def __init__(self, cell, order):
         assert cell == ufcint and order == 3
@@ -25,11 +25,11 @@ class NewElementDualSet(DualSet):
         intnodes = [IntegralMoment(ufcint, Q, ones),
                     IntegralMoment(ufcint, Q, xs)]
         nodes = vertnodes + intnodes
-        super(NewElementDualSet, self).__init__(nodes, ufcint, entity_ids)
+        super(C0ModifiedDualSet, self).__init__(nodes, ufcint, entity_ids)
 
 
-class NewElement(CiarletElement):
-    """
+class C0Modified(CiarletElement):
+    r"""
     An element, only defined for order 3 on interval cells, with 4 nodes:
 
     ..math::
@@ -47,5 +47,5 @@ class NewElement(CiarletElement):
     def __init__(self, cell, order):
         assert cell == ufcint and order == 3
         poly_set = ONPolynomialSet(ufcint, 3)
-        dual_set = NewElementDualSet(ufcint, 3)
-        super(NewElement, self).__init__(poly_set, dual_set, 3, 0)
+        dual_set = C0ModifiedDualSet(ufcint, 3)
+        super(C0Modified, self).__init__(poly_set, dual_set, 3, 0)
