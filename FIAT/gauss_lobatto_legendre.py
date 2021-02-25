@@ -44,11 +44,7 @@ class GaussLobattoLegendre(finite_element.CiarletElement):
 
         entity_dim, entity_id = entity
         transform = self.ref_el.get_entity_transform(entity_dim, entity_id)
-        points = list(map(transform, points))
 
         xsrc = numpy.array([list(node.get_point_dict())[0][0] for node in self.dual.nodes])
-        xdst = numpy.array(points).flatten()
+        xdst = numpy.array(list(map(transform, points))).flatten()
         return barycentric_interpolation(xsrc, xdst, order)
-
-    def value_shape(self):
-        return ()
