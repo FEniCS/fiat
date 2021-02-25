@@ -10,7 +10,7 @@
 
 import numpy
 
-from FIAT import finite_element, dual_set, functional, quadrature
+from FIAT import finite_element, polynomial_set, dual_set, functional, quadrature
 from FIAT.reference_element import LINE
 from FIAT.barycentric_interpolation import barycentric_interpolation
 
@@ -27,14 +27,15 @@ class GaussLobattoLegendreDualSet(dual_set.DualSet):
         super(GaussLobattoLegendreDualSet, self).__init__(nodes, ref_el, entity_ids)
 
 
-class GaussLobattoLegendre(finite_element.FiniteElement):
+class GaussLobattoLegendre(finite_element.CiarletElement):
     """1D continuous element with nodes at the Gauss-Lobatto points."""
     def __init__(self, ref_el, degree):
         if ref_el.shape != LINE:
             raise ValueError("Gauss-Lobatto-Legendre elements are only defined in one dimension.")
+        poly_set = polynomial_set.ONPolynomialSet(ref_el, degree)
         dual = GaussLobattoLegendreDualSet(ref_el, degree)
         formdegree = 0  # 0-form
-        super(GaussLobattoLegendre, self).__init__(ref_el, dual, degree, formdegree)
+        super(GaussLobattoLegendre, self).__init__(poly_set, dual, degree, formdegree)
 
     def tabulate(self, order, points, entity=None):
 
@@ -49,24 +50,5 @@ class GaussLobattoLegendre(finite_element.FiniteElement):
         xdst = numpy.array(points).flatten()
         return barycentric_interpolation(xsrc, xdst, order)
 
-    @staticmethod
-    def is_nodal():
-        return True
-
     def value_shape(self):
         return ()
-
-    def degree(self):
-        return self.order
-
-    def get_nodal_basis(self):
-        raise NotImplementedError("get_nodal_basis not implemented for GaussLobattoLegendre")
-
-    def get_coeffs(self):
-        raise NotImplementedError("get_coeffs not implemented for GaussLobattoLegendre")
-
-    def dmats(self):
-        raise NotImplementedError("dmats not implemented for GaussLobattoLegendre")
-
-    def get_num_members(self, arg):
-        raise NotImplementedError("get_num_members not implemented for GaussLobattoLegendre")

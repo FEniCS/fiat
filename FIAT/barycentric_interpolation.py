@@ -4,7 +4,7 @@ import numpy
 
 
 def barycentric_interpolation(xsrc, xdst, order=0):
-    """Returns a tuple with differentiation matrices up to a given order
+    """Returns a dict with differentiation matrices up to a given order
     """
 
     # w = 1 / barycentric weights
