@@ -36,38 +36,30 @@ class GaussLobattoLegendre(finite_element.FiniteElement):
         super(GaussLobattoLegendre, self).__init__(ref_el, dual, degree, formdegree)
 
     def tabulate(self, order, points, entity=None):
-        dim = self.ref_el.get_dimension()
+
         if entity is None:
-            entity = (dim, 0)
+            entity = (self.ref_el.get_dimension(), 0)
 
         entity_dim, entity_id = entity
-        if entity_dim > dim:
-            raise ValueError("entity dimension must be lower than ",dim)
+        transform = self.ref_el.get_entity_transform(entity_dim, entity_id)
+        points = list(map(transform, points))
 
-        if entity_id == 0:
-            xsrc = numpy.array([list(node.get_point_dict())[0][0] for node in self.dual.nodes])
-        elif entity_id == 1:
-            xsrc = numpy.array([point[0] for point in self.ref_el.vertices])
-        else:
-            raise ValueError("topological entity must be between 0 and 1")
-
+        xsrc = numpy.array([list(node.get_point_dict())[0][0] for node in self.dual.nodes])
         xdst = numpy.array(points).flatten()
         return barycentric_interpolation(xsrc, xdst, order)
+
+    @staticmethod
+    def is_nodal():
+        return True
 
     def value_shape(self):
         return ()
 
     def degree(self):
-        return len(self.dual.nodes)-1
-
-    def space_dimension(self):
-        return len(self.dual.nodes)
+        return self.order
 
     def get_nodal_basis(self):
         raise NotImplementedError("get_nodal_basis not implemented for GaussLobattoLegendre")
-
-    def get_dual_set(self):
-        raise NotImplementedError("get_dual_set is not implemented for GaussLobattoLegendre")
 
     def get_coeffs(self):
         raise NotImplementedError("get_coeffs not implemented for GaussLobattoLegendre")
