@@ -2,6 +2,7 @@
 
 import numpy
 
+
 def barycentric_interpolation(xsrc, xdst, order=0):
     """Returns a tuple with differentiation matrices up to a given order
     """
@@ -19,15 +20,15 @@ def barycentric_interpolation(xsrc, xdst, order=0):
 
     I = numpy.subtract.outer(xdst, xsrc)
     idx = numpy.argwhere(numpy.isclose(I, 0.0E0, 1E-14))
-    I[idx[:,0], idx[:,1]] = 1.0E0
+    I[idx[:, 0], idx[:, 1]] = 1.0E0
     I = (1.0E0 / w) / I
-    I[idx[:,0], :] = 0.0E0
-    I[idx[:,0], idx[:,1]] = 1.0E0
-    I *= (1.0E0/numpy.sum(I, axis=1))[:,None]
-    
-    derivs = {(0,) : I}
+    I[idx[:, 0], :] = 0.0E0
+    I[idx[:, 0], idx[:, 1]] = 1.0E0
+    I *= (1.0E0 / numpy.sum(I, axis=1))[:, None]
+
+    derivs = {(0,): I}
     for k in range(0, order):
-        derivs[(k+1,)] = numpy.matmul(derivs[(k,)], D)
+        derivs[(k+1, )] = numpy.matmul(derivs[(k, )], D)
 
     for key in derivs:
         derivs[key] = derivs[key].T  # FIXME transpose

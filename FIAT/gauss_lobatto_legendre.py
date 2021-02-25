@@ -14,6 +14,7 @@ from FIAT import finite_element, dual_set, functional, quadrature
 from FIAT.reference_element import LINE
 from FIAT.barycentric_interpolation import barycentric_interpolation
 
+
 class GaussLobattoLegendreDualSet(dual_set.DualSet):
     """The dual basis for 1D continuous elements with nodes at the
     Gauss-Lobatto points."""
