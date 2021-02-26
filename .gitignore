@@ -7,3 +7,5 @@
 /.cache/
 /doc/sphinx/source/api-doc
 release/
+
+/doc/sphinx/source/_build/
