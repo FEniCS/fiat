@@ -38,6 +38,7 @@ class GaussLobattoLegendre(finite_element.CiarletElement):
         super(GaussLobattoLegendre, self).__init__(poly_set, dual, degree, formdegree)
 
     def tabulate(self, order, points, entity=None):
+        # This overrides the default with a more numerically stable algorithm
 
         if entity is None:
             entity = (self.ref_el.get_dimension(), 0)
@@ -45,6 +46,11 @@ class GaussLobattoLegendre(finite_element.CiarletElement):
         entity_dim, entity_id = entity
         transform = self.ref_el.get_entity_transform(entity_dim, entity_id)
 
-        xsrc = numpy.array([list(node.get_point_dict())[0][0] for node in self.dual.nodes])
+        xsrc = []
+        for node in self.dual.nodes:
+            # Assert singleton point for each node.
+            (pt,), = node.get_point_dict().keys()
+            xsrc.append(pt)
+        xsrc = numpy.asarray(xsrc)
         xdst = numpy.array(list(map(transform, points))).flatten()
-        return barycentric_interpolation(xsrc, xdst, order)
+        return barycentric_interpolation(xsrc, xdst, order=order)
