@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier:    LGPL-3.0-or-later
 #
-# Written by Pablo D. Brubeck (brubeck@protonmail.com), 2020
+# Written by Pablo D. Brubeck (brubeck@protonmail.com), 2021
 
 import numpy
 
@@ -27,7 +27,6 @@ def barycentric_interpolation(xsrc, xdst, order=0):
     D = numpy.add.outer(-xsrc, xsrc)
     numpy.fill_diagonal(D, 1.0E0)
     w = 1.0E0 / numpy.prod(D, axis=0)
-
     D = numpy.divide.outer(w, w) / D
     numpy.fill_diagonal(D, numpy.diag(D) - numpy.sum(D, axis=0))
 

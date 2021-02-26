@@ -6,7 +6,7 @@
 #
 # Written by David A. Ham (david.ham@imperial.ac.uk), 2015
 #
-# Modified by Pablo D. Brubeck (brubeck@protonmail.com), 2020
+# Modified by Pablo D. Brubeck (brubeck@protonmail.com), 2021
 
 import numpy
 
