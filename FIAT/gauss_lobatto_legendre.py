@@ -13,6 +13,7 @@ import numpy
 from FIAT import finite_element, polynomial_set, dual_set, functional, quadrature
 from FIAT.reference_element import LINE
 from FIAT.barycentric_interpolation import barycentric_interpolation
+from FIAT.lagrange import make_entity_permutations
 
 
 class GaussLobattoLegendreDualSet(dual_set.DualSet):
@@ -23,8 +24,11 @@ class GaussLobattoLegendreDualSet(dual_set.DualSet):
                       1: {0: list(range(1, degree))}}
         lr = quadrature.GaussLobattoLegendreQuadratureLineRule(ref_el, degree+1)
         nodes = [functional.PointEvaluation(ref_el, x) for x in lr.pts]
+        entity_permutations = {}
+        entity_permutations[0] = {0: {0: [0, ]}, 1: {0: [0, ]}}
+        entity_permutations[1] = {0: make_entity_permutations(1, degree - 1)}
 
-        super(GaussLobattoLegendreDualSet, self).__init__(nodes, ref_el, entity_ids)
+        super(GaussLobattoLegendreDualSet, self).__init__(nodes, ref_el, entity_ids, entity_permutations)
 
 
 class GaussLobattoLegendre(finite_element.CiarletElement):

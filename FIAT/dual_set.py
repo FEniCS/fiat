@@ -13,10 +13,11 @@ from FIAT import polynomial_set
 
 
 class DualSet(object):
-    def __init__(self, nodes, ref_el, entity_ids):
+    def __init__(self, nodes, ref_el, entity_ids, entity_permutations=None):
         self.nodes = nodes
         self.ref_el = ref_el
         self.entity_ids = entity_ids
+        self.entity_permutations = entity_permutations
 
         # Compute the nodes on the closure of each sub_entity.
         self.entity_closure_ids = {}
@@ -39,6 +40,9 @@ class DualSet(object):
 
     def get_entity_ids(self):
         return self.entity_ids
+
+    def get_entity_permutations(self):
+        return self.entity_permutations
 
     def get_reference_element(self):
         return self.ref_el

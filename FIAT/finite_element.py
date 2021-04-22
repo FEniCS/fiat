@@ -60,6 +60,11 @@ class FiniteElement(object):
         freedom on the closure of those entities for the finite element."""
         return self.dual.get_entity_closure_ids()
 
+    def entity_permutations(self):
+        """Return the map of topological entities to the map of orientations
+        to permutation lists for the finite element."""
+        return self.dual.get_entity_permutations()
+
     def get_formdegree(self):
         """Return the degree of the associated form (FEEC)"""
         return self.formdegree
@@ -242,3 +247,67 @@ def entity_support_dofs(elem, entity_dim):
 
     cache[entity_dim] = result
     return result
+
+
+def _nhk(n, k):
+    """Choose k from n allowing for repetition"""
+    return numpy.math.factorial(n + k - 1) // numpy.math.factorial(n - 1) // numpy.math.factorial(k)
+
+
+def _set_barycentric_lattice_coordinates(a, i, j, m):
+    if m == 0:
+        return
+    asub = a[:, j]
+    i0 = i
+    if j == 0:
+        asub[i0: i0 + 1] = m
+        return
+    for v in range(m + 1):
+        i1 = i0 + _nhk(j, m - v)
+        asub[i0: i1] = v
+        _set_barycentric_lattice_coordinates(a, i0, j - 1, m - v)
+        i0 = i1
+
+
+def make_barycentric_lattice_coordinates(dim, n):
+    """Make all ordered barycentric lattice coordinates of size n
+
+    :arg dim: the intrinsic dimension
+    :arg n: the integer that each lattice coordinates tuple adds up to
+
+    Example: dim = 2, n = 3
+
+    [[0, 0, 3],
+     [0, 1, 2],
+     [0, 2, 1],
+     [0, 3, 0],
+     [1, 0, 2],
+     [1, 1, 1],
+     [1, 2, 0],
+     [2, 0, 1],
+     [2, 1, 0],
+     [3, 0, 0]]
+    """
+    a = numpy.zeros((_nhk(dim + 1, n), dim + 1), dtype=int)
+    _set_barycentric_lattice_coordinates(a, 0, dim, n)
+    return a
+
+
+def _set_index_permutations(a, i, j, lst):
+    if len(lst) == 0:
+        return
+    asub = a[:, j]
+    i0 = i
+    n = numpy.math.factorial(len(lst) - 1)
+    for v in lst:
+        i1 = i0 + n
+        asub[i0: i1] = v
+        _set_index_permutations(a, i0, j + 1, [item for item in lst if item != v])
+        i0 = i1
+
+
+def make_index_permutations(n):
+    """Make all ordered permutations of [0, 1, ..., n - 1]"""
+    perms = numpy.zeros((numpy.math.factorial(n), n), dtype=int)
+    _set_index_permutations(perms, 0, 0, list(range(n)))
+    return perms

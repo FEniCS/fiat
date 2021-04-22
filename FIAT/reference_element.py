@@ -223,10 +223,45 @@ class Cell(object):
         """
         raise NotImplementedError("Should be implemented in a subclass.")
 
+    def symmetry_group_size(self, dim):
+        """Returns the size of the symmetry group of an entity of
+        dimension `dim`."""
+        raise NotImplementedError("Should be implemented in a subclass.")
+
 
 class Simplex(Cell):
-    """Abstract class for a reference simplex."""
+    r"""Abstract class for a reference simplex.
 
+    Orientation of each entity is computed systematically
+    based of the permutation of the cone of the physical
+    entity relative to that of the FIAT entity.
+
+    As an example, we compute the orientation of a triangular
+    cell:
+
+       +                    +
+       | \                  | \
+       2   0               47   42
+       |     \              |     \
+       +--1---+             +--43--+
+    FIAT canonical     Mapped example physical cell
+
+    Suppose that the cone of the physical cell is given by:
+
+    C = [47, 42, 43]
+
+    FIAT facet to Physical facet map is given by:
+
+    M = [42, 43, 47]
+
+    Then the orientation of the cell is computed as:
+
+    C.index(M[0]) = 1; C.remove(M[0])
+    C.index(M[1]) = 1; C.remove(M[1])
+    C.index(M[2]) = 0; C.remove(M[2])
+
+    o = (1 * 2!) + (1 * 1!) + (0 * 0!) = 3
+    """
     def compute_normal(self, facet_i):
         """Returns the unit normal vector to facet i of codimension 1."""
         # Interval case
@@ -446,6 +481,9 @@ class Simplex(Cell):
         """Returns the subelement dimension of the cell.  Same as the
         spatial dimension."""
         return self.get_spatial_dimension()
+
+    def symmetry_group_size(self, dim):
+        return numpy.math.factorial(dim + 1)
 
 
 # Backwards compatible name
@@ -770,11 +808,54 @@ class TensorProductCell(Cell):
                        for c, s in zip(self.cells, slices)),
                       True)
 
+    def symmetry_group_size(self, dim):
+        return tuple(c.symmetry_group_size(d) for d, c in zip(dim, self.cells))
+
 
 class UFCQuadrilateral(Cell):
-    """This is the reference quadrilateral with vertices
-    (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0)."""
+    r"""This is the reference quadrilateral with vertices
+    (0.0, 0.0), (0.0, 1.0), (1.0, 0.0) and (1.0, 1.0).
 
+    Orientation of each entity is computed systematically
+    based of the permutation of the cone of the physical
+    entity relative to that of the FIAT entity.
+
+    As an example, we compute the orientation of a
+    quadrilateral cell:
+
+       +---3---+           +--57---+
+       |       |           |       |
+       0       1          43       55
+       |       |           |       |
+       +---2---+           +--42---+
+    FIAT canonical     Mapped example physical cell
+
+    Suppose that the cone of the physical cell is given by:
+
+    C = [55, 42, 43, 57]
+
+    FIAT index to Physical index map must be such that
+    C[0] = 55 is mapped to a vertical facet; in this
+    example it is:
+
+    M = [43, 55, 42, 57]
+
+    C and M are decomposed into "vertical" and "horizontal"
+    parts, keeping the relative orders of numbers:
+
+    C -> C0 = [55, 43], C1 = [42, 57]
+    M -> M0 = [43, 55], M1 = [42, 57]
+
+    Then the orientation of the cell is computed as the
+    following:
+
+    C0.index(M0[0]) = 1; C0.remove(M0[0])
+    C0.index(M0[1]) = 0; C0.remove(M0[1])
+    C1.index(M1[0]) = 0; C1.remove(M1[0])
+    C1.index(M1[1]) = 0; C1.remove(M1[1])
+
+    o = 2 * 1 + 0 = 2
+    """
     def __init__(self):
         product = TensorProductCell(UFCInterval(), UFCInterval())
         pt = product.get_topology()
@@ -831,6 +912,9 @@ class UFCQuadrilateral(Cell):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
         return self.product.contains_point(point, epsilon=epsilon)
+
+    def symmetry_group_size(self, dim):
+        return [1, 2, 8][dim]
 
 
 class UFCHexahedron(Cell):
@@ -896,6 +980,9 @@ class UFCHexahedron(Cell):
         """Checks if reference cell contains given point
         (with numerical tolerance)."""
         return self.product.contains_point(point, epsilon=epsilon)
+
+    def symmetry_group_size(self, dim):
+        return [1, 2, 8, 48][dim]
 
 
 def make_affine_mapping(xs, ys):
@@ -1060,6 +1147,18 @@ def flatten_entities(topology_dict):
 
     return {dim: dict(enumerate(entities))
             for dim, entities in flattened_entities.items()}
+
+
+def flatten_permutations(perm_dict):
+    """This function flattens permutation dict of TensorProductElement"""
+
+    flattened_permutations = defaultdict(list)
+    for dim in sorted(perm_dict.keys()):
+        flat_dim = tuple_sum(dim)
+        flattened_permutations[flat_dim] += [{o: v[o_tuple] for o, o_tuple in enumerate(sorted(v))}
+                                             for k, v in sorted(perm_dict[dim].items())]
+    return {dim: dict(enumerate(perms))
+            for dim, perms in flattened_permutations.items()}
 
 
 def compute_unflattening_map(topology_dict):
